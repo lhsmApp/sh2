@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="StaffDetailMapper">
+	
+<!-- 
+ * 说明： 工资明细
+ * 创建人：zhangxiaoliu
+ * 创建时间：2017-06-19
+ * @version
+ -->
+ 
+	<!--表名 -->
+	<sql id="tableName">
+		tb_staff_detail
+	</sql>
+
+	<!-- 列表 -->
+	<select id="datalistJqPage" parameterType="jqPage" resultType="pd">
+		select 
+		    * 
+		    <if test="pd.FieldSelectKey!= null and pd.FieldSelectKey != ''">
+		        ${pd.FieldSelectKey}
+		    </if>
+		from 
+		<include refid="tableName"></include>
+		where BUSI_DATE = '${pd.SystemDateTime}'
+		<!-- <if test="pd.DepartCode!= null and pd.DepartCode != ''">
+		    and DEPT_CODE = '${pd.DepartCode}'
+		</if> -->
+		<if test="pd.filterWhereResult!= null and pd.filterWhereResult != ''"><!-- 关键词检索 -->
+			${pd.filterWhereResult}
+		</if>
+		    <if test="pd.QueryFeild!= null and pd.QueryFeild != ''">
+		        ${pd.QueryFeild}
+		    </if>
+		<if test="sidx != null and sidx.trim() != ''" >
+			order by ${sidx} ${sord} 
+    	</if>
+		<if test="currentResult != null and rowNum != null" >           
+              limit #{currentResult}, #{rowNum} 
+        </if>
+	</select>
+	<select id="countJqGridExtend" parameterType="jqPage" resultType="int">
+		select count(*) from <include refid="tableName"></include> 
+		where BUSI_DATE = '${pd.SystemDateTime}'
+		<!-- <if test="pd.DepartCode!= null and pd.DepartCode != ''">
+		    and DEPT_CODE = '${pd.DepartCode}'
+		</if> -->
+		<if test="pd.filterWhereResult!= null and pd.filterWhereResult != ''"><!-- 关键词检索 -->
+			${pd.filterWhereResult}
+		</if>
+		    <if test="pd.QueryFeild!= null and pd.QueryFeild != ''">
+		        ${pd.QueryFeild}
+		    </if>
+	</select>
+	<select id="getFooterSummary" parameterType="jqPage" resultType="pd">
+		select ${pd.Userdata} 
+		from <include refid="tableName"></include> 
+		where BUSI_DATE = '${pd.SystemDateTime}'
+		<!-- <if test="pd.DepartCode!= null and pd.DepartCode != ''">
+		    and DEPT_CODE = '${pd.DepartCode}'
+		</if> -->
+		<if test="pd.filterWhereResult!= null and pd.filterWhereResult != ''"><!-- 关键词检索 -->
+			${pd.filterWhereResult}
+		</if>
+		    <if test="pd.QueryFeild!= null and pd.QueryFeild != ''">
+		        ${pd.QueryFeild}
+		    </if>
+	</select>
+    
+	<!-- 获取数据 验证数据重复 -->
+	<select id="findUserCodeByModel" parameterType="pd" resultType="String">
+		select USER_CODE
+		from 
+		    <include refid="tableName"></include>
+        <where>
+		<foreach item="item" index="index" collection="list" open=" " separator=" or " close=" ">
+            (BUSI_DATE = #{item.BUSI_DATE} 
+            <!-- and USER_CODE = #{item.USER_CODE} and USER_CODE != #{item.USER_CODE__} -->
+	        and DEPT_CODE = #{item.DEPT_CODE} and CUST_COL7 = #{item.CUST_COL7}  
+	        and USER_CODE = #{item.USER_CODE} and USER_CODE != #{item.USER_CODE__}
+            ${item.CanOperate})
+		</foreach>
+		</where>
+	</select>
+	<select id="exportHaveUserCode" parameterType="pd" resultType="String">
+		select USER_CODE
+		from 
+		<include refid="tableName"></include>
+		where BUSI_DATE = '${SystemDateTime}'
+		<!-- and (DEPT_CODE != '${SelectedDepartCode}' or CUST_COL7 != '${SelectedCustCol7}' or USER_GROP != '${emplGroupType}') -->
+		and DEPT_CODE = '${SelectedDepartCode}' 
+        and CUST_COL7 = '${SelectedCustCol7}'
+        and USER_GROP != '${emplGroupType}'
+		${CanOperate}
+	</select>
+	<select id="findStaffIdentByModel" parameterType="pd" resultType="String">
+		select STAFF_IDENT
+		from 
+		    <include refid="tableName"></include>
+        <where>
+		<foreach item="item" index="index" collection="list" open=" " separator=" or " close=" ">
+            (BUSI_DATE = #{item.BUSI_DATE} 
+            <!-- and STAFF_IDENT = #{item.STAFF_IDENT} and STAFF_IDENT != #{item.STAFF_IDENT__} -->
+	        and DEPT_CODE = #{item.DEPT_CODE} and CUST_COL7 = #{item.CUST_COL7}  
+	        and STAFF_IDENT = #{item.STAFF_IDENT} and STAFF_IDENT != #{item.STAFF_IDENT__}
+            ${item.CanOperate})
+		</foreach>
+		</where>
+	</select>
+	<select id="exportHaveStaffIdent" parameterType="pd" resultType="String">
+		select STAFF_IDENT
+		from 
+		<include refid="tableName"></include>
+		where BUSI_DATE = '${SystemDateTime}'
+		<!-- and (DEPT_CODE != '${SelectedDepartCode}' or CUST_COL7 != '${SelectedCustCol7}' or USER_GROP != '${emplGroupType}') -->
+		and DEPT_CODE = '${SelectedDepartCode}' 
+        and CUST_COL7 = '${SelectedCustCol7}' 
+        and USER_GROP != '${emplGroupType}'
+		${CanOperate}
+	</select>
+	
+	<!-- 新增 -->
+	<insert id="save" parameterType="pd">
+		insert into 
+	    <include refid="tableName"></include>
+		(${InsertField}) values (${InsertVale})
+	</insert>
+	
+	<!-- 批量删除 -->
+	<delete id="deleteAll" parameterType="pd">
+		delete from
+		<include refid="tableName"></include>
+		where
+		<foreach item="item" index="index" collection="list" open=" (" separator=" or " close=") ">
+                USER_CODE = #{item.USER_CODE__}
+            and BUSI_DATE = #{item.BUSI_DATE__} 
+	        and DEPT_CODE = #{item.DEPT_CODE__}  
+	        and CUST_COL7 = #{item.CUST_COL7__} 
+	        and USER_GROP = #{item.USER_GROP__}  
+	        ${item.CanOperate}
+		</foreach>
+	</delete>
+	
+	<!-- 导入删除-->
+	<delete id="importDelete" parameterType="pd">
+		delete from
+		<include refid="tableName"></include>
+		where BUSI_DATE = #{BUSI_DATE}
+	    and DEPT_CODE = #{DEPT_CODE} 
+	    and CUST_COL7 = #{CUST_COL7} 
+	    and USER_GROP = #{USER_GROP} 
+	    ${CanOperate}
+	</delete>
+	
+	<!-- 导出列表 -->
+	<select id="exportList" parameterType="jqPage" resultType="pd">
+		select * 
+		from 
+		<include refid="tableName"></include>
+		where BUSI_DATE = '${pd.SystemDateTime}'
+		and DEPT_CODE = '${pd.SelectedDepartCode}'
+	    and CUST_COL7 = '${pd.SelectedCustCol7}' 
+	    and USER_GROP = '${pd.emplGroupType}' 
+		${pd.CanOperate}
+		<!-- <if test="pd.filterWhereResult!= null and pd.filterWhereResult != ''">
+			and ${pd.filterWhereResult}
+		</if> -->
+		<if test="sidx != null" >
+			order by ${sidx} ${sord} 
+    	</if>
+	</select>
+	<!-- 导出模板 -->
+	<select id="exportModel" parameterType="pd" resultType="pd">
+		select * 
+		from 
+		<include refid="tableName"></include>
+		where DEPT_CODE = '${SelectedDepartCode}'
+	    and CUST_COL7 = '${SelectedCustCol7}'
+	    and USER_GROP = '${emplGroupType}' 
+		order by BUSI_DATE desc
+		limit 1
+	</select>
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<!-- 获取汇总里的明细 -->
+	<select id="getDetailList" parameterType="pd" resultType="pd">
+		select * 
+		from <include refid="tableName"></include>
+	    where BILL_CODE = #{BILL_CODE}
+	</select>
+	
+	<!-- 获取汇总数据 -->
+	<select id="getSum" parameterType="java.util.Map" resultType="pd">
+        select 
+            ${SelectFeild}
+		from 
+		<include refid="tableName"></include>
+		where BUSI_DATE = '${BUSI_DATE}'
+	    and DEPT_CODE = '${DEPT_CODE}' 
+	    and CUST_COL7 = '${CUST_COL7}' 
+	    and USER_GROP = '${USER_GROP}' 
+		${CanOperate}
+	    group by ${GroupbyFeild}
+    </select>
+
+	<!-- 修改单号 -->
+	<update id="editBillCode" parameterType="pd">
+		update
+		<include refid="tableName"></include>
+		set 
+			BILL_CODE = #{BILL_CODE}
+	    <where>
+	        ${updateFilter}
+	    </where>
+	</update>
+		
+</mapper>

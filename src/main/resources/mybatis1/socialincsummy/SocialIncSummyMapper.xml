@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="SocialIncSummyMapper">
+	
+<!-- 
+ * 说明： 社保汇总
+ * 创建人：zhangxiaoliu
+ * 创建时间：2017-06-19
+ * @version
+ -->
+ 
+	<!--表名 -->
+	<sql id="tableName">
+		tb_social_inc_summy
+	</sql>
+	
+	<!-- 列表 -->
+	<select id="datalistJqPage" parameterType="jqPage" resultType="pd">
+		select
+		    * 
+		    <if test="pd.FieldSelectKey!= null and pd.FieldSelectKey != ''">
+		        ${pd.FieldSelectKey}
+		    </if>
+		from  ${pd.SpellingTableName}
+		where BUSI_DATE = '${pd.SystemDateTime}'
+		and DEPT_CODE in (select RPT_DEPT 
+		                      from tb_sys_sealed_info 
+		                      where RPT_DUR = '${pd.SystemDateTime}' 
+		                      and STATE = '${pd.DurState}'
+		                      and BILL_TYPE = '${pd.TypeCodeDetail}'
+		                      and BILL_OFF = '${pd.SelectedCustCol7}'
+		                      )
+		<!-- and DEPT_CODE not in (select RPT_DEPT 
+		                      from tb_sys_sealed_info 
+		                      where RPT_DUR = '${pd.SystemDateTime}'
+		                      and STATE = '${pd.DurState}'
+		                      and BILL_TYPE = '${pd.TypeCodeSummy}'
+		                      and BILL_OFF = '${pd.SelectedCustCol7}'
+		                      )
+		and DEPT_CODE not in (select RPT_DEPT 
+		                      from tb_sys_sealed_info 
+		                      where RPT_DUR = '${pd.SystemDateTime}' 
+		                      and BILL_TYPE = '${pd.TypeCodeListen}'
+		                      and BILL_OFF = '${pd.SelectedCustCol7}'
+		                      ) -->
+		<if test="pd.filterWhereResult!= null and pd.filterWhereResult != ''"><!-- 关键词检索 -->
+			${pd.filterWhereResult}
+		</if>
+		    <if test="pd.QueryFeild!= null and pd.QueryFeild != ''">
+		        ${pd.QueryFeild}
+		    </if>
+		<if test="sidx != null and sidx.trim() != ''" >
+			order by ${sidx} ${sord} 
+    	</if>
+		<!-- <if test="currentResult != null and rowNum != null" >           
+              limit #{currentResult}, #{rowNum}  
+        </if> -->
+	</select>
+	<select id="countJqGridExtend" parameterType="jqPage" resultType="int">
+		select count(*) from  ${pd.SpellingTableName}
+		where BUSI_DATE = '${pd.SystemDateTime}'
+		and DEPT_CODE in (select RPT_DEPT 
+		                      from tb_sys_sealed_info 
+		                      where RPT_DUR = '${pd.SystemDateTime}' 
+		                      and STATE = '${pd.DurState}'
+		                      and BILL_TYPE = '${pd.TypeCodeDetail}'
+		                      and BILL_OFF = '${pd.SelectedCustCol7}'
+		                      )
+		<!-- and DEPT_CODE not in (select RPT_DEPT 
+		                      from tb_sys_sealed_info 
+		                      where RPT_DUR = '${pd.SystemDateTime}'
+		                      and STATE = '${pd.DurState}'
+		                      and BILL_TYPE = '${pd.TypeCodeSummy}'
+		                      and BILL_OFF = '${pd.SelectedCustCol7}'
+		                      )
+		and DEPT_CODE not in (select RPT_DEPT 
+		                      from tb_sys_sealed_info 
+		                      where RPT_DUR = '${pd.SystemDateTime}' 
+		                      and BILL_TYPE = '${pd.TypeCodeListen}'
+		                      and BILL_OFF = '${pd.SelectedCustCol7}'
+		                      ) -->
+		<if test="pd.filterWhereResult!= null and pd.filterWhereResult != ''"><!-- 关键词检索 -->
+			${pd.filterWhereResult}
+		</if>
+		    <if test="pd.QueryFeild!= null and pd.QueryFeild != ''">
+		        ${pd.QueryFeild}
+		    </if>
+	</select>
+	<select id="getFooterSummary" parameterType="jqPage" resultType="pd">
+		select ${pd.Userdata} 
+		from  ${pd.SpellingTableName}
+		where BUSI_DATE = '${pd.SystemDateTime}'
+		and DEPT_CODE in (select RPT_DEPT 
+		                      from tb_sys_sealed_info 
+		                      where RPT_DUR = '${pd.SystemDateTime}' 
+		                      and STATE = '${pd.DurState}'
+		                      and BILL_TYPE = '${pd.TypeCodeDetail}'
+		                      and BILL_OFF = '${pd.SelectedCustCol7}'
+		                      )
+		<!-- and DEPT_CODE not in (select RPT_DEPT 
+		                      from tb_sys_sealed_info 
+		                      where RPT_DUR = '${pd.SystemDateTime}'
+		                      and STATE = '${pd.DurState}'
+		                      and BILL_TYPE = '${pd.TypeCodeSummy}'
+		                      and BILL_OFF = '${pd.SelectedCustCol7}'
+		                      )
+		and DEPT_CODE not in (select RPT_DEPT 
+		                      from tb_sys_sealed_info 
+		                      where RPT_DUR = '${pd.SystemDateTime}' 
+		                      and BILL_TYPE = '${pd.TypeCodeListen}'
+		                      and BILL_OFF = '${pd.SelectedCustCol7}'
+		                      ) -->
+		<if test="pd.filterWhereResult!= null and pd.filterWhereResult != ''"><!-- 关键词检索 -->
+			${pd.filterWhereResult}
+		</if>
+		    <if test="pd.QueryFeild!= null and pd.QueryFeild != ''">
+		        ${pd.QueryFeild}
+		    </if>
+	</select>
+	
+	<!-- 删除数据 -->
+	<delete id="delete" parameterType="pd">
+		delete from 
+		<include refid="tableName"></include>
+		where BUSI_DATE = #{BUSI_DATE}
+	    and DEPT_CODE = #{DEPT_CODE} 
+	    and CUST_COL7 = #{CUST_COL7} 
+	    and BILL_STATE = #{BILL_STATE}
+	</delete>
+	
+	<!-- 删除数据 -->
+	<delete id="updateBillState" parameterType="pd">
+		update <include refid="tableName"></include>
+		set BILL_STATE = '0'
+		where BUSI_DATE = #{BUSI_DATE}
+	    and DEPT_CODE = #{DEPT_CODE} 
+	    and CUST_COL7 = #{CUST_COL7} 
+	</delete>
+	
+	<!-- 新增-->
+	<insert id="save" parameterType="pd">
+		insert into 
+	<include refid="tableName"></include>
+		(${InsertField}) values (${InsertVale})
+	</insert>
+	
+	
+	<!-- 获取汇总数据 -->
+	<select id="getHave" parameterType="java.util.Map" resultType="pd">
+        select * 
+		from 
+		<include refid="tableName"></include>
+		where BUSI_DATE = #{BUSI_DATE}
+	    and DEPT_CODE = #{DEPT_CODE} 
+	    and CUST_COL7 = #{CUST_COL7} 
+	    and BILL_STATE = #{BILL_STATE} 
+    </select>
+	
+</mapper>

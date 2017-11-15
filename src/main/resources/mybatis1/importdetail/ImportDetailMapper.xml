@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ImportDetailMapper">
+	
+<!-- 
+ * 说明： 导入明细
+ * 创建人：zhangxiaoliu
+ * 创建时间：2017-08-22
+ * @version
+ -->
+ 
+	<!-- 列表 -->
+	<select id="getCopyInsertList" parameterType="pd" resultType="pd">
+		select * 
+		from ${TableName}
+		where BUSI_DATE = '${SystemDateTime}'
+		and DEPT_CODE = '${DepartCode}'
+		and CUST_COL7 = '${BILL_OFF}'
+		<if test="USER_GROP!= null and USER_GROP != ''">
+		    and USER_GROP = '${USER_GROP}'
+		</if>
+		<if test="QueryFeild!= null and QueryFeild != ''">
+		    ${QueryFeild}
+		</if>
+	</select>
+	
+	<!-- 新增 -->
+	<insert id="save" parameterType="pd">
+		insert into ${TableNameDetail}
+		(${InsertField}) values (${InsertVale})
+	</insert>
+	
+	<!-- 删除数据 -->
+	<delete id="updateSummyBillState" parameterType="pd">
+		update ${TableNameSummy}
+		set BILL_STATE = '0'
+		where BUSI_DATE = #{BUSI_DATE}
+	    and DEPT_CODE = #{DEPT_CODE} 
+	    and CUST_COL7 = #{CUST_COL7} 
+		<if test="EmplGroupType != null and EmplGroupType != ''">
+		    and USER_GROP = '${USER_GROP}'
+		</if>
+	</delete>
+	
+</mapper>

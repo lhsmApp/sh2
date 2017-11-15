@@ -1,0 +1,417 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="TmplConfigMapper">
+
+	<!--表名 -->
+	<sql id="tableName">
+		TB_TMPL_CONFIG_DETAIL
+	</sql>
+
+	<!-- 字段 -->
+	<sql id="Field">
+		RPT_DUR,
+		DEPT_CODE,
+		TABLE_CODE,
+		COL_CODE,
+		COL_NAME,
+		DISP_ORDER,
+		DICT_TRANS,
+		COL_HIDE,
+		COL_SUM,
+		COL_AVE,
+		COL_TRANSFER,
+		COL_FORMULA,
+		CAL_ORDER,
+		NUM_DGT,
+		DEC_PRECISION
+	</sql>
+	<!-- 字段 -->
+	<sql id="FieldTmpl">
+		RPT_DUR,
+		DEPT_CODE,
+		TABLE_CODE,
+		COL_CODE,
+		COL_NAME,
+		DISP_ORDER,
+		DICT_TRANS,
+		COL_HIDE,
+		COL_SUM,
+		COL_AVE,
+		COL_TRANSFER
+	</sql>
+	
+	<sql id="FieldColumns">
+		RPT_DUR,
+		DEPT_CODE,
+		TABLE_CODE,
+		COL_CODE,
+		COL_NAME,
+		DISP_ORDER,
+		DICT_TRANS,
+		COL_HIDE,
+		COL_SUM,
+		COL_AVE,
+		COL_TRANSFER,
+		COL_FORMULA,
+		CAL_ORDER,
+		NUM_DGT,
+		DEC_PRECISION
+	</sql>
+
+	<!-- 字段值 -->
+	<sql id="FieldValue">
+		#{RPT_DUR},
+		#{DEPT_CODE},
+		#{TABLE_CODE},
+		#{COL_CODE},
+		#{COL_NAME},
+		#{DISP_ORDER},
+		#{DICT_TRANS},
+		#{COL_HIDE},
+		#{COL_SUM},
+		#{COL_AVE},
+		#{COL_TRANSFER},
+		#{COL_FORMULA},
+		#{CAL_ORDER},
+		#{NUM_DGT},
+		#{DEC_PRECISION}
+	</sql>
+
+	<!-- 新增 -->
+	<insert id="save" parameterType="pd">
+		<!-- insert into
+		<include refid="tableName"></include>
+		(
+		<include refid="Field"></include>
+		) values (
+		<include refid="FieldValue"></include>
+		) -->
+		insert into
+		<include refid="tableName"></include>
+		(
+			COL_FORMULA,
+			CAL_ORDER,
+			NUM_DGT,
+			DEC_PRECISION
+		) values (
+			#{COL_FORMULA},
+			#{CAL_ORDER},
+			#{NUM_DGT},
+			#{DEC_PRECISION}
+		)
+		
+	</insert>
+
+	<!-- 删除 -->
+	<delete id="delete" parameterType="pd">
+		<!-- delete from
+		<include refid="tableName"></include>
+		where
+		TABLE_CODE = #{TABLE_CODE} -->
+		
+		update
+		<include refid="tableName"></include>
+		set
+		<!-- DEPT_CODE = #{DEPT_CODE}, TABLE_CODE = #{TABLE_CODE}, COL_CODE = #{COL_CODE}, -->
+		COL_FORMULA = #{COL_FORMULA},
+		CAL_ORDER = #{CAL_ORDER},
+		NUM_DGT =#{NUM_DGT},
+		COL_HIDE = #{COL_HIDE},
+		DEC_PRECISION = #{DEC_PRECISION}
+		where
+		RPT_DUR = #{RPT_DUR}
+		and
+		DEPT_CODE = #{DEPT_CODE}
+		and
+		TABLE_CODE = #{TABLE_CODE}
+		and
+		COL_CODE = #{COL_CODE}
+	</delete>
+
+	<!-- 删除 -->
+	<delete id="deleteTable" parameterType="pd">
+		delete from
+		<include refid="tableName"></include>
+		where
+		RPT_DUR = #{RPT_DUR}
+		and
+		DEPT_CODE = #{DEPT_CODE}
+		and
+		TABLE_CODE = #{TABLE_CODE}
+	</delete>
+
+	<!-- 修改 -->
+	<update id="edit" parameterType="pd">
+		<!-- update
+		<include refid="tableName"></include>
+		set
+		COL_NAME = #{COL_NAME},
+		DISP_ORDER = #{DISP_ORDER},
+		DICT_TRANS =#{DICT_TRANS},
+		COL_HIDE = #{COL_HIDE},
+		COL_SUM = #{COL_SUM},
+		COL_AVE =#{COL_AVE},
+		COL_TRANSFER =#{COL_TRANSFER}
+		where
+		DEPT_CODE = #{DEPT_CODE}
+		and
+		TABLE_CODE = #{TABLE_CODE}
+		and
+		COL_CODE = #{COL_CODE} -->
+		
+		
+		update
+		<include refid="tableName"></include>
+		set
+		COL_FORMULA = #{COL_FORMULA},
+		CAL_ORDER = #{CAL_ORDER},
+		NUM_DGT =#{NUM_DGT},
+		DEC_PRECISION = #{DEC_PRECISION}
+		where
+		RPT_DUR = #{RPT_DUR}
+		and
+		DEPT_CODE = #{DEPT_CODE}
+		and
+		TABLE_CODE = #{TABLE_CODE}
+		and
+		COL_CODE = #{COL_CODE}
+	</update>
+
+	<!-- 通过ID获取数据 -->
+	<select id="findById" parameterType="pd" resultType="pd">
+		select
+		<include refid="Field"></include>
+		from
+		<include refid="tableName"></include>
+		where
+		TABLE_CODE = #{TABLE_CODE}
+	</select>
+	
+	<!-- 验证公式是否正确 -->
+	<select id="validateFormula" parameterType="pd" resultType="pd">
+		select
+		${COL_FORMULA}
+		from
+		${TABLE_CODE_ORI}
+		LIMIT 1
+	</select>
+	
+	<!-- 通过期间获取数据，判断是否已经生成过模板配置信息 -->
+	<select id="findByRptDur" parameterType="String" resultType="String">
+		select 1
+		from
+		<include refid="tableName"></include>
+		where
+		RPT_DUR = #{RPT_DUR} LIMIT 1 
+	</select>
+
+	<!-- 列表 -->
+	<select id="datalistJqPage" parameterType="page" resultType="pd">
+		select
+		<include refid="Field"></include>
+		from
+		<include refid="tableName"></include>
+		<where>
+			<if test="pd.DEPT_BIANMA!= null and pd.DEPT_BIANMA != ''"><!-- 检索 -->
+				and DEPT_CODE = #{pd.DEPT_BIANMA}
+			</if>
+			<if test="pd.TABLE_CODE!= null and pd.TABLE_CODE != ''"><!-- 检索 -->
+				and TABLE_CODE = #{pd.TABLE_CODE}
+			</if>
+			<if test="pd.RPT_DUR!= null and pd.RPT_DUR != ''"><!-- 检索 -->
+				and RPT_DUR = #{pd.RPT_DUR}
+			</if>
+		</where>
+	</select>
+
+	<!-- 列表(全部) -->
+	<select id="listAll" parameterType="pd" resultType="pd">
+		SELECT
+		a.RPT_DUR,
+		a.DEPT_CODE,
+		a.TABLE_CODE,
+		a.COL_CODE,
+		a.COL_NAME,
+		a.DISP_ORDER,
+		a.DICT_TRANS,
+		a.COL_HIDE,
+		a.COL_SUM,
+		a.COL_AVE,
+		a.COL_TRANSFER,
+		a.COL_FORMULA,
+		a.CAL_ORDER,
+		a.NUM_DGT,
+		a.DEC_PRECISION,
+		b.NAME DNAME,
+		c.TABLE_NAME,
+		d.DICT_NAME
+		FROM
+		tb_tmpl_config_detail a LEFT JOIN
+		oa_department b
+		on a.DEPT_CODE = b.DEPARTMENT_CODE
+		LEFT JOIN
+		tb_tmpl_config_base c
+		on a.TABLE_CODE = c.TABLE_CODE
+		LEFT JOIN
+		tb_tmpl_config_dict d
+		on a.DICT_TRANS = d.DICT_CODE
+		<where>
+			<if test="DEPARTMENT_CODE!= null and DEPARTMENT_CODE != ''">
+				and a.DEPT_CODE = #{DEPARTMENT_CODE}
+			</if>
+			<if test="TABLE_CODE!= null and TABLE_CODE != ''">
+				and a.TABLE_CODE = #{TABLE_CODE}
+			</if>
+			<if test="RPT_DUR!= null and RPT_DUR != ''">
+				and a.RPT_DUR = #{RPT_DUR}
+			</if>
+			<if test="filterWhereResult != null">
+				${filterWhereResult}
+			</if>
+		</where>
+		<if test="sidx != null">
+			order by ${sidx} ${sord}
+		</if>
+	</select>
+
+	<!-- 批量删除 -->
+	<delete id="deleteAll" parameterType="String">
+		delete from
+		<include refid="tableName"></include>
+		where
+		TABLE_CODE in
+		<foreach item="item" index="index" collection="array" open="("
+			separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+
+	<!-- 基本配置表 -->
+	<select id="listBase" parameterType="page" resultType="pd">
+		select *
+		from TB_TMPL_CONFIG_BASE
+		order by TABLE_NO
+	</select>
+
+	<!-- 根据当前单位编码、表名以及区间获取字段配置信息 -->
+	<!-- 张晓柳 -->
+	<select id="listNeed" parameterType="com.fh.entity.TmplConfigDetail"
+		resultType="com.fh.entity.TmplConfigDetail">
+		select
+		<include refid="FieldColumns"></include>
+		from
+		<include refid="tableName"></include>
+		where DEPT_CODE = #{DEPT_CODE}
+		and UPPER(TABLE_CODE) = UPPER(#{TABLE_CODE})
+		and RPT_DUR in (select KEY_VALUE from tb_sys_config where KEY_CODE = 'SystemDataTime')
+		order by COL_HIDE desc, DISP_ORDER
+		<!-- COL_HIDE必修倒序排列，关系添加或修改弹出框的显示 -->
+	</select>
+
+	<!-- 根据TABLE_NO获取TABLE_CODE -->
+	<select id="findTableCodeByTableNo" parameterType="String"
+		resultType="pd">
+		select TABLE_CODE
+		from TB_TMPL_CONFIG_BASE
+		where
+		TB_TMPL_CONFIG_BASE.TABLE_NO = #{TABLE_NO}
+	</select>
+
+	<!-- 临时生成的数据表明细 -->
+	<select id="temporaryList" parameterType="page" resultType="pd">
+		SELECT column_name AS COL_CODE, column_comment AS COL_NAME,
+		#{pd.RPT_DUR} as RPT_DUR,
+		#{pd.DEPARTMENT_CODE} AS DEPT_CODE,#{pd.TABLE_CODE} AS
+		TABLE_CODE,#{pd.DNAME} AS DNAME,#{pd.TABLE_NAME} AS TABLE_NAME,
+		'0' AS
+		DISP_ORDER,'0' AS DICT_TRANS,'1' AS COL_HIDE,'0' AS COL_SUM,'0' AS
+		COL_AVE,'0' AS COL_TRANSFER
+		FROM
+		information_schema.columns
+		WHERE
+		table_schema ='dbgdhs'
+		AND
+		table_name = #{pd.TABLE_CODE}
+	</select>
+
+	<!-- 新增 -->
+	<insert id="updateAll" parameterType="pd">
+		<!-- 插入保存 -->
+		insert into
+		<include refid="tableName"></include>
+		(
+		<include refid="FieldTmpl"></include>
+		) values
+		<foreach item="item" index="index" collection="list" open=" "
+			separator=", " close=" ">
+			<if test="item!=null">
+				<trim prefix="(" suffix=")" suffixOverrides=",">
+					#{item.RPT_DUR},#{item.DEPT_CODE},#{item.TABLE_CODE},#{item.COL_CODE},#{item.COL_NAME},#{item.DISP_ORDER},#{item.DICT_TRANS},#{item.COL_HIDE},#{item.COL_SUM},#{item.COL_AVE},#{item.COL_TRANSFER}
+					<!-- <include refid="FieldValue"></include> -->
+				</trim>
+			</if>
+		</foreach>
+	</insert>
+
+	<!-- 复制 -->
+	<insert id="copyAll" parameterType="pd">
+		<foreach item="item" index="index" collection="DEPT_CODES"
+			open=" " separator="; " close=";">
+			<if test="item!=null">
+				delete from
+				<include refid="tableName"></include>
+				where
+				RPT_DUR = #{RPT_DUR}
+				and
+				DEPT_CODE = #{item}
+				and
+				TABLE_CODE = #{TABLE_CODE}
+			</if>
+		</foreach>
+		<!-- 插入保存 -->
+		insert into
+		<include refid="tableName"></include>
+		(
+		<include refid="FieldTmpl"></include>
+		)
+		<foreach item="item" index="index" collection="DEPT_CODES"
+			open=" " separator="union all " close=" ">
+			<if test="item!=null">
+				SELECT RPT_DUR,#{item} AS 'DEPT_CODE',
+				TABLE_CODE,COL_CODE,COL_NAME,DISP_ORDER,DICT_TRANS,COL_HIDE,COL_SUM,COL_AVE,COL_TRANSFER
+				FROM tb_tmpl_config_detail WHERE DEPT_CODE=#{DEPT_CODE} AND
+				TABLE_CODE=#{TABLE_CODE}
+			</if>
+		</foreach>
+	</insert>
+	
+	<!-- 根据区间批量生成配置信息 -->
+	<insert id="insertBatchNextRptDur" parameterType="pd">
+		<!-- 插入保存 -->
+		insert into
+		<include refid="tableName"></include>
+		(
+		<include refid="FieldTmpl"></include>
+		)
+		SELECT #{NEXT_RPT_DUR} as RPT_DUR,DEPT_CODE,
+		TABLE_CODE,COL_CODE,COL_NAME,DISP_ORDER,DICT_TRANS,COL_HIDE,COL_SUM,COL_AVE,COL_TRANSFER
+		FROM tb_tmpl_config_detail WHERE RPT_DUR=#{CUR_RPT_DUR}
+	</insert>
+
+	<!-- 获取数据库中表结构 -->
+	<select id="getTableColumns" parameterType="string"
+		resultType="com.fh.entity.TableColumns">
+		SELECT UPPER(column_name) column_name,
+		column_comment,
+		UPPER(data_type) data_type,
+		UPPER(column_type) column_type,
+		UPPER(column_key) column_key,
+		column_default
+		FROM
+		information_schema.columns
+		WHERE table_schema ='dbgdhs'
+		AND
+		table_name =
+		#{value}
+	</select>
+</mapper>
