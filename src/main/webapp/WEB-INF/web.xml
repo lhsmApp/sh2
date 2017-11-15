@@ -27,7 +27,7 @@
   </filter-mapping>
   <context-param>
     <param-name>webAppRootKey</param-name>
-    <param-value>sh</param-value>
+    <param-value>sh2</param-value>
   </context-param>
   <filter>
     <filter-name>DruidWebStatFilter</filter-name>
