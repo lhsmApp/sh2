@@ -19,6 +19,15 @@ public class DetailImportQueryService implements DetailImportQueryManager{
 
 	@Resource(name = "daoSupport")
 	private DaoSupport dao;
+
+	/**获取单号下拉列表数据源 
+	 * @param pd
+	 * @throws Exception
+	 */
+	@SuppressWarnings("unchecked")
+	public List<String> getBillCodeList(PageData pd)throws Exception{
+		return (List<String>)dao.findForList("DetailImportQueryMapper.getBillCodeList", pd);
+	}
 	
 	/**列表
 	 * @param page

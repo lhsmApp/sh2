@@ -22,6 +22,15 @@ public class HouseFundSummyService implements HouseFundSummyManager{
 
 	@Resource(name = "daoSupport")
 	private DaoSupport dao;
+
+	/**获取单号下拉列表数据源 
+	 * @param pd
+	 * @throws Exception
+	 */
+	@SuppressWarnings("unchecked")
+	public List<String> getBillCodeList(PageData pd)throws Exception{
+		return (List<String>)dao.findForList("HouseFundSummyMapper.getBillCodeList", pd);
+	}
 	
 	/**列表
 	 * @param page
@@ -45,26 +54,34 @@ public class HouseFundSummyService implements HouseFundSummyManager{
 	public PageData getFooterSummary(JqPage page)throws Exception{
 		return (PageData)dao.findForObject("HouseFundSummyMapper.getFooterSummary", page);
 	}
-	
-	/**获取汇总数据
-	 * @param
+
+	/**列表
+	 * @param page
 	 * @throws Exception
 	 */
 	@SuppressWarnings("unchecked")
-	public List<PageData> getHave(Map<String, String> map)throws Exception{
-		return (List<PageData>)dao.findForList("HouseFundSummyMapper.getHave", map);
+	public List<PageData> findSummyDetailList(PageData page)throws Exception{
+		return (List<PageData>)dao.findForList("HouseFundSummyMapper.findSummyDetailList", page);
+	}
+	
+	/**作废
+	 * @param 
+	 * @throws Exception
+	 */
+	public void cancelAll(List<PageData> list)throws Exception{
+		dao.batchUpdate("HouseFundSummyMapper.updateBillState", list);
 	}
 	
 	/**汇总
 	 * @param 
 	 * @throws Exception
 	 */
-	public void saveSummyModelList(List<Map<String, Object>> listMap, PageData pdBillNum)throws Exception{
-		dao.batch_One_del_Ins("HouseFundSummyMapper.delete", "HouseFundSummyMapper.save", "HouseFundDetailMapper.editBillCode", listMap, 
+	public void saveSummyModelList(boolean bolDeleteSummy, List<PageData> getSaveBill, List<PageData> getSaveDetail, List<PageData> getDetailSetBillCode, PageData pdBillNum)throws Exception{
+		dao.batchSummy(bolDeleteSummy,
+				"HouseFundSummyMapper.deleteBill", "HouseFundSummyMapper.deleteDetail", "HouseFundSummyMapper.save",  getSaveBill,
+				"HouseFundSummyMapper.save",  getSaveDetail,
+				"HouseFundDetailMapper.editBillCode", getDetailSetBillCode,
 				"SysBillnumMapper.delete", "SysBillnumMapper.save", pdBillNum);
-		        //, List<SysSealed> delReportList
-				//"SysSealedInfoMapper.reportDelete", delReportList
 	}
-	
 }
 

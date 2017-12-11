@@ -80,12 +80,12 @@
 									            <label class="btn btn-sm btn-primary"> <span
 										            class="bigger-110">劳务派遣</span> <input type="radio" value="10" />
 									            </label>
-									<label class="btn btn-sm btn-primary"> <span
-										class="bigger-110">社保</span> <input type="radio" value="22" />
-									</label>
-									<label class="btn btn-sm btn-primary"> <span
-										class="bigger-110">公积金</span> <input type="radio" value="26" />
-									</label>
+									            <label class="btn btn-sm btn-primary"> <span
+										            class="bigger-110">社保</span> <input type="radio" value="22" />
+									            </label>
+									            <label class="btn btn-sm btn-primary"> <span
+									            	class="bigger-110">公积金</span> <input type="radio" value="26" />
+									            </label>
 								</div>
 							</div>
 						</div>
@@ -99,51 +99,31 @@
 											<form class="form-inline">
 											<span class="input-icon pull-left" style="margin-right: 5px;">
 												<input id="SelectedBusiDate" class="input-mask-date" type="text"
-												placeholder="请输入业务区间"> <i
-												class="ace-icon fa fa-calendar blue"></i>
+												    placeholder="请输入业务区间" onchange="getSelectBillCodeOptions()"> 
+												<i class="ace-icon fa fa-calendar blue"></i>
 											</span>
 											<span class="pull-left" style="margin-right: 5px;">
 												<select class="chosen-select form-control"
 													name="SelectedCustCol7" id="SelectedCustCol7"
-													data-placeholder="请选择帐套"
+													data-placeholder="请选择帐套" onchange="getSelectBillCodeOptions()"
 													style="vertical-align: top; height:32px;width: 150px;">
 													<option value="">请选择帐套</option>
 													<c:forEach items="${FMISACC}" var="each">
 														<option value="${each.DICT_CODE}">${each.NAME}</option>
-														    <!-- <c:if test="${pd.SelectedCustCol7==each.DICT_CODE}">selected</c:if> -->
 													</c:forEach>
 												</select>
 											</span>
 											<span class="pull-left" style="margin-right: 5px;" <c:if test="${pd.departTreeSource=='0'}">hidden</c:if>>
 												<div class="selectTree" id="selectTree" multiMode="true"
 												    allSelectable="false" noGroup="false"></div>
-											    <input type="text" id="SelectedDepartCode" hidden></input>
+											    <input id="SelectedDepartCode" type="hidden"></input>
 											</span>
-											
-											<!-- <span>
+											<span class="pull-left" style="margin-right: 5px;">
 												<select class="chosen-select form-control"
-													name="USER_CATG" id="USER_CATG"
-													data-placeholder="请选择特定员工分类"
+													name="SelectedBillCode" id="SelectedBillCode"
 													style="vertical-align: top; height:32px;width: 150px;">
-													<option value="">请选择特定员工分类</option>
-													<c:forEach items="${PARTUSERTYPE}" var="each">
-														<option value="${each.DICT_CODE}" 
-														    <c:if test="${pd.USER_CATG==each.DICT_CODE}">selected</c:if>>${each.NAME}</option>
-													</c:forEach>
 												</select>
 											</span>
-											<span>
-												<select class="chosen-select form-control"
-													name="USER_GROP" id="USER_GROP"
-													data-placeholder="请选择员工组"
-													style="vertical-align: top; height:32px;width: 150px;">
-													<option value="">请选择员工组</option>
-													<c:forEach items="${EMPLGRP}" var="each">
-														<option value="${each.DICT_CODE}" 
-														    <c:if test="${pd.USER_GROP==each.DICT_CODE}">selected</c:if>>${each.NAME}</option>
-													</c:forEach>
-												</select>
-											</span> -->
 											<button type="button" class="btn btn-info btn-sm" onclick="tosearch();">
 												<i class="ace-icon fa fa-search bigger-110"></i>
 											</button>
@@ -205,8 +185,56 @@
 <script type="text/javascript"> 
     var gridBase_selector = "#jqGridBase";  
     var pagerBase_selector = "#jqGridBasePager";  
+    var _table = "_table";
+    var _pager = "_pager";
 
 	var which;
+	//单号下拉列表
+	var InitBillCodeOptions;
+	var SelectBillCodeOptions;
+    
+    function getSelectBillCodeOptions(){
+    	console.log("getSelectBillCodeOptions()");
+		setSelectBillCodeOptions(InitBillCodeOptions);
+		top.jzts();
+		$.ajax({
+		    type: "POST",
+			url: '<%=basePath%>detailsummyquery/getBillCodeList.do?SelectedTableNo='+which
+                +'&SelectedBusiDate='+$("#SelectedBusiDate").val()
+                +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
+                +'&SelectedCustCol7='+$("#SelectedCustCol7").val(),
+		    dataType:'json',
+			cache: false,
+			success: function(response){
+				if(response.code==0){
+					$(top.hangge());//关闭加载状态
+					setSelectBillCodeOptions(response.message);
+				}else{
+					$(top.hangge());//关闭加载状态
+					$("#subTitle").tips({
+						side:3,
+			            msg:'获取单号列表失败,'+response.message,
+			            bg:'#cc0033',
+			            time:3
+			        });
+				}
+			},
+	    	error: function(response) {
+				$(top.hangge());//关闭加载状态
+				$("#subTitle").tips({
+					side:3,
+		            msg:'获取单号列表出错:'+response.responseJSON.message,
+		            bg:'#cc0033',
+		            time:3
+		        });
+	    	}
+	    });
+    }
+    
+    function setSelectBillCodeOptions(selectBillCodeOptions){
+        $("#SelectedBillCode").empty();   //先清空
+        $("#SelectedBillCode").append(selectBillCodeOptions);  //再赋值
+    }
 	
 	$(document).ready(function () {
 		$(top.hangge());//关闭加载状态
@@ -217,10 +245,10 @@
 		$("#SelectedBusiDate").val(SystemDateTime);
 		//前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
 	    var jqGridColModel = eval("(${jqGridColModel})");//此处记得用eval()行数将string转为array
-	    //分组字段
-	    var jqGridGroupField = ${jqGridGroupField};
-	    //分组字段是否显示在表中
-	    var jqGridGroupColumnShow = ${jqGridGroupColumnShow};
+
+		//单号下拉列表
+		InitBillCodeOptions = "${pd.InitBillCodeOptions}";
+		setSelectBillCodeOptions(InitBillCodeOptions);
 	    
 		//resize to fit page size
 		$(window).on('resize.jqGrid', function () {
@@ -255,7 +283,8 @@
 			url: '<%=basePath%>detailsummyquery/getPageList.do?SelectedTableNo='+which
             +'&SelectedBusiDate='+$("#SelectedBusiDate").val()
             +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
-            +'&SelectedCustCol7='+$("#SelectedCustCol7").val(),
+            +'&SelectedCustCol7='+$("#SelectedCustCol7").val()
+            +'&SelectedBillCode='+$("#SelectedBillCode").val(),
 			datatype: "json",
 			colModel: jqGridColModel,
 			viewrecords: true, 
@@ -272,18 +301,6 @@
             sortable: true,
             sortname: 'DEPT_CODE',
 			sortorder: 'asc',
-
-			grouping: true,
-			groupingView: {
-				groupField: [jqGridGroupField],
-				groupColumnShow: [jqGridGroupColumnShow],
-				groupText: ['<b>{0}</b>'],
-				groupSummary: [true],
-				groupSummaryPos: ['footer'], //header
-				groupCollapse: false,
-                plusicon : 'fa fa-chevron-down bigger-110',
-				minusicon : 'fa fa-chevron-up bigger-110'
-			},
 			
 			subGrid: true,
 			subGridOptions: {
@@ -291,7 +308,7 @@
 				minusicon  : "ace-icon fa fa-minus center bigger-110 blue",
 				openicon : "ace-icon fa fa-chevron-right center orange"
             },
-            subGridRowExpanded: showChildGrid,
+            subGridRowExpanded: showFirstChildGrid,
 
 			scroll: 1,
 			
@@ -348,6 +365,7 @@
 			             title : "导出",
 			             cursor : "pointer"
 			         });
+					getSelectBillCodeOptions();
 		/**
 		 * 导出
 		 */
@@ -356,13 +374,14 @@
 	    	window.location.href='<%=basePath%>detailsummyquery/excel.do?SelectedTableNo='+which
             +'&SelectedBusiDate='+$("#SelectedBusiDate").val()
             +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
-            +'&SelectedCustCol7='+$("#SelectedCustCol7").val();
+            +'&SelectedCustCol7='+$("#SelectedCustCol7").val()
+            +'&SelectedBillCode='+$("#SelectedBillCode").val();
 	    }
 	});  
 
     // the event handler on expanding parent row receives two parameters
     // the ID of the grid tow  and the primary key of the row
-    function showChildGrid(parentRowID, parentRowKey) {
+    function showFirstChildGrid(parentRowID, parentRowKey) {
     	console.log(parentRowID+"  "+parentRowKey);
 		var rowData = $(gridBase_selector).getRowData(parentRowKey);
     	var BILL_CODE = rowData.BILL_CODE__;
@@ -373,7 +392,7 @@
         var detailColModel = "[]";
 		$.ajax({
 			type: "GET",
-			url: '<%=basePath%>detailsummyquery/getDetailColModel.do?SelectedTableNo='+which,
+			url: '<%=basePath%>detailsummyquery/getFirstDetailColModel.do?SelectedTableNo='+which,
 	    	data: {DataDeptCode:DEPT_CODE},
 			dataType:'json',
 			cache: false,
@@ -383,17 +402,113 @@
 					detailColModel = response.message;
 
 		            detailColModel = eval(detailColModel);
-		            var childGridID = parentRowID + "_table";
-		            var childGridPagerID = parentRowID + "_pager";
+		            var childGridID = parentRowID + _table;
+		            var childGridPagerID = parentRowID + _pager;
 		            // send the parent row primary key to the server so that we know which grid to show
-		            var childGridURL = '<%=basePath%>detailsummyquery/getDetailList.do?SelectedTableNo='+which+'&DetailListBillCode='+BILL_CODE;
-		            //childGridURL = childGridURL + "&parentRowID=" + encodeURIComponent(parentRowKey)
+		            var childGridURL = '<%=basePath%>detailsummyquery/getFirstDetailList.do?SelectedTableNo='+which+'&DetailListBillCode='+BILL_CODE;
 
 		            // add a table and pager HTML elements to the parent grid row - we will render the child grid here
 		            $('#' + parentRowID).append('<table id=' + childGridID + '></table><div id=' + childGridPagerID + ' class=scroll></div>');
 
 		            $("#" + childGridID).jqGrid({
 		                url: childGridURL,
+		                mtype: "GET",
+		                datatype: "json",
+		                colModel: detailColModel,
+		                page: 1,
+		                width: '100%',
+		                //height: '100%',
+		                rowNum: 0,	
+		                pager: "#" + childGridPagerID,
+						pgbuttons: false, // 分页按钮是否显示 
+						pginput: false, // 是否允许输入分页页数 
+		                viewrecords: true,
+		                recordpos: "left", // 记录数显示位置 
+
+		    			shrinkToFit: false,
+		    			altRows: true, //斑马条纹
+		                
+		    			//footerrow: true,
+		    			//userDataOnFooter: true,
+
+		    			subGrid: true,
+		    			subGridOptions: {
+		    				plusicon : "ace-icon fa fa-plus center bigger-110 blue",
+		    				minusicon  : "ace-icon fa fa-minus center bigger-110 blue",
+		    				openicon : "ace-icon fa fa-chevron-right center orange"
+		                },
+		                subGridRowExpanded: showSecondChildGrid,
+
+		    			scroll: 1,
+		    			loadComplete : function() {
+		    				var table = this;
+		    				setTimeout(function(){
+		    					styleCheckbox(table);
+		    					updateActionIcons(table);
+		    					updatePagerIcons(table);
+		    					enableTooltips(table);
+		    				}, 0);
+		    			},
+		            });
+				}else{
+					$(top.hangge());//关闭加载状态
+					$("#subTitle").tips({
+						side:3,
+			            msg:'获取结构失败：'+response.message,
+			            bg:'#cc0033',
+			            time:3
+			        });
+				}
+			},
+	    	error: function(response) {
+				$(top.hangge());//关闭加载状态
+				$("#subTitle").tips({
+					side:3,
+		            msg:'获取结构出错:'+response.responseJSON.message,
+		            bg:'#cc0033',
+		            time:3
+		        });
+	    	}
+		});
+    };
+
+    // the event handler on expanding parent row receives two parameters
+    // the ID of the grid tow  and the primary key of the row
+    function showSecondChildGrid(parentRowID, parentRowKey) {
+    	console.log(parentRowID+"  "+parentRowKey);
+    	var gridSelect = parentRowID.toString().substring(0, parentRowID.toString().length - parentRowKey.toString().length - 1);
+    	console.log("gridSelect  "+gridSelect);
+		var rowData = $("#" + gridSelect).getRowData(parentRowKey);
+    	var DEPT_CODE = rowData.DEPT_CODE__;
+    	console.log(DEPT_CODE);
+    	
+        var detailColModel = "[]";
+		$.ajax({
+			type: "GET",
+			url: '<%=basePath%>detailsummyquery/getSecondDetailColModel.do?SelectedTableNo='+which,
+	    	data: {DataDeptCode:DEPT_CODE},
+			dataType:'json',
+			cache: false,
+			success: function(response){
+				if(response.code==0){
+					$(top.hangge());//关闭加载状态
+					detailColModel = response.message;
+
+		            detailColModel = eval(detailColModel);
+		            var childGridID = parentRowID + _table;
+		            var childGridPagerID = parentRowID + _pager;
+		            // send the parent row primary key to the server so that we know which grid to show
+		            var childGridURL = '<%=basePath%>detailsummyquery/getSecondDetailList.do?SelectedTableNo='+which;
+		            //childGridURL = childGridURL + "&parentRowID=" + encodeURIComponent(parentRowKey)
+                    var listData =new Array();
+				    listData.push(rowData);
+
+		            // add a table and pager HTML elements to the parent grid row - we will render the child grid here
+		            $('#' + parentRowID).append('<table id=' + childGridID + '></table><div id=' + childGridPagerID + ' class=scroll></div>');
+
+		            $("#" + childGridID).jqGrid({
+		                url: childGridURL,
+		                postData: {DataRows:JSON.stringify(listData)},
 		                mtype: "GET",
 		                datatype: "json",
 		                colModel: detailColModel,
@@ -438,7 +553,7 @@
 	    	}
 		});
     };
-	
+    
 	//加载单位树
 	function initComplete(){
 		//下拉树
@@ -448,7 +563,8 @@
 			$("#SelectedDepartCode").val("");
 			if($(this).attr("relValue")){
 				$("#SelectedDepartCode").val($(this).attr("relValue"));
-		    }
+		    } 
+			getSelectBillCodeOptions();
 		});
 		//赋给data属性
 		$("#selectTree").data("data",defaultNodes);  
@@ -458,11 +574,13 @@
 	
 	//检索
 	function tosearch() {
+    	console.log($("#SelectedCustCol7").val());
 		$(gridBase_selector).jqGrid('setGridParam',{  // 重新加载数据  
 			url:'<%=basePath%>detailsummyquery/getPageList.do?SelectedTableNo='+which
             +'&SelectedBusiDate='+$("#SelectedBusiDate").val()
             +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
-            +'&SelectedCustCol7='+$("#SelectedCustCol7").val(),  
+            +'&SelectedCustCol7='+$("#SelectedCustCol7").val()
+            +'&SelectedBillCode='+$("#SelectedBillCode").val(),  
 			datatype:'json',
 		      page:1
 		}).trigger("reloadGrid");

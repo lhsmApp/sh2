@@ -1,16 +1,16 @@
 package com.fh.util.enums;
 
-//枚举  1封存,0解封
-public enum DurState {
-	Release("0","解封"),//
-	Sealed("1","封存");
+//数据类型 DATA_TYPE 1工资 2奖金
+public enum StaffDataType {
+	Salary("1","工资"),//
+	Bonus("2","奖金");
 	
 	private String nameKey;
 
     private String nameValue;
     
     
-    private DurState(String nameKey, String nameValue) {
+    private StaffDataType(String nameKey, String nameValue) {
     	this.nameKey = nameKey;
         this.setNameValue(nameValue);
 	}
@@ -45,7 +45,7 @@ public enum DurState {
      * @return String 
      */  
     public static String getValueByKey(String key) {  
-    	DurState[] enums = DurState.values();  
+    	StaffDataType[] enums = StaffDataType.values();  
         for (int i = 0; i < enums.length; i++) {  
             if (enums[i].getNameKey().equals(key)) {  
                 return enums[i].getNameValue();  

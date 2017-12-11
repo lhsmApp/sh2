@@ -20,18 +20,17 @@ import com.fh.controller.base.BaseController;
 import com.fh.controller.common.Common;
 import com.fh.controller.common.DictsUtil;
 import com.fh.controller.common.QueryFeildString;
+import com.fh.controller.common.SelectBillCodeOptions;
 import com.fh.controller.common.TmplUtil;
+import com.fh.entity.CommonBase;
 import com.fh.entity.JqPage;
 import com.fh.entity.Page;
 import com.fh.entity.PageResult;
-import com.fh.entity.TableColumns;
 import com.fh.entity.TmplConfigDetail;
 import com.fh.util.ObjectExcelView;
 import com.fh.util.PageData;
 import com.fh.util.SqlTools;
 import com.fh.util.enums.TmplType;
-
-import net.sf.json.JSONArray;
 
 import com.fh.util.Jurisdiction;
 import com.fh.service.detailimportquery.detailimportquery.DetailImportQueryManager;
@@ -68,44 +67,27 @@ public class DetailImportQueryController extends BaseController {
 	@Resource(name="sysconfigService")
 	private SysConfigManager sysConfigManager;
 
+	//临时数据
+	String SelectBillCodeFirstShow = "临时数据";
+	String SelectBillCodeLastShow = "";
 	//默认的which值
 	String DefaultWhile =  TmplType.TB_STAFF_DETAIL_CONTRACT.getNameKey();
-	//页面显示数据的二级单位
-	//String UserDepartCode = "";
-    
-	//底行显示的求和与平均值字段
-	//StringBuilder SqlUserdata = new StringBuilder();
-	//字典
-	//Map<String, Object> DicList = new LinkedHashMap<String, Object>();
-	//表结构  
-	//Map<String, TableColumns> map_HaveColumnsList = new LinkedHashMap<String, TableColumns>();
-	// 前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
-	//Map<String, TmplConfigDetail> map_SetColumnsList = new LinkedHashMap<String, TmplConfigDetail>();
 	//界面查询字段
     List<String> QueryFeildList = Arrays.asList("BUSI_DATE", "DEPT_CODE", "USER_GROP", "CUST_COL7");
-    //查询的所有可操作的责任中心
-    //List<String> AllDeptCode = new ArrayList<String>();
 
 	/**列表
 	 * @param page
 	 * @throws Exception
 	 */
-	@SuppressWarnings("unchecked")
 	@RequestMapping(value="/list")
 	public ModelAndView list(Page page) throws Exception{
 		logBefore(logger, Jurisdiction.getUsername()+"列表DetailImportQuery");
 		//if(!Jurisdiction.buttonJurisdiction(menuUrl, "cha")){return null;} //校验权限(无权查看时页面会有提示,如果不注释掉这句代码就无法进入列表页面,所以根据情况是否加入本句代码)
 
-		//查询的所有可操作的责任中心
-	    //AllDeptCode = new ArrayList<String>();
-
 		PageData getPd = this.getPageData();
 		//员工组
 		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
 
-		//当前登录人所在二级单位
-		String UserDepartCode = Jurisdiction.getCurrentDepartmentID();//
-		
 		ModelAndView mv = this.getModelAndView();
 		mv.setViewName("detailimportquery/detailimportquery/detailimportquery_list");
 		//当前期间,取自tb_system_config的SystemDateTime字段
@@ -113,6 +95,8 @@ public class DetailImportQueryController extends BaseController {
 		mv.addObject("SystemDateTime", SystemDateTime);
 		//while
 		getPd.put("which", SelectedTableNo);
+		//单号下拉列表
+		getPd.put("InitBillCodeOptions", SelectBillCodeOptions.getSelectBillCodeOptions(null, SelectBillCodeFirstShow, SelectBillCodeLastShow));
 		mv.addObject("pd", getPd);
 		
 		//"BUSI_DATE", "DEPT_CODE", "USER_CATG", "USER_GROP", "CUST_COL7"
@@ -123,34 +107,63 @@ public class DetailImportQueryController extends BaseController {
 		if(DepartmentSelectTreeSource.equals("0"))
 		{
 			getPd.put("departTreeSource", DepartmentSelectTreeSource);
-			//AllDeptCode.add(UserDepartCode);
 		} else {
 			getPd.put("departTreeSource", 1);
-	        //JSONArray jsonArray = JSONArray.fromObject(DepartmentSelectTreeSource);  
-			//List<PageData> listDepart = (List<PageData>) JSONArray.toCollection(jsonArray, PageData.class);
-			//if(listDepart!=null && listDepart.size()>0){
-			//	for(PageData pdDept : listDepart){
-			//		AllDeptCode.add(pdDept.getString(DictsUtil.Id));
-			//	}
-			//}
 		}
 		mv.addObject("zTreeNodes", DepartmentSelectTreeSource);
 		// ***********************************************************
-		
+
+		//当前登录人所在二级单位
+		String UserDepartCode = Jurisdiction.getCurrentDepartmentID();//
 		TmplUtil tmpl = new TmplUtil(tmplconfigService, tmplconfigdictService, dictionariesService, 
 				departmentService,userService);
 		String jqGridColModel = tmpl.generateStructureNoEdit(SelectedTableNo, UserDepartCode);
 		mv.addObject("jqGridColModel", jqGridColModel);
-
-		//SqlUserdata = tmpl.getSqlUserdata();
-		//字典
-		//DicList = tmpl.getDicList();
-		//表结构  
-		//map_HaveColumnsList = tmpl.getHaveColumnsList();
-		// 前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
-		//map_SetColumnsList = tmpl.getSetColumnsList();
 		
 		return mv;
+	}
+
+	/**单号下拉列表
+	 * @param
+	 * @throws Exception
+	 */
+	@RequestMapping(value="/getBillCodeList")
+	public @ResponseBody CommonBase getBillCodeList() throws Exception{
+		CommonBase commonBase = new CommonBase();
+		commonBase.setCode(-1);
+		
+		PageData getPd = this.getPageData();
+		//员工组
+		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		String emplGroupType = DictsUtil.getEmplGroupType(SelectedTableNo);
+		//单位
+		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
+		//账套
+		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
+		//日期
+		String SelectedBusiDate = getPd.getString("SelectedBusiDate");
+		List<String> AllDeptCode = Common.getAllDeptCode(departmentService, Jurisdiction.getCurrentDepartmentID());
+		
+		String tableNameDetail = getDetailTableCode(SelectedTableNo);
+		
+		PageData getQueryFeildPd = new PageData();
+		getQueryFeildPd.put("USER_GROP", emplGroupType);
+		getQueryFeildPd.put("DEPT_CODE", SelectedDepartCode);
+		getQueryFeildPd.put("CUST_COL7", SelectedCustCol7);
+		getQueryFeildPd.put("BUSI_DATE", SelectedBusiDate);
+		String QueryFeild = QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList);
+		QueryFeild += " and DEPT_CODE in (" + QueryFeildString.tranferListValueToSqlInString(AllDeptCode) + ") ";
+		getPd.put("QueryFeild", QueryFeild);
+		
+		//表名
+		getPd.put("TableName", tableNameDetail);
+		
+		List<String> getCodeList = detailimportqueryService.getBillCodeList(getPd);
+		String returnString = SelectBillCodeOptions.getSelectBillCodeOptions(getCodeList, SelectBillCodeFirstShow, SelectBillCodeLastShow);
+		commonBase.setMessage(returnString);
+		commonBase.setCode(0);
+		
+		return commonBase;
 	}
 	
 	/**列表
@@ -218,23 +231,6 @@ public class DetailImportQueryController extends BaseController {
 		}
 		return tableCode;
 	}
-	private String getSummyTableCode(String which) {
-		String tableCode = "";
-		if (which != null){
-			if(which.equals(TmplType.TB_STAFF_DETAIL_CONTRACT.getNameKey())
-					||which.equals(TmplType.TB_STAFF_DETAIL_MARKET.getNameKey())
-					||which.equals(TmplType.TB_STAFF_DETAIL_SYS_LABOR.getNameKey())
-					||which.equals(TmplType.TB_STAFF_DETAIL_OPER_LABOR.getNameKey())
-					||which.equals(TmplType.TB_STAFF_DETAIL_LABOR.getNameKey())) {
-				tableCode = "tb_staff_summy";
-			} else if (which.equals(TmplType.TB_SOCIAL_INC_DETAIL.getNameKey())) {
-				tableCode = "tb_social_inc_summy";
-			} else if (which.equals(TmplType.TB_HOUSE_FUND_DETAIL.getNameKey())) {
-				tableCode = "tb_house_fund_summy";
-			}
-		}
-		return tableCode;
-	}
 	
 	private PageData setPutPd(PageData getPd) throws Exception{
 		//员工组
@@ -246,10 +242,11 @@ public class DetailImportQueryController extends BaseController {
 		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
 		//日期
 		String SelectedBusiDate = getPd.getString("SelectedBusiDate");
+		//单号
+		String SelectedBillCode = getPd.getString("SelectedBillCode");
 		List<String> AllDeptCode = Common.getAllDeptCode(departmentService, Jurisdiction.getCurrentDepartmentID());
 		
 		String tableNameDetail = getDetailTableCode(SelectedTableNo);
-		String tableNameSummy = getSummyTableCode(SelectedTableNo);
 		
 		PageData getQueryFeildPd = new PageData();
 		getQueryFeildPd.put("USER_GROP", emplGroupType);
@@ -257,7 +254,7 @@ public class DetailImportQueryController extends BaseController {
 		getQueryFeildPd.put("CUST_COL7", SelectedCustCol7);
 		getQueryFeildPd.put("BUSI_DATE", SelectedBusiDate);
 		String QueryFeild = QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList);
-		//QueryFeild += FilterBillCode.getHelpfulBillCode(tableNameSummy);
+		QueryFeild += QueryFeildString.getQueryFeildBillCodeDetail(SelectedBillCode, SelectBillCodeFirstShow);
 		QueryFeild += " and DEPT_CODE in (" + QueryFeildString.tranferListValueToSqlInString(AllDeptCode) + ") ";
 		getPd.put("QueryFeild", QueryFeild);
 		

@@ -19,6 +19,15 @@ public class DetailSummyQueryService implements DetailSummyQueryManager{
 
 	@Resource(name = "daoSupport")
 	private DaoSupport dao;
+
+	/**获取单号下拉列表数据源 
+	 * @param pd
+	 * @throws Exception
+	 */
+	@SuppressWarnings("unchecked")
+	public List<String> getBillCodeList(PageData pd)throws Exception{
+		return (List<String>)dao.findForList("DetailSummyQueryMapper.getBillCodeList", pd);
+	}
 	
 	/**列表
 	 * @param page
@@ -48,8 +57,16 @@ public class DetailSummyQueryService implements DetailSummyQueryManager{
 	 * @throws Exception
 	 */
 	@SuppressWarnings("unchecked")
-	public List<PageData> getDetailList(PageData pd)throws Exception{
-		return (List<PageData>)dao.findForList("DetailSummyQueryMapper.getDetailList", pd);
+	public List<PageData> getFirstDetailList(PageData pd)throws Exception{
+		return (List<PageData>)dao.findForList("DetailSummyQueryMapper.getFirstDetailList", pd);
+	}
+	/**明细
+	 * @param pd
+	 * @throws Exception
+	 */
+	@SuppressWarnings("unchecked")
+	public List<PageData> getSecondDetailList(PageData pd)throws Exception{
+		return (List<PageData>)dao.findForList("DetailSummyQueryMapper.getSecondDetailList", pd);
 	}
 
 	/**导出

@@ -14,6 +14,12 @@ import com.fh.util.PageData;
  * @version
  */
 public interface SocialIncSummyManager{
+
+	/**获取单号下拉列表数据源 
+	 * @param pd
+	 * @throws Exception
+	 */
+	public List<String> getBillCodeList(PageData pd)throws Exception;
 	
 	/**列表
 	 * @param page
@@ -30,21 +36,24 @@ public interface SocialIncSummyManager{
 	 * @throws Exception
 	 */
 	public PageData getFooterSummary(JqPage page)throws Exception;
-
-
-	/**获取汇总数据
-	 * @param
+	
+	/**列表
+	 * @param page
 	 * @throws Exception
 	 */
-	public List<PageData> getHave(Map<String, String> map)throws Exception;
+	public List<PageData> findSummyDetailList(PageData page)throws Exception;
 
+	/**作废
+	 * @param pd
+	 * @throws Exception
+	 */
+	public void cancelAll(List<PageData> list)throws Exception;
+	
 	/**获取记录总合计
 	 * @param pd
 	 * @throws Exception
 	 */
-	public void saveSummyModelList(List<Map<String, Object>> listMap, PageData pdBillNum)throws Exception;
-	//, List<SysSealed> delReportList
-	
+	public void saveSummyModelList(boolean bolDeleteSummy, List<PageData> getSaveBill, List<PageData> getSaveDetail, List<PageData> getDetailSetBillCode, PageData pdBillNum)throws Exception;
 	
 }
 

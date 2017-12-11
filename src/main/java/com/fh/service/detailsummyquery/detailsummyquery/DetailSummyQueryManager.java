@@ -12,19 +12,23 @@ import com.fh.util.PageData;
  * @version
  */
 public interface DetailSummyQueryManager{
+
+	/**获取单号下拉列表数据源 
+	 * @param pd
+	 * @throws Exception
+	 */
+	public List<String> getBillCodeList(PageData pd)throws Exception;
 	
 	/**列表
 	 * @param page
 	 * @throws Exception
 	 */
 	public List<PageData> JqPage(JqPage page)throws Exception;
-	
 	/**获取记录数量
 	 * @param pd
 	 * @throws Exception
 	 */
 	public int countJqGridExtend(JqPage page)throws Exception;
-	
 	/**获取记录总合计
 	 * @param pd
 	 * @throws Exception
@@ -35,7 +39,12 @@ public interface DetailSummyQueryManager{
 	 * @param 
 	 * @throws Exception
 	 */
-	public List<PageData> getDetailList(PageData pd)throws Exception;
+	public List<PageData> getFirstDetailList(PageData pd)throws Exception;
+	/**明细
+	 * @param 
+	 * @throws Exception
+	 */
+	public List<PageData> getSecondDetailList(PageData pd)throws Exception;
 	
 	/**导出
 	 * @param 

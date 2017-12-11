@@ -10,11 +10,21 @@
  -->
  
 	<!--表名 -->
-	<sql id="tableName">
+	<sql id="tableNameBill">
+		tb_house_fund_summy_bill
+	</sql>
+	<sql id="tableNameDetail">
 		tb_house_fund_summy
 	</sql>
 	
-	<!-- 获取 -->
+	<!-- 获取单号下拉列表数据源 -->
+	<select id="getBillCodeList" parameterType="pd" resultType="String">
+		select distinct BILL_CODE
+		from <include refid="tableNameBill"></include>
+		where BUSI_DATE = '${SystemDateTime}'
+	    ${CanOperate}
+		order by BILL_CODE
+	</select>
 	
 	<!-- 列表 -->
 	<select id="datalistJqPage" parameterType="jqPage" resultType="pd">
@@ -23,28 +33,8 @@
 		    <if test="pd.FieldSelectKey!= null and pd.FieldSelectKey != ''">
 		        ${pd.FieldSelectKey}
 		    </if>
-		from  ${pd.SpellingTableName}
+		from ${pd.tableName}
 		where BUSI_DATE = '${pd.SystemDateTime}'
-		and DEPT_CODE in (select RPT_DEPT 
-		                      from tb_sys_sealed_info 
-		                      where RPT_DUR = '${pd.SystemDateTime}' 
-		                      and STATE = '${pd.DurState}'
-		                      and BILL_TYPE = '${pd.TypeCodeDetail}'
-		                      and BILL_OFF = '${pd.SelectedCustCol7}'
-		                      )
-		<!-- and DEPT_CODE not in (select RPT_DEPT 
-		                      from tb_sys_sealed_info 
-		                      where RPT_DUR = '${pd.SystemDateTime}'
-		                      and STATE = '${pd.DurState}'
-		                      and BILL_TYPE = '${pd.TypeCodeSummy}'
-		                      and BILL_OFF = '${pd.SelectedCustCol7}'
-		                      )
-		and DEPT_CODE not in (select RPT_DEPT 
-		                      from tb_sys_sealed_info 
-		                      where RPT_DUR = '${pd.SystemDateTime}' 
-		                      and BILL_TYPE = '${pd.TypeCodeListen}'
-		                      and BILL_OFF = '${pd.SelectedCustCol7}'
-		                      ) -->
 		<if test="pd.filterWhereResult!= null and pd.filterWhereResult != ''"><!-- 关键词检索 -->
 			${pd.filterWhereResult}
 		</if>
@@ -54,33 +44,11 @@
 		<if test="sidx != null and sidx.trim() != ''" >
 			order by ${sidx} ${sord} 
     	</if>
-		<!-- <if test="currentResult != null and rowNum != null" >           
-              limit #{currentResult}, #{rowNum}  
-        </if> -->
 	</select>
 	<select id="countJqGridExtend" parameterType="jqPage" resultType="int">
-		select count(*) from  ${pd.SpellingTableName}
+		select count(*) 
+		from ${pd.tableName}
 		where BUSI_DATE = '${pd.SystemDateTime}'
-		and DEPT_CODE in (select RPT_DEPT 
-		                      from tb_sys_sealed_info 
-		                      where RPT_DUR = '${pd.SystemDateTime}' 
-		                      and STATE = '${pd.DurState}'
-		                      and BILL_TYPE = '${pd.TypeCodeDetail}'
-		                      and BILL_OFF = '${pd.SelectedCustCol7}'
-		                      )
-		<!-- and DEPT_CODE not in (select RPT_DEPT 
-		                      from tb_sys_sealed_info 
-		                      where RPT_DUR = '${pd.SystemDateTime}'
-		                      and STATE = '${pd.DurState}'
-		                      and BILL_TYPE = '${pd.TypeCodeSummy}'
-		                      and BILL_OFF = '${pd.SelectedCustCol7}'
-		                      )
-		and DEPT_CODE not in (select RPT_DEPT 
-		                      from tb_sys_sealed_info 
-		                      where RPT_DUR = '${pd.SystemDateTime}' 
-		                      and BILL_TYPE = '${pd.TypeCodeListen}'
-		                      and BILL_OFF = '${pd.SelectedCustCol7}'
-		                      ) -->
 		<if test="pd.filterWhereResult!= null and pd.filterWhereResult != ''"><!-- 关键词检索 -->
 			${pd.filterWhereResult}
 		</if>
@@ -90,28 +58,8 @@
 	</select>
 	<select id="getFooterSummary" parameterType="jqPage" resultType="pd">
 		select ${pd.Userdata} 
-		from  ${pd.SpellingTableName}
+		from ${pd.tableName}
 		where BUSI_DATE = '${pd.SystemDateTime}'
-		and DEPT_CODE in (select RPT_DEPT 
-		                      from tb_sys_sealed_info 
-		                      where RPT_DUR = '${pd.SystemDateTime}' 
-		                      and STATE = '${pd.DurState}'
-		                      and BILL_TYPE = '${pd.TypeCodeDetail}'
-		                      and BILL_OFF = '${pd.SelectedCustCol7}'
-		                      )
-		<!-- and DEPT_CODE not in (select RPT_DEPT 
-		                      from tb_sys_sealed_info 
-		                      where RPT_DUR = '${pd.SystemDateTime}'
-		                      and STATE = '${pd.DurState}'
-		                      and BILL_TYPE = '${pd.TypeCodeSummy}'
-		                      and BILL_OFF = '${pd.SelectedCustCol7}'
-		                      )
-		and DEPT_CODE not in (select RPT_DEPT 
-		                      from tb_sys_sealed_info 
-		                      where RPT_DUR = '${pd.SystemDateTime}' 
-		                      and BILL_TYPE = '${pd.TypeCodeListen}'
-		                      and BILL_OFF = '${pd.SelectedCustCol7}'
-		                      ) -->
 		<if test="pd.filterWhereResult!= null and pd.filterWhereResult != ''"><!-- 关键词检索 -->
 			${pd.filterWhereResult}
 		</if>
@@ -120,42 +68,41 @@
 		    </if>
 	</select>
 	
-	<!-- 删除数据 -->
-	<delete id="delete" parameterType="pd">
-		delete from 
-		<include refid="tableName"></include>
-		where BUSI_DATE = #{BUSI_DATE}
-	    and DEPT_CODE = #{DEPT_CODE} 
-	    and CUST_COL7 = #{CUST_COL7} 
-	    and BILL_STATE = #{BILL_STATE}
-	</delete>
+	<select id="findSummyDetailList" parameterType="pd" resultType="pd">
+		select 
+		    * 
+		    <if test="FieldSelectKey!= null and FieldSelectKey != ''">
+		        ${FieldSelectKey}
+		    </if>
+		from <include refid="tableNameDetail"></include>
+		where BILL_CODE = '${BILL_CODE}'
+	</select>
 	
-	<!-- 删除数据 -->
+	<!-- 编辑数据 -->
 	<delete id="updateBillState" parameterType="pd">
-		update <include refid="tableName"></include>
+		update <include refid="tableNameBill"></include>
 		set BILL_STATE = '0'
-		where BUSI_DATE = #{BUSI_DATE}
-	    and DEPT_CODE = #{DEPT_CODE} 
-	    and CUST_COL7 = #{CUST_COL7} 
+		where BILL_CODE = #{BILL_CODE__}
 	</delete>
 	
 	<!-- 新增-->
 	<insert id="save" parameterType="pd">
-		insert into 
-	<include refid="tableName"></include>
+		insert into ${TableName}
 		(${InsertField}) values (${InsertVale})
 	</insert>
 	
-	
-	<!-- 获取汇总数据 -->
-	<select id="getHave" parameterType="java.util.Map" resultType="pd">
-        select * 
-		from 
-		<include refid="tableName"></include>
-		where BUSI_DATE = #{BUSI_DATE}
-	    and DEPT_CODE = #{DEPT_CODE} 
-	    and CUST_COL7 = #{CUST_COL7} 
-	    and BILL_STATE = #{BILL_STATE} 
-    </select>
+	<!-- 删除数据 -->
+	<delete id="deleteBill" parameterType="pd">
+		delete from  
+		<include refid="tableNameBill"></include>
+		where BILL_CODE = #{BILL_CODE__}
+	    ${CanOperate}
+	</delete>
+	<delete id="deleteDetail" parameterType="pd">
+		delete from  
+		<include refid="tableNameDetail"></include>
+		where BILL_CODE = #{BILL_CODE__}
+	    ${CanOperate}
+	</delete>
 	
 </mapper>

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.fh.entity.TableColumns;
 import com.fh.entity.TmplConfigDetail;
@@ -19,6 +20,7 @@ import com.fh.util.PageData;
 import com.fh.util.Tools;
 import com.fh.util.enums.BillState;
 import com.fh.util.enums.DurState;
+import com.fh.util.enums.StaffDataType;
 
 import net.sf.json.JSONArray;
 
@@ -124,6 +126,148 @@ public class Common {
 		}
 		return m_SetColumnsList;
 	}
+
+	public static String GetRetSelectColoumns(Map<String, TableColumns> haveColumnsList,
+			String tableNo, String tableName, String departCode, String strFieldSelectKey,
+			TmplConfigManager tmplconfigService) throws Exception{
+		String strRetSelectColoumn ="";
+
+		String tableCodeTmpl = getTableCodeTmpl(tableNo, tmplconfigService);
+		// 前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
+		List<TmplConfigDetail> setColumnsList = Common.getFormulaColumnList(tableCodeTmpl, departCode,tmplconfigService);
+		
+		if(haveColumnsList!=null && haveColumnsList.size()>0 && setColumnsList != null && setColumnsList.size() > 0){
+			List<String> listInitColumns = new ArrayList<String>();
+			for (TableColumns col : haveColumnsList.values()) {
+		    	String column_name = col.getColumn_name().toUpperCase();
+		    	listInitColumns.add(column_name);
+			}
+			int MinCAL_ORDER = 0;
+			int MaxCAL_ORDER = 0;
+			for (int i = 0; i < setColumnsList.size(); i++) {
+				String getCOL_FORMULA = setColumnsList.get(i).getCOL_FORMULA();
+				String getCOL_CODE = setColumnsList.get(i).getCOL_CODE().toUpperCase();
+				if(getCOL_FORMULA!=null && !getCOL_FORMULA.trim().equals("")){
+					listInitColumns.remove(getCOL_CODE);
+				}
+				int getCAL_ORDER = setColumnsList.get(i).getCAL_ORDER();
+				if(MinCAL_ORDER > getCAL_ORDER) MinCAL_ORDER = getCAL_ORDER;
+				if(MaxCAL_ORDER < getCAL_ORDER) MaxCAL_ORDER = getCAL_ORDER;
+			}
+			String strColsFormulaNull = "";
+			for(String strCol : listInitColumns){
+				if(strColsFormulaNull!=null && !strColsFormulaNull.trim().equals("")){
+					strColsFormulaNull += ", ";
+				}
+				strColsFormulaNull += strCol;
+			}
+			strColsFormulaNull += strFieldSelectKey;
+			strRetSelectColoumn = " select " + strColsFormulaNull + " from " + tableName;
+
+			for(int order=MinCAL_ORDER; order<=MaxCAL_ORDER; order++){
+				String strColsFormulaOrder = "";
+				for (int i = 0; i < setColumnsList.size(); i++) {
+					int getCAL_ORDER = setColumnsList.get(i).getCAL_ORDER();
+					String getCOL_FORMULA = setColumnsList.get(i).getCOL_FORMULA();
+					String getCOL_CODE = setColumnsList.get(i).getCOL_CODE();
+					if(getCAL_ORDER == order && getCOL_FORMULA!=null && !getCOL_FORMULA.trim().equals("")){
+						if(strColsFormulaOrder!=null && !strColsFormulaOrder.trim().equals("")){
+							strColsFormulaOrder += ", ";
+						}
+						strColsFormulaOrder += getCOL_FORMULA + " " + getCOL_CODE;
+					}
+				}
+				if(strColsFormulaOrder!=null && !strColsFormulaOrder.trim().equals("")){
+					strRetSelectColoumn = " select *, " + strColsFormulaOrder + " from (" + strRetSelectColoumn + ") t ";
+				}
+			}
+		}
+		return strRetSelectColoumn;
+	}
+	
+	public static String GetRetSelectBonusColoumns(String tableName, 
+			String TableFeildTax, String keyExtra, String strFieldSelectKey,
+			TmplConfigManager tmplconfigService) throws Exception{
+		String strRetSelectBonusColoumn =" select *," + TableFeildTax + " " + TableFeildTax + keyExtra 
+				+ strFieldSelectKey
+				+ " from " + tableName;
+		return strRetSelectBonusColoumn;
+	}
+	public static String GetRetSelectSalaryColoumns(Map<String, TableColumns> haveColumnsList,
+			String tableNo, String tableName, String departCode, 
+			String TableFeildTax, String keyExtra, String strFieldSelectKey,
+			TmplConfigManager tmplconfigService) throws Exception{
+		String strRetSelectSalaryColoumn ="";
+
+		String tableCodeTmpl = getTableCodeTmpl(tableNo, tmplconfigService);
+		// 前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
+		List<TmplConfigDetail> setColumnsList = Common.getFormulaColumnList(tableCodeTmpl, departCode,tmplconfigService);
+		
+		if(haveColumnsList!=null && haveColumnsList.size()>0 && setColumnsList != null && setColumnsList.size() > 0){
+			List<String> listInitColumns = new ArrayList<String>();
+			for (TableColumns col : haveColumnsList.values()) {
+		    	String column_name = col.getColumn_name().toUpperCase();
+		    	listInitColumns.add(column_name);
+			}
+			int MinCAL_ORDER = 0;
+			int MaxCAL_ORDER = 0;
+			for (int i = 0; i < setColumnsList.size(); i++) {
+				String getCOL_FORMULA = setColumnsList.get(i).getCOL_FORMULA();
+				String getCOL_CODE = setColumnsList.get(i).getCOL_CODE().toUpperCase();
+				if(getCOL_FORMULA!=null && !getCOL_FORMULA.trim().equals("")){
+					listInitColumns.remove(getCOL_CODE);
+				}
+				int getCAL_ORDER = setColumnsList.get(i).getCAL_ORDER();
+				if(MinCAL_ORDER > getCAL_ORDER) MinCAL_ORDER = getCAL_ORDER;
+				if(MaxCAL_ORDER < getCAL_ORDER) MaxCAL_ORDER = getCAL_ORDER;
+			}
+			String strColsFormulaNull = "";
+			if(TableFeildTax!=null && !TableFeildTax.trim().equals("")){
+				strColsFormulaNull += TableFeildTax + " " + TableFeildTax + keyExtra;
+			}
+			for(String strCol : listInitColumns){
+				if(strColsFormulaNull!=null && !strColsFormulaNull.trim().equals("")){
+					strColsFormulaNull += ", ";
+				}
+				strColsFormulaNull += strCol;
+			}
+			strColsFormulaNull += strFieldSelectKey;
+			strRetSelectSalaryColoumn = " select " + strColsFormulaNull + " from " + tableName;
+
+			for(int order=MinCAL_ORDER; order<=MaxCAL_ORDER; order++){
+				String strColsFormulaOrder = "";
+				for (int i = 0; i < setColumnsList.size(); i++) {
+					int getCAL_ORDER = setColumnsList.get(i).getCAL_ORDER();
+					String getCOL_FORMULA = setColumnsList.get(i).getCOL_FORMULA();
+					String getCOL_CODE = setColumnsList.get(i).getCOL_CODE();
+					if(getCAL_ORDER == order && getCOL_FORMULA!=null && !getCOL_FORMULA.trim().equals("")){
+						if(strColsFormulaOrder!=null && !strColsFormulaOrder.trim().equals("")){
+							strColsFormulaOrder += ", ";
+						}
+						strColsFormulaOrder += getCOL_FORMULA + " " + getCOL_CODE;
+					}
+				}
+				if(strColsFormulaOrder!=null && !strColsFormulaOrder.trim().equals("")){
+					strRetSelectSalaryColoumn = " select *, " + strColsFormulaOrder + " from (" + strRetSelectSalaryColoumn + ") t ";
+				}
+			}
+		}
+		return strRetSelectSalaryColoumn;
+	}
+	
+	public static String GetRetSumByUserColoumns(String tableName, String QueryFeild, 
+			String configFormula, String TableFeildSumOper,
+			String TableFeildTax, String DATA_TYPE, 
+			TmplConfigManager tmplconfigService) throws Exception{
+		String strRetSelectSalaryColoumn = " select USER_CODE, " 
+		        + " sum(" + configFormula + ") " + TableFeildSumOper + ", "
+				+ " sum(" + TableFeildTax + ") " + TableFeildTax + " "
+				+ " from " + tableName 
+				+ " where 1=1 " + QueryFeild 
+				+ " and DATA_TYPE = '" + DATA_TYPE + "' "
+				+ " group by USER_CODE";
+		return strRetSelectSalaryColoumn;
+	}
 	
 	/**
 	 * 获取显示结构，未设置获取上级单位
@@ -144,6 +288,21 @@ public class Common {
 			item.setDEPT_CODE(rootDeptCode);
 			item.setTABLE_CODE(tableCode);
 			m_columnsList = tmplconfigService.listNeed(item);
+		}
+		return m_columnsList;
+	}
+	public static List<TmplConfigDetail> getFormulaColumnList(String tableCode, String departCode,
+			TmplConfigManager tmplconfigService) throws Exception{
+		// 前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
+		TmplConfigDetail item = new TmplConfigDetail();
+		item.setDEPT_CODE(departCode);
+		item.setTABLE_CODE(tableCode);
+		List<TmplConfigDetail> m_columnsList = tmplconfigService.listFormula(item);
+		if(m_columnsList.size()==0){
+			String rootDeptCode=Tools.readTxtFile(Const.ROOT_DEPT_CODE);
+			item.setDEPT_CODE(rootDeptCode);
+			item.setTABLE_CODE(tableCode);
+			m_columnsList = tmplconfigService.listFormula(item);
 		}
 		return m_columnsList;
 	}
@@ -205,6 +364,15 @@ public class Common {
 						ret.append(billState.getNameKey() + ":" + billState.getNameValue());
 						ret.append(';');
 						dicAdd.put(billState.getNameKey(), billState.getNameValue());
+					}
+					if (!ret.toString().trim().equals("")) {
+						ret.deleteCharAt(ret.length()-1);
+					}
+				} else if (dicName.toUpperCase().equals(("DATA_TYPE").toUpperCase())) {
+					for(StaffDataType staffDataType:StaffDataType.values()){
+						ret.append(staffDataType.getNameKey() + ":" + staffDataType.getNameValue());
+						ret.append(';');
+						dicAdd.put(staffDataType.getNameKey(), staffDataType.getNameValue());
 					}
 					if (!ret.toString().trim().equals("")) {
 						ret.deleteCharAt(ret.length()-1);

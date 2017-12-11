@@ -89,7 +89,7 @@
 											    <span class="pull-left" style="margin-right: 5px;">
 												  <select class="chosen-select form-control"
 													name="SelectedCustCol7" id="SelectedCustCol7"
-													data-placeholder="请选择帐套"
+													data-placeholder="请选择帐套" onchange="getSelectBillCodeOptions()"
 													style="vertical-align: top; height:32px;width: 150px;">
 													<option value="">请选择帐套</option>
 													<c:forEach items="${FMISACC}" var="each">
@@ -98,32 +98,24 @@
 												  </select>
 											    </span>
 											<span class="pull-left" id="spanSelectTree" style="margin-right: 5px;" <c:if test="${pd.departTreeSource=='0'}">hidden</c:if>>
-												<div class="selectTree" id="selectTree1" multiMode="true"
+												<div class="selectTree" id="selectTree" multiMode="true"
 												    allSelectable="false" noGroup="false"></div>
-											    <input type="text" id="SelectedDepartCode" hidden></input>
+											    <input type="hidden" id="SelectedDepartCode"></input>
 											</span>
-											<span class="pull-left" style="margin-right: 5px;" hidden>
+											<span class="pull-left" style="margin-right: 5px;">
 												<select class="chosen-select form-control"
-													name="SelectedOrgUnit" id="SelectedOrgUnit"
-													data-placeholder="请选择组织单元文本"
+													name="SelectedBillCode" id="SelectedBillCode"
 													style="vertical-align: top; height:32px;width: 150px;">
-													<option value="">请选择组织单元文本</option>
-													<c:forEach items="${ORGUNIT}" var="each">
-														<option value="${each.DICT_CODE}">${each.NAME}</option>
-													</c:forEach>
 												</select>
 											</span>
-											<!-- <span class="pull-left" style="margin-right: 5px;">
-												<div class="selectTree" id="selectTree2" multiMode="true"
-												    allSelectable="false" noGroup="false"></div>
-											    <input type="text" id="SelectedUnitsCode" hidden></input>
-											</span> -->
+
 												<button type="button" class="btn btn-info btn-sm" onclick="btnSummyClick();">
 													<i class="ace-icon fa fa-pencil-square-o bigger-120 blue"></i> <span>汇总</span>
 												</button>
 												<button type="button" class="btn btn-info btn-sm" onclick="tosearch();">
 													<i class="ace-icon fa fa-search bigger-110"></i>
 												</button>
+												<span id="spanMessageExitTemporaryData" class="pull-left label"></span>
 												
 									            <span class="pull-right label label-xlg label-blue arrowed-left"
 									                id = "showDur" style="background:#428bca; margin-right: 2px;"></span>
@@ -181,8 +173,66 @@
 		<script type="text/javascript"> 
 	    var gridBase_selector = "#jqGrid";  
 	    var pagerBase_selector = "#jqGridPager"; 
+	    var _table = "_table";
+	    var _pager = "_pager";
 	    
 		var which;  
+		//页面显示的数据的责任中心和账套信息，在tosearch()里赋值
+		var ShowDataBillCode = "";
+		//单号下拉列表
+	    var SelectNoBillCodeShowOption;
+		var InitBillCodeOptions;
+		var SelectBillCodeOptions;
+
+		//前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
+	    var jqGridColModelDetail;
+	    var jqGridColModelSummy;
+	    //分组字段
+	    var jqGridGroupField;
+	    //分组字段是否显示在表中
+	    var jqGridGroupColumnShow;
+	    
+	    function getSelectBillCodeOptions(){
+	    	console.log("getSelectBillCodeOptions()");
+			setSelectBillCodeOptions(InitBillCodeOptions);
+			top.jzts();
+			$.ajax({
+			    type: "POST",
+				url: '<%=basePath%>staffsummy/getBillCodeList.do?SelectedTableNo='+which
+	                +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
+	                +'&SelectedCustCol7='+$("#SelectedCustCol7").val(),
+			    dataType:'json',
+				cache: false,
+				success: function(response){
+					if(response.code==0){
+						$(top.hangge());//关闭加载状态
+						setSelectBillCodeOptions(response.message);
+					}else{
+						$(top.hangge());//关闭加载状态
+						$("#subTitle").tips({
+							side:3,
+				            msg:'获取单号列表失败,'+response.message,
+				            bg:'#cc0033',
+				            time:3
+				        });
+					}
+				},
+		    	error: function(response) {
+					$(top.hangge());//关闭加载状态
+					$("#subTitle").tips({
+						side:3,
+			            msg:'获取单号列表出错:'+response.responseJSON.message,
+			            bg:'#cc0033',
+			            time:3
+			        });
+		    	}
+		    });
+	    }
+	    
+	    function setSelectBillCodeOptions(selectBillCodeOptions){
+	        $("#SelectedBillCode").empty();   //先清空
+	        $("#SelectedBillCode").append(selectBillCodeOptions);  //再赋值
+	    }
 	    
 		$(document).ready(function () {
 			$(top.hangge());//关闭加载状态
@@ -194,17 +244,17 @@
 		    $("#showDur").text('当前期间：' + SystemDateTime + ' 登录人责任中心：' + DepartName);
 		    
 			//前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
-		    var jqGridColModel = eval("(${jqGridColModel})");//此处记得用eval()行数将string转为array
+	        jqGridColModelDetail = eval("(${jqGridColModelDetail})");//此处记得用eval()行数将string转为array
+	        jqGridColModelSummy = eval("(${jqGridColModelSummy})");//此处记得用eval()行数将string转为array
 		    //分组字段
-		    var jqGridGroupField = ${jqGridGroupField};
+		    jqGridGroupField = "${jqGridGroupField}";
 		    //分组字段是否显示在表中
-		    var jqGridGroupColumnShow = ${jqGridGroupColumnShow};
+		    jqGridGroupColumnShow = "${jqGridGroupColumnShow}";
 		    
-			//resize to fit page size
-			$(window).on('resize.jqGrid', function () {
-				$(gridBase_selector).jqGrid( 'setGridWidth', $(".page-content").width());
-				resizeGridHeight($(gridBase_selector),null,true);
-		    });
+			//单号下拉列表
+		    SelectNoBillCodeShowOption =  "${pd.SelectNoBillCodeShow}";
+			InitBillCodeOptions = "${pd.InitBillCodeOptions}";
+			setSelectBillCodeOptions(InitBillCodeOptions);
 			
 			//初始化当前选择凭证类型
 			if('${pd.which}'!=""){
@@ -226,288 +276,15 @@
 				//if(which!='${pd.which}'){
 					window.location.href='<%=basePath%>staffsummy/list.do?SelectedTableNo='+which
 			            +'&SelectedCustCol7='+$("#SelectedCustCol7").val()
-			            +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
-		                //+'&SelectedUnitsCode='+$("#SelectedUnitsCode").val()
-		                +'&SelectedOrgUnit='+$("#SelectedOrgUnit").val();
+			            +'&SelectedDepartCode='+$("#SelectedDepartCode").val();
 				//}
 			});
-			
-			$(gridBase_selector).jqGrid({
-				url: '<%=basePath%>staffsummy/getPageList.do?SelectedTableNo='+which
-			            +'&SelectedCustCol7='+$("#SelectedCustCol7").val()
-			            +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
-		                //+'&SelectedUnitsCode='+$("#SelectedUnitsCode").val()
-		                +'&SelectedOrgUnit='+$("#SelectedOrgUnit").val(),
-				datatype: "json",
-				colModel: jqGridColModel,
-				viewrecords: true, 
-				shrinkToFit: false,
-				rowNum: 0,
-				//rowList: [100,200,500],
-	            multiselect: true,
-	            multiboxonly: true,
-				altRows: true, //斑马条纹
-				
-				pager: pagerBase_selector,
-				pgbuttons: false, // 分页按钮是否显示 
-				pginput: false, // 是否允许输入分页页数 
-				footerrow: true,
-				userDataOnFooter: true,
-
-	            sortable: true,
-	            sortname: 'DEPT_CODE',
-				sortorder: 'asc',
-
-				grouping: true,
-				groupingView: {
-					groupField: [jqGridGroupField],
-					groupColumnShow: [jqGridGroupColumnShow],
-					groupText: ['<b>{0}</b>'],
-					groupSummary: [true],
-					groupSummaryPos: ['footer'], //header
-					groupCollapse: false,
-	                plusicon : 'fa fa-chevron-down bigger-110',
-					minusicon : 'fa fa-chevron-up bigger-110'
-				},
-				
-				subGrid: true,
-				subGridOptions: {
-					plusicon : "ace-icon fa fa-plus center bigger-110 blue",
-					minusicon  : "ace-icon fa fa-minus center bigger-110 blue",
-					openicon : "ace-icon fa fa-chevron-right center orange"
-	            },
-	            subGridRowExpanded: showChildGrid,
-
-				scroll: 1,
-                //scrollPopUp:true,
-				//scrollLeftOffset: "83%",
-
-				cellEdit: true,
-				gridComplete:function(){
-					$("[role='checkbox']").on('click',function(e){
-						var target = $(this);
-						var curRow=target.closest('tr');
-						var curRowId=curRow.attr('id');
-						var curRowData=$(gridBase_selector).getRowData(curRowId);
-						var ids = $(gridBase_selector).jqGrid('getDataIDs');
-						
-						$(gridBase_selector).setSelection(curRowId,true);
-	                    for (i = 0; i < ids.length; i++) { 
-	                    	var item=$(gridBase_selector).getRowData(ids[i]);
-	                    	if(item.DEPT_CODE==curRowData.DEPT_CODE
-	                    			&& item.CUST_COL7==curRowData.CUST_COL7)
-	                    		$(gridBase_selector).setSelection(ids[i],true);
-	                    }
-					});
-			    },
-	            
-				loadComplete : function(data) {
-					var table = this;
-					setTimeout(function(){
-						styleCheckbox(table);
-						updateActionIcons(table);
-						updatePagerIcons(table);
-						enableTooltips(table);
-					}, 0);
-				},
-			});
-		    
-			$(window).triggerHandler('resize.jqGrid');//trigger window resize to make the grid get the correct size
-
-			$(gridBase_selector).navGrid(pagerBase_selector, 
-					{
-			            //navbar options
-				        edit: false,
-			            editicon : 'ace-icon fa fa-pencil blue',
-			            add: false,
-			            addicon : 'ace-icon fa fa-plus-circle purple',
-			            del: false,
-			            delicon : 'ace-icon fa fa-trash-o red',
-			            search: true,
-			            searchicon : 'ace-icon fa fa-search orange',
-			            refresh: true,
-			            refreshicon : 'ace-icon fa fa-refresh green',
-			            view: false,
-			            viewicon : 'ace-icon fa fa-search-plus grey',
-		        }, {}, {}, {},
-		        {
-					//search form
-					recreateForm: true,
-					afterShowSearch: beforeSearchCallback,
-					afterRedraw: function(){
-						style_search_filters($(this));
-					},
-					multipleSearch: true,
-					//multipleGroup:true,
-					showQuery: false
-		        },
-		        {},{});
-			
-			$(gridBase_selector).navSeparatorAdd(pagerBase_selector, {
-				sepclass : "ui-separator",
-				sepcontent: ""
-			});
-			//$(gridBase_selector).navButtonAdd(pagerBase_selector, {
-			//	id : "batchEdit",
-	        //    title: "汇总",
-	        //    caption: "汇总",
-	        //	buttonicon: "ace-icon fa fa-pencil-square-o purple",
-	        //    position: "last",
-	        //    onClickButton: summary,
-	        //    cursor : "pointer"
-	        //});
-			$(gridBase_selector).navButtonAdd(pagerBase_selector, {
-				id : "report",
-	             caption : "上报",
-	             buttonicon : "ace-icon fa fa-check-square-o green",
-	             onClickButton : report,
-	             position : "last",
-	             title : "上报",
-	             cursor : "pointer"
-	         });
-
-				//汇总
-				function summary(e) {
-			    	//获得选中的行ids的方法
-			    	var ids = $(gridBase_selector).getGridParam("selarrrow");  
-			    	
-					if(!(ids!=null && ids.length>0)){
-						bootbox.dialog({
-							message: "<span class='bigger-110'>您没有选择任何内容!</span>",
-							buttons: 			
-							{ "button":{ "label":"确定", "className":"btn-sm btn-success"}}
-						});
-					}else{
-		                var msg = '确定要汇总吗??';
-		                bootbox.confirm(msg, function(result) {
-		    				if(result) {
-		    					var listData =new Array();
-		    					//遍历访问这个集合  
-		    					$(ids).each(function (index, id){  
-		    			            var rowData = $(gridBase_selector).getRowData(id);
-		    			            listData.push(rowData);
-		    					});
-		    					top.jzts();
-		    					$.ajax({
-		    						type: "POST",
-		    						url: '<%=basePath%>staffsummy/summaryDepartString.do?SelectedTableNo='+which
-		    			            +'&SelectedCustCol7='+$("#SelectedCustCol7").val()
-		    			            +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
-		    		                //+'&SelectedUnitsCode='+$("#SelectedUnitsCode").val()
-		    		                +'&SelectedOrgUnit='+$("#SelectedOrgUnit").val(),
-		    				    	data: {DataRowSummy:JSON.stringify(listData)},
-		    						dataType:'json',
-		    						cache: false,
-		    						success: function(response){
-		    							console.log(response);
-		    							if(response.code==0){
-		    								$(gridBase_selector).trigger("reloadGrid");  
-		    								$(top.hangge());//关闭加载状态
-		    								$("#subTitle").tips({
-		    									side:3,
-		    						            msg:'汇总成功',
-		    						            bg:'#009933',
-		    						            time:3
-		    						        });
-		    							}else{
-		    								$(top.hangge());//关闭加载状态
-		    								$("#subTitle").tips({
-		    									side:3,
-		    						            msg:'汇总失败,'+response.message,
-		    						            bg:'#cc0033',
-		    						            time:3
-		    						        });
-		    							}
-		    						},
-		    				    	error: function(response) {
-		    							console.log("error:" + response);
-		    							$(top.hangge());//关闭加载状态
-	    								$("#subTitle").tips({
-	    									side:3,
-	    						            msg:'汇总出错:'+response.responseJSON.message,
-	    						            bg:'#cc0033',
-	    						            time:3
-	    						        });
-		    				    	}
-		    					});
-		    				}
-		                });
-					}
-				}
-
-			/**
-			 * 上报
-			 */
-			function report(){
-		    	//获得选中的行ids的方法
-		    	var ids = $(gridBase_selector).getGridParam("selarrrow");  
-		    	
-				if(!(ids!=null && ids.length>0)){
-					bootbox.dialog({
-						message: "<span class='bigger-110'>您没有选择任何内容!</span>",
-						buttons: 			
-						{ "button":{ "label":"确定", "className":"btn-sm btn-success"}}
-					});
-				}else{
-	                var msg = '确定要上报吗??';
-	                bootbox.confirm(msg, function(result) {
-	    				if(result) {
-	    					var listData =new Array();
-	    					//遍历访问这个集合  
-	    					$(ids).each(function (index, id){  
-	    			            var rowData = $(gridBase_selector).getRowData(id);
-	    			            listData.push(rowData);
-	    					});
-							top.jzts();
-							$.ajax({
-								type: "POST",
-								url: '<%=basePath%>staffsummy/report.do?SelectedTableNo='+which
-					            +'&SelectedCustCol7='+$("#SelectedCustCol7").val()
-					            +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
-				                //+'&SelectedUnitsCode='+$("#SelectedUnitsCode").val()
-				                +'&SelectedOrgUnit='+$("#SelectedOrgUnit").val(),
-	    				    	data: {DataRowsReport:JSON.stringify(listData)},
-	    						dataType:'json',
-	    						cache: false,
-								success: function(response){
-									if(response.code==0){
-	    								$(gridBase_selector).trigger("reloadGrid");  
-										$(top.hangge());//关闭加载状态
-										$("#subTitle").tips({
-											side:3,
-								            msg:'上报成功',
-								            bg:'#009933',
-								            time:3
-								        });
-									}else{
-										$(top.hangge());//关闭加载状态
-										$("#subTitle").tips({
-											side:3,
-								            msg:'上报失败,'+response.message,
-								            bg:'#cc0033',
-								            time:3
-								        });
-									}
-								},
-						    	error: function(response) {
-									$(top.hangge());//关闭加载状态
-									$("#subTitle").tips({
-										side:3,
-							            msg:'上报出错:'+response.responseJSON.message,
-							            bg:'#cc0033',
-							            time:3
-							        });
-						    	}
-							});
-	    				}
-	                });
-				}
-			}
+			tosearch();
 		});
-
+		
         // the event handler on expanding parent row receives two parameters
         // the ID of the grid tow  and the primary key of the row
-        function showChildGrid(parentRowID, parentRowKey) {
+        function showFirstChildGrid(parentRowID, parentRowKey) {
         	console.log(parentRowID+"  "+parentRowKey);
 			var rowData = $(gridBase_selector).getRowData(parentRowKey);
         	var BILL_CODE = rowData.BILL_CODE__;
@@ -518,11 +295,9 @@
             var detailColModel = "[]";
 			$.ajax({
 				type: "GET",
-				url: '<%=basePath%>staffsummy/getDetailColModel.do?SelectedTableNo='+which
+				url: '<%=basePath%>staffsummy/getFirstDetailColModel.do?SelectedTableNo='+which
 	            +'&SelectedCustCol7='+$("#SelectedCustCol7").val()
-	            +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
-                //+'&SelectedUnitsCode='+$("#SelectedUnitsCode").val()
-                +'&SelectedOrgUnit='+$("#SelectedOrgUnit").val(),
+	            +'&SelectedDepartCode='+$("#SelectedDepartCode").val(),
 		    	data: {DataDeptCode:DEPT_CODE},
 				dataType:'json',
 				cache: false,
@@ -532,22 +307,118 @@
 						detailColModel = response.message;
 
 			            detailColModel = eval(detailColModel);
-			            var childGridID = parentRowID + "_table";
-			            var childGridPagerID = parentRowID + "_pager";
+			            var childGridID = parentRowID + _table;
+			            var childGridPagerID = parentRowID + _pager;
 			            // send the parent row primary key to the server so that we know which grid to show
-			            var childGridURL = '<%=basePath%>staffsummy/getDetailList.do?SelectedTableNo='+which
+			            var childGridURL = '<%=basePath%>staffsummy/getFirstDetailList.do?SelectedTableNo='+which
 			            +'&SelectedCustCol7='+$("#SelectedCustCol7").val()
 			            +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
-		                //+'&SelectedUnitsCode='+$("#SelectedUnitsCode").val()
-		                +'&SelectedOrgUnit='+$("#SelectedOrgUnit").val()
 		                +'&DetailListBillCode='+BILL_CODE+'';
 			            //childGridURL = childGridURL + "&parentRowID=" + encodeURIComponent(parentRowKey)
 
 			            // add a table and pager HTML elements to the parent grid row - we will render the child grid here
-			            $('#' + parentRowID).append('<table id=' + childGridID + '></table><div id=' + childGridPagerID + ' class=scroll></div>');
+			            $('#' + parentRowID).append('<table id=' + childGridID + '></table><div id=' + childGridPagerID + '></div>');
 
 			            $("#" + childGridID).jqGrid({
 			                url: childGridURL,
+			                mtype: "GET",
+			                datatype: "json",
+			                colModel: detailColModel,
+			                page: 1,
+			                width: '100%',
+			                //height: '100%',
+			                rowNum: 0,	
+			                pager: "#" + childGridPagerID,
+							pgbuttons: false, // 分页按钮是否显示 
+							pginput: false, // 是否允许输入分页页数 
+			                viewrecords: true,
+			                recordpos: "left", // 记录数显示位置 
+			                
+			    			shrinkToFit: false,
+			    			altRows: true, //斑马条纹
+			                
+			    			//footerrow: true,
+			    			//userDataOnFooter: true,
+
+			    			subGrid: true,
+			    			subGridOptions: {
+			    				plusicon : "ace-icon fa fa-plus center bigger-110 blue",
+			    				minusicon  : "ace-icon fa fa-minus center bigger-110 blue",
+			    				openicon : "ace-icon fa fa-chevron-right center orange"
+			                },
+			                subGridRowExpanded: showSecondChildGrid,
+
+			    			scroll: 1,
+			                
+			    			loadComplete : function() {
+			    				var table = this;
+			    				setTimeout(function(){
+			    					styleCheckbox(table);
+			    					updateActionIcons(table);
+			    					updatePagerIcons(table);
+			    					enableTooltips(table);
+			    				}, 0);
+			    			},
+			            });
+					}else{
+						$(top.hangge());//关闭加载状态
+						$("#subTitle").tips({
+							side:3,
+				            msg:'获取结构失败：'+response.message,
+				            bg:'#cc0033',
+				            time:3
+				        });
+					}
+				},
+		    	error: function(response) {
+					$(top.hangge());//关闭加载状态
+					$("#subTitle").tips({
+						side:3,
+			            msg:'获取结构出错:'+response.responseJSON.message,
+			            bg:'#cc0033',
+			            time:3
+			        });
+		    	}
+			});
+        };
+
+	    // the event handler on expanding parent row receives two parameters
+	    // the ID of the grid tow  and the primary key of the row
+	    function showSecondChildGrid(parentRowID, parentRowKey) {
+	    	console.log(parentRowID+"  "+parentRowKey);
+	    	var gridSelect = parentRowID.toString().substring(0, parentRowID.toString().length - parentRowKey.toString().length - 1);
+	    	console.log("gridSelect  "+gridSelect);
+			var rowData = $("#" + gridSelect).getRowData(parentRowKey);
+	    	var DEPT_CODE = rowData.DEPT_CODE__;
+	    	console.log(DEPT_CODE);
+	    	
+	        var detailColModel = "[]";
+			$.ajax({
+				type: "GET",
+				url: '<%=basePath%>staffsummy/getSecondDetailColModel.do?SelectedTableNo='+which,
+		    	data: {DataDeptCode:DEPT_CODE},
+				dataType:'json',
+				cache: false,
+				success: function(response){
+					if(response.code==0){
+						$(top.hangge());//关闭加载状态
+						detailColModel = response.message;
+
+			            detailColModel = eval(detailColModel);
+			            var childGridID = parentRowID + _table;
+			            var childGridPagerID = parentRowID + _pager;
+			            // send the parent row primary key to the server so that we know which grid to show
+			            var childGridURL = '<%=basePath%>staffsummy/getSecondDetailList.do?SelectedTableNo='+which;
+			            //childGridURL = childGridURL + "&parentRowID=" + encodeURIComponent(parentRowKey)
+						var listData =new Array();
+				        listData.push(rowData);
+
+			            // add a table and pager HTML elements to the parent grid row - we will render the child grid here
+			            $('#' + parentRowID).append('<table id=' + childGridID + '></table><div id=' + childGridPagerID + '></div>');
+
+			            $("#" + childGridID).jqGrid({
+			                url: childGridURL,
+			                postData: {DataRows:JSON.stringify(listData)},
 			                mtype: "GET",
 			                datatype: "json",
 			                colModel: detailColModel,
@@ -591,126 +462,330 @@
 			        });
 		    	}
 			});
-        };
-		
-		//加载单位树
-		function initComplete(){
-			//下拉树
-			var defaultNodes1 = {"treeNodes":${zTreeNodes1}};
-			var defaultNodes2 = {"treeNodes":${zTreeNodes2}};
-			//绑定change事件
-			$("#selectTree1").bind("change",function(){
-				$("#SelectedDepartCode").val("");
-				if($(this).attr("relValue")){
-					$("#SelectedDepartCode").val($(this).attr("relValue"));
-					console.log($(this).attr("relValue"));
-			    }
-			});
-			//$("#selectTree2").bind("change",function(){
-			//	$("#SelectedUnitsCode").val("");
-			//	if($(this).attr("relValue")){
-			//		$("#SelectedUnitsCode").val($(this).attr("relValue"));
-			//		console.log($(this).attr("relValue"));
-			//    }
-			//});
-			//赋给data属性
-			$("#selectTree1").data("data",defaultNodes1);  
-			$("#selectTree1").render();
-			//$("#selectTree2").data("data",defaultNodes2);  
-			//$("#selectTree2").render();
-			$("#selectTree2_input").val("请选择单位");
+	    };
+
+		/**
+		 * 批量删除
+		 */
+	    function batchDelete(){
+	    	//获得选中的行ids的方法
+	    	var ids = $(gridBase_selector).getGridParam("selarrrow");  
+	    	
+			if(!(ids!=null && ids.length>0)){
+				bootbox.dialog({
+					message: "<span class='bigger-110'>您没有选择任何内容!</span>",
+					buttons: 			
+					{ "button":{ "label":"确定", "className":"btn-sm btn-success"}}
+				});
+			}else{
+	            var msg = '确定要删除选中的数据吗?';
+	            bootbox.confirm(msg, function(result) {
+					if(result) {
+						var listData =new Array();
+						
+						//遍历访问这个集合  
+						$(ids).each(function (index, id){  
+				            var rowData = $(gridBase_selector).getRowData(id);
+				            listData.push(rowData);
+						});
+						
+						top.jzts();
+						$.ajax({
+							type: "POST",
+							url: '<%=basePath%>staffsummy/deleteAll.do?SelectedTableNo='+which,
+					    	data: {DataRows:JSON.stringify(listData)},
+							dataType:'json',
+							cache: false,
+							success: function(response){
+								if(response.code==0){
+									getSelectBillCodeOptions();
+									$(gridBase_selector).trigger("reloadGrid");  
+									$(top.hangge());//关闭加载状态
+									$("#subTitle").tips({
+										side:3,
+							            msg:'删除成功',
+							            bg:'#009933',
+							            time:3
+							        });
+								}else{
+									$(top.hangge());//关闭加载状态
+									$("#subTitle").tips({
+										side:3,
+							            msg:'删除失败,'+response.message,
+							            bg:'#cc0033',
+							            time:3
+							        });
+								}
+							},
+					    	error: function(response) {
+								$(top.hangge());//关闭加载状态
+								$("#subTitle").tips({
+									side:3,
+						            msg:'删除出错:'+response.responseJSON.message,
+						            bg:'#cc0033',
+						            time:3
+						        });
+					    	}
+						});
+					}
+	            });
+			}
 		}
 		
 		//汇总
 		function btnSummyClick(){
 			var transferCustCol7 = $("#SelectedCustCol7").val();
 			var transferDepartCode = $("#SelectedDepartCode").val();
-			console.log($("#spanSelectTree").is(":hidden"));
+			var listData =new Array();
 			
-			if(!$("#spanSelectTree").is(":hidden") && !(transferDepartCode!=null && transferDepartCode.trim()!="")){
-			    bootbox.dialog({
-				    message: "<span class='bigger-110'>您没有选择任何单位!</span>",
-				    buttons: 			
-				    { "button":{ "label":"确定", "className":"btn-sm btn-success"}}
-			    }); 
-			} else if (!(transferCustCol7!=null && transferCustCol7.trim()!="")){
-			    bootbox.dialog({
-				    message: "<span class='bigger-110'>您没有选择账套信息!</span>",
-				    buttons: 			
-				    { "button":{ "label":"确定", "className":"btn-sm btn-success"}}
-			    }); 
+	    	//获得选中的行ids的方法
+	    	var ids = $(gridBase_selector).getGridParam("selarrrow");  
+			if(!(ids!=null && ids.length>0)){
+				console.log($("#spanSelectTree").is(":hidden"));
+				
+				if(!$("#spanSelectTree").is(":hidden") && !(transferDepartCode!=null && transferDepartCode.trim()!="")){
+				    bootbox.dialog({
+					    message: "<span class='bigger-110'>您没有选择任何单位!</span>",
+					    buttons: 			
+					    { "button":{ "label":"确定", "className":"btn-sm btn-success"}}
+				    }); 
+				    return;
+				} else if (!(transferCustCol7!=null && transferCustCol7.trim()!="")){
+				    bootbox.dialog({
+					    message: "<span class='bigger-110'>您没有选择账套信息!</span>",
+					    buttons: 			
+					    { "button":{ "label":"确定", "className":"btn-sm btn-success"}}
+				    }); 
+				    return;
+				}
 			} else {
-                var msg = '确定要汇总吗?';
-                bootbox.confirm(msg, function(result) {
-    				if(result) {
-    					//var listData =new Array();
-    					//var listDepart = transferDepartCode.split(","); //字符分割 
-    					//for (i=0;i<listDepart.length ;i++) {
-    			        //    var rowData = new Array();
-    			        //    rowData.put();
-                        //    
-    			        //    listData.push(rowData);
-    					//}
-    					top.jzts();
-    					$.ajax({
-    						type: "POST",
-    						url: '<%=basePath%>staffsummy/summaryDepartString.do?SelectedTableNo='+which
-    			            +'&SelectedCustCol7='+$("#SelectedCustCol7").val()
-    			            +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
-    		                //+'&SelectedUnitsCode='+$("#SelectedUnitsCode").val()
-    		                +'&SelectedOrgUnit='+$("#SelectedOrgUnit").val()
-    			                +'&DataRowSummy='+'',
-    						dataType:'json',
-    						cache: false,
-    						success: function(response){
-    							if(response.code==0){
-    								$(gridBase_selector).trigger("reloadGrid");  
-    								$(top.hangge());//关闭加载状态
-    								$("#subTitle").tips({
-    									side:3,
-    						            msg:'汇总成功',
-    						            bg:'#009933',
-    						            time:3
-    						        });
-    							}else{
-    								$(top.hangge());//关闭加载状态
-    								$("#subTitle").tips({
-    									side:3,
-    						            msg:'汇总失败,'+response.message,
-    						            bg:'#cc0033',
-    						            time:3
-    						        });
-    							}
-    						},
-    				    	error: function(response) {
-    							$(top.hangge());//关闭加载状态
+				//遍历访问这个集合  
+				$(ids).each(function (index, id){  
+		            var rowData = $(gridBase_selector).getRowData(id);
+		            listData.push(rowData);
+				});
+			}
+            var msg = '确定要汇总吗?';
+            bootbox.confirm(msg, function(result) {
+				if(result) {
+					top.jzts();
+					$.ajax({
+						type: "POST",
+						url: '<%=basePath%>staffsummy/summaryDepartString.do?SelectedTableNo='+which
+			            +'&SelectedCustCol7='+$("#SelectedCustCol7").val()
+			            +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
+			            +'&SelectedBillCode='+$("#SelectedBillCode").val(),
+				    	data: {DataRows:JSON.stringify(listData)},
+						dataType:'json',
+						cache: false,
+						success: function(response){
+							if(response.code==0){
+								getSelectBillCodeOptions();
+								$(gridBase_selector).trigger("reloadGrid");  
+								$(top.hangge());//关闭加载状态
 								$("#subTitle").tips({
 									side:3,
-						            msg:'汇总出错:'+response.responseJSON.message,
+						            msg:'汇总成功',
+						            bg:'#009933',
+						            time:3
+						        });
+							}else{
+								$(top.hangge());//关闭加载状态
+								$("#subTitle").tips({
+									side:3,
+						            msg:'汇总失败,'+response.message,
 						            bg:'#cc0033',
 						            time:3
 						        });
-    				    	}
-    					});
-    				}
-                });
-			}
+							}
+						},
+				    	error: function(response) {
+							$(top.hangge());//关闭加载状态
+							$("#subTitle").tips({
+								side:3,
+					            msg:'汇总出错:'+response.responseJSON.message,
+					            bg:'#cc0033',
+					            time:3
+					        });
+				    	}
+					});
+				}
+            });
 		}
+		
+		//加载单位树
+		function initComplete(){
+			//下拉树
+			var defaultNodes1 = {"treeNodes":${zTreeNodes1}};
+			//绑定change事件
+			$("#selectTree").bind("change",function(){
+				$("#SelectedDepartCode").val("");
+				if($(this).attr("relValue")){
+					$("#SelectedDepartCode").val($(this).attr("relValue"));
+					console.log($(this).attr("relValue"));
+			    }
+				getSelectBillCodeOptions();
+			});
+			//赋给data属性
+			$("#selectTree").data("data",defaultNodes1);  
+			$("#selectTree").render();
+			$("#selectTree2_input").val("请选择单位");
+		};
 		
 		//检索
 		function tosearch() {
-			console.log($("#SelectedDepartCode").val());
-			var SelectedDepartCode = $("#SelectedDepartCode").val();
-			$(gridBase_selector).jqGrid('setGridParam',{  // 重新加载数据
-				url:'<%=basePath%>staffsummy/getPageList.do?SelectedTableNo='+which
-	            +'&SelectedCustCol7='+$("#SelectedCustCol7").val()
-	            +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
-                //+'&SelectedUnitsCode='+$("#SelectedUnitsCode").val()
-                +'&SelectedOrgUnit='+$("#SelectedOrgUnit").val(),
-				datatype:'json',
-			      page:1
-			}).trigger("reloadGrid");
+			ShowDataBillCode = $("#SelectedBillCode").val();
+			$(gridBase_selector).jqGrid('GridUnload'); 
+			SetStructure();
+			$(gridBase_selector).trigger("reloadGrid");  
 		}  
+		
+		function SetStructure(){
+			//resize to fit page size
+			$(window).on('resize.jqGrid', function () {
+				$(gridBase_selector).jqGrid( 'setGridWidth', $(".page-content").width());
+				resizeGridHeight($(gridBase_selector),null,true);
+		    });
+			
+			if(ShowDataBillCode != SelectNoBillCodeShowOption){
+				$(gridBase_selector).jqGrid({
+					url: '<%=basePath%>staffsummy/getPageList.do?SelectedTableNo='+which
+				            +'&SelectedCustCol7='+$("#SelectedCustCol7").val()
+				            +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
+				            +'&SelectedBillCode='+$("#SelectedBillCode").val(),
+					datatype: "json",
+					colModel: jqGridColModelSummy,
+					viewrecords: true, 
+					shrinkToFit: false,
+					rowNum: 0,
+					//rowList: [100,200,500],
+		            multiselect: true,
+		            multiboxonly: true,
+					altRows: true, //斑马条纹
+					
+					pager: pagerBase_selector,
+					pgbuttons: false, // 分页按钮是否显示 
+					pginput: false, // 是否允许输入分页页数 
+					footerrow: true,
+					userDataOnFooter: true,
+
+		            sortable: true,
+		            sortname: 'DEPT_CODE',
+					sortorder: 'asc',
+
+					//grouping: true,
+					//groupingView: {
+					//	groupField: [jqGridGroupField],
+					//	groupColumnShow: [jqGridGroupColumnShow],
+					//	groupText: ['<b>{0}</b>'],
+					//	groupSummary: [true],
+					//	groupSummaryPos: ['footer'], //header
+					//	groupCollapse: false,
+		            //    plusicon : 'fa fa-chevron-down bigger-110',
+					//	minusicon : 'fa fa-chevron-up bigger-110'
+					//},
+					
+					subGrid: true,
+					subGridOptions: {
+						plusicon : "ace-icon fa fa-plus center bigger-110 blue",
+						minusicon  : "ace-icon fa fa-minus center bigger-110 blue",
+						openicon : "ace-icon fa fa-chevron-right center orange"
+		            },
+		            subGridRowExpanded: showFirstChildGrid,
+
+					scroll: 1,
+
+					cellEdit: true,
+					loadComplete : function(data) {
+						var table = this;
+						setTimeout(function(){
+							styleCheckbox(table);
+							updateActionIcons(table);
+							updatePagerIcons(table);
+							enableTooltips(table);
+						}, 0);
+					},
+				});
+			} else {
+				$(gridBase_selector).jqGrid({
+					url: '<%=basePath%>staffsummy/getPageList.do?SelectedTableNo='+which
+				            +'&SelectedCustCol7='+$("#SelectedCustCol7").val()
+				            +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
+				            +'&SelectedBillCode='+$("#SelectedBillCode").val(),
+					datatype: "json",
+					colModel: jqGridColModelDetail,
+					viewrecords: true, 
+					shrinkToFit: false,
+					rowNum: 0,
+					altRows: true, //斑马条纹
+					pager: pagerBase_selector,
+					pgbuttons: false, // 分页按钮是否显示 
+					pginput: false, // 是否允许输入分页页数 
+					footerrow: true,
+					userDataOnFooter: true,
+		            sortable: true,
+		            sortname: 'DEPT_CODE',
+					sortorder: 'asc',
+					scroll: 1,
+					loadComplete : function() {
+						var table = this;
+						setTimeout(function(){
+							styleCheckbox(table);
+							updateActionIcons(table);
+							updatePagerIcons(table);
+							enableTooltips(table);
+						}, 0);
+					},
+				});
+			}
+		    
+			$(window).triggerHandler('resize.jqGrid');//trigger window resize to make the grid get the correct size
+
+			$(gridBase_selector).navGrid(pagerBase_selector, 
+					{
+			            //navbar options
+				        edit: false,
+			            editicon : 'ace-icon fa fa-pencil blue',
+			            add: false,
+			            addicon : 'ace-icon fa fa-plus-circle purple',
+			            del: false,
+			            delicon : 'ace-icon fa fa-trash-o red',
+			            search: true,
+			            searchicon : 'ace-icon fa fa-search orange',
+			            refresh: true,
+			            refreshicon : 'ace-icon fa fa-refresh green',
+			            view: false,
+			            viewicon : 'ace-icon fa fa-search-plus grey',
+		        }, {}, {}, {},
+		        {
+					//search form
+					recreateForm: true,
+					afterShowSearch: beforeSearchCallback,
+					afterRedraw: function(){
+						style_search_filters($(this));
+					},
+					multipleSearch: true,
+					//multipleGroup:true,
+					showQuery: false
+		        },
+		        {},{});
+			
+			$(gridBase_selector).navSeparatorAdd(pagerBase_selector, {
+				sepclass : "ui-separator",
+				sepcontent: ""
+			});
+			if(ShowDataBillCode != SelectNoBillCodeShowOption){
+				$(gridBase_selector).navButtonAdd(pagerBase_selector, {
+        			id : "batchDelete",
+                    title : "删除",
+                    caption: "",
+                    buttonicon : "ace-icon fa fa-trash-o red",
+                    onClickButton : batchDelete,
+		            position: "last",
+                    cursor : "pointer"
+		        });
+			}
+		}
 
 	 	</script>
 	</html>

@@ -95,6 +95,7 @@ public class AuditEditController extends BaseController {
 	// 前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
 	//Map<String, TmplConfigDetail> map_SetColumnsList = new LinkedHashMap<String, TmplConfigDetail>();
 
+	private List<String> MustInputList = Arrays.asList("USER_CODE");
 	//界面查询字段
     List<String> QueryFeildList = Arrays.asList("DEPT_CODE", "CUST_COL7", "USER_GROP");
 	// 设置必定不用编辑的列
@@ -162,7 +163,7 @@ public class AuditEditController extends BaseController {
 		List<String> MustNotEditList = getMustNotEditList(SelectedTableNo);
 		List<String> keyListBase = getKeyListBase(MustNotEditList);
 		TmplUtil tmpl = new TmplUtil(tmplconfigService, tmplconfigdictService, dictionariesService, 
-				departmentService,userService, keyListBase, null, null);
+				departmentService,userService, keyListBase, null, null, MustInputList);
 		String jqGridColModel = tmpl.generateStructure(SelectedTableNo, UserDepartCode, 3, MustNotEditList);
 		
 		//SqlUserdata = tmpl.getSqlUserdata();

@@ -100,25 +100,30 @@
 											<form class="form-inline">
 											<span class="input-icon pull-left" style="margin-right: 5px;">
 												<input id="SelectedBusiDate" class="input-mask-date" type="text"
-												placeholder="请输入业务区间"> <i
-												class="ace-icon fa fa-calendar blue"></i>
+												  placeholder="请输入业务区间" onchange="getSelectBillCodeOptions()"> 
+												<i class="ace-icon fa fa-calendar blue"></i>
 											</span>
 											<span class="pull-left" style="margin-right: 5px;">
 												<select class="chosen-select form-control"
 													name="SelectedCustCol7" id="SelectedCustCol7"
-													data-placeholder="请选择帐套"
+													data-placeholder="请选择帐套" onchange="getSelectBillCodeOptions()"
 													style="vertical-align: top; height:32px;width: 150px;">
 													<option value="">请选择帐套</option>
 													<c:forEach items="${FMISACC}" var="each">
 														<option value="${each.DICT_CODE}">${each.NAME}</option>
-														    <!-- <c:if test="${pd.SelectedCustCol7==each.DICT_CODE}">selected</c:if> -->
 													</c:forEach>
 												</select>
 											</span>
 											<span class="pull-left" style="margin-right: 5px;" <c:if test="${pd.departTreeSource=='0'}">hidden</c:if>>
 												<div class="selectTree" id="selectTree" multiMode="true"
 												    allSelectable="false" noGroup="false"></div>
-											    <input type="text" id="SelectedDepartCode" hidden></input>
+											    <input id="SelectedDepartCode" type="hidden"></input>
+											</span>
+											<span class="pull-left" style="margin-right: 5px;">
+												<select class="chosen-select form-control"
+													name="SelectedBillCode" id="SelectedBillCode"
+													style="vertical-align: top; height:32px;width: 150px;">
+												</select>
 											</span>
 											<button type="button" class="btn btn-info btn-sm" onclick="tosearch();">
 												<i class="ace-icon fa fa-search bigger-110"></i>
@@ -183,7 +188,55 @@
     var pagerBase_selector = "#jqGridBasePager";  
 
 	var which;
+	//单号下拉列表
+	var BillCodeList;
 	var jqGridColModel;
+	//单号下拉列表
+	var InitBillCodeOptions;
+	var SelectBillCodeOptions;
+    
+    function getSelectBillCodeOptions(){
+    	console.log("getSelectBillCodeOptions()");
+		setSelectBillCodeOptions(InitBillCodeOptions);
+		top.jzts();
+		$.ajax({
+			type: "POST",
+			url: '<%=basePath%>detailimportquery/getBillCodeList.do?SelectedTableNo='+which
+                +'&SelectedBusiDate='+$("#SelectedBusiDate").val()
+                +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
+                +'&SelectedCustCol7='+$("#SelectedCustCol7").val(),
+			dataType:'json',
+			cache: false,
+			success: function(response){
+				if(response.code==0){
+					$(top.hangge());//关闭加载状态
+					setSelectBillCodeOptions(response.message);
+				}else{
+					$(top.hangge());//关闭加载状态
+					$("#subTitle").tips({
+						side:3,
+			            msg:'获取单号列表失败,'+response.message,
+			            bg:'#cc0033',
+			            time:3
+			        });
+				}
+			},
+	    	error: function(response) {
+				$(top.hangge());//关闭加载状态
+				$("#subTitle").tips({
+					side:3,
+		            msg:'获取单号列表出错:'+response.responseJSON.message,
+		            bg:'#cc0033',
+		            time:3
+		        });
+	    	}
+		});
+    }
+    
+    function setSelectBillCodeOptions(selectBillCodeOptions){
+        $("#SelectedBillCode").empty();   //先清空
+        $("#SelectedBillCode").append(selectBillCodeOptions);  //再赋值
+    }
 	
 	$(document).ready(function () {
 		$(top.hangge());//关闭加载状态
@@ -194,6 +247,9 @@
 		$("#SelectedBusiDate").val(SystemDateTime);
 		//前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
 	    jqGridColModel = eval("(${jqGridColModel})");//此处记得用eval()行数将string转为array
+		//单号下拉列表
+		InitBillCodeOptions = "${pd.InitBillCodeOptions}";
+		setSelectBillCodeOptions(InitBillCodeOptions);
 	    
 		//resize to fit page size
 		$(window).on('resize.jqGrid', function () {
@@ -228,7 +284,8 @@
 			url: '<%=basePath%>detailimportquery/getPageList.do?SelectedTableNo='+which
                  +'&SelectedBusiDate='+$("#SelectedBusiDate").val()
                  +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
-                 +'&SelectedCustCol7='+$("#SelectedCustCol7").val(),
+                 +'&SelectedCustCol7='+$("#SelectedCustCol7").val()
+                 +'&SelectedBillCode='+$("#SelectedBillCode").val(),
 			datatype: "json",
 			colModel: jqGridColModel,
 			viewrecords: true, 
@@ -295,6 +352,7 @@
 			             title : "导出",
 			             cursor : "pointer"
 			         });
+					getSelectBillCodeOptions();
 		/**
 		 * 导出
 		 */
@@ -302,7 +360,8 @@
 	    	window.location.href='<%=basePath%>detailimportquery/excel.do?SelectedTableNo='+which
             +'&SelectedBusiDate='+$("#SelectedBusiDate").val()
             +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
-            +'&SelectedCustCol7='+$("#SelectedCustCol7").val();
+            +'&SelectedCustCol7='+$("#SelectedCustCol7").val()
+            +'&SelectedBillCode='+$("#SelectedBillCode").val();
 	    }
 	});  
 	
@@ -316,6 +375,7 @@
 			if($(this).attr("relValue")){
 				$("#SelectedDepartCode").val($(this).attr("relValue"));
 		    }
+			getSelectBillCodeOptions();
 		});
 		//赋给data属性
 		$("#selectTree").data("data",defaultNodes);  
@@ -329,7 +389,8 @@
 			url:'<%=basePath%>detailimportquery/getPageList.do?SelectedTableNo='+which
             +'&SelectedBusiDate='+$("#SelectedBusiDate").val()
             +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
-            +'&SelectedCustCol7='+$("#SelectedCustCol7").val(),  
+            +'&SelectedCustCol7='+$("#SelectedCustCol7").val()
+            +'&SelectedBillCode='+$("#SelectedBillCode").val(),  
 			datatype:'json',
 		      page:1
 		}).trigger("reloadGrid");

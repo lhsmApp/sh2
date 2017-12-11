@@ -41,18 +41,10 @@ public class TmplUtil {
 	private DepartmentManager departmentService;
 	private UserManager userService;
 
-	//必须保存列
-	//public static List<String> MustSaveFeildListStaffDetail = Arrays.asList("BILL_CODE", "BUSI_DATE", "DEPT_CODE", "CUST_COL7", "USER_GROP", "USER_CODE");
-	//public static List<String> MustSaveFeildListStaffSummy = Arrays.asList("BILL_CODE", "BUSI_DATE", "DEPT_CODE", "CUST_COL7", "USER_GROP", "USER_CODE", "BILL_STATE");
-	//public static List<String> MustSaveFeildListSocialIncDetail = Arrays.asList("BILL_CODE", "BUSI_DATE", "DEPT_CODE", "CUST_COL7", "USER_GROP", "USER_CODE");
-	//public static List<String> MustSaveFeildListSocialIncSummy = Arrays.asList("BILL_CODE", "BUSI_DATE", "DEPT_CODE", "CUST_COL7", "USER_GROP", "USER_CODE", "BILL_STATE");
-	//public static List<String> MustSaveFeildListHouseFundDetail = Arrays.asList("BILL_CODE", "BUSI_DATE", "DEPT_CODE", "CUST_COL7", "USER_GROP", "USER_CODE");
-	//public static List<String> MustSaveFeildListHouseFundSummy = Arrays.asList("BILL_CODE", "BUSI_DATE", "DEPT_CODE", "CUST_COL7", "USER_GROP", "USER_CODE", "BILL_STATE");
-
 	// 查询表的主键字段后缀，区别于主键字段，用于修改或删除
 	public static String keyExtra = "__";
 	// 查询表的主键字段
-	private List<String> keyList = Arrays.asList("BILL_CODE", "BUSI_DATE", "USER_CODE");
+	private List<String> keyList = new ArrayList<String>();
 	// 底行显示的求和与平均值字段
 	StringBuilder m_sqlUserdata = new StringBuilder();
 	public StringBuilder getSqlUserdata() {
@@ -86,6 +78,7 @@ public class TmplUtil {
 	
 	//另加的列、配置模板之外的列
 	private String AdditionalReportColumns = "";
+	private List<String> MustInputList = new ArrayList<String>();
 	
 
 	public TmplUtil(TmplConfigManager tmplconfigService, TmplConfigDictManager tmplConfigDictService,
@@ -102,7 +95,8 @@ public class TmplUtil {
 
 	public TmplUtil(TmplConfigManager tmplconfigService, TmplConfigDictManager tmplConfigDictService,
 			DictionariesManager dictionariesService, DepartmentManager departmentService,UserManager userService,
-			List<String> keyList, List<String> jqGridGroupColumn, String AdditionalReportColumns) {
+			List<String> keyList, List<String> jqGridGroupColumn, String AdditionalReportColumns,
+			List<String> MustInputList) {
 		TmplUtil.tmplconfigService = tmplconfigService;
 		this.tmplConfigDictService = tmplConfigDictService;
 		this.dictionariesService = dictionariesService;
@@ -112,6 +106,7 @@ public class TmplUtil {
 		this.jqGridGroupColumn = jqGridGroupColumn;
 		InitJqGridGroupColumnShow();
 		this.AdditionalReportColumns = AdditionalReportColumns;
+		this.MustInputList = MustInputList;
 		
 	}
 
@@ -353,7 +348,7 @@ public class TmplUtil {
 				model_edittype.append(" editoptions:{maxlength:'" + intLength + "'} ");
 			}
 
-			if (col.getColumn_name().equals("USER_CODE")) {
+			if (MustInputList!=null && MustInputList.contains(col.getColumn_name())) {
 				model_name.append(" editrules:{required:true}, ");
 			}
 			model_name.append(" name: '" + col.getColumn_name() + "' ");

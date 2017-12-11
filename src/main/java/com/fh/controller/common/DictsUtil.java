@@ -236,26 +236,31 @@ public class DictsUtil {
 	public static String getEmplGroupType(String tmplCode) throws Exception {
 		String emplGroupType = "";
 		if (tmplCode.equals(TmplType.TB_STAFF_DETAIL_CONTRACT.getNameKey())
+				//|| tmplCode.equals(TmplType.TB_STAFF_SUMMY_BILL_CONTRACT.getNameKey())
 				|| tmplCode.equals(TmplType.TB_STAFF_SUMMY_CONTRACT.getNameKey())
 				|| tmplCode.equals(TmplType.TB_STAFF_AUDIT_CONTRACT.getNameKey())
 				|| tmplCode.equals(TmplType.TB_STAFF_TRANSFER_CONTRACT.getNameKey())) {
 			emplGroupType = EmplGroupType.HTH.getNameKey();
 		} else if (tmplCode.equals(TmplType.TB_STAFF_DETAIL_MARKET.getNameKey())
+				//|| tmplCode.equals(TmplType.TB_STAFF_SUMMY_BILL_MARKET.getNameKey())
 				|| tmplCode.equals(TmplType.TB_STAFF_SUMMY_MARKET.getNameKey())
 				|| tmplCode.equals(TmplType.TB_STAFF_AUDIT_MARKET.getNameKey())
 				|| tmplCode.equals(TmplType.TB_STAFF_TRANSFER_MARKET.getNameKey())) {
 			emplGroupType = EmplGroupType.SCH.getNameKey();
 		} else if (tmplCode.equals(TmplType.TB_STAFF_DETAIL_LABOR.getNameKey())
+				//|| tmplCode.equals(TmplType.TB_STAFF_SUMMY_BILL_LABOR.getNameKey())
 				|| tmplCode.equals(TmplType.TB_STAFF_SUMMY_LABOR.getNameKey())
 				|| tmplCode.equals(TmplType.TB_STAFF_AUDIT_LABOR.getNameKey())
 				|| tmplCode.equals(TmplType.TB_STAFF_TRANSFER_LABOR.getNameKey())) {
 			emplGroupType = EmplGroupType.LWPQ.getNameKey();
 		} else if (tmplCode.equals(TmplType.TB_STAFF_DETAIL_SYS_LABOR.getNameKey())
+				//|| tmplCode.equals(TmplType.TB_STAFF_SUMMY_BILL_SYS_LABOR.getNameKey())
 				|| tmplCode.equals(TmplType.TB_STAFF_SUMMY_SYS_LABOR.getNameKey())
 				|| tmplCode.equals(TmplType.TB_STAFF_AUDIT_SYS_LABOR.getNameKey())
 				|| tmplCode.equals(TmplType.TB_STAFF_TRANSFER_SYS_LABOR.getNameKey())) {
 			emplGroupType = EmplGroupType.XTNLW.getNameKey();
 		} else if (tmplCode.equals(TmplType.TB_STAFF_DETAIL_OPER_LABOR.getNameKey())
+				//|| tmplCode.equals(TmplType.TB_STAFF_SUMMY_BILL_OPER_LABOR.getNameKey())
 				|| tmplCode.equals(TmplType.TB_STAFF_SUMMY_OPER_LABOR.getNameKey())
 				|| tmplCode.equals(TmplType.TB_STAFF_AUDIT_OPER_LABOR.getNameKey())
 				|| tmplCode.equals(TmplType.TB_STAFF_TRANSFER_OPER_LABOR.getNameKey())) {

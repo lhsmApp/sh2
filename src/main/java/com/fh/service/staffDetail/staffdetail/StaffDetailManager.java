@@ -14,15 +14,33 @@ import com.fh.util.PageData;
  */
 public interface StaffDetailManager{
 	
-	/**获取数据
-	 * 张晓柳
+	/**获取单号下拉列表数据源 
 	 * @param pd
 	 * @throws Exception
 	 */
-	public List<String> findUserCodeByModel(List<PageData> listData)throws Exception;
-	public List<String> exportHaveUserCode(PageData listData)throws Exception;
-	public List<String> findStaffIdentByModel(List<PageData> listData)throws Exception;
-	public List<String> exportHaveStaffIdent(PageData listData)throws Exception;
+	public List<String> getBillCodeList(PageData pd)throws Exception;
+	
+	/**列表
+	 * @param page
+	 * @throws Exception
+	 */
+	public List<PageData> JqPage(JqPage page)throws Exception;
+	/**获取记录数量
+	 * @param pd
+	 * @throws Exception
+	 */
+	public int countJqGridExtend(JqPage page)throws Exception;
+	/**获取记录总合计
+	 * @param pd
+	 * @throws Exception
+	 */
+	public PageData getFooterSummary(JqPage page)throws Exception;
+	
+	/**通过流水号获取单号，用于判断数据是否已汇总
+	 * @param pd
+	 * @throws Exception
+	 */
+	public List<PageData> getBillCodeBySerialNo(List<PageData> listCode)throws Exception;
 
 	/**导出列表
 	 * @param page
@@ -34,42 +52,25 @@ public interface StaffDetailManager{
 	 * @throws Exception
 	 */
 	public List<PageData> exportModel(PageData pd)throws Exception;
-	
-	/**列表
-	 * @param page
-	 * @throws Exception
-	 */
-	public List<PageData> JqPage(JqPage page)throws Exception;
-	
-	/**获取记录数量
-	 * @param pd
-	 * @throws Exception
-	 */
-	public int countJqGridExtend(JqPage page)throws Exception;
-	
-	/**获取记录总合计
-	 * @param pd
-	 * @throws Exception
-	 */
-	public PageData getFooterSummary(JqPage page)throws Exception;
-	
+
 	/**批量删除
 	 * @param 
 	 * @throws Exception
 	 */
 	public void deleteAll(List<PageData> listData)throws Exception;
 	
-	/**批量修改
+	/**获取计算数据
 	 * @param pd
 	 * @throws Exception
 	 */
-	public void deleteUpdateAll(List<PageData> listData)throws Exception;
-	
-	/**导入
+	public List<PageData> getDataCalculation(String tableName, String TableFeildTax, String TmplUtil_KeyExtra, 
+			String sqlRetSelectSalary, String sqlRetSelectBonus, List<PageData> listAddSalary, List<PageData> listAddBonus,
+			String sqlSumByUserCodeSalary,  String sqlSumByUserCodeBonus, String TableFeildSum)throws Exception;
+	/**更新数据库
 	 * @param pd
 	 * @throws Exception
 	 */
-	public void batchImport(List<PageData> listData)throws Exception;
+	public void batchUpdateDatabase(List<PageData> listData)throws Exception;
 
 	
 	

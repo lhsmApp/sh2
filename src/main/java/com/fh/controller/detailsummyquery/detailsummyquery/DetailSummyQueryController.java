@@ -20,17 +20,19 @@ import com.fh.controller.base.BaseController;
 import com.fh.controller.common.Common;
 import com.fh.controller.common.DictsUtil;
 import com.fh.controller.common.QueryFeildString;
+import com.fh.controller.common.SelectBillCodeOptions;
 import com.fh.controller.common.TmplUtil;
 import com.fh.entity.CommonBase;
 import com.fh.entity.JqPage;
 import com.fh.entity.Page;
 import com.fh.entity.PageResult;
-import com.fh.entity.TableColumns;
 import com.fh.entity.TmplConfigDetail;
+import com.fh.entity.TmplTypeInfo;
 import com.fh.util.ObjectExcelView;
 import com.fh.util.PageData;
 import com.fh.util.SqlTools;
 import com.fh.util.Jurisdiction;
+import com.fh.util.enums.SysConfigKeyCode;
 import com.fh.util.enums.TmplType;
 
 import net.sf.json.JSONArray;
@@ -69,28 +71,18 @@ public class DetailSummyQueryController extends BaseController {
 	@Resource(name="sysconfigService")
 	private SysConfigManager sysConfigManager;
 
+	//全部凭证单据
+	String SelectBillCodeFirstShow = "全部凭证单据";
+	String SelectBillCodeLastShow = "";
 	//默认的which值
 	String DefaultWhile = TmplType.TB_STAFF_SUMMY_CONTRACT.getNameKey();
-	//页面显示数据的二级单位
-	//String UserDepartCode = "";
 	// 查询表的主键字段，作为标准列，jqgrid添加带__列，mybaits获取带__列
 	private List<String> keyListBase = Arrays.asList("BILL_CODE", "DEPT_CODE");
 
 	//界面分组字段
 	List<String> jqGridGroupColumn = Arrays.asList("DEPT_CODE");
-    
-	//底行显示的求和与平均值字段
-	//StringBuilder SqlUserdata = new StringBuilder();
-	//字典
-	//Map<String, Object> DicList = new LinkedHashMap<String, Object>();
-	//表结构  
-	//Map<String, TableColumns> map_HaveColumnsList = new LinkedHashMap<String, TableColumns>();
-	// 前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
-	//Map<String, TmplConfigDetail> map_SetColumnsList = new LinkedHashMap<String, TmplConfigDetail>();
 	//界面查询字段
     List<String> QueryFeildList = Arrays.asList("BUSI_DATE", "DEPT_CODE", "USER_GROP", "CUST_COL7");
-    //查询的所有可操作的责任中心
-    //List<String> AllDeptCode = new ArrayList<String>();
 
 	/**列表
 	 * @param page
@@ -101,16 +93,10 @@ public class DetailSummyQueryController extends BaseController {
 		logBefore(logger, Jurisdiction.getUsername()+"列表detailsummyquery");
 		//if(!Jurisdiction.buttonJurisdiction(menuUrl, "cha")){return null;} //校验权限(无权查看时页面会有提示,如果不注释掉这句代码就无法进入列表页面,所以根据情况是否加入本句代码)
 
-		//查询的所有可操作的责任中心
-	    //AllDeptCode = new ArrayList<String>();
-
 		PageData getPd = this.getPageData();
 		//员工组
 		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
 
-		//当前登录人所在二级单位
-		String UserDepartCode = Jurisdiction.getCurrentDepartmentID();//
-		
 		ModelAndView mv = this.getModelAndView();
 		mv.setViewName("detailsummyquery/detailsummyquery/detailsummyquery_list");
 		//当前期间,取自tb_system_config的SystemDateTime字段
@@ -118,47 +104,31 @@ public class DetailSummyQueryController extends BaseController {
 		mv.addObject("SystemDateTime", SystemDateTime);
 		//while
 		getPd.put("which", SelectedTableNo);
+		//单号下拉列表
+		getPd.put("SelectNoBillCodeShow", SelectBillCodeFirstShow);
+		getPd.put("InitBillCodeOptions", SelectBillCodeOptions.getSelectBillCodeOptions(null, SelectBillCodeFirstShow, SelectBillCodeLastShow));
 		
-		//"BUSI_DATE", "DEPT_CODE", "USER_CATG", "USER_GROP", "CUST_COL7"
-		////USER_CATG PARTUSERTYPE 企业特定员工分类字典
-		//mv.addObject("PARTUSERTYPE", DictsUtil.getDictsByParentCode(dictionariesService, "PARTUSERTYPE"));
-		////USER_GROP EMPLGRP 员工组字典
-		//mv.addObject("EMPLGRP", DictsUtil.getDictsByParentCode(dictionariesService, "EMPLGRP"));
+		//"BUSI_DATE", "DEPT_CODE", "USER_GROP", "CUST_COL7"
 		//CUST_COL7 FMISACC 帐套字典
 		mv.addObject("FMISACC", DictsUtil.getDictsByParentCode(dictionariesService, "FMISACC"));
 		// *********************加载单位树  DEPT_CODE*******************************
 		String DepartmentSelectTreeSource=DictsUtil.getDepartmentSelectTreeSource(departmentService);
-		if(DepartmentSelectTreeSource.equals("0"))
-		{
+		if(DepartmentSelectTreeSource.equals("0")){
 			getPd.put("departTreeSource", DepartmentSelectTreeSource);
-			//AllDeptCode.add(UserDepartCode);
 		} else {
 			getPd.put("departTreeSource", 1);
-	        //JSONArray jsonArray = JSONArray.fromObject(DepartmentSelectTreeSource);  
-			//List<PageData> listDepart = (List<PageData>) JSONArray.toCollection(jsonArray, PageData.class);
-			//if(listDepart!=null && listDepart.size()>0){
-			//	for(PageData pdDept : listDepart){
-			//		AllDeptCode.add(pdDept.getString(DictsUtil.Id));
-			//	}
-			//}
 		}
 		mv.addObject("zTreeNodes", DepartmentSelectTreeSource);
 		// ***********************************************************
-		
+
+		//当前登录人所在二级单位
+		String UserDepartCode = Jurisdiction.getCurrentDepartmentID();//
 		TmplUtil tmpl = new TmplUtil(tmplconfigService, tmplconfigdictService, dictionariesService, 
-				departmentService,userService, keyListBase, jqGridGroupColumn, null);
+				departmentService,userService, keyListBase, jqGridGroupColumn, null, null);
 		String jqGridColModel = tmpl.generateStructureNoEdit(SelectedTableNo, UserDepartCode);
 
 		//分组字段是否显示在表中
 		List<String> m_jqGridGroupColumnShow = tmpl.getJqGridGroupColumnShow();
-		//底行显示的求和与平均值字段
-		//SqlUserdata = tmpl.getSqlUserdata();
-		//字典
-		//DicList = tmpl.getDicList();
-		//表结构  
-		//map_HaveColumnsList = tmpl.getHaveColumnsList();
-		// 前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
-		//map_SetColumnsList = tmpl.getSetColumnsList();
 
 		mv.addObject("pd", getPd);
 		mv.addObject("jqGridColModel", jqGridColModel);
@@ -170,6 +140,55 @@ public class DetailSummyQueryController extends BaseController {
 		mv.addObject("jqGridGroupColumnShow", jqGridGroupColumnShow);
 		
 		return mv;
+	}
+
+	/**单号下拉列表
+	 * @param
+	 * @throws Exception
+	 */
+	@RequestMapping(value="/getBillCodeList")
+	public @ResponseBody CommonBase getBillCodeList() throws Exception{
+		CommonBase commonBase = new CommonBase();
+		commonBase.setCode(-1);
+		
+		PageData getPd = this.getPageData();
+		//员工组
+		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		String emplGroupType = DictsUtil.getEmplGroupType(SelectedTableNo);
+		//单位
+		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
+		//账套
+		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
+		//日期
+		String SelectedBusiDate = getPd.getString("SelectedBusiDate");
+		List<String> AllDeptCode = Common.getAllDeptCode(departmentService, Jurisdiction.getCurrentDepartmentID());
+
+		String tableNameSummy = getSummyBaseTableCode(SelectedTableNo);
+		
+		PageData getQueryFeildPd = new PageData();
+		getQueryFeildPd.put("USER_GROP", emplGroupType);
+		getQueryFeildPd.put("DEPT_CODE", SelectedDepartCode);
+		getQueryFeildPd.put("CUST_COL7", SelectedCustCol7);
+		getQueryFeildPd.put("BUSI_DATE", SelectedBusiDate);
+		String QueryFeild = QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList);
+		QueryFeild += " and DEPT_CODE in (" + QueryFeildString.tranferListValueToSqlInString(AllDeptCode) + ") ";//工资无账套无数据
+		if(!(SelectedCustCol7!=null && !SelectedCustCol7.trim().equals(""))){
+			QueryFeild += " and 1 != 1 ";
+		}
+		getPd.put("QueryFeild", QueryFeild);
+		
+		//表名
+		getPd.put("TableName", tableNameSummy);
+		
+		List<String> getCodeList = detailsummyqueryryService.getBillCodeList(getPd);
+		String returnString = SelectBillCodeOptions.getSelectBillCodeOptions(getCodeList, SelectBillCodeFirstShow, SelectBillCodeLastShow);
+		commonBase.setMessage(returnString);
+		commonBase.setCode(0);
+
+		commonBase.setMessage(returnString);
+		commonBase.setCode(0);
+		
+		return commonBase;
 	}
 	
 	/**列表
@@ -185,8 +204,11 @@ public class DetailSummyQueryController extends BaseController {
 		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
 		//底行显示的求和与平均值字段
 		StringBuilder SqlUserdata = Common.GetSqlUserdata(SelectedTableNo, Jurisdiction.getCurrentDepartmentID(), tmplconfigService);
-		
-		PageData pdTransfer = setPutPd(getPd);
+
+		PageData pdTransfer = setTransferPd(getPd);
+		//表名
+		String tableNameSummy = getSummyBaseTableCode(SelectedTableNo);
+		pdTransfer.put("TableName", tableNameSummy);
 		page.setPd(pdTransfer);
 		
 		List<PageData> varList = detailsummyqueryryService.JqPage(page);	//列出Betting列表
@@ -212,22 +234,23 @@ public class DetailSummyQueryController extends BaseController {
 	 * @param
 	 * @throws Exception
 	 */
-	@RequestMapping(value="/getDetailColModel")
-	public @ResponseBody CommonBase getDetailColModel() throws Exception{
-		logBefore(logger, Jurisdiction.getUsername()+"getDetailColModel");
+	@RequestMapping(value="/getFirstDetailColModel")
+	public @ResponseBody CommonBase getFirstDetailColModel() throws Exception{
+		logBefore(logger, Jurisdiction.getUsername()+"getFirstDetailColModel");
 		CommonBase commonBase = new CommonBase();
 		commonBase.setCode(-1);
 
 		PageData getPd = this.getPageData();
 		//员工组 必须执行，用来设置汇总和传输上报类型
 		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		TmplTypeInfo implTypeCode = getWhileValueToTypeCode(SelectedTableNo);
+		String TypeCodeSummyDetail = implTypeCode.getTypeCodeSummyDetail();
+		List<String> SumFieldDetail = implTypeCode.getSumFieldDetail();
 		String DEPT_CODE = (String) getPd.get("DataDeptCode");
 		
-		String detailTypeCode = getDetailTypeCode(SelectedTableNo);
-		
 		TmplUtil tmpl = new TmplUtil(tmplconfigService, tmplconfigdictService, dictionariesService, 
-				departmentService,userService);
-		String detailColModel = tmpl.generateStructureNoEdit(detailTypeCode, DEPT_CODE);
+				departmentService,userService,SumFieldDetail, null, null, null);
+		String detailColModel = tmpl.generateStructureNoEdit(TypeCodeSummyDetail, DEPT_CODE);
 		
 		commonBase.setCode(0);
 		commonBase.setMessage(detailColModel);
@@ -239,137 +262,99 @@ public class DetailSummyQueryController extends BaseController {
 	 * @param
 	 * @throws Exception
 	 */
-	@RequestMapping(value="/getDetailList")
-	public @ResponseBody PageResult<PageData> getDetailList() throws Exception{
-		logBefore(logger, Jurisdiction.getUsername()+"getDetailList");
+	@RequestMapping(value="/getFirstDetailList")
+	public @ResponseBody PageResult<PageData> getFirstDetailList() throws Exception{
+		logBefore(logger, Jurisdiction.getUsername()+"getFirstDetailList");
 
 		PageData getPd = this.getPageData();
 		//员工组 必须执行，用来设置汇总和传输上报类型
 		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		TmplTypeInfo implTypeCode = getWhileValueToTypeCode(SelectedTableNo);
+		List<String> SumFieldDetail = implTypeCode.getSumFieldDetail();
 		String strBillCode = getPd.getString("DetailListBillCode");
 		
-		String detailTableName = getDetailTableCode(SelectedTableNo);
-		
-		getPd.put("TableName", detailTableName);
-		getPd.put("BILL_CODE", strBillCode);
-		List<PageData> varList = detailsummyqueryryService.getDetailList(getPd);	//列出Betting列表
+		String detailTableName = getSummyDetailTableCode(SelectedTableNo);
+
+		PageData pdCode = new PageData();
+		pdCode.put("TableName", detailTableName);
+		pdCode.put("BILL_CODE", strBillCode);
+		String strFieldSelectKey = QueryFeildString.getFieldSelectKey(SumFieldDetail, TmplUtil.keyExtra);
+		if(null != strFieldSelectKey && !"".equals(strFieldSelectKey.trim())){
+			pdCode.put("FieldSelectKey", strFieldSelectKey);
+		}
+		List<PageData> varList = detailsummyqueryryService.getFirstDetailList(pdCode);	//列出Betting列表
 		PageResult<PageData> result = new PageResult<PageData>();
 		result.setRows(varList);
 		
 		return result;
 	}
 
-	private String getWhileValue(String value){
-        String which = DefaultWhile;
-		if(value != null && !value.trim().equals("")){
-			which = value;
-		}
-		return which;
-	}
-	/**
-	 * 根据前端业务表索引获取表名称
-	 * 
-	 * @param which
-	 * @return
+	/**明细显示结构
+	 * @param
+	 * @throws Exception
 	 */
-	private String getSummyTableCode(String which) {
-		String tableCode = "";
-		if (which != null){
-			if(which.equals(TmplType.TB_STAFF_SUMMY_CONTRACT.getNameKey())
-					||which.equals(TmplType.TB_STAFF_SUMMY_MARKET.getNameKey())
-					||which.equals(TmplType.TB_STAFF_SUMMY_SYS_LABOR.getNameKey())
-					||which.equals(TmplType.TB_STAFF_SUMMY_OPER_LABOR.getNameKey())
-					||which.equals(TmplType.TB_STAFF_SUMMY_LABOR.getNameKey())) {
-				tableCode = "tb_staff_summy";
-			} else if (which.equals(TmplType.TB_SOCIAL_INC_SUMMY.getNameKey())) {
-				tableCode = "tb_social_inc_summy";
-			} else if (which.equals(TmplType.TB_HOUSE_FUND_SUMMY.getNameKey())) {
-				tableCode = "tb_house_fund_summy";
-			}
-		}
-		return tableCode;
-	}
-	private String getDetailTableCode(String which) {
-		String tableCode = "";
-		if (which != null){
-			if(which.equals(TmplType.TB_STAFF_SUMMY_CONTRACT.getNameKey())
-					||which.equals(TmplType.TB_STAFF_SUMMY_MARKET.getNameKey())
-					||which.equals(TmplType.TB_STAFF_SUMMY_SYS_LABOR.getNameKey())
-					||which.equals(TmplType.TB_STAFF_SUMMY_OPER_LABOR.getNameKey())
-					||which.equals(TmplType.TB_STAFF_SUMMY_LABOR.getNameKey())) {
-				tableCode = "tb_staff_detail";
-			} else if (which.equals(TmplType.TB_SOCIAL_INC_SUMMY.getNameKey())) {
-				tableCode = "tb_social_inc_detail";
-			} else if (which.equals(TmplType.TB_HOUSE_FUND_SUMMY.getNameKey())) {
-				tableCode = "tb_house_fund_detail";
-			}
-		}
-		return tableCode;
-	}
-	private String getDetailTypeCode(String which) {
-		String tableCode = "";
-		if (which != null){
-			if(which.equals(TmplType.TB_STAFF_SUMMY_CONTRACT.getNameKey())){
-			//合同化
-				tableCode = TmplType.TB_STAFF_DETAIL_CONTRACT.getNameKey();
-		    } else if(which.equals(TmplType.TB_STAFF_SUMMY_MARKET.getNameKey())){
-			//市场化
-			    tableCode = TmplType.TB_STAFF_DETAIL_MARKET.getNameKey();
-	    	} else if(which.equals(TmplType.TB_STAFF_SUMMY_SYS_LABOR.getNameKey())){
-			//系统内劳务
-			    tableCode = TmplType.TB_STAFF_DETAIL_SYS_LABOR.getNameKey();
-		    } else if(which.equals(TmplType.TB_STAFF_SUMMY_OPER_LABOR.getNameKey())){
-			//运行人员
-			    tableCode = TmplType.TB_STAFF_DETAIL_OPER_LABOR.getNameKey();
-		    } else if(which.equals(TmplType.TB_STAFF_SUMMY_LABOR.getNameKey())){
-			//劳务派遣工资
-			    tableCode = TmplType.TB_STAFF_DETAIL_LABOR.getNameKey();
-		    }  else if (which.equals(TmplType.TB_SOCIAL_INC_SUMMY.getNameKey())) {
-				tableCode = TmplType.TB_SOCIAL_INC_DETAIL.getNameKey();
-			} else if (which.equals(TmplType.TB_HOUSE_FUND_SUMMY.getNameKey())) {
-				tableCode = TmplType.TB_HOUSE_FUND_DETAIL.getNameKey();
-			}
-		}
-		return tableCode;
-	}
-	
-	private PageData setPutPd(PageData getPd) throws Exception{
-		//员工组
+	@RequestMapping(value="/getSecondDetailColModel")
+	public @ResponseBody CommonBase getSecondDetailColModel() throws Exception{
+		logBefore(logger, Jurisdiction.getUsername()+"getSecondDetailColModel");
+		CommonBase commonBase = new CommonBase();
+		commonBase.setCode(-1);
+
+		PageData getPd = this.getPageData();
+		//员工组 必须执行，用来设置汇总和传输上报类型
 		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
-		String emplGroupType = DictsUtil.getEmplGroupType(SelectedTableNo);
-		//单位
-		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
-		//账套
-		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
-		//日期
-		String SelectedBusiDate = getPd.getString("SelectedBusiDate");
-		List<String> AllDeptCode = Common.getAllDeptCode(departmentService, Jurisdiction.getCurrentDepartmentID());
+		TmplTypeInfo implTypeCode = getWhileValueToTypeCode(SelectedTableNo);
+		String TypeCodeDetail = implTypeCode.getTypeCodeDetail();
 		
-		String tableNameSummy = getSummyTableCode(SelectedTableNo);
+		String DEPT_CODE = (String) getPd.get("DataDeptCode");
+
+		TmplUtil tmpl = new TmplUtil(tmplconfigService, tmplconfigdictService, dictionariesService, 
+				departmentService,userService);
+		String detailColModel = tmpl.generateStructureNoEdit(TypeCodeDetail, DEPT_CODE);
 		
-		PageData getQueryFeildPd = new PageData();
-		getQueryFeildPd.put("USER_GROP", emplGroupType);
-		getQueryFeildPd.put("DEPT_CODE", SelectedDepartCode);
-		getQueryFeildPd.put("CUST_COL7", SelectedCustCol7);
-		getQueryFeildPd.put("BUSI_DATE", SelectedBusiDate);
-		String QueryFeild = QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList);
-		QueryFeild += " and DEPT_CODE in (" + QueryFeildString.tranferListValueToSqlInString(AllDeptCode) + ") ";
-		getPd.put("QueryFeild", QueryFeild);
+		commonBase.setCode(0);
+		commonBase.setMessage(detailColModel);
 		
-		//表名
-		getPd.put("TableName", tableNameSummy);
-		//多条件过滤条件
-		String filters = getPd.getString("filters");
-		if(null != filters && !"".equals(filters)){
-			getPd.put("filterWhereResult", SqlTools.constructWhere(filters,null));
-		}
-		String strFieldSelectKey = QueryFeildString.getFieldSelectKey(keyListBase, TmplUtil.keyExtra);
-		if(null != strFieldSelectKey && !"".equals(strFieldSelectKey.trim())){
-			getPd.put("FieldSelectKey", strFieldSelectKey);
-		}
-		return getPd;
+		return commonBase;
 	}
-	
+
+	/**明细数据
+	 * @param
+	 * @throws Exception
+	 */
+	@SuppressWarnings("unchecked")
+	@RequestMapping(value="/getSecondDetailList")
+	public @ResponseBody PageResult<PageData> getSecondDetailList() throws Exception{
+		logBefore(logger, Jurisdiction.getUsername()+"getSecondDetailList");
+
+		PageData getPd = this.getPageData();
+		//员工组 必须执行，用来设置汇总和传输上报类型
+		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		TmplTypeInfo implTypeCode = getWhileValueToTypeCode(SelectedTableNo);
+		List<String> SumFieldDetail = implTypeCode.getSumFieldDetail();
+		
+		Object DATA_ROWS = getPd.get("DataRows");
+		String json = DATA_ROWS.toString();  
+        JSONArray array = JSONArray.fromObject(json);  
+        List<PageData> listData = (List<PageData>) JSONArray.toCollection(array,PageData.class);
+        PageData pdGet = listData.get(0);
+
+		String detailTableName = getImportDetailTableCode(SelectedTableNo);
+
+		PageData pdCode = new PageData();
+		String QueryFeild = QueryFeildString.getDetailQueryFeild(pdGet, SumFieldDetail, TmplUtil.keyExtra);
+	    if(!(QueryFeild!=null && !QueryFeild.trim().equals(""))){
+	    	QueryFeild += " and 1 != 1 ";
+	    }
+	    pdCode.put("QueryFeild", QueryFeild);
+		
+	    pdCode.put("TableName", detailTableName);
+		List<PageData> varList = detailsummyqueryryService.getSecondDetailList(pdCode);	//列出Betting列表
+		PageResult<PageData> result = new PageResult<PageData>();
+		result.setRows(varList);
+		
+		return result;
+	}
+
 	 /**导出到excel
 	 * @param
 	 * @throws Exception
@@ -386,8 +371,11 @@ public class DetailSummyQueryController extends BaseController {
 		Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(SelectedTableNo, Jurisdiction.getCurrentDepartmentID(), tmplconfigService);
 		Map<String, Object> DicList = Common.GetDicList(SelectedTableNo, Jurisdiction.getCurrentDepartmentID(), 
 				tmplconfigService, tmplconfigdictService, dictionariesService, departmentService, userService, "");
-		
-		PageData pdTransfer = setPutPd(getPd);
+
+		String tableNameSummy = getSummyDetailTableCode(SelectedTableNo);
+		PageData pdTransfer = setTransferPd(getPd);
+		//表名
+		pdTransfer.put("TableName", tableNameSummy);
 		page.setPd(pdTransfer);
 		List<PageData> varOList = detailsummyqueryryService.datalistExport(page);
 		
@@ -430,6 +418,234 @@ public class DetailSummyQueryController extends BaseController {
 		ObjectExcelView erv = new ObjectExcelView();
 		mv = new ModelAndView(erv,dataMap); 
 		return mv;
+	}
+	
+	private String getWhileValue(String value){
+        String which = DefaultWhile;
+		if(value != null && !value.trim().equals("")){
+			which = value;
+		}
+		return which;
+	}
+	/**
+	 * 根据前端业务表索引获取表名称
+	 * 
+	 * @param which
+	 * @return
+	 */
+	private String getSummyBaseTableCode(String which) {
+		String tableCode = "";
+		if (which != null){
+			if(which.equals(TmplType.TB_STAFF_SUMMY_CONTRACT.getNameKey())
+					||which.equals(TmplType.TB_STAFF_SUMMY_MARKET.getNameKey())
+					||which.equals(TmplType.TB_STAFF_SUMMY_SYS_LABOR.getNameKey())
+					||which.equals(TmplType.TB_STAFF_SUMMY_OPER_LABOR.getNameKey())
+					||which.equals(TmplType.TB_STAFF_SUMMY_LABOR.getNameKey())) {
+				tableCode = "tb_staff_summy_bill";
+			} else if (which.equals(TmplType.TB_SOCIAL_INC_SUMMY.getNameKey())) {
+				tableCode = "tb_social_inc_summy_bill";
+			} else if (which.equals(TmplType.TB_HOUSE_FUND_SUMMY.getNameKey())) {
+				tableCode = "tb_house_fund_summy_bill";
+			}
+		}
+		return tableCode;
+	}
+	private String getSummyDetailTableCode(String which) {
+		String tableCode = "";
+		if (which != null){
+			if(which.equals(TmplType.TB_STAFF_SUMMY_CONTRACT.getNameKey())
+					||which.equals(TmplType.TB_STAFF_SUMMY_MARKET.getNameKey())
+					||which.equals(TmplType.TB_STAFF_SUMMY_SYS_LABOR.getNameKey())
+					||which.equals(TmplType.TB_STAFF_SUMMY_OPER_LABOR.getNameKey())
+					||which.equals(TmplType.TB_STAFF_SUMMY_LABOR.getNameKey())) {
+				tableCode = "tb_staff_summy";
+			} else if (which.equals(TmplType.TB_SOCIAL_INC_SUMMY.getNameKey())) {
+				tableCode = "tb_social_inc_summy";
+			} else if (which.equals(TmplType.TB_HOUSE_FUND_SUMMY.getNameKey())) {
+				tableCode = "tb_house_fund_summy";
+			}
+		}
+		return tableCode;
+	}
+	private String getImportDetailTableCode(String which) {
+		String tableCode = "";
+		if (which != null){
+			if(which.equals(TmplType.TB_STAFF_SUMMY_CONTRACT.getNameKey())
+					||which.equals(TmplType.TB_STAFF_SUMMY_MARKET.getNameKey())
+					||which.equals(TmplType.TB_STAFF_SUMMY_SYS_LABOR.getNameKey())
+					||which.equals(TmplType.TB_STAFF_SUMMY_OPER_LABOR.getNameKey())
+					||which.equals(TmplType.TB_STAFF_SUMMY_LABOR.getNameKey())) {
+				tableCode = "tb_staff_detail";
+			} else if (which.equals(TmplType.TB_SOCIAL_INC_SUMMY.getNameKey())) {
+				tableCode = "tb_social_inc_detail";
+			} else if (which.equals(TmplType.TB_HOUSE_FUND_SUMMY.getNameKey())) {
+				tableCode = "tb_house_fund_detail";
+			}
+		}
+		return tableCode;
+	}
+	
+	private PageData setTransferPd(PageData getPd) throws Exception{
+		//员工组
+		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		String emplGroupType = DictsUtil.getEmplGroupType(SelectedTableNo);
+		//单位
+		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
+		//账套
+		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
+		//日期
+		String SelectedBusiDate = getPd.getString("SelectedBusiDate");
+		//单号
+		String SelectedBillCode = getPd.getString("SelectedBillCode");
+		List<String> AllDeptCode = Common.getAllDeptCode(departmentService, Jurisdiction.getCurrentDepartmentID());
+		
+		PageData getQueryFeildPd = new PageData();
+		getQueryFeildPd.put("USER_GROP", emplGroupType);
+		getQueryFeildPd.put("DEPT_CODE", SelectedDepartCode);
+		getQueryFeildPd.put("CUST_COL7", SelectedCustCol7);
+		getQueryFeildPd.put("BUSI_DATE", SelectedBusiDate);
+		String QueryFeild = QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList);
+		QueryFeild += QueryFeildString.getQueryFeildBillCodeSummy(SelectedBillCode, SelectBillCodeFirstShow, SelectBillCodeLastShow);
+		QueryFeild += " and DEPT_CODE in (" + QueryFeildString.tranferListValueToSqlInString(AllDeptCode) + ") ";
+		if(!(SelectedCustCol7!=null && !SelectedCustCol7.trim().equals(""))){
+			QueryFeild += " and 1 != 1 ";
+		}
+		if(!(SelectedBusiDate!=null && !SelectedBusiDate.trim().equals(""))){
+			QueryFeild += " and 1 != 1 ";
+		}
+		getPd.put("QueryFeild", QueryFeild);
+		
+		//多条件过滤条件
+		String filters = getPd.getString("filters");
+		if(null != filters && !"".equals(filters)){
+			getPd.put("filterWhereResult", SqlTools.constructWhere(filters,null));
+		}
+		String strFieldSelectKey = QueryFeildString.getFieldSelectKey(keyListBase, TmplUtil.keyExtra);
+		if(null != strFieldSelectKey && !"".equals(strFieldSelectKey.trim())){
+			getPd.put("FieldSelectKey", strFieldSelectKey);
+		}
+		return getPd;
+	}
+
+	private TmplTypeInfo getWhileValueToTypeCode(String which) throws Exception{
+		TmplTypeInfo retItem = new TmplTypeInfo();
+		//枚举类型 TmplType
+		//1、合同化、市场化、运行人员、系统内运行按6列汇总：业务日期、组织机构、帐套、员工组、所属二级单位、组织单元文本、企业特定员工分类、工资范围编码
+		//2、劳务派遣运行按4列汇总：                                                      业务日期、组织机构、帐套、员工组、所属二级单位、组织单元文本retItem
+		List<String> SumFieldBillStaff = Arrays.asList("BILL_CODE", "BUSI_DATE", "DEPT_CODE", "CUST_COL7", "USER_GROP");
+		List<String> SumFieldBillSocial = Arrays.asList("BILL_CODE", "BUSI_DATE", "DEPT_CODE", "CUST_COL7");
+		if(which.equals(TmplType.TB_STAFF_SUMMY_CONTRACT.getNameKey())){
+			//合同化
+			retItem.setTypeCodeDetail(TmplType.TB_STAFF_DETAIL_CONTRACT.getNameKey());
+			retItem.setTypeCodeSummyBill(TmplType.TB_STAFF_SUMMY_CONTRACT.getNameKey());
+			retItem.setTypeCodeSummyDetail(TmplType.TB_STAFF_SUMMY_CONTRACT.getNameKey());
+			//1、合同化、市场化、运行人员、系统内运行按6列汇总：业务日期、组织机构、帐套、员工组、所属二级单位、组织单元文本、企业特定员工分类、工资范围编码
+			//2、劳务派遣运行按4列汇总：                                                      业务日期、组织机构、帐套、员工组、所属二级单位、组织单元文本
+		    //SumField = Arrays.asList("BUSI_DATE", "DEPT_CODE", "CUST_COL7", "USER_GROP", "UNITS_CODE", "ORG_UNIT", "USER_CATG", "SAL_RANGE");
+		    //SumFieldToString = QueryFeildString.tranferListStringToGroupbyString(SumField);
+			
+			PageData pdSysConfig = new PageData();
+			pdSysConfig.put("KEY_CODE", SysConfigKeyCode.ContractGRPCond);
+			String strSumFieldDetail = sysConfigManager.getSysConfigByKey(pdSysConfig);
+			List<String> listSumFieldDetail = QueryFeildString.tranferStringToList(strSumFieldDetail);
+			listSumFieldDetail = QueryFeildString.extraSumField(listSumFieldDetail, SumFieldBillStaff);
+			retItem.setSumFieldDetail(listSumFieldDetail);
+		}
+		if(which.equals(TmplType.TB_STAFF_SUMMY_MARKET.getNameKey())){
+			//市场化
+			retItem.setTypeCodeDetail(TmplType.TB_STAFF_DETAIL_MARKET.getNameKey());
+			retItem.setTypeCodeSummyBill(TmplType.TB_STAFF_SUMMY_MARKET.getNameKey());
+			retItem.setTypeCodeSummyDetail(TmplType.TB_STAFF_SUMMY_MARKET.getNameKey());
+			//1、合同化、市场化、运行人员、系统内运行按6列汇总：业务日期、组织机构、帐套、员工组、所属二级单位、组织单元文本、企业特定员工分类、工资范围编码
+			//2、劳务派遣运行按4列汇总：                                                      业务日期、组织机构、帐套、员工组、所属二级单位、组织单元文本
+		    //SumField = Arrays.asList("BUSI_DATE", "DEPT_CODE", "CUST_COL7", "USER_GROP", "UNITS_CODE", "ORG_UNIT", "USER_CATG", "SAL_RANGE");
+		    //SumFieldToString = QueryFeildString.tranferListStringToGroupbyString(SumField);
+			
+			PageData pdSysConfig = new PageData();
+			pdSysConfig.put("KEY_CODE", SysConfigKeyCode.MarketGRPCond);
+			String strSumFieldDetail = sysConfigManager.getSysConfigByKey(pdSysConfig);
+			List<String> listSumFieldDetail = QueryFeildString.tranferStringToList(strSumFieldDetail);
+			listSumFieldDetail = QueryFeildString.extraSumField(listSumFieldDetail, SumFieldBillStaff);
+			retItem.setSumFieldDetail(listSumFieldDetail);
+		}
+		if(which.equals(TmplType.TB_STAFF_SUMMY_SYS_LABOR.getNameKey())){
+			//系统内劳务
+			retItem.setTypeCodeDetail(TmplType.TB_STAFF_DETAIL_SYS_LABOR.getNameKey());
+			retItem.setTypeCodeSummyBill(TmplType.TB_STAFF_SUMMY_SYS_LABOR.getNameKey());
+			retItem.setTypeCodeSummyDetail(TmplType.TB_STAFF_SUMMY_SYS_LABOR.getNameKey());
+			//1、合同化、市场化、运行人员、系统内运行按6列汇总：业务日期、组织机构、帐套、员工组、所属二级单位、组织单元文本、企业特定员工分类、工资范围编码
+			//2、劳务派遣运行按4列汇总：                                                      业务日期、组织机构、帐套、员工组、所属二级单位、组织单元文本
+		    //SumField = Arrays.asList("BUSI_DATE", "DEPT_CODE", "CUST_COL7", "USER_GROP", "UNITS_CODE", "ORG_UNIT", "USER_CATG", "SAL_RANGE");
+		    //SumFieldToString = QueryFeildString.tranferListStringToGroupbyString(SumField);
+			
+			PageData pdSysConfig = new PageData();
+			pdSysConfig.put("KEY_CODE", SysConfigKeyCode.SysLaborGRPCond);
+			String strSumFieldDetail = sysConfigManager.getSysConfigByKey(pdSysConfig);
+			List<String> listSumFieldDetail = QueryFeildString.tranferStringToList(strSumFieldDetail);
+			listSumFieldDetail = QueryFeildString.extraSumField(listSumFieldDetail, SumFieldBillStaff);
+			retItem.setSumFieldDetail(listSumFieldDetail);
+		}
+		if(which.equals(TmplType.TB_STAFF_SUMMY_OPER_LABOR.getNameKey())){
+			//运行人员
+			retItem.setTypeCodeDetail(TmplType.TB_STAFF_DETAIL_OPER_LABOR.getNameKey());
+			retItem.setTypeCodeSummyBill(TmplType.TB_STAFF_SUMMY_OPER_LABOR.getNameKey());
+			retItem.setTypeCodeSummyDetail(TmplType.TB_STAFF_SUMMY_OPER_LABOR.getNameKey());
+			//1、合同化、市场化、运行人员、系统内运行按6列汇总：业务日期、组织机构、帐套、员工组、所属二级单位、组织单元文本、企业特定员工分类、工资范围编码
+			//2、劳务派遣运行按4列汇总：                                                      业务日期、组织机构、帐套、员工组、所属二级单位、组织单元文本
+		    //SumField = Arrays.asList("BUSI_DATE", "DEPT_CODE", "CUST_COL7", "USER_GROP", "UNITS_CODE", "ORG_UNIT", "USER_CATG", "SAL_RANGE");
+		    //SumFieldToString = QueryFeildString.tranferListStringToGroupbyString(SumField);
+			
+			PageData pdSysConfig = new PageData();
+			pdSysConfig.put("KEY_CODE", SysConfigKeyCode.OperLaborGRPCond);
+			String strSumFieldDetail = sysConfigManager.getSysConfigByKey(pdSysConfig);
+			List<String> listSumFieldDetail = QueryFeildString.tranferStringToList(strSumFieldDetail);
+			listSumFieldDetail = QueryFeildString.extraSumField(listSumFieldDetail, SumFieldBillStaff);
+			retItem.setSumFieldDetail(listSumFieldDetail);
+		}
+		if(which.equals(TmplType.TB_STAFF_SUMMY_LABOR.getNameKey())){
+			//劳务派遣工资
+			retItem.setTypeCodeDetail(TmplType.TB_STAFF_DETAIL_LABOR.getNameKey());
+			retItem.setTypeCodeSummyBill(TmplType.TB_STAFF_SUMMY_LABOR.getNameKey());
+			retItem.setTypeCodeSummyDetail(TmplType.TB_STAFF_SUMMY_LABOR.getNameKey());
+			//1、合同化、市场化、运行人员、系统内运行按6列汇总：业务日期、组织机构、帐套、员工组、所属二级单位、组织单元文本、企业特定员工分类、工资范围编码
+			//2、劳务派遣运行按4列汇总：                                                      业务日期、组织机构、帐套、员工组、所属二级单位、组织单元文本
+		    //SumField = Arrays.asList("BUSI_DATE", "DEPT_CODE", "CUST_COL7", "USER_GROP", "UNITS_CODE", "ORG_UNIT");
+		    //SumFieldToString = QueryFeildString.tranferListStringToGroupbyString(SumField);
+			
+			PageData pdSysConfig = new PageData();
+			pdSysConfig.put("KEY_CODE", SysConfigKeyCode.LaborGRPCond);
+			String strSumFieldDetail = sysConfigManager.getSysConfigByKey(pdSysConfig);
+			List<String> listSumFieldDetail = QueryFeildString.tranferStringToList(strSumFieldDetail);
+			listSumFieldDetail = QueryFeildString.extraSumField(listSumFieldDetail, SumFieldBillStaff);
+			retItem.setSumFieldDetail(listSumFieldDetail);
+		}
+		if(which.equals(TmplType.TB_SOCIAL_INC_SUMMY.getNameKey())){
+			//劳务派遣工资
+			retItem.setTypeCodeDetail(TmplType.TB_SOCIAL_INC_DETAIL.getNameKey());
+			retItem.setTypeCodeSummyBill(TmplType.TB_SOCIAL_INC_SUMMY.getNameKey());
+			retItem.setTypeCodeSummyDetail(TmplType.TB_SOCIAL_INC_SUMMY.getNameKey());
+
+			PageData pdSysConfig = new PageData();
+			pdSysConfig.put("KEY_CODE", SysConfigKeyCode.SocialIncGRPCond);
+			String strSumFieldDetail = sysConfigManager.getSysConfigByKey(pdSysConfig);
+			List<String> listSumFieldDetail = QueryFeildString.tranferStringToList(strSumFieldDetail);
+			listSumFieldDetail = QueryFeildString.extraSumField(listSumFieldDetail, SumFieldBillSocial);
+			retItem.setSumFieldDetail(listSumFieldDetail);
+		}
+		if(which.equals(TmplType.TB_HOUSE_FUND_SUMMY.getNameKey())){
+			//劳务派遣工资
+			retItem.setTypeCodeDetail(TmplType.TB_HOUSE_FUND_DETAIL.getNameKey());
+			retItem.setTypeCodeSummyBill(TmplType.TB_HOUSE_FUND_SUMMY.getNameKey());
+			retItem.setTypeCodeSummyDetail(TmplType.TB_HOUSE_FUND_SUMMY.getNameKey());
+
+			PageData pdSysConfig = new PageData();
+			pdSysConfig.put("KEY_CODE", SysConfigKeyCode.HouseFundGRPCond);
+			String strSumFieldDetail = sysConfigManager.getSysConfigByKey(pdSysConfig);
+			List<String> listSumFieldDetail = QueryFeildString.tranferStringToList(strSumFieldDetail);
+			listSumFieldDetail = QueryFeildString.extraSumField(listSumFieldDetail, SumFieldBillSocial);
+			retItem.setSumFieldDetail(listSumFieldDetail);
+		}
+		return retItem;
 	}
 	
 	@InitBinder

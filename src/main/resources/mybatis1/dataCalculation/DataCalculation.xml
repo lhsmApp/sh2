@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="DataCalculation">
+	
+	<!--  -->
+	<select id="getMaxSerialNo" parameterType="String" resultType="Integer">
+		SELECT IFNULL(MAX(SERIAL_NO), 0) FROM ${value}
+	</select>
+	
+	<!--  -->
+	<select id="getStaffTax" resultType="com.fh.entity.StaffTax">
+		SELECT * FROM TB_STAFF_TAX order by MIN_VALUE
+	</select>
+	
+	<!--  -->
+	<select id="getAddSerialNo" parameterType="pd" resultType="Integer">
+	    select SERIAL_NO from ${tableName} where SERIAL_NO > ${strMaxNum}
+	</select>
+	
+	<!--  -->
+	<select id="getListBySerialNo" parameterType="pd" resultType="pd">
+	    ${sqlRetSelect} where SERIAL_NO in (${SqlInBillCode}) order by SERIAL_NO
+	</select>
+	
+	<!--  -->
+	<select id="getSumByUserCode" parameterType="pd" resultType="pd">
+	    select * from (${sqlSumByUserCode}) t where USER_CODE = '${USER_CODE}'
+	</select>
+	
+	<select id="getRollback" resultType="pd">
+	    update table  column = 'column'
+	</select>
+	
+</mapper>

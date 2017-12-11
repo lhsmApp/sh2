@@ -162,7 +162,7 @@ public class FinanceAccountsController extends BaseController {
 		// ***********************************************************
 				
 		TmplUtil tmpl = new TmplUtil(tmplconfigService, tmplconfigdictService, dictionariesService, 
-				departmentService,userService, keyListBase, null, null);
+				departmentService,userService, keyListBase, null, null, null);
 		String jqGridColModel = tmpl.generateStructureAccount(SelectedTableNo, UserDepartCode);
 		mv.addObject("jqGridColModel", jqGridColModel);
 
@@ -189,8 +189,8 @@ public class FinanceAccountsController extends BaseController {
 			SelectedDepartCode = Jurisdiction.getCurrentDepartmentID();
 		}
 		TmplTypeInfo implTypeCode = getWhileValueToTypeCode(SelectedTableNo);
-		String TypeCodeStaffSummy = implTypeCode.getTypeCodeSummy();
-		String TypeCodeStaffListen = implTypeCode.getTypeCodeListen();
+		String TypeCodeStaffSummy = "";//implTypeCode.getTypeCodeSummy();
+		//String TypeCodeStaffListen = implTypeCode.getTypeCodeListen();
 		String GroupbyFeild = implTypeCode.getGroupbyFeild();
 		List<String> keyListBase = implTypeCode.getKeyListBase();
 
@@ -244,9 +244,9 @@ public class FinanceAccountsController extends BaseController {
 		detailReport += FilterBillCode.getBillCodeNotInSumInvalid(tbSocialIncSummy);
 		detailReport += FilterBillCode.getBillCodeNotInSumInvalid(tbStaffSummy);
 		
-		detailReport += FilterBillCode.getReportListenNotSummy(tbHouseFundSummy, TypeCodeGoldSummy, TypeCodeGoldListen);
-		detailReport += FilterBillCode.getReportListenNotSummy(tbSocialIncSummy, TypeCodeSocialSummy, TypeCodeSocialListen);
-		detailReport += FilterBillCode.getReportListenNotSummy(tbStaffSummy, TypeCodeStaffSummy, TypeCodeStaffListen);
+		//detailReport += FilterBillCode.getReportListenNotSummy(tbHouseFundSummy, TypeCodeGoldSummy, TypeCodeGoldListen);
+		//detailReport += FilterBillCode.getReportListenNotSummy(tbSocialIncSummy, TypeCodeSocialSummy, TypeCodeSocialListen);
+		//detailReport += FilterBillCode.getReportListenNotSummy(tbStaffSummy, TypeCodeStaffSummy, TypeCodeStaffListen);
 		
 		getPd.put("CheckReport", detailReport);
 		page.setPd(getPd);
@@ -312,7 +312,7 @@ public class FinanceAccountsController extends BaseController {
 		
 		List<String> resetList = Arrays.asList("USER_CODE");
 		TmplUtil tmpl = new TmplUtil(tmplconfigService, tmplconfigdictService, dictionariesService, 
-				departmentService,userService,resetList, null, null);
+				departmentService,userService,resetList, null, null, null);
 		String detailColModel = tmpl.generateStructureAccount(strTapTypeCode, DEPT_CODE);
 
 		// 字典
@@ -348,8 +348,8 @@ public class FinanceAccountsController extends BaseController {
 		//	SelectedDepartCode = UserDepartCode;
 		//}
 		TmplTypeInfo implTypeCode = getWhileValueToTypeCode(SelectedTableNo);
-		String TypeCodeStaffSummy = implTypeCode.getTypeCodeSummy();
-		String TypeCodeStaffListen = implTypeCode.getTypeCodeListen();
+		String TypeCodeStaffSummy = "";//implTypeCode.getTypeCodeSummy();
+		//String TypeCodeStaffListen = implTypeCode.getTypeCodeListen();
 		List<String> keyListBase = implTypeCode.getKeyListBase();
 
 		Object DATA_ROWS = getPd.get("GetDetailListTransferList");
@@ -395,9 +395,9 @@ public class FinanceAccountsController extends BaseController {
 			}
 		}
 		whereSqlFirst = whereSql;
-		whereSqlFirst += getDetailHelpful(SelectedTabType, true, TypeCodeStaffSummy, TypeCodeStaffListen);
+		//whereSqlFirst += getDetailHelpful(SelectedTabType, true, TypeCodeStaffSummy, TypeCodeStaffListen);
 		whereSqlSecond = whereSql;
-		whereSqlSecond += getDetailHelpful(SelectedTabType, false, TypeCodeStaffSummy, TypeCodeStaffListen);
+		//whereSqlSecond += getDetailHelpful(SelectedTabType, false, TypeCodeStaffSummy, TypeCodeStaffListen);
 		
 		String firstTableName = getDetailTableCode(SelectedTableNo, SelectedTabType, true);
 		getPd.put("TableName", firstTableName);
@@ -575,8 +575,8 @@ public class FinanceAccountsController extends BaseController {
 			TypeCodeStaffListen = TmplType.TB_STAFF_TRANSFER_LABOR.getNameKey();
 		}
 		retItem.setTypeCodeDetail(TypeCodeStaffDetail);
-		retItem.setTypeCodeSummy(TypeCodeStaffSummy);
-		retItem.setTypeCodeListen(TypeCodeStaffListen);
+		//retItem.setTypeCodeSummy(TypeCodeStaffSummy);
+		//retItem.setTypeCodeListen(TypeCodeStaffListen);
 		return retItem;
 	}
     private String getDetailTypeCode(String which){
@@ -758,9 +758,9 @@ public class FinanceAccountsController extends BaseController {
 				detailReport += FilterBillCode.getBillCodeNotInSumInvalid(tbSocialIncSummy);
 				detailReport += FilterBillCode.getBillCodeNotInSumInvalid(tbStaffSummy);
 				
-				detailReport += FilterBillCode.getReportListenNotSummy(tbHouseFundSummy, TypeCodeGoldSummy, TypeCodeGoldListen);
-				detailReport += FilterBillCode.getReportListenNotSummy(tbSocialIncSummy, TypeCodeSocialSummy, TypeCodeSocialListen);
-				detailReport += FilterBillCode.getReportListenNotSummy(tbStaffSummy, TypeCodeStaffSummy, TypeCodeStaffListen);
+			//	detailReport += FilterBillCode.getReportListenNotSummy(tbHouseFundSummy, TypeCodeGoldSummy, TypeCodeGoldListen);
+				//detailReport += FilterBillCode.getReportListenNotSummy(tbSocialIncSummy, TypeCodeSocialSummy, TypeCodeSocialListen);
+				//detailReport += FilterBillCode.getReportListenNotSummy(tbStaffSummy, TypeCodeStaffSummy, TypeCodeStaffListen);
 			}
 		} else if("2".equals(tabType)){
 			if(!bolFirst){
@@ -768,9 +768,9 @@ public class FinanceAccountsController extends BaseController {
 				detailReport += FilterBillCode.getBillCodeNotInSumInvalid(tbSocialIncSummy);
 				detailReport += FilterBillCode.getBillCodeNotInSumInvalid(tbStaffSummy);
 				
-				detailReport += FilterBillCode.getReportListenNotSummy(tbHouseFundSummy, TypeCodeGoldSummy, TypeCodeGoldListen);
-				detailReport += FilterBillCode.getReportListenNotSummy(tbSocialIncSummy, TypeCodeSocialSummy, TypeCodeSocialListen);
-				detailReport += FilterBillCode.getReportListenNotSummy(tbStaffSummy, TypeCodeStaffSummy, TypeCodeStaffListen);
+				//detailReport += FilterBillCode.getReportListenNotSummy(tbHouseFundSummy, TypeCodeGoldSummy, TypeCodeGoldListen);
+				//detailReport += FilterBillCode.getReportListenNotSummy(tbSocialIncSummy, TypeCodeSocialSummy, TypeCodeSocialListen);
+				//detailReport += FilterBillCode.getReportListenNotSummy(tbStaffSummy, TypeCodeStaffSummy, TypeCodeStaffListen);
 			}
 		}
 		return detailReport;

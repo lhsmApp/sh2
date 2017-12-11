@@ -2,7 +2,6 @@ package com.fh.controller.common;
 
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import com.fh.util.PageData;
@@ -110,6 +109,49 @@ public class QueryFeildString {
 		return QueryFeild;
 	}
 	
+	public static String getQueryFeildBillCodeDetail(String SelectedBillCode, String SelectNoBillCodeShow) throws Exception{
+		String QueryFeild = "";
+		if(SelectedBillCode!=null){
+			if(SelectedBillCode.equals(SelectNoBillCodeShow)){
+				SelectedBillCode = "";
+			}
+			if(SelectedBillCode!=null && !SelectedBillCode.trim().equals("")){
+				QueryFeild += " and BILL_CODE = '" + SelectedBillCode + "' ";
+			} else {
+				QueryFeild += " and BILL_CODE like ' %' ";
+			}
+		}
+		return QueryFeild;
+	}
+	
+	public static String getQueryFeildBillCodeSummy(String SelectedBillCode, String SelectBillCodeAllShow, String SelectBillCodeDetailShow) throws Exception{
+		String QueryFeild = "";
+		if(SelectedBillCode!=null){
+			if(!SelectedBillCode.equals(SelectBillCodeAllShow)){
+				if(!SelectedBillCode.equals(SelectBillCodeDetailShow)){
+					QueryFeild += " and BILL_CODE = '" + SelectedBillCode + "' ";
+				} else {
+					QueryFeild += " and BILL_CODE like ' %' ";
+				}
+			}
+		}
+		return QueryFeild;
+	}
+	
+	public static String getNotReportBillCode() throws Exception{
+		return " and BILL_CODE not in (SELECT bill_code FROM tb_sys_sealed_info WHERE state = '1') ";
+	}
+
+	public static String getDetailQueryFeild(PageData pd, List<String> SumFieldDetail, String keyExtra){
+    	String strQueryFeild = "";
+	    if(SumFieldDetail!=null && SumFieldDetail.size()>0){
+	    	for(String feild : SumFieldDetail){
+	    		strQueryFeild += " and " + feild + " = '" + pd.getString(feild + keyExtra) + "' ";
+	    	}
+	    }
+		return strQueryFeild;
+	}
+	
 	/**
 	 * 
 	 * 
@@ -151,6 +193,17 @@ public class QueryFeildString {
 		}
 		return ret.toString();
 	}
+
+	public static String tranferListStringToKeyString(List<String> listField, String keyExtra){
+		StringBuilder ret = new StringBuilder();
+		for(String field : listField){
+			if(!ret.toString().trim().equals("")){
+				ret.append(",");
+			}
+			ret.append(field).append(", ").append(field).append(" ").append(field + keyExtra);
+		}
+		return ret.toString();
+	}
 	
 	public static String tranferListValueToSqlInString(List<String> valueList){
 		StringBuilder ret = new StringBuilder();
@@ -170,6 +223,18 @@ public class QueryFeildString {
             } 
         }
         return list;
+    }
+    
+    public static List<String> extraSumField(List<String> listSumField, List<String> listExtraField){
+    	if(listSumField==null){
+    		listSumField = new ArrayList<String>();
+    	}
+        if(listExtraField != null && listExtraField.size()>0){
+            for(String t : listExtraField){  
+    			if(!listSumField.contains(t.toUpperCase())) listSumField.add(t.toUpperCase());
+            } 
+        }
+        return listSumField;
     }
 
 }

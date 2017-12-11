@@ -1,5 +1,8 @@
 package com.fh.entity;
 
+import java.util.List;
+
+import com.fh.util.PageData;
 
 /**
  * 所有Po类继承基类，用于同一返回结果 码和错误信息

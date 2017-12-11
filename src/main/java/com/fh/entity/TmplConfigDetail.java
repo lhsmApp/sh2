@@ -19,6 +19,35 @@ public class TmplConfigDetail implements Serializable {
 	private String COL_SUM;
 	private String COL_AVE;
 	private String COL_TRANSFER;
+	private String COL_FORMULA;
+	private int CAL_ORDER;
+	private String NUM_DGT;
+	private String DEC_PRECISION;
+	
+	public int getCAL_ORDER() {
+		return CAL_ORDER;
+	}
+	public void setCAL_ORDER(int cAL_ORDER) {
+		CAL_ORDER = cAL_ORDER;
+	}
+	public String getNUM_DGT() {
+		return NUM_DGT;
+	}
+	public void setNUM_DGT(String nUM_DGT) {
+		NUM_DGT = nUM_DGT;
+	}
+	public String getDEC_PRECISION() {
+		return DEC_PRECISION;
+	}
+	public void setDEC_PRECISION(String dEC_PRECISION) {
+		DEC_PRECISION = dEC_PRECISION;
+	}
+	public String getCOL_FORMULA() {
+		return COL_FORMULA;
+	}
+	public void setCOL_FORMULA(String cOL_FORMULA) {
+		COL_FORMULA = cOL_FORMULA;
+	}
 	public String getRPT_DUR() {
 		return RPT_DUR;
 	}

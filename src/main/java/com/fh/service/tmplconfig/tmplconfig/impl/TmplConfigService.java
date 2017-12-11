@@ -117,6 +117,10 @@ public class TmplConfigService implements TmplConfigManager{
 	public List<TmplConfigDetail> listNeed(TmplConfigDetail item)throws Exception{
 		return (List<TmplConfigDetail>)dao.findForList("TmplConfigMapper.listNeed", item);
 	}
+	@SuppressWarnings("unchecked")
+	public List<TmplConfigDetail> listFormula(TmplConfigDetail item)throws Exception{
+		return (List<TmplConfigDetail>)dao.findForList("TmplConfigMapper.listFormula", item);
+	}
 
 	/**临时数据表明细 
 	 * @param pd

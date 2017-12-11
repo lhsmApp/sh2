@@ -21,20 +21,14 @@ public class HouseFundDetailService implements HouseFundDetailManager{
 
 	@Resource(name = "daoSupport")
 	private DaoSupport dao;
-
 	
-	/**获取数据
-	 * 张晓柳
+	/**获取单号下拉列表数据源 
 	 * @param pd
 	 * @throws Exception
 	 */
 	@SuppressWarnings("unchecked")
-	public List<String> findUserCodeByModel(List<PageData> listData)throws Exception{
-		return (List<String>)dao.findForList("HouseFundDetailMapper.findUserCodeByModel", listData);
-	}
-	@SuppressWarnings("unchecked")
-	public List<String> exportHaveUserCode(PageData listData)throws Exception{
-		return (List<String>)dao.findForList("HouseFundDetailMapper.exportHaveUserCode", listData);
+	public List<String> getBillCodeList(PageData pd)throws Exception{
+		return (List<String>)dao.findForList("HouseFundDetailMapper.getBillCodeList", pd);
 	}
 	
 	/**列表
@@ -60,28 +54,13 @@ public class HouseFundDetailService implements HouseFundDetailManager{
 		return (PageData)dao.findForObject("HouseFundDetailMapper.getFooterSummary", page);
 	}
 
-	/**批量删除
-	 * @param 
-	 * @throws Exception
-	 */
-	public void deleteAll(List<PageData> listData)throws Exception{
-		dao.delete("HouseFundDetailMapper.deleteAll", listData);
-	}
-	
-	/**批量修改
+	/**通过流水号获取单号，用于判断数据是否已汇总
 	 * @param pd
 	 * @throws Exception
 	 */
-	public void deleteUpdateAll(List<PageData> listData)throws Exception{
-		dao.batchDeleteAllUpdate("HouseFundDetailMapper.deleteAll", "HouseFundDetailMapper.save", listData);
-	}
-	
-	/**导入
-	 * @param pd
-	 * @throws Exception
-	 */
-	public void batchImport(List<PageData> listData)throws Exception{
-		dao.batchImport("HouseFundDetailMapper.importDelete", "HouseFundDetailMapper.save", listData);
+	@SuppressWarnings("unchecked")
+	public List<PageData> getBillCodeBySerialNo(List<PageData> listCode)throws Exception{
+		return (List<PageData>)dao.findForList("HouseFundDetailMapper.getBillCodeBySerialNo", listCode);
 	}
 	
 	/**导出列表
@@ -99,6 +78,32 @@ public class HouseFundDetailService implements HouseFundDetailManager{
 	@SuppressWarnings("unchecked")
 	public List<PageData> exportModel(PageData pd)throws Exception{
 		return (List<PageData>)dao.findForList("HouseFundDetailMapper.exportModel", pd);
+	}
+
+	/**批量删除
+	 * @param 
+	 * @throws Exception
+	 */
+	public void deleteAll(List<PageData> listData)throws Exception{
+		dao.delete("HouseFundDetailMapper.deleteAll", listData);
+	}
+	
+	/**获取计算数据
+	 * @param pd
+	 * @throws Exception
+	 */
+	public List<PageData> getDataCalculation(String tableName, 
+			String sqlRetSelect, List<PageData> listAdd)throws Exception{
+		return dao.findDataCalculation(tableName, 
+				    "HouseFundDetailMapper.delete", "HouseFundDetailMapper.save", 
+				    sqlRetSelect, listAdd);
+	}
+	/**更新数据库
+	 * @param pd
+	 * @throws Exception
+	 */
+	public void batchUpdateDatabase(List<PageData> listData)throws Exception{
+		dao.batchUpdateDatabase("HouseFundDetailMapper.delete", "HouseFundDetailMapper.save", listData);
 	}
 
 	

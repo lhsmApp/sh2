@@ -12,6 +12,10 @@ public class SysConfigKeyCode {
 	//定义系统区间
 	public static final String SystemDataTime = "SystemDataTime";
 	
+	//计算税率（）里的汇总公式
+	public static final String StaffFormulaSalary = "StaffFormulaSalary";
+	public static final String StaffFormulaBonus = "StaffFormulaBonus";
+	
 	//定义核算汇总字段
 	//核算合同化工资汇总
 	public static final String ChkStaffContractGRP = "ChkStaffContractGRP";
