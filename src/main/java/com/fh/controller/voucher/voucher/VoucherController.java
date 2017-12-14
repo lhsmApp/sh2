@@ -4,6 +4,7 @@ import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -27,6 +28,8 @@ import com.fh.controller.base.BaseController;
 import com.fh.controller.common.Common;
 import com.fh.controller.common.DictsUtil;
 import com.fh.controller.common.GenerateTransferData;
+import com.fh.controller.common.QueryFeildString;
+import com.fh.controller.common.SelectBillCodeOptions;
 import com.fh.controller.common.TmplUtil;
 import com.fh.entity.CommonBase;
 import com.fh.entity.JqGridModel;
@@ -61,6 +64,7 @@ import com.fh.util.StringUtil;
 import com.fh.util.Tools;
 import com.fh.util.date.DateFormatUtils;
 import com.fh.util.date.DateUtils;
+import com.fh.util.enums.BillState;
 import com.fh.util.enums.BillType;
 import com.fh.util.enums.TmplType;
 import com.fh.util.enums.TransferOperType;
@@ -116,7 +120,13 @@ public class VoucherController extends BaseController {
 
 	// 判断当前人员的所在组织机构是否只有自己单位
 	private int departSelf = 0;
-
+	
+	//界面查询字段
+	List<String> QueryFeildList = Arrays.asList("USER_GROP", "CUST_COL7", "DEPT_CODE");
+    //页面显示数据的年月
+  	String SystemDateTime = "";
+  //临时数据
+  	String SelectBillCodeFirstShow = "全部凭证单据";
 	/**
 	 * 列表
 	 * 
@@ -147,12 +157,15 @@ public class VoucherController extends BaseController {
 		// ***********************************************************
 
 		pd.put("which", which);
+		pd.put("InitBillCodeOptions", SelectBillCodeOptions.getSelectBillCodeOptions(null, SelectBillCodeFirstShow, ""));
 		mv.addObject("pd", pd);
 
 		// 设置期间
 		pd.put("KEY_CODE", "SystemDataTime");
 		String busiDate = sysConfigManager.getSysConfigByKey(pd);
 		pd.put("busiDate", busiDate);
+		//当前期间,取自tb_system_config的SystemDateTime字段
+		SystemDateTime = busiDate;
 
 		// 前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
 		// 生成主表结构
@@ -184,6 +197,54 @@ public class VoucherController extends BaseController {
 		// SAL_RANGE SALARYRANGE 工资范围字典
 		mv.addObject("salaryrange", DictsUtil.getDictsByParentBianma(dictionariesService, "SALARYRANGE"));
 		return mv;
+	}
+	
+	/**单号下拉列表
+	 * @param
+	 * @throws Exception
+	 */
+	@RequestMapping(value="/getBillCodeList")
+	public @ResponseBody CommonBase getBillCodeList() throws Exception{
+		CommonBase commonBase = new CommonBase();
+		commonBase.setCode(-1);
+		
+		PageData getPd = this.getPageData();
+		//单位
+		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
+		int departSelf = Common.getDepartSelf(departmentService);
+		List<String> AllDeptCode = Common.getAllDeptCode(departmentService, Jurisdiction.getCurrentDepartmentID());
+		if(departSelf == 1){
+			SelectedDepartCode = Jurisdiction.getCurrentDepartmentID();
+		}
+		//账套
+		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
+		String which = getPd.getString("TABLE_CODE");
+		PageData getQueryFeildPd = new PageData();
+		//工资分的类型, 只有工资返回值
+		getQueryFeildPd.put("USER_GROP", DictsUtil.getEmplGroupType(which));
+		getQueryFeildPd.put("DEPT_CODE", SelectedDepartCode);
+		getQueryFeildPd.put("CUST_COL7", SelectedCustCol7);
+		String QueryFeild = QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList);
+		QueryFeild += " and BILL_STATE = '" + BillState.Normal.getNameKey() + "' ";
+		QueryFeild += QueryFeildString.getNotReportBillCode();
+		QueryFeild += " and DEPT_CODE in (" + QueryFeildString.tranferListValueToSqlInString(AllDeptCode) + ") ";
+		//工资无账套无数据
+		/*if(!(SelectedCustCol7!=null && !SelectedCustCol7.trim().equals(""))){
+			QueryFeild += " and 1 != 1 ";
+		}*/
+		
+		PageData transferPd = new PageData();
+		
+		String tableCode = getTableCodeBill(which);
+		transferPd.put("TABLE_CODE", tableCode);
+		transferPd.put("SystemDateTime", SystemDateTime);
+		transferPd.put("CanOperate", QueryFeild);
+		List<String> getCodeList = voucherService.getBillCodeList(transferPd);
+		String returnString = SelectBillCodeOptions.getSelectBillCodeOptions(getCodeList, SelectBillCodeFirstShow, "");
+		commonBase.setMessage(returnString);
+		commonBase.setCode(0);
+		
+		return commonBase;
 	}
 
 	/**
@@ -267,15 +328,18 @@ public class VoucherController extends BaseController {
 		logBefore(logger, Jurisdiction.getUsername() + "获取待传输列表Voucher");
 		PageData pd = new PageData();
 		pd = this.getPageData();
+		if(pd.get("BILL_CODE")!=null&&pd.get("BILL_CODE").equals(this.SelectBillCodeFirstShow)){
+			pd.put("BILL_CODE", "");
+		}
 		String which = pd.getString("TABLE_CODE");
 		String voucherType = pd.getString("VOUCHER_TYPE");
-		String tableCode = getTableCode(which);
+		String tableCode = getTableCodeBill(which);
 		pd.put("TABLE_CODE", tableCode);
 		String sealTypeTransfer = which == null ? TmplType.TB_STAFF_TRANSFER_CONTRACT.getNameKey() : which;// 传输接口类型
-		String sealType = getSealType(which);// 接口封存类型对应的汇总接口类型
+		//String sealType = getSealType(which);// 接口封存类型对应的汇总接口类型
 		pd.put("BILL_TYPE_TRANSFER", sealTypeTransfer);// 接口封存类型
 		pd.put("VOUCHER_TYPE", voucherType);// 接口封存类型
-		pd.put("BILL_TYPE", sealType);// 接口封存类型对应的汇总接口类型
+		//pd.put("BILL_TYPE", sealType);// 接口封存类型对应的汇总接口类型
 		pd.put("USER_GROP", DictsUtil.getEmplGroupType(which));
 		String strDeptCode = "";
 		if (departSelf == 1)
@@ -334,7 +398,7 @@ public class VoucherController extends BaseController {
 		pd = this.getPageData();
 		String which = pd.getString("TABLE_CODE");
 		// String voucherType = pd.getString("VOUCHER_TYPE");
-		String tableCode = getTableCode(which);
+		String tableCode = getTableCodeBill(which);
 		pd.put("TABLE_CODE", tableCode);
 		String sealType = which == null ? TmplType.TB_STAFF_TRANSFER_CONTRACT.getNameKey() : which;// 传输接口类型;
 		pd.put("BILL_TYPE", sealType);// 封存类型
@@ -415,6 +479,24 @@ public class VoucherController extends BaseController {
 
 		return commonBase;
 	}
+	
+	/**明细数据
+	 * @param
+	 * @throws Exception
+	 */
+	@RequestMapping(value="/getFirstDetailList")
+	public @ResponseBody PageResult<PageData> getFirstDetailList() throws Exception{
+		PageData pd = this.getPageData();
+		String which = pd.getString("TABLE_CODE");
+		String tableCode = getTableCode(which);
+		pd.put("TABLE_CODE", tableCode);
+		
+		List<PageData> varList = voucherService.findSummyDetailList(pd);	//列出Betting列表
+		PageResult<PageData> result = new PageResult<PageData>();
+		result.setRows(varList);
+		
+		return result;
+	}
 
 	/**
 	 * 列表-获取明细信息
@@ -454,10 +536,9 @@ public class VoucherController extends BaseController {
 		@SuppressWarnings("unchecked")
 		List<PageData> listTransferData = (List<PageData>) JSONArray.toCollection(array, PageData.class);// 过时方法
 		if (null != listTransferData && listTransferData.size() > 0) {
-			List<PageData> listTransferDataFiltered=filterGroupRow(listTransferData);
 			/********************** 生成传输数据 ************************/
 			String which = pd.getString("TABLE_CODE");
-			addLineNumForTransferData(which, listTransferDataFiltered);
+			addLineNumForTransferData(which, listTransferData);
 			String tableCode = getTableCode(which);
 			String tableCodeOnFmis = getTableCodeOnFmis(which);
 			// String voucherType=pd.getString("VOUCHER_TYPE");
@@ -465,7 +546,7 @@ public class VoucherController extends BaseController {
 			List<TableColumns> tableColumnsForTransfer = getTableColumnsForTransfer(which, tableCode);
 			GenerateTransferData generateTransferData = new GenerateTransferData();
 			Map<String, List<PageData>> mapTransferData = new HashMap<String, List<PageData>>();
-			mapTransferData.put(tableCodeOnFmis, listTransferDataFiltered);
+			mapTransferData.put(tableCodeOnFmis, listTransferData);
 			PageData pdFirst = listTransferData.get(0);
 			String orgCode = pdFirst.getString("CUST_COL7");
 			String transferData = generateTransferData.generateTransferData(tableColumnsForTransfer, mapTransferData,
@@ -495,25 +576,15 @@ public class VoucherController extends BaseController {
 						List<SysSealed> listSysSealed = new ArrayList<SysSealed>();
 						User user = (User) Jurisdiction.getSession().getAttribute(Const.SESSION_USERROL);
 						String userId = user.getUSER_ID();
-						// 将获取的字典数据进行分组
-						Map<String, List<PageData>> mapListTransferData = GroupUtils.group(listTransferDataFiltered,
-								new GroupBy<String>() {
-									@Override
-									public String groupby(Object obj) {
-										PageData d = (PageData) obj;
-										return d.getString("DEPT_CODE"); // 分组依据为DEPT_CODE
-									}
-								});
-						// for (PageData pageData : mapListTransferData) {
-						for (Map.Entry<String, List<PageData>> entry : mapListTransferData.entrySet()) {
+
+						for (PageData pdItem : listTransferData) {
 							SysSealed item = new SysSealed();
 							// item.setBILL_CODE(pageData.getString("BILL_CODE"));
-							item.setBILL_CODE(" ");
-							item.setRPT_DEPT(entry.getKey());
-							List<PageData> listItem = entry.getValue();
-							PageData pgItem = listItem.get(0);
-							item.setRPT_DUR(pgItem.getString("BUSI_DATE"));
-							item.setBILL_OFF(pgItem.getString("CUST_COL7"));
+							//item.setBILL_CODE(" ");
+							item.setRPT_DEPT(pdItem.getString("DEPT_CODE"));
+							item.setBILL_CODE(pdItem.getString("BILL_CODE"));
+							item.setRPT_DUR(pdItem.getString("BUSI_DATE"));
+							item.setBILL_OFF(pdItem.getString("CUST_COL7"));
 							item.setRPT_USER(userId);
 							item.setRPT_DATE(DateUtils.getCurrentTime());// YYYY-MM-DD
 																			// HH:MM:SS
@@ -641,7 +712,6 @@ public class VoucherController extends BaseController {
 		@SuppressWarnings("unchecked")
 		List<PageData> listTransferData = (List<PageData>) JSONArray.toCollection(array, PageData.class);// 过时方法
 		if (null != listTransferData && listTransferData.size() > 0) {
-			List<PageData> listTransferDataFiltered=filterGroupRow(listTransferData);
 			/********************** 生成传输数据 ************************/
 			String which = pd.getString("TABLE_CODE");
 			String tableCode = getTableCode(which);
@@ -654,8 +724,8 @@ public class VoucherController extends BaseController {
 			List<TableColumns> tableColumnsForTransfer = getTableColumnsForTransfer(which, tableCode);
 			GenerateTransferData generateTransferData = new GenerateTransferData();
 			Map<String, List<PageData>> mapTransferData = new HashMap<String, List<PageData>>();
-			mapTransferData.put(tableCodeOnFmis, listTransferDataFiltered);
-			PageData pdFirst = listTransferDataFiltered.get(0);
+			mapTransferData.put(tableCodeOnFmis, listTransferData);
+			PageData pdFirst = listTransferData.get(0);
 			String orgCode = pdFirst.getString("CUST_COL7");
 			String transferData = generateTransferData.generateTransferData(tableColumnsForTransfer, mapTransferData,
 					orgCode, TransferOperType.DELETE);
@@ -679,12 +749,12 @@ public class VoucherController extends BaseController {
 					// 更改TB_SYS_UNLOCK_INFO删除状态
 					User user = (User) Jurisdiction.getSession().getAttribute(Const.SESSION_USERROL);
 					String userId = user.getUSER_ID();
-					for (PageData pdItem : listTransferDataFiltered) {
+					for (PageData pdItem : listTransferData) {
 						pdItem.put("DEL_USER", userId);
 						pdItem.put("DEL_DATE", DateUtils.getCurrentTime());// YYYY-MM-DD
 																			// HH:MM:SS
 					}
-					sysUnlockInfoService.edit(listTransferDataFiltered);
+					sysUnlockInfoService.edit(listTransferData);
 					commonBase.setCode(0);
 				} else {
 					commonBase.setCode(-1);
@@ -858,6 +928,41 @@ public class VoucherController extends BaseController {
 			tableCodeOri = "TB_HOUSE_FUND_SUMMY";
 		} else {
 			tableCodeOri = "TB_STAFF_SUMMY";
+		}
+		return tableCodeOri;
+
+		/*
+		 * String tableCode = ""; if (which != null && which.equals("1")) {
+		 * tableCode = "TB_STAFF_SUMMY"; } else if (which != null &&
+		 * which.equals("2")) { tableCode = "TB_SOCIAL_INC_SUMMY"; } else if
+		 * (which != null && which.equals("3")) { tableCode =
+		 * "TB_HOUSE_FUND_SUMMY"; } else { tableCode = "TB_STAFF_SUMMY"; }
+		 * return tableCode;
+		 */
+	}
+	
+	/**
+	 * 根据前端业务表索引获取表名称
+	 * 
+	 * @param which
+	 *            1、合同化工资 2、社保 3、公积金 4、市场化工资 5、系统内劳务工资 6、运行人员工资 7、劳务派遣工资
+	 * @return
+	 * @throws Exception
+	 */
+	private String getTableCodeBill(String which) throws Exception {
+		PageData pd = new PageData();
+		pd.put("TABLE_NO", which);
+		PageData pdResult = tmplconfigService.findTableCodeByTableNo(pd);
+		String tableCodeTmpl = pdResult.getString("TABLE_CODE");
+		String tableCodeOri = "";// 数据库真实业务数据表
+		if (tableCodeTmpl.startsWith("TB_STAFF_TRANSFER")) {
+			tableCodeOri = "TB_STAFF_SUMMY_BILL";
+		} else if (tableCodeTmpl.equals("TB_SOCIAL_INC_TRANSFER")) {
+			tableCodeOri = "TB_SOCIAL_INC_SUMMY_BILL";
+		} else if (tableCodeTmpl.equals("TB_HOUSE_FUND_TRANSFER")) {
+			tableCodeOri = "TB_HOUSE_FUND_SUMMY_BILL";
+		} else {
+			tableCodeOri = "TB_STAFF_SUMMY_BILL";
 		}
 		return tableCodeOri;
 

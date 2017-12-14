@@ -62,12 +62,23 @@
 									<div class="widget-main">
 										<!-- <p class="alert alert-info">Nunc aliquam enim ut arcu.</p> -->
 										<form class="form-inline">
-											<span style="margin-right: 5px;" <c:if test="${pd.departTreeSource=='0'}">hidden</c:if>>
+											<span class="pull-left" style="margin-right: 5px;"> 
+												<select
+													class="chosen-select form-control" name="FMISACC"
+													id="FMISACC" data-placeholder="请选择帐套"
+													style="vertical-align: top; height: 32px; width: 150px;">
+														<option value="">请选择帐套</option>
+														<c:forEach items="${fmisacc}" var="fmi">
+															<option value="${fmi.DICT_CODE}">${fmi.NAME}</option>
+														</c:forEach>
+												</select>
+											</span> 
+											<span  class="pull-left" style="margin-right: 5px;" <c:if test="${pd.departTreeSource=='0'}">hidden</c:if>>
 												<div class="selectTree" id="selectTree" multiMode="true"
 													allSelectable="false" noGroup="false"></div>
 												<input type="text" id="RPT_DEPT" hidden></input>
-											 </span> 
-											<span style="margin-right: 5px;"> 
+											 </span>
+											<span class="pull-left" style="margin-right: 5px;"> 
 												<select
 													class="chosen-select form-control" name="BILL_TYPE"
 													id="BILL_TYPE" data-placeholder="请选择类型"
@@ -79,18 +90,8 @@
 														</c:forEach>
 												</select>
 											</span>
-											<span style="margin-right: 5px;"> 
-												<select
-													class="chosen-select form-control" name="FMISACC"
-													id="FMISACC" data-placeholder="请选择帐套"
-													style="vertical-align: top; height: 32px; width: 150px;">
-														<option value="">请选择帐套</option>
-														<c:forEach items="${fmisacc}" var="fmi">
-															<option value="${fmi.DICT_CODE}">${fmi.NAME}</option>
-														</c:forEach>
-												</select>
-											</span> 
-											<span style="margin-right: 5px;"> 
+											
+											<!-- <span style="margin-right: 5px;"> 
 												<select class="chosen-select form-control"
 													name="STATUS" id="STATUS" data-placeholder="请选状态"
 													style="vertical-align: top; height: 32px; width: 150px;">
@@ -98,7 +99,7 @@
 														<option value="0">解封</option>
 														<option value="1">封存</option>
 												</select>
-											</span>
+											</span> -->
 											<button type="button" class="btn btn-info btn-sm"
 												onclick="tosearch();">
 												<i class="ace-icon fa fa-search bigger-110"></i>
@@ -224,7 +225,7 @@
 				{ label: '单据类型', name: 'BILL_TYPE', width: 60,hidden : true,editable: true,},
 				{ label: '帐套', name: 'BILL_OFF', width: 60,hidden : true,editable: true,},
 				
-				/* { label: '单据编码',name:'BILL_CODE', width:90}, */
+				{ label: '单据编码',name:'BILL_CODE', width:90},
 				{ label: '单据单位', name: 'RPT_DEPT', width: 90,edittype: 'select',formatter:'select',formatoptions:{value:"${departmentStr}"},editoptions:{value:"${departmentStr}"},stype: 'select',searchoptions:{value:"${departmentStr}"}},
 				{ label: '单据期间', name: 'RPT_DUR', width: 60},
 				{ label: '上传人', name: 'RPT_USER', width: 60,edittype: 'select',formatter:'select',formatoptions:{value:"${userStr}"},editoptions:{value:"${userStr}"},stype: 'select',searchoptions:{value:"${userStr}"}},
@@ -437,14 +438,13 @@
 		function tosearch() {
 			console.log($("#RPT_DEPT").val());
 			var RPT_DEPT = $("#RPT_DEPT").val();
-			var STATUS = $("#STATUS").val();
+			//var STATUS = $("#STATUS").val();
 			var BILL_TYPE = $("#BILL_TYPE").val();
 			var BILL_OFF=$("#FMISACC").val();
 			$("#jqGrid").jqGrid('setGridParam',{  // 重新加载数据
 				url:'<%=basePath%>syssealedinfo/getPageList.do?RPT_DEPT='
 										+ RPT_DEPT
-										+ '&STATUS='
-										+ STATUS
+										//+ '&STATUS='+ STATUS
 										+ '&BILL_TYPE=' + BILL_TYPE
 										+ '&BILL_OFF=' + BILL_OFF,
 								datatype : 'json',

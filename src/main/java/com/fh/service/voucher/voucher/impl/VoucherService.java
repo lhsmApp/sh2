@@ -25,6 +25,15 @@ public class VoucherService implements VoucherManager{
 	@Resource(name = "daoSupport")
 	private DaoSupport dao;
 	
+	/**获取单号下拉列表数据源 
+	 * @param pd
+	 * @throws Exception
+	 */
+	@SuppressWarnings("unchecked")
+	public List<String> getBillCodeList(PageData pd)throws Exception{
+		return (List<String>)dao.findForList("VoucherMapper.getBillCodeList", pd);
+	}
+	
 	/**新增
 	 * @param pd
 	 * @throws Exception
@@ -91,6 +100,15 @@ public class VoucherService implements VoucherManager{
 	@SuppressWarnings("unchecked")
 	public List<PageData> listDetail(PageData pd)throws Exception{
 		return (List<PageData>)dao.findForList("VoucherMapper.listDetail", pd);
+	}
+	
+	/**列表
+	 * @param page
+	 * @throws Exception
+	 */
+	@SuppressWarnings("unchecked")
+	public List<PageData> findSummyDetailList(PageData page)throws Exception{
+		return (List<PageData>)dao.findForList("VoucherMapper.findSummyDetailList", page);
 	}
 	
 	/**获取记录数量

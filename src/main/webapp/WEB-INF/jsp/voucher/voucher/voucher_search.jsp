@@ -102,10 +102,28 @@
 												placeholder="请输入业务区间"> <i
 												class="ace-icon fa fa-calendar blue"></i>
 											</span>
+											<span class="pull-left" style="margin-right: 5px;"> 
+												<select
+													class="chosen-select form-control" name="FMISACC"
+													id="FMISACC" data-placeholder="请选择帐套"
+													style="vertical-align: top; height: 32px; width: 150px;">
+														<option value="">请选择帐套</option>
+														<c:forEach items="${fmisacc}" var="fmi">
+															<option value="${fmi.DICT_CODE}">${fmi.NAME}</option>
+														</c:forEach>
+												</select>
+											</span>
 											<span class="pull-left" style="margin-right: 5px;" <c:if test="${pd.departTreeSource=='0'}">hidden</c:if>>
 												<div class="selectTree" id="selectTree" multiMode="true"
 													allSelectable="false" noGroup="false"></div>
 											</span>
+											<!-- <span class="pull-left" style="margin-right: 5px;">
+												<select class="chosen-select form-control"
+													name="SelectedBillCode" id="SelectedBillCode"
+													style="vertical-align: top; height:32px;width: 150px;">
+												</select>
+											</span> -->
+											
 											<%-- <span style="margin-right: 5px;"> 
 												<select
 													class="chosen-select form-control" name="EMPLGRP"
@@ -117,17 +135,7 @@
 														</c:forEach>
 												</select>
 											</span> --%>
-											<span style="margin-right: 5px;"> 
-												<select
-													class="chosen-select form-control" name="FMISACC"
-													id="FMISACC" data-placeholder="请选择帐套"
-													style="vertical-align: top; height: 32px; width: 150px;">
-														<option value="">请选择帐套</option>
-														<c:forEach items="${fmisacc}" var="fmi">
-															<option value="${fmi.DICT_CODE}">${fmi.NAME}</option>
-														</c:forEach>
-												</select>
-											</span>
+											
 											<!--  <span style="margin-right: 5px;"> 
 												<select
 													class="chosen-select form-control" name="PARTUSERTYPE"
@@ -324,7 +332,7 @@
 				minusicon  : "ace-icon fa fa-minus center bigger-110 blue",
 				openicon : "ace-icon fa fa-chevron-right center orange"
 			},
-			subGridRowExpanded: showChildGrid,
+			subGridRowExpanded: showFirstChildGrid,
 			/*beforeSelectRow: function (rowid, e) { 
 				  i = $.jgrid.getCellIndex($(e.target).closest('td')[0]),  
 			       cm = $("#jqGrid").jqGrid('getGridParam', 'colModel');  
@@ -332,20 +340,7 @@
 			},*/
 			cellEdit: true,
 			gridComplete:function(){
-				$("[role='checkbox']").on('click',function(e){
-					var target = $(this);
-					var curRow=target.closest('tr');
-					var curRowId=curRow.attr('id');
-					var curRowData=$("#jqGrid").getRowData(curRowId);
-					var ids = $("#jqGrid").jqGrid('getDataIDs');
-					
-					$("#jqGrid").setSelection(curRowId,true);
-                    for (i = 0; i < ids.length; i++) { 
-                    	var item=$("#jqGrid").getRowData(ids[i]);
-                    	if(item.DEPT_CODE==curRowData.DEPT_CODE)
-                    		$("#jqGrid").setSelection(ids[i],true);
-                    }
-				});
+
 		    }
 		});
 		$(window).triggerHandler('resize.jqGrid');//trigger window resize to make the grid get the correct size
@@ -388,13 +383,96 @@
 			}
 		);
 	});
-	//显示明细信息
+	
 	// the event handler on expanding parent row receives two parameters
     // the ID of the grid tow  and the primary key of the row
-    function showChildGrid(parentRowID, parentRowKey) {
+    function showFirstChildGrid(parentRowID, parentRowKey) {
     	console.log(parentRowID+"  "+parentRowKey);
+    	
     	var parentRowData=$("#jqGrid").jqGrid('getRowData',parentRowKey);
+    	var BILL_CODE = parentRowData.BILL_CODE;
     	var DEPT_CODE = parentRowData.DEPT_CODE;
+    	var CUST_COL7=parentRowData.CUST_COL7;
+    	console.log(BILL_CODE);
+    	console.log(DEPT_CODE);
+    	console.log(CUST_COL7);
+    	
+        var childGridID = parentRowID + "_table";
+        var childGridPagerID = parentRowID + "_pager";
+        // send the parent row primary key to the server so that we know which grid to show
+        var childGridURL = '<%=basePath%>voucher/getFirstDetailList.do?'
+        	+'TABLE_CODE='+which
+            +'&BILL_CODE='+BILL_CODE;
+        //childGridURL = childGridURL + "&parentRowID=" + encodeURIComponent(parentRowKey)
+
+        // add a table and pager HTML elements to the parent grid row - we will render the child grid here
+        $('#' + parentRowID).append('<table id=' + childGridID + '></table><div id=' + childGridPagerID + ' class=scroll></div>');
+
+        $("#" + childGridID).jqGrid({
+            url: childGridURL,
+            mtype: "GET",
+            datatype: "json",
+            colModel: jqGridColModel,
+            page: 1,
+            width: '100%',
+            //height: '100%',
+            rowNum: 0,	
+            //pager: "#" + childGridPagerID,
+			pgbuttons: false, // 分页按钮是否显示 
+			pginput: false, // 是否允许输入分页页数 
+            viewrecords: false,
+            recordpos: "left", // 记录数显示位置 
+            
+			shrinkToFit: false,
+			autowidth:false,
+			altRows: true, //斑马条纹
+            
+			//footerrow: true,
+			//userDataOnFooter: true,
+
+			subGrid: true,
+			subGridOptions: {
+				plusicon : "ace-icon fa fa-plus center bigger-110 blue",
+				minusicon  : "ace-icon fa fa-minus center bigger-110 blue",
+				openicon : "ace-icon fa fa-chevron-right center orange"
+            },
+            subGridRowExpanded: showSecondChildGrid,
+
+			scroll: 1,
+            
+			loadComplete : function() {
+				var table = this;
+				setTimeout(function(){
+					styleCheckbox(table);
+					updateActionIcons(table);
+					updatePagerIcons(table);
+					enableTooltips(table);
+				}, 0);
+			},
+        });
+        if(voucherType=="1"){
+        	jQuery("#" + childGridID).hideCol(['CERT_CODE','REVCERT_CODE']);
+        }else{
+        	jQuery("#" + childGridID).showCol(['CERT_CODE','REVCERT_CODE']);
+        }
+        
+    };
+	
+  //显示明细信息
+	// the event handler on expanding parent row receives two parameters
+    // the ID of the grid tow  and the primary key of the row
+    function showSecondChildGrid(parentRowID, parentRowKey) {
+    	/* console.log(parentRowID+"  "+parentRowKey);
+    	var parentRowData=$("#jqGrid").jqGrid('getRowData',parentRowKey);
+    	var DEPT_CODE = parentRowData.DEPT_CODE; */
+    	
+    	console.log(parentRowID+"  "+parentRowKey);
+    	var gridSelect = parentRowID.toString().substring(0, parentRowID.toString().length - parentRowKey.toString().length - 1);
+    	console.log("gridSelect  "+gridSelect);
+		var parentRowData = $("#" + gridSelect).getRowData(parentRowKey);
+    	var DEPT_CODE = parentRowData.DEPT_CODE;
+    	console.log(DEPT_CODE);
+    	
     	var detailColModel = "[]";
 		$.ajax({
 			type: "GET",
@@ -419,10 +497,11 @@
 			            datatype: "json",
 			            page: 1,
 			            colModel: detailColModel,
-			            //width: '100%',
-			            height: '100%',
-			            shrinkToFit:true,
-			            autowidth:true,
+			            width: '100%',
+			            //height: '100%',
+			            rowNum: 0,	
+			            /* shrinkToFit:false,
+			            autowidth:false, */
 			            toppager : "#"+childGridPagerID,
 			            pgbuttons: false,//上下按钮 
 						pginput:false,//输入框
@@ -441,7 +520,7 @@
 						},
 						gridComplete:function(){
 						    //$("#" + childGridID).parents(".ui-jqgrid-bdiv").css("overflow-x","hidden");
-							$(".ui-jqgrid-btable").removeAttr("style");
+							//$(".ui-jqgrid-btable").removeAttr("style");
 						}
 			        });
 			        
