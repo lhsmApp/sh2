@@ -40,6 +40,25 @@
 		COL_TRANSFER
 	</sql>
 	
+	<!-- 字段 -->
+	<sql id="FieldTmplCopy">
+		RPT_DUR,
+		DEPT_CODE,
+		TABLE_CODE,
+		COL_CODE,
+		COL_NAME,
+		DISP_ORDER,
+		DICT_TRANS,
+		COL_HIDE,
+		COL_SUM,
+		COL_AVE,
+		COL_TRANSFER,
+		COL_FORMULA,
+		CAL_ORDER,
+		NUM_DGT,
+		DEC_PRECISION
+	</sql>
+	
 	<sql id="FieldColumns">
 		RPT_DUR,
 		DEPT_CODE,
@@ -384,13 +403,13 @@
 		insert into
 		<include refid="tableName"></include>
 		(
-		<include refid="FieldTmpl"></include>
+		<include refid="FieldTmplCopy"></include>
 		)
 		<foreach item="item" index="index" collection="DEPT_CODES"
 			open=" " separator="union all " close=" ">
 			<if test="item!=null">
 				SELECT RPT_DUR,#{item} AS 'DEPT_CODE',
-				TABLE_CODE,COL_CODE,COL_NAME,DISP_ORDER,DICT_TRANS,COL_HIDE,COL_SUM,COL_AVE,COL_TRANSFER
+				TABLE_CODE,COL_CODE,COL_NAME,DISP_ORDER,DICT_TRANS,COL_HIDE,COL_SUM,COL_AVE,COL_TRANSFER,COL_FORMULA,CAL_ORDER,NUM_DGT,DEC_PRECISION
 				FROM tb_tmpl_config_detail WHERE DEPT_CODE=#{DEPT_CODE} AND
 				TABLE_CODE=#{TABLE_CODE}
 			</if>
@@ -403,10 +422,10 @@
 		insert into
 		<include refid="tableName"></include>
 		(
-		<include refid="FieldTmpl"></include>
+		<include refid="FieldTmplCopy"></include>
 		)
 		SELECT #{NEXT_RPT_DUR} as RPT_DUR,DEPT_CODE,
-		TABLE_CODE,COL_CODE,COL_NAME,DISP_ORDER,DICT_TRANS,COL_HIDE,COL_SUM,COL_AVE,COL_TRANSFER
+		TABLE_CODE,COL_CODE,COL_NAME,DISP_ORDER,DICT_TRANS,COL_HIDE,COL_SUM,COL_AVE,COL_TRANSFER,COL_FORMULA,CAL_ORDER,NUM_DGT,DEC_PRECISION
 		FROM tb_tmpl_config_detail WHERE RPT_DUR=#{CUR_RPT_DUR}
 	</insert>
 

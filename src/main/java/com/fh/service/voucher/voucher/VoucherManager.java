@@ -75,6 +75,12 @@ public interface VoucherManager{
 	 */
 	public List<PageData> findSummyDetailList(PageData page)throws Exception;
 	
+	/**列表
+	 * @param page
+	 * @throws Exception
+	 */
+	public List<PageData> findSummyDetailListByBillCodes(PageData page)throws Exception;
+	
 	/**获取记录数量
 	 * @param pd
 	 * @throws Exception

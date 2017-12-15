@@ -280,13 +280,14 @@
 		#{BILL_USER},
 		#{BILL_DATE}
 	</sql>
-	
+
 	<!-- 获取单号下拉列表数据源 -->
 	<select id="getBillCodeList" parameterType="pd" resultType="String">
 		select distinct BILL_CODE
 		from ${TABLE_CODE}
-		where BUSI_DATE = '${SystemDateTime}'
-	    ${CanOperate}
+		where BUSI_DATE =
+		'${SystemDateTime}'
+		${CanOperate}
 		order by BILL_CODE
 	</select>
 
@@ -367,8 +368,19 @@
 			SELECT count(*) FROM ${TABLE_CODE} A
 			<where>
 				A.BILL_STATE='1'
-				and A.BILL_CODE not in (SELECT bill_code FROM tb_sys_sealed_info WHERE state = '1'
-				and bill_type=#{BILL_TYPE_TRANSFER} and RPT_DUR=#{BUSI_DATE} and BILL_OFF=#{FMISACC})
+				and A.BILL_CODE not in (SELECT bill_code FROM
+				tb_sys_sealed_info WHERE state = '1'
+				and
+				bill_type=#{BILL_TYPE_TRANSFER} and RPT_DUR=#{BUSI_DATE} and
+				BILL_OFF=#{FMISACC})
+
+				and A.BILL_CODE not in (SELECT bill_code FROM
+				tb_sys_unlock_info WHERE
+				DEL_STATE = '0'
+				and
+				bill_type=#{BILL_TYPE_TRANSFER} and
+				UNLK_DUR=#{BUSI_DATE} and
+				BILL_OFF=#{FMISACC})
 				<!-- and A.USER_GROP=#{USER_GROP} -->
 				<if test="keywords!= null and keywords != ''"><!-- 关键词检索 -->
 					and
@@ -458,8 +470,19 @@
 			FROM ${pd.TABLE_CODE} A
 			<where>
 				A.BILL_STATE='1'
-				and A.BILL_CODE not in (SELECT bill_code FROM tb_sys_sealed_info WHERE state = '1'
-				and bill_type=#{BILL_TYPE_TRANSFER} and RPT_DUR=#{BUSI_DATE} and BILL_OFF=#{FMISACC})
+				and A.BILL_CODE not in (SELECT bill_code FROM
+				tb_sys_sealed_info WHERE state = '1'
+				and
+				bill_type=#{BILL_TYPE_TRANSFER} and RPT_DUR=#{BUSI_DATE} and
+				BILL_OFF=#{FMISACC})
+
+				and A.BILL_CODE not in (SELECT bill_code FROM
+				tb_sys_unlock_info WHERE
+				DEL_STATE = '0'
+				and
+				bill_type=#{BILL_TYPE_TRANSFER} and
+				UNLK_DUR=#{BUSI_DATE} and
+				BILL_OFF=#{FMISACC})
 				<!-- and A.USER_GROP=#{pd.USER_GROP} -->
 				<if test="pd.keywords!= null and pd.keywords != ''"><!-- 关键词检索 -->
 					and
@@ -516,7 +539,7 @@
 			A.BILL_CODE=B.BILL_CODE
 			AND
 			A.BUSI_DATE=B.RPT_DUR
-			AND 
+			AND
 			A.DEPT_CODE=B.RPT_DEPT
 			AND
 			A.CUST_COL7=B.BILL_OFF
@@ -573,8 +596,19 @@
 			SELECT A.* FROM ${TABLE_CODE} A
 			<where>
 				A.BILL_STATE='1'
-				and A.BILL_CODE not in (SELECT bill_code FROM tb_sys_sealed_info WHERE state = '1'
-				and bill_type=#{BILL_TYPE_TRANSFER} and RPT_DUR=#{BUSI_DATE} and BILL_OFF=#{FMISACC})
+				and A.BILL_CODE not in (SELECT bill_code FROM
+				tb_sys_sealed_info WHERE state = '1'
+				and
+				bill_type=#{BILL_TYPE_TRANSFER} and RPT_DUR=#{BUSI_DATE} and
+				BILL_OFF=#{FMISACC})
+
+				and A.BILL_CODE not in (SELECT bill_code FROM
+				tb_sys_unlock_info WHERE
+				DEL_STATE = '0'
+				and
+				bill_type=#{BILL_TYPE_TRANSFER} and
+				UNLK_DUR=#{BUSI_DATE} and
+				BILL_OFF=#{FMISACC})
 				<!-- and A.USER_GROP=#{USER_GROP} -->
 				<if test="keywords!= null and keywords != ''"><!-- 关键词检索 -->
 					and
@@ -621,8 +655,9 @@
 			JOIN
 			tb_sys_sealed_info B
 			ON
-			A.BILL_CODE=B.BILL_CODE 
-			AND A.BUSI_DATE=B.RPT_DUR
+			A.BILL_CODE=B.BILL_CODE
+			AND
+			A.BUSI_DATE=B.RPT_DUR
 			AND
 			A.DEPT_CODE=B.RPT_DEPT
 			AND
@@ -736,11 +771,29 @@
 			A.BILL_CODE=#{BILL_CODE}
 		</where>
 	</select>
-	
+
 	<select id="findSummyDetailList" parameterType="pd" resultType="pd">
-		select * 
+		select A.*,C.CERT_CODE,C.REVCERT_CODE,C.BILL_USER
+		CERT_BILL_USER,C.BILL_DATE CERT_BILL_DATE
+		from ${TABLE_CODE} A
+		LEFT JOIN
+		tb_gl_cert C
+		ON
+		A.BILL_CODE=C.BILL_CODE
+		where A.BILL_CODE = #{BILL_CODE}
+	</select>
+
+	<select id="findSummyDetailListByBillCodes" parameterType="pd"
+		resultType="pd">
+		select *
 		from ${TABLE_CODE}
-		where BILL_CODE = #{BILL_CODE}
+		<where>
+			BILL_CODE in
+			<foreach item="item" index="index" collection="BILL_CODES"
+				open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</where>
 	</select>
 
 	<!-- 获取汇总信息还没有进行上报的信息 -->

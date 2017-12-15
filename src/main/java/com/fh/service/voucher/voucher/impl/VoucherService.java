@@ -111,6 +111,15 @@ public class VoucherService implements VoucherManager{
 		return (List<PageData>)dao.findForList("VoucherMapper.findSummyDetailList", page);
 	}
 	
+	/**列表
+	 * @param page
+	 * @throws Exception
+	 */
+	@SuppressWarnings("unchecked")
+	public List<PageData> findSummyDetailListByBillCodes(PageData page)throws Exception{
+		return (List<PageData>)dao.findForList("VoucherMapper.findSummyDetailListByBillCodes", page);
+	}
+	
 	/**获取记录数量
 	 * @param pd
 	 * @throws Exception

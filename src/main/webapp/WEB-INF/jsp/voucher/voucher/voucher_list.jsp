@@ -232,6 +232,7 @@
 	var voucherType=1;
 	var tabIndex=1;
 	
+	
 	//单号下拉列表
     var SelectNoBillCodeShowOption;
 	var InitBillCodeOptions;
@@ -841,7 +842,7 @@
 				}, 0);
 			},
         });
-        if(voucherType=="1"){
+        if(tabIndex=="1"||tabIndex=="3"){
         	jQuery("#" + childGridID).hideCol(['CERT_CODE','REVCERT_CODE']);
         }else{
         	jQuery("#" + childGridID).showCol(['CERT_CODE','REVCERT_CODE']);
@@ -1059,7 +1060,7 @@
 		    type: "POST",
 			url: '<%=basePath%>voucher/getBillCodeList.do?'
 				+'TABLE_CODE='+which
-                +'SelectedDepartCode='+$("#departCode").val()
+                +'&SelectedDepartCode='+$("#departCode").val()
                 +'&SelectedCustCol7='+$("#FMISACC").val(),
 		    dataType:'json',
 			cache: false,
