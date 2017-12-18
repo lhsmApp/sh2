@@ -15,6 +15,12 @@ import com.fh.util.PageData;
  */
 public interface VoucherManager{
 
+	/**获取单号下拉列表数据源 
+	 * @param pd
+	 * @throws Exception
+	 */
+	public List<String> getBillCodeList(PageData pd)throws Exception;
+	
 	/**新增
 	 * @param pd
 	 * @throws Exception
@@ -62,6 +68,18 @@ public interface VoucherManager{
 	 * @throws Exception
 	 */
 	public List<PageData> listDetail(PageData pd)throws Exception;
+	
+	/**列表
+	 * @param page
+	 * @throws Exception
+	 */
+	public List<PageData> findSummyDetailList(PageData page)throws Exception;
+	
+	/**列表
+	 * @param page
+	 * @throws Exception
+	 */
+	public List<PageData> findSummyDetailListByBillCodes(PageData page)throws Exception;
 	
 	/**获取记录数量
 	 * @param pd

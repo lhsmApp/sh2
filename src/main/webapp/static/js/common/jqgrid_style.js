@@ -197,7 +197,7 @@ function showQueryCondi(jqgrid, gridHeight,withBottom) {
 				'fa-chevron-up');
 		$("#btnQuery").find("span").text("隐藏查询");
 		$(".widget-box").show();
-		$(jqgrid).jqGrid('setGridHeight', $(window).height() - gridHeight - 65);
+		$(jqgrid).jqGrid('setGridHeight', $(window).height() - gridHeight - 48);
 	}
 	//$(".widget-box").toggle("fast");
 }
@@ -213,6 +213,7 @@ function resizeGridHeight(jqgrid, gridHeight, withBottom) {
 			gridHeight = 140;
 		}
 	}
+	
 	if ($(".widget-box").is(':visible')) {
 		$(jqgrid).jqGrid('setGridHeight', $(window).height() - gridHeight - 65);
 	} else {

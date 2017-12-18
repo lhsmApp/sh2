@@ -70,8 +70,7 @@
 		and
 		BILL_TYPE = #{BILL_TYPE}
 		and
-		BILL_OFF =
-		#{BILL_OFF}
+		BILL_OFF =#{BILL_OFF}
 	</update>
 
 	<!-- 修改 -->
@@ -123,6 +122,8 @@
 		<!-- left join OA_DEPARTMENT B on A.RPT_DEPT=B.DEPARTMENT_CODE left join 
 			sys_user C on A.RPT_USER=C.USER_ID -->
 		<where>
+			STATE = '1'
+			and RPT_DUR=(select KEY_VALUE from tb_sys_config where KEY_CODE='SystemDataTime')
 			<!-- <if test="pd.RPT_DEPT!= null and pd.RPT_DEPT != ''">根据本门单位检索 and 
 				RPT_DEPT LIKE CONCAT(CONCAT('%', #{pd.RPT_DEPT}),'%') </if> -->
 			<if test="pd.RPT_DEPTS!= null and pd.RPT_DEPTS != ''"><!-- 根据本门单位检索 -->
@@ -135,9 +136,9 @@
 			<if test="pd.BILL_TYPE!= null and pd.BILL_TYPE != ''">
 				and BILL_TYPE = #{pd.BILL_TYPE}
 			</if>
-			<if test="pd.STATUS!= null and pd.STATUS != ''">
+			<!-- <if test="pd.STATUS!= null and pd.STATUS != ''">
 				and STATE = #{pd.STATUS}
-			</if>
+			</if> -->
 			<if test="pd.BILL_OFF!= null and pd.BILL_OFF != ''">
 				and BILL_OFF = #{pd.BILL_OFF}
 			</if>
@@ -157,6 +158,8 @@
 		select count(*) from
 		<include refid="tableName"></include>
 		<where>
+			STATE = '1'
+			and RPT_DUR=(select KEY_VALUE from tb_sys_config where KEY_CODE='SystemDataTime')
 			<!-- <if test="pd.RPT_DEPT!= null and pd.RPT_DEPT != ''">根据本门单位检索 and 
 				RPT_DEPT LIKE CONCAT(CONCAT('%', #{pd.RPT_DEPT}),'%') </if> -->
 			<if test="RPT_DEPTS!= null and RPT_DEPTS != ''"><!-- 根据本门单位检索 -->
@@ -169,9 +172,9 @@
 			<if test="BILL_TYPE!= null and BILL_TYPE != ''">
 				and BILL_TYPE = #{BILL_TYPE}
 			</if>
-			<if test="STATUS!= null and STATUS != ''">
+			<!-- <if test="STATUS!= null and STATUS != ''">
 				and STATE = #{STATUS}
-			</if>
+			</if> -->
 			<if test="BILL_OFF!= null and BILL_OFF != ''">
 				and BILL_OFF = #{BILL_OFF}
 			</if>
@@ -330,7 +333,8 @@
 		select STATE from
 		<include refid="tableName"></include>
 		<where>
-			BILL_TYPE=#{VALI_TYPE} and RPT_DEPT=#{RPT_DEPT} and
+			BILL_CODE=#{BILL_CODE}
+			and BILL_TYPE=#{VALI_TYPE} and RPT_DEPT=#{RPT_DEPT} and
 			RPT_DUR=#{RPT_DUR} and BILL_OFF=#{BILL_OFF}
 		</where>
 	</select>
