@@ -223,6 +223,7 @@ public class VoucherController extends BaseController {
 		// 账套
 		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
 		String which = getPd.getString("TABLE_CODE");
+		String sealTypeTransfer = which == null ? TmplType.TB_STAFF_TRANSFER_CONTRACT.getNameKey() : which;// 传输接口类型
 		PageData getQueryFeildPd = new PageData();
 		// 工资分的类型, 只有工资返回值
 		getQueryFeildPd.put("USER_GROP", DictsUtil.getEmplGroupType(which));
@@ -230,7 +231,7 @@ public class VoucherController extends BaseController {
 		getQueryFeildPd.put("CUST_COL7", SelectedCustCol7);
 		String QueryFeild = QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList);
 		QueryFeild += " and BILL_STATE = '" + BillState.Normal.getNameKey() + "' ";
-		QueryFeild += QueryFeildString.getNotReportBillCode();
+		QueryFeild += QueryFeildString.getNotReportBillCode(sealTypeTransfer,SystemDateTime,SelectedCustCol7,AllDeptCode + "," + SelectedDepartCode);
 		QueryFeild += " and DEPT_CODE in (" + QueryFeildString.tranferListValueToSqlInString(AllDeptCode) + ") ";
 		// 工资无账套无数据
 		/*
