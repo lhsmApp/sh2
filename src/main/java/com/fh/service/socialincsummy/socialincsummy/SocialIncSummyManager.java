@@ -53,7 +53,7 @@ public interface SocialIncSummyManager{
 	 * @param pd
 	 * @throws Exception
 	 */
-	public void saveSummyModelList(boolean bolDeleteSummy, List<PageData> getSaveBill, List<PageData> getSaveDetail, List<PageData> getDetailSetBillCode, PageData pdBillNum)throws Exception;
+	public void saveSummyModelList(Map<String, Object> map)throws Exception;
 	
 }
 

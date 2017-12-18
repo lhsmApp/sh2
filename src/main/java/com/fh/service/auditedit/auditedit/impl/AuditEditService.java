@@ -71,7 +71,7 @@ public class AuditEditService implements AuditEditManager{
 	 * @throws Exception
 	 */
 	public void deleteUpdateAll(List<PageData> listData)throws Exception{
-		dao.batchDeleteOneUpdate("AuditEditMapper.delete", "AuditEditMapper.save", listData);
+		//dao.batchUpdateDatabase("AuditEditMapper.delete", "AuditEditMapper.save", listData);
 	}
 	
 	/**导入
@@ -79,7 +79,7 @@ public class AuditEditService implements AuditEditManager{
 	 * @throws Exception
 	 */
 	public void batchImport(List<PageData> listData)throws Exception{
-		dao.batchUpdateDatabase("AuditEditMapper.importDelete", "AuditEditMapper.save", listData);
+		//dao.batchUpdateDatabase("AuditEditMapper.importDelete", "AuditEditMapper.save", listData);
 	}
 	
 	/**导出列表

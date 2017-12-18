@@ -64,7 +64,8 @@ public interface StaffDetailManager{
 	 * @throws Exception
 	 */
 	public List<PageData> getDataCalculation(String tableName, String TableFeildTax, String TmplUtil_KeyExtra, 
-			String sqlRetSelectSalary, String sqlRetSelectBonus, List<PageData> listAddSalary, List<PageData> listAddBonus,
+			PageData pdInsetBackup,
+			List<String> listSalaryFeildUpdate, String sqlRetSelect, List<PageData> listAddSalary, List<PageData> listAddBonus,
 			String sqlSumByUserCodeSalary,  String sqlSumByUserCodeBonus, String TableFeildSum)throws Exception;
 	/**更新数据库
 	 * @param pd

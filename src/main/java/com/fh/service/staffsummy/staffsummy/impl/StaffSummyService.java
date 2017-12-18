@@ -1,6 +1,7 @@
 package com.fh.service.staffsummy.staffsummy.impl;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Resource;
 import org.springframework.stereotype.Service;
@@ -74,12 +75,8 @@ public class StaffSummyService implements StaffSummyManager{
 	 * @param 
 	 * @throws Exception
 	 */
-	public void saveSummyModelList(boolean bolDeleteSummy, List<PageData> getSaveBill, List<PageData> getSaveDetail, List<PageData> getDetailSetBillCode, PageData pdBillNum)throws Exception{
-		dao.batchSummy(bolDeleteSummy,
-				"StaffSummyMapper.deleteBill", "StaffSummyMapper.deleteDetail", "StaffSummyMapper.save",  getSaveBill,
-				"StaffSummyMapper.save",  getSaveDetail,
-				"StaffDetailMapper.editBillCode", getDetailSetBillCode,
-				"SysBillnumMapper.delete", "SysBillnumMapper.save", pdBillNum);
+	public void saveSummyModelList(Map<String, Object> map)throws Exception{
+		dao.update("StaffSummyMapper.saveSummy", map);
 	}
 	
 }

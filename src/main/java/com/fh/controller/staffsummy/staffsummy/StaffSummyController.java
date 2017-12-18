@@ -5,6 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -118,7 +119,7 @@ public class StaffSummyController extends BaseController {
 	//界面查询字段   员工组、账套、组织机构（特殊处理）、所属二级单位、组织单元文本
     List<String> QueryFeildList = Arrays.asList("USER_GROP", "CUST_COL7", "DEPT_CODE");
     
-	List<String> SumFieldBill = Arrays.asList("BILL_CODE", "BUSI_DATE", "DEPT_CODE", "CUST_COL7", "USER_GROP");
+	List<String> SumFieldBill = Arrays.asList("BILL_CODE", "BUSI_DATE", "DEPT_CODE", "CUST_COL7", "USER_GROP", "DATA_TYPE");
 	//修改导入明细获取字段
 	List<String> DetailSetBillCodeFeild = Arrays.asList("SERIAL_NO");
 	//另加的列、配置模板之外的列 
@@ -206,6 +207,7 @@ public class StaffSummyController extends BaseController {
 		PageData getPd = this.getPageData();
 		//员工组
 		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		String strTypeCodeTramsfer = getWhileValueToTypeCodeTramsfer(SelectedTableNo);
 		String emplGroupType = DictsUtil.getEmplGroupType(SelectedTableNo);
 		//单位
 		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
@@ -224,7 +226,7 @@ public class StaffSummyController extends BaseController {
 		getQueryFeildPd.put("CUST_COL7", SelectedCustCol7);
 		String QueryFeild = QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList);
 		QueryFeild += " and BILL_STATE = '" + BillState.Normal.getNameKey() + "' ";
-		QueryFeild += QueryFeildString.getNotReportBillCode();
+		QueryFeild += QueryFeildString.getNotReportBillCode(strTypeCodeTramsfer, SystemDateTime, SelectedCustCol7, AllDeptCode + "," + SelectedDepartCode);
 		QueryFeild += " and DEPT_CODE in (" + QueryFeildString.tranferListValueToSqlInString(AllDeptCode) + ") ";
 		//工资无账套无数据
 		if(!(SelectedCustCol7!=null && !SelectedCustCol7.trim().equals(""))){
@@ -255,6 +257,7 @@ public class StaffSummyController extends BaseController {
 		PageData getPd = this.getPageData();
 		//员工组
 		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		String strTypeCodeTramsfer = getWhileValueToTypeCodeTramsfer(SelectedTableNo);
 		String emplGroupType = DictsUtil.getEmplGroupType(SelectedTableNo);
 		//单位
 		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
@@ -276,9 +279,9 @@ public class StaffSummyController extends BaseController {
 		String QueryFeild = QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList);
 		if(SelectedBillCode!=null && !SelectedBillCode.equals(SelectBillCodeFirstShow)){
 			QueryFeild += " and BILL_STATE = '" + BillState.Normal.getNameKey() + "' ";
-			QueryFeild += QueryFeildString.getNotReportBillCode();
+			QueryFeild += QueryFeildString.getNotReportBillCode(strTypeCodeTramsfer, SystemDateTime, SelectedCustCol7, AllDeptCode + "," + SelectedDepartCode);
 		} else {
-			QueryFeild += " and DATA_TYPE = '" + StaffDataType.Salary.getNameKey() + "' ";
+			//QueryFeild += " and DATA_TYPE = '" + StaffDataType.Salary.getNameKey() + "' ";
 		}
 		QueryFeild += " and DEPT_CODE in (" + QueryFeildString.tranferListValueToSqlInString(AllDeptCode) + ") ";
 		//工资无账套无数据
@@ -495,6 +498,7 @@ public class StaffSummyController extends BaseController {
 		PageData getPd = this.getPageData();
 		//员工组
 		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		String strTypeCodeTramsfer = getWhileValueToTypeCodeTramsfer(SelectedTableNo);
 		String emplGroupType = DictsUtil.getEmplGroupType(SelectedTableNo);
 		TmplTypeInfo implTypeCode = getWhileValueToTypeCode(SelectedTableNo);
 		String TypeCodeSummyBill = implTypeCode.getTypeCodeSummyBill();
@@ -551,8 +555,8 @@ public class StaffSummyController extends BaseController {
 				listBillCode.add(each.getString("BILL_CODE" + TmplUtil.keyExtra));
 			}
 			QueryFeild += " and BILL_CODE in (" + QueryFeildString.tranferListValueToSqlInString(listBillCode) + ") ";
-			QueryFeild += QueryFeildString.getNotReportBillCode();
-			QueryFeild += FilterBillCode.getBillCodeNotInSumInvalid(TableNameBase);
+			QueryFeild += QueryFeildString.getNotReportBillCode(strTypeCodeTramsfer, SystemDateTime, SelectedCustCol7, AllDeptCode + "," + SelectedDepartCode);
+			QueryFeild += FilterBillCode.getBillCodeNotInSumInvalidDetail(TableNameBase);
 		} else {
 			bolDeleteSummy = false;
 			PageData getQueryFeildPd = new PageData();
@@ -561,7 +565,7 @@ public class StaffSummyController extends BaseController {
 			getQueryFeildPd.put("DEPT_CODE", SelectedDepartCode);
 			getQueryFeildPd.put("CUST_COL7", SelectedCustCol7);
 			QueryFeild += QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList);
-			QueryFeild += " and DATA_TYPE = '" + StaffDataType.Salary.getNameKey() + "' ";
+			//QueryFeild += " and DATA_TYPE = '" + StaffDataType.Salary.getNameKey() + "' ";
 			QueryFeild += " and DEPT_CODE in (" + QueryFeildString.tranferListValueToSqlInString(AllDeptCode) + ") ";
 			//工资无账套无数据
 			if(!(SelectedCustCol7!=null && !SelectedCustCol7.trim().equals(""))){
@@ -603,10 +607,10 @@ public class StaffSummyController extends BaseController {
 		pdBill.put("SelectFeild", SelectFeildBill);
 		List<PageData> getSaveBill = staffdetailService.getSum(pdBill);
 		//TableName CanOperate
-		
-		String strCanOperate = "";
-		strCanOperate += QueryFeildString.getNotReportBillCode();
-		strCanOperate += FilterBillCode.getBillCodeNotInSumInvalid(TableNameBase);
+
+		String CanOperNotReport = QueryFeildString.getNotReportBillCode(strTypeCodeTramsfer, SystemDateTime, SelectedCustCol7, AllDeptCode + "," + SelectedDepartCode);
+		String CanOperNotReportNotInSumInvalidBill = CanOperNotReport + FilterBillCode.getBillCodeNotInSumInvalidBill();
+		String CanOperNotReportNotInSumInvalidDetail = CanOperNotReport + FilterBillCode.getBillCodeNotInSumInvalidDetail(TableNameBase);
 		
 		PageData pdBillNum=new PageData();
 		if(bolDeleteSummy){//删除添加
@@ -618,7 +622,8 @@ public class StaffSummyController extends BaseController {
         		bill.put("ESTB_DEPT", Jurisdiction.getCurrentDepartmentID());
                 
         		bill.put("TableName", TableNameBase);
-        		bill.put("CanOperate", strCanOperate);//未传输 未作废
+        		bill.put("CanOperateBill", CanOperNotReportNotInSumInvalidBill);//未传输 未作废
+        		bill.put("CanOperateDetail", CanOperNotReportNotInSumInvalidDetail);//未传输 未作废
                 //添加未设置字段默认值
     			Common.setModelDefault(bill, map_HaveColumnsListBill, map_SetColumnsListBill);
 			}
@@ -630,7 +635,6 @@ public class StaffSummyController extends BaseController {
         		detail.put("ESTB_DEPT", Jurisdiction.getCurrentDepartmentID());
                 
 				detail.put("TableName", TableNameFirstDetail);
-				detail.put("CanOperate", strCanOperate);//未传输 未作废
                 //添加未设置字段默认值
     			Common.setModelDefault(detail, map_HaveColumnsListDetail, map_SetColumnsListDetail);
 			}
@@ -662,7 +666,6 @@ public class StaffSummyController extends BaseController {
         		bill.put("ESTB_DEPT", Jurisdiction.getCurrentDepartmentID());
                 
         		bill.put("TableName", TableNameBase);
-        		bill.put("CanOperate", strCanOperate);//未传输未作废
                 //添加未设置字段默认值
     			Common.setModelDefault(bill, map_HaveColumnsListBill, map_SetColumnsListBill);
 			}
@@ -678,7 +681,6 @@ public class StaffSummyController extends BaseController {
         		detail.put("ESTB_DEPT", Jurisdiction.getCurrentDepartmentID());
                 
 				detail.put("TableName", TableNameFirstDetail);
-				detail.put("CanOperate", strCanOperate);//未传输未作废
                 //添加未设置字段默认值
     			Common.setModelDefault(detail, map_HaveColumnsListDetail, map_SetColumnsListDetail);
     			
@@ -704,7 +706,19 @@ public class StaffSummyController extends BaseController {
 			}
 		}
         if(commonBase.getCode() == -1){
-			staffsummyService.saveSummyModelList(bolDeleteSummy, getSaveBill, getSaveDetail, getDetailSetBillCode, pdBillNum);
+        	Map<String, Object> map = new HashMap<String, Object>();
+            if(pdBillNum!=null && pdBillNum.size()>0){
+            	map.put("UpdateBillNum", pdBillNum);
+            }
+            if(bolDeleteSummy){
+            	map.put("DetailBillAndDetail", getSaveBill);
+            }
+        	map.put("SaveBill", getSaveBill);
+        	map.put("SaveDetail", getSaveDetail);
+            if(!bolDeleteSummy){
+            	map.put("DetailSetBillCode", getDetailSetBillCode);
+            }
+			staffsummyService.saveSummyModelList(map);
 			commonBase.setCode(0);
         }
 		return commonBase;
@@ -764,6 +778,31 @@ public class StaffSummyController extends BaseController {
 			which = value;
 		}
 		return which;
+	}
+
+	private String getWhileValueToTypeCodeTramsfer(String which) throws Exception{
+		String strReturn = "";
+		if(which.equals(TmplType.TB_STAFF_SUMMY_CONTRACT.getNameKey())){
+			//合同化
+			strReturn = TmplType.TB_STAFF_TRANSFER_CONTRACT.getNameKey();
+		}
+		if(which.equals(TmplType.TB_STAFF_SUMMY_MARKET.getNameKey())){
+			//市场化
+			strReturn = TmplType.TB_STAFF_TRANSFER_MARKET.getNameKey();
+		}
+		if(which.equals(TmplType.TB_STAFF_SUMMY_SYS_LABOR.getNameKey())){
+			//系统内劳务
+			strReturn = TmplType.TB_STAFF_TRANSFER_SYS_LABOR.getNameKey();
+		}
+		if(which.equals(TmplType.TB_STAFF_SUMMY_OPER_LABOR.getNameKey())){
+			//运行人员
+			strReturn = TmplType.TB_STAFF_TRANSFER_OPER_LABOR.getNameKey();
+		}
+		if(which.equals(TmplType.TB_STAFF_SUMMY_LABOR.getNameKey())){
+			//劳务派遣工资
+			strReturn = TmplType.TB_STAFF_TRANSFER_LABOR.getNameKey();
+		}
+		return strReturn;
 	}
 
 	private TmplTypeInfo getWhileValueToTypeCode(String which) throws Exception{

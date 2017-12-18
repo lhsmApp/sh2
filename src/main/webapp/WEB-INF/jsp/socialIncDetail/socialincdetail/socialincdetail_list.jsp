@@ -167,59 +167,6 @@
 	//前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
     var jqGridColModel;
 
-    function getState(){
-        if(ShowDataBillCode!=SelectNoBillCodeShowOption){
-        	console.log("按钮不可用");
-            return false;
-        }
-    	console.log("按钮可用");
-        return true;
-    };
-    
-    function setNavButtonState(State){
-        if(State){
-            $("#edit").removeClass('ui-state-disabled'); //Disable 按钮灰掉不可用
-            $("#add").removeClass('ui-state-disabled'); //Disable 按钮灰掉不可用
-            $("#del").removeClass('ui-state-disabled'); //Disable 按钮灰掉不可用
-            $("#batchDelete").removeClass('ui-state-disabled'); //Disable 按钮灰掉不可用
-            $("#batchEdit").removeClass('ui-state-disabled'); //Disable 按钮灰掉不可用
-            $("#batchCancelEdit").removeClass('ui-state-disabled'); //Disable 按钮灰掉不可用
-            $("#batchSave").removeClass('ui-state-disabled'); //Disable 按钮灰掉不可用
-            $("#importItems").removeClass('ui-state-disabled'); //Disable 按钮灰掉不可用
-            $("#report").removeClass('ui-state-disabled'); //Disable 按钮灰掉不可用
-            
-            $("#edit.ui-state-disabled .ui-icon").removeAttr("style"); //Disable 按钮灰掉不可用
-            $("#add.ui-state-disabled .ui-icon").removeAttr("style"); //Disable 按钮灰掉不可用
-            $("#del.ui-state-disabled .ui-icon").removeAttr("style"); //Disable 按钮灰掉不可用
-            $("#batchDelete.ui-state-disabled .ui-icon").removeAttr("style"); //Disable 按钮灰掉不可用
-            $("#batchEdit.ui-state-disabled .ui-icon").removeAttr("style"); //Disable 按钮灰掉不可用
-            $("#batchCancelEdit.ui-state-disabled .ui-icon").removeAttr("style"); //Disable 按钮灰掉不可用
-            $("#batchSave.ui-state-disabled .ui-icon").removeAttr("style"); //Disable 按钮灰掉不可用
-            $("#importItems.ui-state-disabled .ui-icon").removeAttr("style"); //Disable 按钮灰掉不可用
-            $("#report.ui-state-disabled .ui-icon").removeAttr("style"); //Disable 按钮灰掉不可用
-        } else {
-            $("#edit").addClass('ui-state-disabled'); //Enable 按钮可用
-            $("#add").addClass('ui-state-disabled'); //Enable 按钮可用
-            $("#del").addClass('ui-state-disabled'); //Enable 按钮可用
-            $("#batchDelete").addClass('ui-state-disabled'); //Enable 按钮可用
-            $("#batchEdit").addClass('ui-state-disabled'); //Enable 按钮可用
-            $("#batchCancelEdit").addClass('ui-state-disabled'); //Enable 按钮可用
-            $("#batchSave").addClass('ui-state-disabled'); //Enable 按钮可用
-            $("#importItems").addClass('ui-state-disabled'); //Enable 按钮可用
-            $("#report").addClass('ui-state-disabled'); //Enable 按钮可用
-            
-            $("#edit.ui-state-disabled .ui-icon").attr("style",'color:#B0B0B0 !important'); //Enable 按钮可用
-            $("#add.ui-state-disabled .ui-icon").attr("style",'color:#B0B0B0 !important'); //Enable 按钮可用
-            $("#del.ui-state-disabled .ui-icon").attr("style",'color:#B0B0B0 !important'); //Enable 按钮可用
-            $("#batchDelete.ui-state-disabled .ui-icon").attr("style",'color:#B0B0B0 !important'); //Enable 按钮可用
-            $("#batchEdit.ui-state-disabled .ui-icon").attr("style",'color:#B0B0B0 !important'); //Enable 按钮可用
-            $("#batchCancelEdit.ui-state-disabled .ui-icon").attr("style",'color:#B0B0B0 !important'); //Enable 按钮可用
-            $("#batchSave.ui-state-disabled .ui-icon").attr("style",'color:#B0B0B0 !important'); //Enable 按钮可用
-            $("#importItems.ui-state-disabled .ui-icon").attr("style",'color:#B0B0B0 !important'); //Enable 按钮可用
-            $("#report.ui-state-disabled .ui-icon").attr("style",'color:#B0B0B0 !important'); //Enable 按钮可用
-        }
-    };
-    
     function getSelectBillCodeOptions(){
         var SelectedDepartCode = $("#SelectedDepartCode").val();
         var SelectedCustCol7 = $("#SelectedCustCol7").val();
@@ -296,9 +243,11 @@
 			editurl: '<%=basePath%>socialincdetail/edit.do?'
 				+ 'SelectedDepartCode='+$("#SelectedDepartCode").val()
 	            + '&SelectedCustCol7='+$("#SelectedCustCol7").val()
+	            + '&SelectedBillCode='+$("#SelectedBillCode").val()
                 +'&DepartTreeSource='+DepartTreeSource
                 +'&ShowDataDepartCode='+ShowDataDepartCode
-                +'&ShowDataCustCol7='+ShowDataCustCol7,
+                +'&ShowDataCustCol7='+ShowDataCustCol7
+                + '&ShowDataBillCode='+ShowDataBillCode,
 			
 			pager: pagerBase_selector,
 			footerrow: true,
@@ -445,7 +394,6 @@
 			             title : "导出",
 			             cursor : "pointer"
 			         });
-					setNavButtonState(getState());
     }
     
 	$(document).ready(function () {
@@ -475,7 +423,6 @@
 	//双击编辑行
     var lastSelection;
 	function doubleClickRow(rowid,iRow,iCol,e){
-		if(getState()){
             var grid = $(gridBase_selector);
             grid.restoreRow(lastSelection);
             grid.editRow(rowid, {
@@ -535,7 +482,6 @@
                 }  
             });
             lastSelection = rowid;
-		}
 	} 
 
 	//批量编辑
@@ -587,9 +533,11 @@
 						url: '<%=basePath%>socialincdetail/deleteAll.do?'
 							+ 'SelectedDepartCode='+$("#SelectedDepartCode").val()
 				            + '&SelectedCustCol7='+$("#SelectedCustCol7").val()
+				            + '&SelectedBillCode='+$("#SelectedBillCode").val()
 		                    +'&DepartTreeSource='+DepartTreeSource
 		                    +'&ShowDataDepartCode='+ShowDataDepartCode
-		                    +'&ShowDataCustCol7='+ShowDataCustCol7,
+		                    +'&ShowDataCustCol7='+ShowDataCustCol7
+		                    + '&ShowDataBillCode='+ShowDataBillCode,
 				    	data: {DataRows:JSON.stringify(listData)},
 						dataType:'json',
 						cache: false,
@@ -660,9 +608,11 @@ function batchSave(){
 					url: '<%=basePath%>socialincdetail/updateAll.do?'
 						+ 'SelectedDepartCode='+$("#SelectedDepartCode").val()
 			            + '&SelectedCustCol7='+$("#SelectedCustCol7").val()
+			            + '&SelectedBillCode='+$("#SelectedBillCode").val()
 	                    +'&DepartTreeSource='+DepartTreeSource
 	                    +'&ShowDataDepartCode='+ShowDataDepartCode
-	                    +'&ShowDataCustCol7='+ShowDataCustCol7,
+	                    +'&ShowDataCustCol7='+ShowDataCustCol7
+	                    + '&ShowDataBillCode='+ShowDataBillCode,
 			    	data: {DataRows:JSON.stringify(listData)},
 					dataType:'json',
 					cache: false,
@@ -736,20 +686,22 @@ function calculation(){
 				    url: '<%=basePath%>socialincdetail/calculation.do?'
 	                    +'SelectedDepartCode='+$("#SelectedDepartCode").val()
                         +'&SelectedCustCol7='+$("#SelectedCustCol7").val()
+                        + '&SelectedBillCode='+$("#SelectedBillCode").val()
                         +'&DepartTreeSource='+DepartTreeSource
                         +'&ShowDataDepartCode='+ShowDataDepartCode
-                        +'&ShowDataCustCol7='+ShowDataCustCol7,
+                        +'&ShowDataCustCol7='+ShowDataCustCol7
+                        + '&ShowDataBillCode='+ShowDataBillCode,
 		    	    data: {DataRows:JSON.stringify(listData)},
 				    dataType:'json',
 				    cache: false,
 				    success: function(response){
 					    if(response.code==0){ 
 						    $(top.hangge());//关闭加载状态
-					    	console.log(response.message);
-					    	var json = JSON.parse(response.message);
-					    	$(gridBase_selector).setRowData(id, json);
-			            	$(gridBase_selector).jqGrid('editRow',id);
-						    $(top.hangge());//关闭加载状态
+							$(gridBase_selector).trigger("reloadGrid");  
+					    	//console.log(response.message);
+					    	//var json = JSON.parse(response.message);
+					    	//$(gridBase_selector).setRowData(id, json);
+			            	//$(gridBase_selector).jqGrid('editRow',id);
 						    $("#subTitle").tips({
 						    	side:3,
 				                msg:'计算成功',
@@ -792,9 +744,11 @@ function importItems(){
 	   diag.URL = '<%=basePath%>socialincdetail/goUploadExcel.do?'
 			+ 'SelectedDepartCode='+$("#SelectedDepartCode").val()
             + '&SelectedCustCol7='+$("#SelectedCustCol7").val()
-            +'&DepartTreeSource='+DepartTreeSource
-            +'&ShowDataDepartCode='+ShowDataDepartCode
-            +'&ShowDataCustCol7='+ShowDataCustCol7;
+            + '&SelectedBillCode='+$("#SelectedBillCode").val()
+            + '&DepartTreeSource='+DepartTreeSource
+            + '&ShowDataDepartCode='+ShowDataDepartCode
+            + '&ShowDataCustCol7='+ShowDataCustCol7
+            + '&ShowDataBillCode='+ShowDataBillCode;
 	   diag.Width = 300;
 	   diag.Height = 150;
 	   diag.CancelEvent = function(){ //关闭事件
@@ -813,9 +767,11 @@ function exportItems(){
 	window.location.href='<%=basePath%>socialincdetail/excel.do?'
 		+ 'SelectedDepartCode='+$("#SelectedDepartCode").val()
         + '&SelectedCustCol7='+$("#SelectedCustCol7").val()
+        + '&SelectedBillCode='+$("#SelectedBillCode").val()
         +'&DepartTreeSource='+DepartTreeSource
         +'&ShowDataDepartCode='+ShowDataDepartCode
-        +'&ShowDataCustCol7='+ShowDataCustCol7;
+        +'&ShowDataCustCol7='+ShowDataCustCol7
+        + '&ShowDataBillCode='+ShowDataBillCode;
 }
 
     /**
@@ -853,7 +809,6 @@ function exportItems(){
 		ShowDataDepartCode = $("#SelectedDepartCode").val();
 		ShowDataCustCol7 = $("#SelectedCustCol7").val();
 		ShowDataBillCode = $("#SelectedBillCode").val();
-		setNavButtonState(false);
 		$(gridBase_selector).jqGrid('GridUnload'); 
 		SetStructure();
 	}  

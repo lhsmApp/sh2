@@ -133,24 +133,6 @@ public class DaoSupport implements DAO {
 			sqlSession.close();
 		}
 	}
-	public void batchDeleteOneUpdate(String delete, String insert, List<?> objs )throws Exception{
-		SqlSessionFactory sqlSessionFactory = sqlSessionTemplate.getSqlSessionFactory();
-		//批量执行器
-		SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH,false);
-		try{
-			if(objs!=null){
-				for(int i=0,size=objs.size();i<size;i++){
-					sqlSession.delete(delete, objs.get(i));
-					sqlSession.update(insert, objs.get(i));
-				}
-				sqlSession.flushStatements();
-				sqlSession.commit();
-				sqlSession.clearCache();
-			}
-		}finally{
-			sqlSession.close();
-		}
-	}
 
 
 	/**
@@ -160,8 +142,8 @@ public class DaoSupport implements DAO {
 	 * @return
 	 * @throws Exception
 	 */
-	public List<PageData> findDataCalculation(String tableName, 
-			String sqlDelete, String sqlInsert, 
+	public List<PageData> findDataCalculation(String tableNameBackup, 
+			String sqlBatchDelAndIns, 
 			String sqlRetSelect, List<PageData> listAdd)throws Exception{
 		SqlSessionFactory sqlSessionFactory = sqlSessionTemplate.getSqlSessionFactory();
 		//批量执行器
@@ -169,22 +151,23 @@ public class DaoSupport implements DAO {
 		List<PageData> returnList = new ArrayList<PageData>();
 		try{
 			if(listAdd!=null && !listAdd.isEmpty()){
-				Integer strMaxNum = sqlSession.selectOne("DataCalculation.getMaxSerialNo", tableName);
+				Integer strMaxNum = sqlSession.selectOne("DataCalculation.getMaxSerialNo", tableNameBackup);
 				String SqlInBillCode = "";
 				for(PageData eachPd : listAdd){
 					String SERIAL_NO = eachPd.getString("SERIAL_NO");
 					if(SERIAL_NO!=null && !SERIAL_NO.trim().equals("")){
-						//删除
-						sqlSession.delete(sqlDelete, eachPd);
 						if(SqlInBillCode!=null && !SqlInBillCode.trim().equals("")){
 							SqlInBillCode += ",";
 						}
 						SqlInBillCode += SERIAL_NO;
 					}
-					sqlSession.update(sqlInsert, eachPd);
 				}
+				sqlSession.update(sqlBatchDelAndIns, listAdd);
+				sqlSession.flushStatements();
+				sqlSession.commit();
+				sqlSession.clearCache();
 				PageData getAddSerialNo = new PageData();
-				getAddSerialNo.put("tableName", tableName);
+				getAddSerialNo.put("tableName", tableNameBackup);
 				getAddSerialNo.put("strMaxNum", strMaxNum);
 				List<Integer> getInsertBillCodeList =  sqlSession.selectList("DataCalculation.getAddSerialNo",  getAddSerialNo);
 				if(getInsertBillCodeList!=null){
@@ -199,14 +182,7 @@ public class DaoSupport implements DAO {
 				getListBySerialNo.put("sqlRetSelect", sqlRetSelect);
 				getListBySerialNo.put("SqlInBillCode", SqlInBillCode);
 				returnList = sqlSession.selectList("DataCalculation.getListBySerialNo",  getListBySerialNo);
-				//sqlSession.update("DataCalculation.getRollback");
-				//sqlSession.flushStatements();
-				//sqlSession.commit();
-				//sqlSession.clearCache();
-				sqlSession.rollback(); 
 			}
-		//} catch (Exception e) { 
-		//	sqlSession.rollback(); 
 		} finally{
 			sqlSession.rollback(); 
 			sqlSession.close();
@@ -222,8 +198,9 @@ public class DaoSupport implements DAO {
 	 * @throws Exception
 	 */
 	public List<PageData> findDataCalculation(String tableName, String TableFeildTax, String TmplUtil_KeyExtra,
-			String sqlDelete, String sqlInsert, 
-			String sqlRetSelectSalary, String sqlRetSelectBonus, 
+			String sqlInsetBackup, PageData pdInsetBackup,
+			String sqlBatchDelAndIns, 
+			List<String> listSalaryFeildUpdate, String sqlRetSelect, 
 			List<PageData> listAddSalary, List<PageData> listAddBonus,
 			String sqlSumByUserCodeSalary,  String sqlSumByUserCodeBonus, String TableFeildSum)throws Exception{
 		SqlSessionFactory sqlSessionFactory = sqlSessionTemplate.getSqlSessionFactory();
@@ -233,21 +210,20 @@ public class DaoSupport implements DAO {
 		
 		List<PageData> returnList = new ArrayList<PageData>();
 		try{
+			sqlSession.update(sqlInsetBackup, pdInsetBackup);
 			if(listAddBonus!=null && !listAddBonus.isEmpty()){
 				Integer strMaxNum = sqlSession.selectOne("DataCalculation.getMaxSerialNo", tableName);
 				String SqlInBillCode = "";
 				for(PageData eachPd : listAddBonus){
 					String SERIAL_NO = eachPd.getString("SERIAL_NO");
 					if(SERIAL_NO!=null && !SERIAL_NO.trim().equals("")){
-						//删除
-						sqlSession.delete(sqlDelete, eachPd);
 						if(SqlInBillCode!=null && !SqlInBillCode.trim().equals("")){
 							SqlInBillCode += ",";
 						}
 						SqlInBillCode += SERIAL_NO;
 					}
-					sqlSession.update(sqlInsert, eachPd);
 				}
+				sqlSession.update(sqlBatchDelAndIns, listAddBonus);
 				PageData getAddSerialNo = new PageData();
 				getAddSerialNo.put("tableName", tableName);
 				getAddSerialNo.put("strMaxNum", strMaxNum);
@@ -261,7 +237,7 @@ public class DaoSupport implements DAO {
 					}
 				}
 				PageData getListBySerialNo = new PageData();
-				getListBySerialNo.put("sqlRetSelect", sqlRetSelectBonus);
+				getListBySerialNo.put("sqlRetSelect", sqlRetSelect);
 				getListBySerialNo.put("SqlInBillCode", SqlInBillCode);
 				List<PageData> retListBonus = sqlSession.selectList("DataCalculation.getListBySerialNo",  getListBySerialNo);
 				if(retListBonus!=null){
@@ -309,15 +285,13 @@ public class DaoSupport implements DAO {
 				for(PageData eachPd : listAddSalary){
 					String SERIAL_NO = eachPd.getString("SERIAL_NO");
 					if(SERIAL_NO!=null && !SERIAL_NO.trim().equals("")){
-						//删除
-						sqlSession.delete(sqlDelete, eachPd);
 						if(SqlInBillCode!=null && !SqlInBillCode.trim().equals("")){
 							SqlInBillCode += ",";
 						}
 						SqlInBillCode += SERIAL_NO;
 					}
-					sqlSession.update(sqlInsert, eachPd);
 				}
+				sqlSession.update(sqlBatchDelAndIns, listAddSalary);
 				PageData getAddSerialNo = new PageData();
 				getAddSerialNo.put("tableName", tableName);
 				getAddSerialNo.put("strMaxNum", strMaxNum);
@@ -330,8 +304,16 @@ public class DaoSupport implements DAO {
 						SqlInBillCode += billCode;
 					}
 				}
+				if(listSalaryFeildUpdate!=null){
+					for(String strUpdateFeild : listSalaryFeildUpdate){
+						PageData setUpdateFeild = new PageData();
+						setUpdateFeild.put("sqlUpdateFeild", strUpdateFeild);
+						setUpdateFeild.put("SqlInBillCode", SqlInBillCode);
+						sqlSession.selectList("DataCalculation.editSalaryFeild",  setUpdateFeild);
+					}
+				}
 				PageData getListBySerialNo = new PageData();
-				getListBySerialNo.put("sqlRetSelect", sqlRetSelectSalary);
+				getListBySerialNo.put("sqlRetSelect", sqlRetSelect);
 				getListBySerialNo.put("SqlInBillCode", SqlInBillCode);
 				List<PageData> retListSalary = sqlSession.selectList("DataCalculation.getListBySerialNo",  getListBySerialNo);
 				if(retListSalary!=null){
@@ -369,46 +351,15 @@ public class DaoSupport implements DAO {
 						returnList.add(eachAdd);
 					}
 				}
-				//sqlSession.update("DataCalculation.getRollback");
-				//sqlSession.flushStatements();
-				//sqlSession.commit();
-				//sqlSession.clearCache();
-				sqlSession.rollback(); 
 			}
-		//} catch (Exception e) { 
-		//	sqlSession.rollback(); 
+			sqlSession.flushStatements();
+			sqlSession.commit();
+			sqlSession.clearCache();
 		} finally{
 			sqlSession.rollback(); 
 			sqlSession.close();
 		}
 		return returnList;
-	}
-	/**
-	 * 更新数据库
-	 * @param str
-	 * @param obj
-	 * @return
-	 * @throws Exception
-	 */
-	public void batchUpdateDatabase(String sqlDelete, String sqlInsert, List<?> objs)throws Exception{
-		SqlSessionFactory sqlSessionFactory = sqlSessionTemplate.getSqlSessionFactory();
-		//批量执行器
-		SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH,false);
-		try{
-			if(objs!=null&&objs.size()>0){
-				for(int i=0,size=objs.size();i<size;i++){
-				    sqlSession.delete(sqlDelete, objs.get(i));
-				}
-				for(int i=0,size=objs.size();i<size;i++){
-					sqlSession.insert(sqlInsert, objs.get(i));
-				}
-				sqlSession.flushStatements();
-				sqlSession.commit();
-				sqlSession.clearCache();
-			}
-		} finally{
-			sqlSession.close();
-		}
 	}
 	
 	/**
@@ -437,55 +388,6 @@ public class DaoSupport implements DAO {
 		}
 	}
 
-
-	/**
-	 * 汇总
-	 * @param str
-	 * @param obj
-	 * @return
-	 * @throws Exception
-	 */
-	public void batchSummy(boolean bolDeleteSummy,
-			String delSumBill, String delSumDetail, String insSumBill, List<PageData> getSaveBill,
-			String insSumDetail, List<PageData> getSaveDetail,
-			 String editBillCode, List<PageData> getDetailSetBillCode,
-			String deleteBillNum, String insertBillNum, PageData pdBillNum)throws Exception{
-		SqlSessionFactory sqlSessionFactory = sqlSessionTemplate.getSqlSessionFactory();
-		//批量执行器
-		SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH,false);
-		try{
-			if(getSaveBill!=null&&getSaveBill.size()>0 && getSaveDetail!=null&&getSaveDetail.size()>0){
-				//最大单号
-				if(pdBillNum != null && pdBillNum.size()>0){
-					sqlSession.delete(deleteBillNum, pdBillNum);
-					sqlSession.insert(insertBillNum, pdBillNum);
-				}
-				if(bolDeleteSummy){
-				    for(PageData bill : getSaveBill){
-						sqlSession.delete(delSumBill, bill);
-						sqlSession.delete(delSumDetail, bill);
-				    }
-				}
-				for(PageData bill : getSaveBill){
-					sqlSession.insert(insSumBill, bill);
-				}
-				for(PageData detail : getSaveDetail){
-					sqlSession.insert(insSumDetail, detail);
-				}
-				if(!bolDeleteSummy){
-				    for(PageData SetBillCode : getDetailSetBillCode){
-					    sqlSession.update(editBillCode, SetBillCode);
-				    }
-				}
-				sqlSession.flushStatements();
-				sqlSession.commit();
-				sqlSession.clearCache();
-			}
-		}finally{
-			sqlSession.close();
-		}
-	}
-	
 }
 
 

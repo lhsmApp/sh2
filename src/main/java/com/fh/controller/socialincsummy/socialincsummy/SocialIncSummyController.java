@@ -6,10 +6,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.annotation.Resource;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
@@ -24,33 +22,23 @@ import com.fh.controller.common.BillCodeUtil;
 import com.fh.controller.common.Common;
 import com.fh.controller.common.DictsUtil;
 import com.fh.controller.common.FilterBillCode;
-import com.fh.controller.common.Message;
 import com.fh.controller.common.QueryFeildString;
 import com.fh.controller.common.SelectBillCodeOptions;
-import com.fh.controller.common.SetListReportState;
 import com.fh.controller.common.TmplUtil;
 import com.fh.entity.CommonBase;
 import com.fh.entity.JqPage;
 import com.fh.entity.Page;
 import com.fh.entity.PageResult;
-import com.fh.entity.SysSealed;
 import com.fh.entity.TableColumns;
 import com.fh.entity.TmplConfigDetail;
-import com.fh.entity.TmplTypeInfo;
 import com.fh.entity.system.User;
 import com.fh.util.Const;
 import com.fh.util.DateUtil;
 import com.fh.util.PageData;
 import com.fh.util.SqlTools;
 import com.fh.util.Jurisdiction;
-import com.fh.util.collectionSql.GroupUtils;
-import com.fh.util.collectionSql.GroupUtils.GroupBy;
-import com.fh.util.date.DateFormatUtils;
-import com.fh.util.date.DateUtils;
 import com.fh.util.enums.BillNumType;
 import com.fh.util.enums.BillState;
-import com.fh.util.enums.DurState;
-import com.fh.util.enums.StaffDataType;
 import com.fh.util.enums.SysConfigKeyCode;
 import com.fh.util.enums.TmplType;
 
@@ -106,6 +94,7 @@ public class SocialIncSummyController extends BaseController {
 	String TypeCodeDetail = TmplType.TB_SOCIAL_INC_DETAIL.getNameKey();
 	String TypeCodeSummyBill = TmplType.TB_SOCIAL_INC_SUMMY.getNameKey();
 	String TypeCodeSummyDetail = TmplType.TB_SOCIAL_INC_SUMMY.getNameKey();
+    String TypeCodeTransfer = TmplType.TB_SOCIAL_INC_TRANSFER.getNameKey();
 	//临时数据
 	String SelectBillCodeFirstShow = "临时数据";
 	String SelectBillCodeLastShow = "全部单据";
@@ -226,7 +215,7 @@ public class SocialIncSummyController extends BaseController {
 		getQueryFeildPd.put("CUST_COL7", SelectedCustCol7);
 		String QueryFeild = QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList);
 		QueryFeild += " and BILL_STATE = '" + BillState.Normal.getNameKey() + "' ";
-		QueryFeild += QueryFeildString.getNotReportBillCode();
+		QueryFeild += QueryFeildString.getNotReportBillCode(TypeCodeTransfer, SystemDateTime, SelectedCustCol7, AllDeptCode + "," + SelectedDepartCode);
 		QueryFeild += " and DEPT_CODE in (" + QueryFeildString.tranferListValueToSqlInString(AllDeptCode) + ") ";
 		//工资无账套无数据
 		if(!(SelectedCustCol7!=null && !SelectedCustCol7.trim().equals(""))){
@@ -271,7 +260,7 @@ public class SocialIncSummyController extends BaseController {
 		String QueryFeild = QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList);
 		if(SelectedBillCode!=null && !SelectedBillCode.equals(SelectBillCodeFirstShow)){
 			QueryFeild += " and BILL_STATE = '" + BillState.Normal.getNameKey() + "' ";
-			QueryFeild += QueryFeildString.getNotReportBillCode();
+			QueryFeild += QueryFeildString.getNotReportBillCode(TypeCodeTransfer, SystemDateTime, SelectedCustCol7, AllDeptCode + "," + SelectedDepartCode);
 		}
 		QueryFeild += " and DEPT_CODE in (" + QueryFeildString.tranferListValueToSqlInString(AllDeptCode) + ") ";
 		//工资无账套无数据
@@ -507,8 +496,8 @@ public class SocialIncSummyController extends BaseController {
 				listBillCode.add(each.getString("BILL_CODE" + TmplUtil.keyExtra));
 			}
 			QueryFeild += " and BILL_CODE in (" + QueryFeildString.tranferListValueToSqlInString(listBillCode) + ") ";
-			QueryFeild += QueryFeildString.getNotReportBillCode();
-			QueryFeild += FilterBillCode.getBillCodeNotInSumInvalid(TableNameBase);
+			QueryFeild += QueryFeildString.getNotReportBillCode(TypeCodeTransfer, SystemDateTime, SelectedCustCol7, AllDeptCode + "," + SelectedDepartCode);
+			QueryFeild += FilterBillCode.getBillCodeNotInSumInvalidDetail(TableNameBase);
 		} else {
 			bolDeleteSummy = false;
 			PageData getQueryFeildPd = new PageData();
@@ -553,10 +542,10 @@ public class SocialIncSummyController extends BaseController {
 		pdBill.put("SelectFeild", SelectFeildBill);
 		List<PageData> getSaveBill = socialincdetailService.getSum(pdBill);
 		//TableName CanOperate
-		
-		String strCanOperate = "";
-		strCanOperate += QueryFeildString.getNotReportBillCode();
-		strCanOperate += FilterBillCode.getBillCodeNotInSumInvalid(TableNameBase);
+
+		String CanOperNotReport = QueryFeildString.getNotReportBillCode(TypeCodeTransfer, SystemDateTime, SelectedCustCol7, AllDeptCode + "," + SelectedDepartCode);
+		String CanOperNotReportNotInSumInvalidBill = CanOperNotReport + FilterBillCode.getBillCodeNotInSumInvalidBill();
+		String CanOperNotReportNotInSumInvalidDetail = CanOperNotReport + FilterBillCode.getBillCodeNotInSumInvalidDetail(TableNameBase);
 		
 		PageData pdBillNum=new PageData();
 		if(bolDeleteSummy){//删除添加
@@ -568,7 +557,8 @@ public class SocialIncSummyController extends BaseController {
         		bill.put("ESTB_DEPT", Jurisdiction.getCurrentDepartmentID());
                 
         		bill.put("TableName", TableNameBase);
-        		bill.put("CanOperate", strCanOperate);//未传输 未作废
+        		bill.put("CanOperateBill", CanOperNotReportNotInSumInvalidBill);//未传输 未作废
+        		bill.put("CanOperateDetail", CanOperNotReportNotInSumInvalidDetail);//未传输 未作废
                 //添加未设置字段默认值
     			Common.setModelDefault(bill, map_HaveColumnsListBill, map_SetColumnsListBill);
 			}
@@ -580,7 +570,6 @@ public class SocialIncSummyController extends BaseController {
         		detail.put("ESTB_DEPT", Jurisdiction.getCurrentDepartmentID());
                 
 				detail.put("TableName", TableNameFirstDetail);
-				detail.put("CanOperate", strCanOperate);//未传输 未作废
                 //添加未设置字段默认值
     			Common.setModelDefault(detail, map_HaveColumnsListDetail, map_SetColumnsListDetail);
 			}
@@ -612,7 +601,6 @@ public class SocialIncSummyController extends BaseController {
         		bill.put("ESTB_DEPT", Jurisdiction.getCurrentDepartmentID());
                 
         		bill.put("TableName", TableNameBase);
-        		bill.put("CanOperate", strCanOperate);//未传输未作废
                 //添加未设置字段默认值
     			Common.setModelDefault(bill, map_HaveColumnsListBill, map_SetColumnsListBill);
 			}
@@ -628,7 +616,6 @@ public class SocialIncSummyController extends BaseController {
         		detail.put("ESTB_DEPT", Jurisdiction.getCurrentDepartmentID());
                 
 				detail.put("TableName", TableNameFirstDetail);
-				detail.put("CanOperate", strCanOperate);//未传输未作废
                 //添加未设置字段默认值
     			Common.setModelDefault(detail, map_HaveColumnsListDetail, map_SetColumnsListDetail);
     			
@@ -654,7 +641,19 @@ public class SocialIncSummyController extends BaseController {
 			}
 		}
         if(commonBase.getCode() == -1){
-			socialincsummyService.saveSummyModelList(bolDeleteSummy, getSaveBill, getSaveDetail, getDetailSetBillCode, pdBillNum);
+        	Map<String, Object> map = new HashMap<String, Object>();
+            if(pdBillNum!=null && pdBillNum.size()>0){
+            	map.put("UpdateBillNum", pdBillNum);
+            }
+            if(bolDeleteSummy){
+            	map.put("DetailBillAndDetail", getSaveBill);
+            }
+        	map.put("SaveBill", getSaveBill);
+        	map.put("SaveDetail", getSaveDetail);
+            if(!bolDeleteSummy){
+            	map.put("DetailSetBillCode", getDetailSetBillCode);
+            }
+			socialincsummyService.saveSummyModelList(map);
 			commonBase.setCode(0);
         }
 		return commonBase;

@@ -116,20 +116,31 @@
 		</foreach>
 	</delete>
 	
-	<!-- 删除 -->
-	<delete id="delete" parameterType="pd">
-		delete from
-		<include refid="tableName"></include>
-		where SERIAL_NO = #{SERIAL_NO}
-	    ${CanOperate}
-	</delete>
+	<update id="insetBackup" parameterType="pd">
+	    delete from tb_staff_detail_backup
+	    <where>
+	        ${QueryFeild}
+	    </where>;
+	    
+	    insert into tb_staff_detail_backup
+	    (${FeildList}) 
+	    (select ${FeildList} 
+	    from tb_staff_detail 
+	    <where>
+	        ${QueryFeild}
+	        ${SumInvalidNotInsert}
+	    </where>);
+	</update>
 	
-	<!-- 新增 -->
-	<insert id="save" parameterType="pd">
-		insert into 
-	    <include refid="tableName"></include>
-		(${InsertField}) values (${InsertVale})
-	</insert>
+	<update id="batchDelAndIns" parameterType="pd">
+		<foreach item="item" index="index" collection="list" open=" " separator=" " close=" ">
+		    delete from ${item.TableName}
+		    where SERIAL_NO = #{item.SERIAL_NO}
+	        ${item.CanOperate};
+		    insert into ${item.TableName}
+		    (${item.InsertField}) values (${item.InsertVale});
+		</foreach>
+	</update>
 	
 	
 	
@@ -137,16 +148,10 @@
 	
 	
 
-	<!-- 修改单号 -->
-	<update id="editBillCode" parameterType="pd">
-		update
-		<include refid="tableName"></include>
-		set 
-			BILL_CODE = #{BILL_CODE}
-	    <where>
-	        ${updateFilter}
-	    </where>
-	</update>
+	
+	
+	
+	
 	
 	<!-- 获取汇总里的明细 -->
 	<select id="getDetailList" parameterType="pd" resultType="pd">

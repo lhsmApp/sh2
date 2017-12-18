@@ -94,12 +94,14 @@ public class StaffDetailService implements StaffDetailManager{
 	 * @throws Exception
 	 */
 	public List<PageData> getDataCalculation(String tableName, String TableFeildTax, String TmplUtil_KeyExtra,
-			String sqlRetSelectSalary, String sqlRetSelectBonus, 
+			PageData pdInsetBackup,
+			List<String> listSalaryFeildUpdate, String sqlRetSelect, 
 			List<PageData> listAddSalary, List<PageData> listAddBonus,
 			String sqlSumByUserCodeSalary,  String sqlSumByUserCodeBonus, String TableFeildSum)throws Exception{
 		return dao.findDataCalculation(tableName, TableFeildTax, TmplUtil_KeyExtra,
-				    "StaffDetailMapper.delete", "StaffDetailMapper.save", 
-				    sqlRetSelectSalary, sqlRetSelectBonus, 
+				    "StaffDetailMapper.insetBackup", pdInsetBackup,
+				    "StaffDetailMapper.batchDelAndIns", 
+				    listSalaryFeildUpdate, sqlRetSelect, 
 				    listAddSalary, listAddBonus,
 					sqlSumByUserCodeSalary, sqlSumByUserCodeBonus, TableFeildSum);
 	}
@@ -108,7 +110,7 @@ public class StaffDetailService implements StaffDetailManager{
 	 * @throws Exception
 	 */
 	public void batchUpdateDatabase(List<PageData> listData)throws Exception{
-		dao.batchUpdateDatabase("StaffDetailMapper.delete", "StaffDetailMapper.save", listData);
+		dao.update("StaffDetailMapper.batchDelAndIns", listData);
 	}
 
 	

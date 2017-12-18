@@ -128,7 +128,9 @@ public class Common {
 	}
 
 	public static String GetRetSelectColoumns(Map<String, TableColumns> haveColumnsList,
-			String tableNo, String tableName, String departCode, String strFieldSelectKey,
+			String tableNo, String tableNameBackup, String departCode, 
+			//String TaxCanNotHaveFormulaFeildList, 
+			String keyExtra, List<String> keyListBase,
 			TmplConfigManager tmplconfigService) throws Exception{
 		String strRetSelectColoumn ="";
 
@@ -138,6 +140,7 @@ public class Common {
 		
 		if(haveColumnsList!=null && haveColumnsList.size()>0 && setColumnsList != null && setColumnsList.size() > 0){
 			List<String> listInitColumns = new ArrayList<String>();
+			//
 			for (TableColumns col : haveColumnsList.values()) {
 		    	String column_name = col.getColumn_name().toUpperCase();
 		    	listInitColumns.add(column_name);
@@ -155,15 +158,18 @@ public class Common {
 				if(MaxCAL_ORDER < getCAL_ORDER) MaxCAL_ORDER = getCAL_ORDER;
 			}
 			String strColsFormulaNull = "";
+			//if(TaxCanNotHaveFormulaFeildList!=null && !TaxCanNotHaveFormulaFeildList.trim().equals("") && !keyListBase.contains(TaxCanNotHaveFormulaFeildList.trim())){
+			//	strColsFormulaNull += TaxCanNotHaveFormulaFeildList + " " + TaxCanNotHaveFormulaFeildList + keyExtra;
+			//}
 			for(String strCol : listInitColumns){
 				if(strColsFormulaNull!=null && !strColsFormulaNull.trim().equals("")){
 					strColsFormulaNull += ", ";
 				}
 				strColsFormulaNull += strCol;
 			}
-			strColsFormulaNull += strFieldSelectKey;
-			strRetSelectColoumn = " select " + strColsFormulaNull + " from " + tableName;
-
+			strColsFormulaNull += QueryFeildString.getFieldSelectKey(keyListBase, keyExtra);
+			strRetSelectColoumn = " select " + strColsFormulaNull + " from " + tableNameBackup;
+			
 			for(int order=MinCAL_ORDER; order<=MaxCAL_ORDER; order++){
 				String strColsFormulaOrder = "";
 				for (int i = 0; i < setColumnsList.size(); i++) {
@@ -185,74 +191,54 @@ public class Common {
 		return strRetSelectColoumn;
 	}
 	
-	public static String GetRetSelectBonusColoumns(String tableName, 
-			String TableFeildTax, String keyExtra, String strFieldSelectKey,
+	public static String GetRetSelectNotCalculationColoumns(String tableName, 
+			String TableFeildTax, String keyExtra, List<String> keyListBase,
 			TmplConfigManager tmplconfigService) throws Exception{
-		String strRetSelectBonusColoumn =" select *," + TableFeildTax + " " + TableFeildTax + keyExtra 
-				+ strFieldSelectKey
-				+ " from " + tableName;
+		String strRetSelectBonusColoumn = " select * ";
+		if(keyListBase==null || (keyListBase!=null && !keyListBase.contains(TableFeildTax))){
+			strRetSelectBonusColoumn += ", " + TableFeildTax + " " + TableFeildTax + keyExtra;
+		}
+		strRetSelectBonusColoumn += QueryFeildString.getFieldSelectKey(keyListBase, keyExtra);
+		strRetSelectBonusColoumn += " from " + tableName;
 		return strRetSelectBonusColoumn;
 	}
-	public static String GetRetSelectSalaryColoumns(Map<String, TableColumns> haveColumnsList,
-			String tableNo, String tableName, String departCode, 
-			String TableFeildTax, String keyExtra, String strFieldSelectKey,
+	
+	public static List<String> GetSalaryFeildUpdate(String tableNo, String tableNameBackup, String departCode, 
 			TmplConfigManager tmplconfigService) throws Exception{
-		String strRetSelectSalaryColoumn ="";
+		List<String> listSalaryFeildCal = new ArrayList<String>();
 
 		String tableCodeTmpl = getTableCodeTmpl(tableNo, tmplconfigService);
 		// 前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
 		List<TmplConfigDetail> setColumnsList = Common.getFormulaColumnList(tableCodeTmpl, departCode,tmplconfigService);
 		
-		if(haveColumnsList!=null && haveColumnsList.size()>0 && setColumnsList != null && setColumnsList.size() > 0){
-			List<String> listInitColumns = new ArrayList<String>();
-			for (TableColumns col : haveColumnsList.values()) {
-		    	String column_name = col.getColumn_name().toUpperCase();
-		    	listInitColumns.add(column_name);
-			}
+		if(setColumnsList != null && setColumnsList.size() > 0){
 			int MinCAL_ORDER = 0;
 			int MaxCAL_ORDER = 0;
 			for (int i = 0; i < setColumnsList.size(); i++) {
-				String getCOL_FORMULA = setColumnsList.get(i).getCOL_FORMULA();
-				String getCOL_CODE = setColumnsList.get(i).getCOL_CODE().toUpperCase();
-				if(getCOL_FORMULA!=null && !getCOL_FORMULA.trim().equals("")){
-					listInitColumns.remove(getCOL_CODE);
-				}
 				int getCAL_ORDER = setColumnsList.get(i).getCAL_ORDER();
 				if(MinCAL_ORDER > getCAL_ORDER) MinCAL_ORDER = getCAL_ORDER;
 				if(MaxCAL_ORDER < getCAL_ORDER) MaxCAL_ORDER = getCAL_ORDER;
 			}
-			String strColsFormulaNull = "";
-			if(TableFeildTax!=null && !TableFeildTax.trim().equals("")){
-				strColsFormulaNull += TableFeildTax + " " + TableFeildTax + keyExtra;
-			}
-			for(String strCol : listInitColumns){
-				if(strColsFormulaNull!=null && !strColsFormulaNull.trim().equals("")){
-					strColsFormulaNull += ", ";
-				}
-				strColsFormulaNull += strCol;
-			}
-			strColsFormulaNull += strFieldSelectKey;
-			strRetSelectSalaryColoumn = " select " + strColsFormulaNull + " from " + tableName;
-
+			
 			for(int order=MinCAL_ORDER; order<=MaxCAL_ORDER; order++){
-				String strColsFormulaOrder = "";
+				String strSalaryFeildCal = "";
 				for (int i = 0; i < setColumnsList.size(); i++) {
 					int getCAL_ORDER = setColumnsList.get(i).getCAL_ORDER();
 					String getCOL_FORMULA = setColumnsList.get(i).getCOL_FORMULA();
 					String getCOL_CODE = setColumnsList.get(i).getCOL_CODE();
 					if(getCAL_ORDER == order && getCOL_FORMULA!=null && !getCOL_FORMULA.trim().equals("")){
-						if(strColsFormulaOrder!=null && !strColsFormulaOrder.trim().equals("")){
-							strColsFormulaOrder += ", ";
+						if(strSalaryFeildCal!=null && !strSalaryFeildCal.trim().equals("")){
+							strSalaryFeildCal += ", ";
 						}
-						strColsFormulaOrder += getCOL_FORMULA + " " + getCOL_CODE;
+						strSalaryFeildCal += getCOL_CODE + " = " + getCOL_FORMULA;
 					}
 				}
-				if(strColsFormulaOrder!=null && !strColsFormulaOrder.trim().equals("")){
-					strRetSelectSalaryColoumn = " select *, " + strColsFormulaOrder + " from (" + strRetSelectSalaryColoumn + ") t ";
+				if(strSalaryFeildCal!=null && !strSalaryFeildCal.trim().equals("")){
+					listSalaryFeildCal.add(" update " + tableNameBackup + " set " + strSalaryFeildCal);
 				}
 			}
 		}
-		return strRetSelectSalaryColoumn;
+		return listSalaryFeildCal;
 	}
 	
 	public static String GetRetSumByUserColoumns(String tableName, String QueryFeild, 
@@ -263,8 +249,8 @@ public class Common {
 		        + " sum(" + configFormula + ") " + TableFeildSumOper + ", "
 				+ " sum(" + TableFeildTax + ") " + TableFeildTax + " "
 				+ " from " + tableName 
-				+ " where 1=1 " + QueryFeild 
-				+ " and DATA_TYPE = '" + DATA_TYPE + "' "
+				+ " where DATA_TYPE = '" + DATA_TYPE + "' "
+				+ QueryFeild 
 				+ " group by USER_CODE";
 		return strRetSelectSalaryColoumn;
 	}

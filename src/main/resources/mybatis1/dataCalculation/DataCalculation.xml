@@ -3,13 +3,13 @@
 <mapper namespace="DataCalculation">
 	
 	<!--  -->
-	<select id="getMaxSerialNo" parameterType="String" resultType="Integer">
-		SELECT IFNULL(MAX(SERIAL_NO), 0) FROM ${value}
+	<select id="getStaffTax" resultType="com.fh.entity.StaffTax">
+		SELECT * FROM TB_STAFF_TAX order by MIN_VALUE
 	</select>
 	
 	<!--  -->
-	<select id="getStaffTax" resultType="com.fh.entity.StaffTax">
-		SELECT * FROM TB_STAFF_TAX order by MIN_VALUE
+	<select id="getMaxSerialNo" parameterType="String" resultType="Integer">
+		SELECT IFNULL(MAX(SERIAL_NO), 0) FROM ${value}
 	</select>
 	
 	<!--  -->
@@ -27,8 +27,8 @@
 	    select * from (${sqlSumByUserCode}) t where USER_CODE = '${USER_CODE}'
 	</select>
 	
-	<select id="getRollback" resultType="pd">
-	    update table  column = 'column'
-	</select>
+	<update id="editSalaryFeild" parameterType="pd">
+	    ${sqlUpdateFeild} where SERIAL_NO in (${SqlInBillCode})
+	</update>
 	
 </mapper>

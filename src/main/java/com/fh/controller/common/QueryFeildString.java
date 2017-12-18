@@ -3,7 +3,9 @@ package com.fh.controller.common;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+import com.fh.entity.TableColumns;
 import com.fh.util.PageData;
 
 /**
@@ -138,8 +140,15 @@ public class QueryFeildString {
 		return QueryFeild;
 	}
 	
-	public static String getNotReportBillCode() throws Exception{
-		return " and BILL_CODE not in (SELECT bill_code FROM tb_sys_sealed_info WHERE state = '1') ";
+	public static String getNotReportBillCode(String BILL_TYPE, String RPT_DUR, String BILL_OFF, String SqlInRPT_DEPT) throws Exception{
+		String strInRPT_DEPT = getSqlInString(SqlInRPT_DEPT);
+		String strRet = " and BILL_CODE not in (SELECT bill_code FROM tb_sys_sealed_info "
+				+ "                             WHERE state = '1' "
+				+ "                             AND RPT_DUR = '" + RPT_DUR + "' "
+				+ "                             AND RPT_DEPT in (" + strInRPT_DEPT + ") "
+				+ "                             AND BILL_TYPE = '" + BILL_TYPE + "' "
+				+ "                             AND BILL_OFF = '" + BILL_OFF + "') ";
+		return strRet;
 	}
 
 	public static String getDetailQueryFeild(PageData pd, List<String> SumFieldDetail, String keyExtra){
@@ -236,5 +245,16 @@ public class QueryFeildString {
         }
         return listSumField;
     }
+	
+	public static String tranferListValueToSelectString(Map<String, TableColumns> map_HaveColumnsList){
+		StringBuilder ret = new StringBuilder();
+		for(String val : map_HaveColumnsList.keySet()){
+			if(!ret.toString().trim().equals("")){
+				ret.append(",");
+			}
+			ret.append(val);
+		}
+		return ret.toString();
+	}
 
 }
