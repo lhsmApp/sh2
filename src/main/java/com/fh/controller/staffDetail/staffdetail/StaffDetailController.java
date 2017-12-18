@@ -1,5 +1,6 @@
 package com.fh.controller.staffDetail.staffdetail;
 
+import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -945,33 +946,28 @@ public class StaffDetailController extends BaseController {
 								CommonBaseAndList getCommonBaseAndList = getCalculationData(true, true, commonBase,
 										SelectedTableNo, SelectedCustCol7, SelectedDepartCode, emplGroupType,
 										listAdd, strHelpful);
-								//导入数据类型必须一致！
-								List<String> listUserCode = new ArrayList<String>();
 								for(PageData pdSet : getCommonBaseAndList.getList()){
 									String pdSetUSER_CODE = pdSet.getString("USER_CODE");
-									if(listUserCode.contains(pdSetUSER_CODE)){
-										for(PageData pdsum : getCommonBaseAndList.getList()){
-											String pdsumUSER_CODE = pdsum.getString("USER_CODE");
-											if(pdSetUSER_CODE!=null && pdSetUSER_CODE.equals(pdsumUSER_CODE)){
-												Double douCalTax = Double.valueOf(pdSet.getString(TableFeildTaxCanNotHaveFormula));
-												Double douImpTax = Double.valueOf(pdSet.getString(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra));
-												douCalTax += Double.valueOf(pdsum.getString(TableFeildTaxCanNotHaveFormula));
-												douImpTax += Double.valueOf(pdsum.getString(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra));
-												pdSet.put(TableFeildTaxCanNotHaveFormula, douCalTax);
-												pdSet.put(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra, douImpTax);
-											}
+									for(PageData pdsum : getCommonBaseAndList.getList()){
+										String pdsumUSER_CODE = pdsum.getString("USER_CODE");
+										if(pdSetUSER_CODE!=null && pdSetUSER_CODE.equals(pdsumUSER_CODE)){
+											BigDecimal douCalTax = (BigDecimal) pdSet.get(TableFeildTaxCanNotHaveFormula);
+											BigDecimal douImpTax = (BigDecimal) pdSet.get(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra);
+											douCalTax.add((BigDecimal) pdsum.get(TableFeildTaxCanNotHaveFormula));
+											douImpTax.add((BigDecimal) pdsum.get(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra));
+											pdSet.put(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra + TmplUtil.keyExtra, douCalTax);
+											pdSet.put(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra, douImpTax);
 										}
 									}
-									listUserCode.add(pdSet.getString("USER_CODE"));
 								}
-								listUserCode = new ArrayList<String>();
+								List<String> listUserCode = new ArrayList<String>();
 								String strCalculationMessage = "";
 								for(PageData pdSet : getCommonBaseAndList.getList()){
 									String pdSetUSER_CODE = pdSet.getString("USER_CODE");
 									if(!listUserCode.contains(pdSetUSER_CODE)){
-										Double douCalTax = Double.valueOf(pdSet.getString(TableFeildTaxCanNotHaveFormula));
-										Double douImpTax = Double.valueOf(pdSet.getString(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra));
-										if(douCalTax != douImpTax){
+										BigDecimal douCalTax = (BigDecimal) pdSet.get(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra + TmplUtil.keyExtra);
+										BigDecimal douImpTax = (BigDecimal) pdSet.get(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra);
+										if(!(douCalTax!=null && douCalTax.compareTo(douImpTax)==0)){
 											strCalculationMessage += "员工编号:" + pdSetUSER_CODE 
 													+ "员工姓名:" + pdSet.getString("USER_NAME")
 													//+ "应纳税额:" + pdSetUSER_CODE 
@@ -979,15 +975,7 @@ public class StaffDetailController extends BaseController {
 													+ "应导入的纳税额:" + douCalTax;
 										}
 									}
-									
-									
-									if(listUserCode.contains(pdSetUSER_CODE)){
-										for(PageData pdsum : getCommonBaseAndList.getList()){
-											String pdsumUSER_CODE = pdsum.getString("USER_CODE");
-											if(pdSetUSER_CODE!=null && pdSetUSER_CODE.equals(pdsumUSER_CODE)){
-											}
-										}
-									}
+									listUserCode.add(pdSetUSER_CODE);
 								}
 								if(strCalculationMessage!=null && !strCalculationMessage.trim().equals("")){
 									commonBase.setCode(2);

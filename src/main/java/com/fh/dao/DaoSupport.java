@@ -261,10 +261,10 @@ public class DaoSupport implements DAO {
 									StaffTax eachTax = listStaffTax.get(i);
 									if(sumNumCheck.doubleValue()/12 >= eachTax.getMIN_VALUE()){
 										if(i == listStaffTax.size() -1){
-											sumNum = sumNumCheck.multiply(new BigDecimal(eachTax.getTAX_RATE())).subtract(new BigDecimal(eachTax.getQUICK_DEDUCTION()));
+											sumNum = sumNumCheck.multiply(new BigDecimal(eachTax.getTAX_RATE() * 0.01)).subtract(new BigDecimal(eachTax.getQUICK_DEDUCTION()));
 										} else {
 											if(sumNumCheck.doubleValue()/12 <= eachTax.getMAX_VALUE()){
-												sumNum = sumNumCheck.multiply(new BigDecimal(eachTax.getTAX_RATE())).subtract(new BigDecimal(eachTax.getQUICK_DEDUCTION()));
+												sumNum = sumNumCheck.multiply(new BigDecimal(eachTax.getTAX_RATE() * 0.01)).subtract(new BigDecimal(eachTax.getQUICK_DEDUCTION()));
 											}
 										}
 									}
@@ -335,10 +335,10 @@ public class DaoSupport implements DAO {
 									StaffTax eachTax = listStaffTax.get(i);
 									if(sumNumCheck.doubleValue() >= eachTax.getMIN_VALUE()){
 										if(i == listStaffTax.size() -1){
-											sumNum = sumNumCheck.multiply(new BigDecimal(eachTax.getTAX_RATE())).subtract(new BigDecimal(eachTax.getQUICK_DEDUCTION()));
+											sumNum = sumNumCheck.multiply(new BigDecimal(eachTax.getTAX_RATE() * 0.01)).subtract(new BigDecimal(eachTax.getQUICK_DEDUCTION()));
 										} else {
 											if(sumNumCheck.doubleValue() <= eachTax.getMAX_VALUE()){
-												sumNum = sumNumCheck.multiply(new BigDecimal(eachTax.getTAX_RATE())).subtract(new BigDecimal(eachTax.getQUICK_DEDUCTION()));
+												sumNum = sumNumCheck.multiply(new BigDecimal(eachTax.getTAX_RATE() * 0.01)).subtract(new BigDecimal(eachTax.getQUICK_DEDUCTION()));
 											}
 										}
 									}
