@@ -188,63 +188,6 @@
 	//前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
     var jqGridColModel;
 
-    function getState(){
-        if(ShowDataBillCode!=SelectNoBillCodeShowOption){
-        	console.log("按钮不可用");
-            return false;
-        }
-    	console.log("按钮可用");
-        return true;
-    };
-    
-    function setNavButtonState(State){
-        if(State){
-        	console.log("按钮可用");
-        	//Enable 按钮可用
-            $("#edit").removeClass('ui-state-disabled');
-            $("#add").removeClass('ui-state-disabled');
-            $("#del").removeClass('ui-state-disabled');
-            $("#batchDelete").removeClass('ui-state-disabled');
-            $("#batchEdit").removeClass('ui-state-disabled');
-            $("#batchCancelEdit").removeClass('ui-state-disabled');
-            $("#batchSave").removeClass('ui-state-disabled');
-            $("#importItems").removeClass('ui-state-disabled');
-            $("#calculation").removeClass('ui-state-disabled');
-            
-            $("#edit.ui-state-disabled .ui-icon").removeAttr("style");
-            $("#add.ui-state-disabled .ui-icon").removeAttr("style");
-            $("#del.ui-state-disabled .ui-icon").removeAttr("style");
-            $("#batchDelete.ui-state-disabled .ui-icon").removeAttr("style");
-            $("#batchEdit.ui-state-disabled .ui-icon").removeAttr("style");
-            $("#batchCancelEdit.ui-state-disabled .ui-icon").removeAttr("style");
-            $("#batchSave.ui-state-disabled .ui-icon").removeAttr("style");
-            $("#importItems.ui-state-disabled .ui-icon").removeAttr("style");
-            $("#calculation.ui-state-disabled .ui-icon").removeAttr("style");
-        } else {
-        	console.log("按钮灰掉不可用");
-        	 //Disable 按钮灰掉不可用
-            $("#edit").addClass('ui-state-disabled');
-            $("#add").addClass('ui-state-disabled');
-            $("#del").addClass('ui-state-disabled');
-            $("#batchDelete").addClass('ui-state-disabled');
-            $("#batchEdit").addClass('ui-state-disabled');
-            $("#batchCancelEdit").addClass('ui-state-disabled');
-            $("#batchSave").addClass('ui-state-disabled');
-            $("#importItems").addClass('ui-state-disabled');
-            $("#calculation").addClass('ui-state-disabled');
-            
-            $("#edit.ui-state-disabled .ui-icon").attr("style",'color:#B0B0B0 !important');
-            $("#add.ui-state-disabled .ui-icon").attr("style",'color:#B0B0B0 !important');
-            $("#del.ui-state-disabled .ui-icon").attr("style",'color:#B0B0B0 !important');
-            $("#batchDelete.ui-state-disabled .ui-icon").attr("style",'color:#B0B0B0 !important');
-            $("#batchEdit.ui-state-disabled .ui-icon").attr("style",'color:#B0B0B0 !important');
-            $("#batchCancelEdit.ui-state-disabled .ui-icon").attr("style",'color:#B0B0B0 !important');
-            $("#batchSave.ui-state-disabled .ui-icon").attr("style",'color:#B0B0B0 !important');
-            $("#importItems.ui-state-disabled .ui-icon").attr("style",'color:#B0B0B0 !important');
-            $("#calculation.ui-state-disabled .ui-icon").attr("style",'color:#B0B0B0 !important');
-        }
-    };
-    
     function getSelectBillCodeOptions(){
         var SelectedDepartCode = $("#SelectedDepartCode").val();
         var SelectedCustCol7 = $("#SelectedCustCol7").val();
@@ -319,9 +262,11 @@
 			editurl: '<%=basePath%>staffdetail/edit.do?SelectedTableNo='+which
                 +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
                 +'&SelectedCustCol7='+$("#SelectedCustCol7").val()
+	            + '&SelectedBillCode='+$("#SelectedBillCode").val()
                 +'&DepartTreeSource='+DepartTreeSource
                 +'&ShowDataDepartCode='+ShowDataDepartCode
-                +'&ShowDataCustCol7='+ShowDataCustCol7,
+                +'&ShowDataCustCol7='+ShowDataCustCol7
+                + '&ShowDataBillCode='+ShowDataBillCode,
 			
 			pager: pagerBase_selector,
 			footerrow: true,
@@ -450,12 +395,21 @@
     	             cursor : "pointer"
     	         });
         			$(gridBase_selector).navButtonAdd(pagerBase_selector, {
-        				id : "importItems",
-        				caption : "导入",
+        				id : "importSalaryItems",
+        				caption : "导入工资",
         	             buttonicon : "ace-icon fa fa-cloud-upload",
-        	             onClickButton : importItems,
+        	             onClickButton : importSalaryItems,
         	             position : "last",
-        	             title : "导入",
+        	             title : "导入工资",
+        	             cursor : "pointer"
+        	         });
+        			$(gridBase_selector).navButtonAdd(pagerBase_selector, {
+        				id : "importBonusItems",
+        				caption : "导入奖金",
+        	             buttonicon : "ace-icon fa fa-cloud-upload",
+        	             onClickButton : importBonusItems,
+        	             position : "last",
+        	             title : "导入奖金",
         	             cursor : "pointer"
         	         });
 				$(gridBase_selector).navButtonAdd(pagerBase_selector, {
@@ -466,7 +420,6 @@
 		             title : "导出",
 		             cursor : "pointer"
 		         });
-				setNavButtonState(getState());
     }
     
 	$(document).ready(function () {
@@ -506,7 +459,6 @@
 			which = parseInt(target.val());
 			//if(which!='${pd.which}'){
 				window.location.href="<%=basePath%>staffdetail/list.do?SelectedTableNo="+which;
-                //+'&SelectedDepartCode='+$("#SelectedDepartCode").val() + '&SelectedCustCol7='+$("#SelectedCustCol7").val()
 			//}
 		});
 		
@@ -516,7 +468,6 @@
 	//双击编辑行
     var lastSelection;
 	function doubleClickRow(rowid,iRow,iCol,e){
-		if(getState()){
 			$(gridBase_selector).restoreRow(lastSelection);
 			$(gridBase_selector).editRow(rowid, {
             	keys:true, //keys:true 这里按[enter]保存  
@@ -574,7 +525,6 @@
                 }  
             });
             lastSelection = rowid;
-        }
 	} 
 
 	//批量编辑
@@ -624,9 +574,11 @@
 						url: '<%=basePath%>staffdetail/deleteAll.do?SelectedTableNo='+which
 		                    +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
 		                    +'&SelectedCustCol7='+$("#SelectedCustCol7").val()
+		    	            + '&SelectedBillCode='+$("#SelectedBillCode").val()
 		                    +'&DepartTreeSource='+DepartTreeSource
 		                    +'&ShowDataDepartCode='+ShowDataDepartCode
-		                    +'&ShowDataCustCol7='+ShowDataCustCol7,
+		                    +'&ShowDataCustCol7='+ShowDataCustCol7
+		                    + '&ShowDataBillCode='+ShowDataBillCode,
 				    	data: {DataRows:JSON.stringify(listData)},
 						dataType:'json',
 						cache: false,
@@ -696,9 +648,11 @@
 					    url: '<%=basePath%>staffdetail/updateAll.do?SelectedTableNo='+which
 	                        +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
 	                        +'&SelectedCustCol7='+$("#SelectedCustCol7").val()
+	        	            + '&SelectedBillCode='+$("#SelectedBillCode").val()
 	                        +'&DepartTreeSource='+DepartTreeSource
 	                        +'&ShowDataDepartCode='+ShowDataDepartCode
-	                        +'&ShowDataCustCol7='+ShowDataCustCol7,
+	                        +'&ShowDataCustCol7='+ShowDataCustCol7
+	                        + '&ShowDataBillCode='+ShowDataBillCode,
 			    	    data: {DataRows:JSON.stringify(listData)},
 					    dataType:'json',
 					    cache: false,
@@ -777,19 +731,22 @@
 					    url: '<%=basePath%>staffdetail/calculation.do?SelectedTableNo='+which
 	                        +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
 	                        +'&SelectedCustCol7='+$("#SelectedCustCol7").val()
+	        	            + '&SelectedBillCode='+$("#SelectedBillCode").val()
 	                        +'&DepartTreeSource='+DepartTreeSource
 	                        +'&ShowDataDepartCode='+ShowDataDepartCode
-	                        +'&ShowDataCustCol7='+ShowDataCustCol7,
+	                        +'&ShowDataCustCol7='+ShowDataCustCol7
+	                        + '&ShowDataBillCode='+ShowDataBillCode,
 			    	    data: {DataRows:JSON.stringify(listData)},
 					    dataType:'json',
 					    cache: false,
 					    success: function(response){
 						    if(response.code==0){
 							    $(top.hangge());//关闭加载状态
-						    	var json = JSON.parse(response.message);
-						    	console.log(json);
-						    	$(gridBase_selector).setRowData(id, json);
-				            	$(gridBase_selector).jqGrid('editRow',id);
+								$(gridBase_selector).trigger("reloadGrid");  
+						    	//var json = JSON.parse(response.message);
+						    	//console.log(json);
+						    	//$(gridBase_selector).setRowData(id, json);
+				            	//$(gridBase_selector).jqGrid('editRow',id);
 							    $("#subTitle").tips({
 							    	side:3,
 					                msg:'计算成功',
@@ -824,7 +781,21 @@
     /**
      * 导入
      */
-    function importItems(){
+    function importSalaryItems(){
+    	importItems("1");
+    }
+
+    /**
+     * 导入
+     */
+    function importBonusItems(){
+    	importItems("2");
+    }
+
+    /**
+     * 导入
+     */
+    function importItems(SalaryOrBonus){
 	    top.jzts();
 	    var diag = new top.Dialog();
 	    diag.Drag=true;
@@ -832,9 +803,12 @@
 	    diag.URL = '<%=basePath%>staffdetail/goUploadExcel.do?SelectedTableNo='+which
            +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
            +'&SelectedCustCol7='+$("#SelectedCustCol7").val()
+           + '&SelectedBillCode='+$("#SelectedBillCode").val()
            +'&DepartTreeSource='+DepartTreeSource
            +'&ShowDataDepartCode='+ShowDataDepartCode
-           +'&ShowDataCustCol7='+ShowDataCustCol7;
+           +'&ShowDataCustCol7='+ShowDataCustCol7
+           + '&ShowDataBillCode='+ShowDataBillCode
+           + '&SalaryOrBonus='+SalaryOrBonus;
 	    diag.Width = 300;
 	    diag.Height = 150;
 	    diag.CancelEvent = function(){ //关闭事件
@@ -856,7 +830,8 @@
             +'&SelectedBillCode='+$("#SelectedBillCode").val()
             +'&DepartTreeSource='+DepartTreeSource
             +'&ShowDataDepartCode='+ShowDataDepartCode
-            +'&ShowDataCustCol7='+ShowDataCustCol7;
+            +'&ShowDataCustCol7='+ShowDataCustCol7
+            + '&ShowDataBillCode='+ShowDataBillCode;
     }
 
     /**
@@ -894,7 +869,6 @@
 		ShowDataDepartCode = $("#SelectedDepartCode").val();
 		ShowDataCustCol7 = $("#SelectedCustCol7").val();
 		ShowDataBillCode = $("#SelectedBillCode").val();
-		setNavButtonState(false);
 		$(gridBase_selector).jqGrid('GridUnload'); 
 		SetStructure();
 	}  

@@ -76,12 +76,8 @@ public class HouseFundSummyService implements HouseFundSummyManager{
 	 * @param 
 	 * @throws Exception
 	 */
-	public void saveSummyModelList(boolean bolDeleteSummy, List<PageData> getSaveBill, List<PageData> getSaveDetail, List<PageData> getDetailSetBillCode, PageData pdBillNum)throws Exception{
-		dao.batchSummy(bolDeleteSummy,
-				"HouseFundSummyMapper.deleteBill", "HouseFundSummyMapper.deleteDetail", "HouseFundSummyMapper.save",  getSaveBill,
-				"HouseFundSummyMapper.save",  getSaveDetail,
-				"HouseFundDetailMapper.editBillCode", getDetailSetBillCode,
-				"SysBillnumMapper.delete", "SysBillnumMapper.save", pdBillNum);
+	public void saveSummyModelList(Map<String, Object> map)throws Exception{
+		dao.update("HouseFundSummyMapper.saveSummy", map);
 	}
 }
 

@@ -9,14 +9,17 @@
  * @version
  -->
 	<!--表名 -->
-	<sql id="tableName">
+	<sql id="tableNameDetail">
 		tb_social_inc_detail
+	</sql>
+	<sql id="tableNameBackup">
+		tb_social_inc_detail_backup
 	</sql>
 	
 	<!-- 获取单号下拉列表数据源 -->
 	<select id="getBillCodeList" parameterType="pd" resultType="String">
 		select distinct BILL_CODE
-		from <include refid="tableName"></include>
+		from <include refid="tableNameDetail"></include>
 		where BUSI_DATE = '${SystemDateTime}'
 		and DEPT_CODE = '${SelectedDepartCode}'
 	    and CUST_COL7 = '${SelectedCustCol7}'
@@ -32,7 +35,7 @@
 		        ${pd.FieldSelectKey}
 		    </if>
 		from 
-		<include refid="tableName"></include>
+		<include refid="tableNameDetail"></include>
 		where BUSI_DATE = '${pd.SystemDateTime}'
 		<if test="pd.filterWhereResult!= null and pd.filterWhereResult != ''"><!-- 关键词检索 -->
 			${pd.filterWhereResult}
@@ -48,7 +51,7 @@
         </if>
 	</select>
 	<select id="countJqGridExtend" parameterType="jqPage" resultType="int">
-		select count(*) from <include refid="tableName"></include> 
+		select count(*) from <include refid="tableNameDetail"></include> 
 		where BUSI_DATE = '${pd.SystemDateTime}'
 		<if test="pd.filterWhereResult!= null and pd.filterWhereResult != ''"><!-- 关键词检索 -->
 			${pd.filterWhereResult}
@@ -59,7 +62,7 @@
 	</select>
 	<select id="getFooterSummary" parameterType="jqPage" resultType="pd">
 		select ${pd.Userdata} 
-		from <include refid="tableName"></include> 
+		from <include refid="tableNameDetail"></include> 
 		where BUSI_DATE = '${pd.SystemDateTime}'
 		<if test="pd.filterWhereResult!= null and pd.filterWhereResult != ''"><!-- 关键词检索 -->
 			${pd.filterWhereResult}
@@ -72,7 +75,7 @@
     <!-- 通过流水号获取单号，用于判断数据是否已汇总 -->
 	<select id="getBillCodeBySerialNo" parameterType="pd" resultType="pd">
 		select BILL_CODE
-		from <include refid="tableName"></include>
+		from <include refid="tableNameDetail"></include>
 		where
 		<foreach item="item" index="index" collection="list" open=" (" separator=" or " close=") ">
             SERIAL_NO = #{item.SERIAL_NO__}
@@ -83,7 +86,7 @@
 	<select id="exportList" parameterType="jqPage" resultType="pd">
 		select * 
 		from 
-		<include refid="tableName"></include>
+		<include refid="tableNameDetail"></include>
 		where BUSI_DATE = '${pd.SystemDateTime}'
 		and DEPT_CODE = '${pd.SelectedDepartCode}'
 	    and CUST_COL7 = '${pd.SelectedCustCol7}' 
@@ -96,7 +99,7 @@
 	<select id="exportModel" parameterType="pd" resultType="pd">
 		select * 
 		from 
-		<include refid="tableName"></include>
+		<include refid="tableNameDetail"></include>
 		where DEPT_CODE = '${SelectedDepartCode}'
 	    and CUST_COL7 = '${SelectedCustCol7}'
 		order by BUSI_DATE desc
@@ -106,7 +109,7 @@
 	<!-- 批量删除 -->
 	<delete id="deleteAll" parameterType="pd">
 		delete from
-		<include refid="tableName"></include>
+		<include refid="tableNameDetail"></include>
 		where
 		<foreach item="item" index="index" collection="list" open=" (" separator=" or " close=") ">
 		    SERIAL_NO = #{item.SERIAL_NO__}
@@ -114,42 +117,35 @@
 		</foreach>
 	</delete>
 	
-	<!-- 删除 -->
-	<delete id="delete" parameterType="pd">
-		delete from
-		<include refid="tableName"></include>
-		where SERIAL_NO = #{SERIAL_NO}
-	    ${CanOperate}
-	</delete>
-
-	<!-- 新增 -->
-	<insert id="save" parameterType="pd">
-		insert into 
-	    <include refid="tableName"></include>
-		(${InsertField}) values (${InsertVale})
-	</insert>
-	
-	
-	
-	
-	
-	
-
-	<!-- 修改单号 -->
-	<update id="editBillCode" parameterType="pd">
-		update
-		<include refid="tableName"></include>
-		set 
-			BILL_CODE = #{BILL_CODE}
-	    <where>
-	        ${updateFilter}
-	    </where>
+	<update id="batchDelAndIns" parameterType="pd">
+		<foreach item="item" index="index" collection="list" open=" " separator=" " close=" ">
+		    delete from ${item.TableName}
+		    where SERIAL_NO = #{item.SERIAL_NO}
+	        ${item.CanOperate};
+	        
+		    insert into ${item.TableName}
+		    (${item.InsertField}) values (${item.InsertVale});
+		</foreach>
 	</update>
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	<!-- 获取汇总里的明细 -->
 	<select id="getDetailList" parameterType="pd" resultType="pd">
 		select * 
-		from <include refid="tableName"></include>
+		from <include refid="tableNameDetail"></include>
 		<where>
 	        ${QueryFeild}
 		</where>
@@ -159,7 +155,7 @@
 	<select id="getSum" parameterType="pd" resultType="pd">
         select 
             ${SelectFeild}
-		from <include refid="tableName"></include>
+		from <include refid="tableNameDetail"></include>
 		where BUSI_DATE = '${SystemDateTime}'
 	    ${QueryFeild}
 		<if test="GroupbyFeild!= null and GroupbyFeild != ''">

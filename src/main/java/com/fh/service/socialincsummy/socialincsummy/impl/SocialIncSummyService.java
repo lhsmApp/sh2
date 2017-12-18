@@ -76,12 +76,8 @@ public class SocialIncSummyService implements SocialIncSummyManager{
 	 * @param 
 	 * @throws Exception
 	 */
-	public void saveSummyModelList(boolean bolDeleteSummy, List<PageData> getSaveBill, List<PageData> getSaveDetail, List<PageData> getDetailSetBillCode, PageData pdBillNum)throws Exception{
-		dao.batchSummy(bolDeleteSummy,
-				"SocialIncSummyMapper.deleteBill", "SocialIncSummyMapper.deleteDetail", "SocialIncSummyMapper.save",  getSaveBill,
-				"SocialIncSummyMapper.save",  getSaveDetail,
-				"SocialIncDetailMapper.editBillCode", getDetailSetBillCode,
-				"SysBillnumMapper.delete", "SysBillnumMapper.save", pdBillNum);
+	public void saveSummyModelList(Map<String, Object> map)throws Exception{
+		dao.update("SocialIncSummyMapper.saveSummy", map);
 	}
 }
 

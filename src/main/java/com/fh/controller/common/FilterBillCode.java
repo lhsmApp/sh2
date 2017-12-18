@@ -13,8 +13,14 @@ import com.fh.util.enums.BillState;
 public class FilterBillCode {
 	
     //汇总单据状态不为0，就是没汇总或汇总但没作废
-	public static String getBillCodeNotInSumInvalid(String tableNameSummy){
-		String strReturn = " and BILL_CODE not in (select BILL_CODE from " + tableNameSummy + " where BILL_STATE = " + BillState.Invalid.getNameKey() + ") ";
+	public static String getBillCodeNotInSumInvalidBill(){
+		String strReturn = " and BILL_STATE not in ('" + BillState.Invalid.getNameKey() + "') ";
+		return strReturn;
+	}
+	
+    //汇总单据状态不为0，就是没汇总或汇总但没作废
+	public static String getBillCodeNotInSumInvalidDetail(String tableNameSummy){
+		String strReturn = " and BILL_CODE not in (select BILL_CODE from " + tableNameSummy + " where BILL_STATE = '" + BillState.Invalid.getNameKey() + "') ";
 		return strReturn;
 	}
 	

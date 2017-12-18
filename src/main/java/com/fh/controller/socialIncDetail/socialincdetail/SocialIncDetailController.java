@@ -84,11 +84,13 @@ public class SocialIncDetailController extends BaseController {
 	//表名
 	String TableNameDetail = "tb_social_inc_detail";
 	String TableNameSummy = "tb_social_inc_summy_BILL";
+	String TableNameBackup = "tb_social_inc_detail_backup";
 	//临时数据
 	String SelectBillCodeFirstShow = "临时数据";    
 	String SelectBillCodeLastShow = "";
 	//枚举类型  1工资明细,2工资汇总,3公积金明细,4公积金汇总,5社保明细,6社保汇总,7工资接口,8公积金接口,9社保接口
     String TypeCodeDetail = TmplType.TB_SOCIAL_INC_DETAIL.getNameKey();
+    String TypeCodeTransfer = TmplType.TB_SOCIAL_INC_TRANSFER.getNameKey();
 
 	//页面显示数据的年月
 	String SystemDateTime = "";
@@ -198,7 +200,9 @@ public class SocialIncDetailController extends BaseController {
 		transferPd.put("SelectedCustCol7", SelectedCustCol7);
 		transferPd.put("SelectedDepartCode", SelectedDepartCode);
 		transferPd.put("SystemDateTime", SystemDateTime);
-		transferPd.put("CanOperate", FilterBillCode.getBillCodeNotInSumInvalid(TableNameSummy));
+		String strCanOperate = FilterBillCode.getBillCodeNotInSumInvalidDetail(TableNameSummy)
+				+ QueryFeildString.getNotReportBillCode(TypeCodeTransfer, SystemDateTime, SelectedCustCol7, SelectedDepartCode);
+		transferPd.put("CanOperate", strCanOperate);
 		List<String> getCodeList = socialincdetailService.getBillCodeList(transferPd);
 		String returnString = SelectBillCodeOptions.getSelectBillCodeOptions(getCodeList, SelectBillCodeFirstShow, SelectBillCodeLastShow);
 		commonBase.setMessage(returnString);
@@ -238,6 +242,8 @@ public class SocialIncDetailController extends BaseController {
 			QueryFeild += " and 1 != 1 ";
 		}
 		QueryFeild += QueryFeildString.getQueryFeildBillCodeDetail(SelectedBillCode, SelectBillCodeFirstShow);
+		QueryFeild += QueryFeildString.getNotReportBillCode(TypeCodeTransfer, SystemDateTime, SelectedCustCol7, SelectedDepartCode);
+		QueryFeild += FilterBillCode.getBillCodeNotInSumInvalidDetail(TableNameSummy);
 		getPd.put("QueryFeild", QueryFeild);
 		
 		//多条件过滤条件
@@ -291,31 +297,50 @@ public class SocialIncDetailController extends BaseController {
 		}
 		//账套
 		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
+		//单号
+		String SelectedBillCode = getPd.getString("SelectedBillCode");
 		//
 		String DepartTreeSource = getPd.getString("DepartTreeSource");
 		String ShowDataDepartCode = getPd.getString("ShowDataDepartCode");
 		String ShowDataCustCol7 = getPd.getString("ShowDataCustCol7");
+		String ShowDataBillCode = getPd.getString("ShowDataBillCode");
 		//操作
 		String oper = getPd.getString("oper");
-		Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(TypeCodeDetail, SelectedDepartCode, tmplconfigService);
 
 		//判断选择为必须选择的
-		String strGetCheckMustSelected = CheckMustSelectedAndSame(SelectedCustCol7, SelectedDepartCode,
-				ShowDataDepartCode, ShowDataCustCol7, DepartTreeSource);
+		String strGetCheckMustSelected = CheckMustSelectedAndSame(SelectedCustCol7, ShowDataCustCol7, 
+				SelectedDepartCode, ShowDataDepartCode, DepartTreeSource,
+				SelectedBillCode, ShowDataBillCode);
 		if(strGetCheckMustSelected!=null && !strGetCheckMustSelected.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(strGetCheckMustSelected);
 			return commonBase;
 		}
 
+		String strHelpful = FilterBillCode.getBillCodeNotInSumInvalidDetail(TableNameSummy) 
+				+ QueryFeildString.getNotReportBillCode(TypeCodeTransfer, SystemDateTime, SelectedCustCol7, SelectedDepartCode);
+		if(!(strHelpful != null && !strHelpful.trim().equals(""))){
+			commonBase.setCode(2);
+			commonBase.setMessage(Message.GetHelpfulDetailFalue);
+			return commonBase;
+		}
+
 		//必定不用编辑的列  MustNotEditList Arrays.asList("SERIAL_NO", "BILL_CODE", "BUSI_DATE", "DEPT_CODE", "CUST_COL7");
 		if(oper.equals("add")){
 			getPd.put("SERIAL_NO", "");
-			getPd.put("BILL_CODE", "");
 			getPd.put("BUSI_DATE", SystemDateTime);
 			getPd.put("CUST_COL7", SelectedCustCol7);
 			getPd.put("DEPT_CODE", SelectedDepartCode);
+			if(SelectedBillCode.equals(SelectBillCodeFirstShow)){
+				getPd.put("BILL_CODE", "");
+			} else {
+				getPd.put("BILL_CODE", SelectedBillCode);
+			}
+			List<PageData> listData = new ArrayList<PageData>();
+			listData.add(getPd);
+			commonBase = CalculationUpdateDatabase(true, commonBase, "", SelectedDepartCode, listData, strHelpful);
 		} else {
+			Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(TypeCodeDetail, SelectedDepartCode, tmplconfigService);
 			List<PageData> listCheckState = new ArrayList<PageData>();
 			listCheckState.add(getPd);
 			String checkState = CheckState(listCheckState);
@@ -327,21 +352,15 @@ public class SocialIncDetailController extends BaseController {
 			for(String strFeild : MustNotEditList){
 				getPd.put(strFeild, getPd.get(strFeild + TmplUtil.keyExtra));
 			}
+			Common.setModelDefault(getPd, map_HaveColumnsList, map_SetColumnsList);
+			getPd.put("TableName", TableNameDetail);
+			getPd.put("CanOperate", strHelpful);
+			
+			List<PageData> listData = new ArrayList<PageData>();
+			listData.add(getPd);
+			socialincdetailService.batchUpdateDatabase(listData);
+			commonBase.setCode(0);
 		}
-		Common.setModelDefault(getPd, map_HaveColumnsList, map_SetColumnsList);
-
-		String strHelpful = FilterBillCode.getBillCodeNotSum(TableNameSummy);
-		if(!(strHelpful != null && !strHelpful.trim().equals(""))){
-			commonBase.setCode(2);
-			commonBase.setMessage(Message.GetHelpfulDetailFalue);
-			return commonBase;
-		}
-		getPd.put("CanOperate", strHelpful);
-		
-		List<PageData> listData = new ArrayList<PageData>();
-		listData.add(getPd);
-		socialincdetailService.batchUpdateDatabase(listData);
-		commonBase.setCode(0);
 	
 		return commonBase;
 	}
@@ -366,22 +385,27 @@ public class SocialIncDetailController extends BaseController {
 		}
 		//账套
 		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
+		//单号
+		String SelectedBillCode = getPd.getString("SelectedBillCode");
 		//
 		String DepartTreeSource = getPd.getString("DepartTreeSource");
 		String ShowDataDepartCode = getPd.getString("ShowDataDepartCode");
 		String ShowDataCustCol7 = getPd.getString("ShowDataCustCol7");
+		String ShowDataBillCode = getPd.getString("ShowDataBillCode");
 		Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(TypeCodeDetail, SelectedDepartCode, tmplconfigService);
 
 		//判断选择为必须选择的
-		String strGetCheckMustSelected = CheckMustSelectedAndSame(SelectedCustCol7, SelectedDepartCode,
-				ShowDataDepartCode, ShowDataCustCol7, DepartTreeSource);
+		String strGetCheckMustSelected = CheckMustSelectedAndSame(SelectedCustCol7, ShowDataCustCol7, 
+				SelectedDepartCode, ShowDataDepartCode, DepartTreeSource,
+				SelectedBillCode, ShowDataBillCode);
 		if(strGetCheckMustSelected!=null && !strGetCheckMustSelected.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(strGetCheckMustSelected);
 			return commonBase;
 		}
 
-		String strHelpful = FilterBillCode.getBillCodeNotSum(TableNameSummy);
+		String strHelpful = FilterBillCode.getBillCodeNotInSumInvalidDetail(TableNameSummy)
+				+ QueryFeildString.getNotReportBillCode(TypeCodeTransfer, SystemDateTime, SelectedCustCol7, SelectedDepartCode);
 		if(!(strHelpful != null && !strHelpful.trim().equals(""))){
 			commonBase.setCode(2);
 			commonBase.setMessage(Message.GetHelpfulDetailFalue);
@@ -401,6 +425,7 @@ public class SocialIncDetailController extends BaseController {
 
         for(PageData item : listData){
         	item.put("CanOperate", strHelpful);
+      	    item.put("TableName", TableNameDetail);
         	Common.setModelDefault(item, map_HaveColumnsList, map_SetColumnsList);
         }
 		if(null != listData && listData.size() > 0){
@@ -430,21 +455,26 @@ public class SocialIncDetailController extends BaseController {
 		}
 		//账套
 		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
+		//单号
+		String SelectedBillCode = getPd.getString("SelectedBillCode");
 		//
 		String DepartTreeSource = getPd.getString("DepartTreeSource");
 		String ShowDataDepartCode = getPd.getString("ShowDataDepartCode");
 		String ShowDataCustCol7 = getPd.getString("ShowDataCustCol7");
+		String ShowDataBillCode = getPd.getString("ShowDataBillCode");
 
 		//判断选择为必须选择的
-		String strGetCheckMustSelected = CheckMustSelectedAndSame(SelectedCustCol7, SelectedDepartCode,
-				ShowDataDepartCode, ShowDataCustCol7, DepartTreeSource);
+		String strGetCheckMustSelected = CheckMustSelectedAndSame(SelectedCustCol7, ShowDataCustCol7, 
+				SelectedDepartCode, ShowDataDepartCode, DepartTreeSource,
+				SelectedBillCode, ShowDataBillCode);
 		if(strGetCheckMustSelected!=null && !strGetCheckMustSelected.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(strGetCheckMustSelected);
 			return commonBase;
 		}
 		
-		String strHelpful = FilterBillCode.getBillCodeNotSum(TableNameSummy);
+		String strHelpful = FilterBillCode.getBillCodeNotInSumInvalidDetail(TableNameSummy) 
+				+ QueryFeildString.getNotReportBillCode(TypeCodeTransfer, SystemDateTime, SelectedCustCol7, SelectedDepartCode);
 		if(!(strHelpful != null && !strHelpful.trim().equals(""))){
 			commonBase.setCode(2);
 			commonBase.setMessage(Message.GetHelpfulDetailFalue);
@@ -490,22 +520,26 @@ public class SocialIncDetailController extends BaseController {
 		}
 		//账套
 		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
+		//单号
+		String SelectedBillCode = getPd.getString("SelectedBillCode");
 		//
 		String DepartTreeSource = getPd.getString("DepartTreeSource");
 		String ShowDataDepartCode = getPd.getString("ShowDataDepartCode");
 		String ShowDataCustCol7 = getPd.getString("ShowDataCustCol7");
-		Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(TypeCodeDetail, SelectedDepartCode, tmplconfigService);
+		String ShowDataBillCode = getPd.getString("ShowDataBillCode");
 
 		//判断选择为必须选择的
-		String strGetCheckMustSelected = CheckMustSelectedAndSame(SelectedCustCol7, SelectedDepartCode,
-				ShowDataDepartCode, ShowDataCustCol7, DepartTreeSource);
+		String strGetCheckMustSelected = CheckMustSelectedAndSame(SelectedCustCol7, ShowDataCustCol7, 
+				SelectedDepartCode, ShowDataDepartCode, DepartTreeSource,
+				SelectedBillCode, ShowDataBillCode);
 		if(strGetCheckMustSelected!=null && !strGetCheckMustSelected.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(strGetCheckMustSelected);
 			return commonBase;
 		}
 
-		String strHelpful = FilterBillCode.getBillCodeNotSum(TableNameSummy);
+		String strHelpful = FilterBillCode.getBillCodeNotInSumInvalidDetail(TableNameSummy) 
+				+ QueryFeildString.getNotReportBillCode(TypeCodeTransfer, SystemDateTime, SelectedCustCol7, SelectedDepartCode);
 		if(!(strHelpful != null && !strHelpful.trim().equals(""))){
 			commonBase.setCode(2);
 			commonBase.setMessage(Message.GetHelpfulDetailFalue);
@@ -522,20 +556,22 @@ public class SocialIncDetailController extends BaseController {
 			commonBase.setMessage(checkState);
 			return commonBase;
 		}
-        for(PageData item : listData){
+        /*for(PageData item : listData){
       	    item.put("CanOperate", strHelpful);
+      	    item.put("TableName", TableNameBackup);
       	    Common.setModelDefault(item, map_HaveColumnsList, map_SetColumnsList);
         }
 		if(null != listData && listData.size() > 0){
 			String strFieldSelectKey = QueryFeildString.getFieldSelectKey(keyListBase, TmplUtil.keyExtra);
-			String sqlRetSelect = Common.GetRetSelectColoumns(map_HaveColumnsList, TypeCodeDetail, TableNameDetail, SelectedDepartCode, strFieldSelectKey, tmplconfigService);
-			List<PageData> dataCalculation = socialincdetailService.getDataCalculation(TableNameDetail, sqlRetSelect, listData);
+			String sqlRetSelect = Common.GetRetSelectColoumns(map_HaveColumnsList, TypeCodeDetail, TableNameBackup, SelectedDepartCode, strFieldSelectKey, tmplconfigService);
+			List<PageData> dataCalculation = socialincdetailService.getDataCalculation(TableNameBackup, sqlRetSelect, listData);
 			String strJson =JSONArray.fromObject(dataCalculation.get(0)).toString();
 			if(strJson.startsWith("[")) strJson = strJson.substring(1);
 			if(strJson.endsWith("]")) strJson = strJson.substring(0, strJson.length()-1);
 			commonBase.setCode(0);
 			commonBase.setMessage(strJson);
-		}
+		}*/
+		commonBase = CalculationUpdateDatabase(false, commonBase, "", SelectedDepartCode, listData, strHelpful);
 		return commonBase;
 	}
 	
@@ -557,14 +593,18 @@ public class SocialIncDetailController extends BaseController {
 		}
 		//账套
 		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
+		//单号
+		String SelectedBillCode = getPd.getString("SelectedBillCode");
 		//
 		String DepartTreeSource = getPd.getString("DepartTreeSource");
 		String ShowDataDepartCode = getPd.getString("ShowDataDepartCode");
 		String ShowDataCustCol7 = getPd.getString("ShowDataCustCol7");
+		String ShowDataBillCode = getPd.getString("ShowDataBillCode");
 
 		//判断选择为必须选择的
-		String strGetCheckMustSelected = CheckMustSelectedAndSame(SelectedCustCol7, SelectedDepartCode,
-				ShowDataDepartCode, ShowDataCustCol7, DepartTreeSource);
+		String strGetCheckMustSelected = CheckMustSelectedAndSame(SelectedCustCol7, ShowDataCustCol7, 
+				SelectedDepartCode, ShowDataDepartCode, DepartTreeSource,
+				SelectedBillCode, ShowDataBillCode);
 		if(strGetCheckMustSelected!=null && !strGetCheckMustSelected.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(strGetCheckMustSelected);
@@ -575,9 +615,11 @@ public class SocialIncDetailController extends BaseController {
 		mv.addObject("local", "socialincdetail");
 		mv.addObject("SelectedDepartCode", SelectedDepartCode);
 		mv.addObject("SelectedCustCol7", SelectedCustCol7);
+		mv.addObject("SelectedBillCode", SelectedBillCode);
 		mv.addObject("DepartTreeSource", DepartTreeSource);
 		mv.addObject("ShowDataDepartCode", ShowDataDepartCode);
 		mv.addObject("ShowDataCustCol7", ShowDataCustCol7);
+		mv.addObject("ShowDataBillCode", ShowDataBillCode);
 		mv.addObject("commonBaseCode", commonBase.getCode());
 		mv.addObject("commonMessage", commonBase.getMessage());
 		return mv;
@@ -607,15 +649,19 @@ public class SocialIncDetailController extends BaseController {
 		}
 		//账套
 		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
+		//单号
+		String SelectedBillCode = getPd.getString("SelectedBillCode");
 		//
 		String DepartTreeSource = getPd.getString("DepartTreeSource");
 		String ShowDataDepartCode = getPd.getString("ShowDataDepartCode");
 		String ShowDataCustCol7 = getPd.getString("ShowDataCustCol7");
+		String ShowDataBillCode = getPd.getString("ShowDataBillCode");
 		Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(TypeCodeDetail, SelectedDepartCode, tmplconfigService);
 		
 		//判断选择为必须选择的
-		String strGetCheckMustSelected = CheckMustSelectedAndSame(SelectedCustCol7, SelectedDepartCode,
-				ShowDataDepartCode, ShowDataCustCol7, DepartTreeSource);
+		String strGetCheckMustSelected = CheckMustSelectedAndSame(SelectedCustCol7, ShowDataCustCol7, 
+				SelectedDepartCode, ShowDataDepartCode, DepartTreeSource,
+				SelectedBillCode, ShowDataBillCode);
 		if(strGetCheckMustSelected!=null && !strGetCheckMustSelected.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(strGetCheckMustSelected);
@@ -625,7 +671,8 @@ public class SocialIncDetailController extends BaseController {
 					commonBase.setCode(2);
 					commonBase.setMessage("当前区间和当前单位不能为空！");
 				} else {
-					String strHelpful = FilterBillCode.getBillCodeNotSum(TableNameSummy);
+					String strHelpful = FilterBillCode.getBillCodeNotInSumInvalidDetail(TableNameSummy) 
+							+ QueryFeildString.getNotReportBillCode(TypeCodeTransfer, SystemDateTime, SelectedCustCol7, SelectedDepartCode);
 					if(!(strHelpful != null && !strHelpful.trim().equals(""))){
 						commonBase.setCode(2);
 						commonBase.setMessage(Message.GetHelpfulDetailFalue);
@@ -685,11 +732,12 @@ public class SocialIncDetailController extends BaseController {
 										PageData pdAdd = listUploadAndRead.get(i);
 										String getUSER_CODE = (String) pdAdd.get("USER_CODE");
 										if(getUSER_CODE!=null && !getUSER_CODE.trim().equals("")){
+											pdAdd.put("SERIAL_NO", "");
 											String getCUST_COL7 = (String) pdAdd.get("CUST_COL7");
-										    if(!SelectedCustCol7.equals(getCUST_COL7)){
+										    /*if(!SelectedCustCol7.equals(getCUST_COL7)){
 										    	continue;
-										    }
-											/*if(!(getCUST_COL7!=null && !getCUST_COL7.trim().equals(""))){
+										    }*/
+											if(!(getCUST_COL7!=null && !getCUST_COL7.trim().equals(""))){
 												pdAdd.put("CUST_COL7", SelectedCustCol7);
 												getCUST_COL7 = SelectedCustCol7;
 											}
@@ -697,9 +745,30 @@ public class SocialIncDetailController extends BaseController {
 												if(!sbRet.contains("导入账套和当前账套必须一致！")){
 													sbRet.add("导入账套和当前账套必须一致！");
 												}
-											}*/
-											pdAdd.put("SERIAL_NO", "");
-											pdAdd.put("BILL_CODE", "");
+											}
+											String getBILL_CODE = (String) pdAdd.get("BILL_CODE");
+											if(!(getBILL_CODE!=null && !getBILL_CODE.trim().equals(""))){
+												if(SelectedBillCode.equals(SelectBillCodeFirstShow)){
+													pdAdd.put("BILL_CODE", "");
+													getBILL_CODE = "";
+												} else {
+													pdAdd.put("BILL_CODE", SelectedBillCode);
+													getBILL_CODE = SelectedBillCode;
+												}
+											}
+											if(SelectedBillCode.equals(SelectBillCodeFirstShow)){
+												if(!"".equals(getBILL_CODE)){
+													if(!sbRet.contains("导入单号和当前单号必须一致！")){
+														sbRet.add("导入单号和当前单号必须一致！");
+													}
+												}
+											} else {
+												if(!SelectedBillCode.equals(getBILL_CODE)){
+													if(!sbRet.contains("导入单号和当前单号必须一致！")){
+														sbRet.add("导入单号和当前单号必须一致！");
+													}
+												}
+											}
 											String getDEPT_CODE = (String) pdAdd.get("DEPT_CODE");
 											String getBUSI_DATE = (String) pdAdd.get("BUSI_DATE");
 											if(!(getBUSI_DATE!=null && !getBUSI_DATE.trim().equals(""))){
@@ -729,8 +798,9 @@ public class SocialIncDetailController extends BaseController {
 											if(!(getESTB_DEPT!=null && !getESTB_DEPT.trim().equals(""))){
 												pdAdd.put("ESTB_DEPT", SelectedDepartCode);
 											}
-											Common.setModelDefault(pdAdd, map_HaveColumnsList, map_SetColumnsList);
-											pdAdd.put("CanOperate", strHelpful);
+											//Common.setModelDefault(pdAdd, map_HaveColumnsList, map_SetColumnsList);
+											//pdAdd.put("CanOperate", strHelpful);
+											//pdAdd.put("TableName", TableNameBackup);
 											listAdd.add(pdAdd);
 										}
 									}
@@ -742,22 +812,25 @@ public class SocialIncDetailController extends BaseController {
 										commonBase.setCode(2);
 										commonBase.setMessage(sbTitle.toString());
 									} else {
-										String strFieldSelectKey = QueryFeildString.getFieldSelectKey(keyListBase, TmplUtil.keyExtra);
-										String sqlRetSelect = Common.GetRetSelectColoumns(map_HaveColumnsList, TypeCodeDetail, TableNameDetail, SelectedDepartCode, strFieldSelectKey, tmplconfigService);
+										commonBase = CalculationUpdateDatabase(true, commonBase, strErrorMessage, SelectedDepartCode, listAdd, strHelpful);
 										
-										List<PageData> dataCalculation = socialincdetailService.getDataCalculation(TableNameDetail, sqlRetSelect, listAdd);
+										/*String strFieldSelectKey = QueryFeildString.getFieldSelectKey(keyListBase, TmplUtil.keyExtra);
+										String sqlRetSelect = Common.GetRetSelectColoumns(map_HaveColumnsList, TypeCodeDetail, TableNameBackup, SelectedDepartCode, strFieldSelectKey, tmplconfigService);
+										
+										List<PageData> dataCalculation = socialincdetailService.getDataCalculation(TableNameBackup, sqlRetSelect, listAdd);
 										if(dataCalculation!=null){
 											for(PageData each : dataCalculation){
 												each.put("SERIAL_NO", "");
 												Common.setModelDefault(each, map_HaveColumnsList, map_SetColumnsList);
 												each.put("CanOperate", strHelpful);
+												each.put("TableName", TableNameDetail);
 											}
 										}
 										
 										//此处执行集合添加 
 										socialincdetailService.batchUpdateDatabase(dataCalculation);
 										commonBase.setCode(0);
-										commonBase.setMessage(strErrorMessage);
+										commonBase.setMessage(strErrorMessage);*/
 									}
 								}
 							} else {
@@ -773,13 +846,52 @@ public class SocialIncDetailController extends BaseController {
 		mv.addObject("local", "socialincdetail");
 		mv.addObject("SelectedDepartCode", SelectedDepartCode);
 		mv.addObject("SelectedCustCol7", SelectedCustCol7);
+		mv.addObject("SelectedBillCode", SelectedBillCode);
 		mv.addObject("DepartTreeSource", DepartTreeSource);
 		mv.addObject("ShowDataDepartCode", ShowDataDepartCode);
 		mv.addObject("ShowDataCustCol7", ShowDataCustCol7);
+		mv.addObject("ShowDataBillCode", ShowDataBillCode);
 		mv.addObject("commonBaseCode", commonBase.getCode());
 		mv.addObject("commonMessage", commonBase.getMessage());
 		return mv;
 	}
+    
+	private CommonBase CalculationUpdateDatabase(Boolean IsAdd, CommonBase commonBase, String strErrorMessage,
+    		String SelectedDepartCode,
+    		List<PageData> listAdd, String strHelpful) throws Exception{
+    	if(listAdd!=null && listAdd.size()>0){
+    		Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(TypeCodeDetail, SelectedDepartCode, tmplconfigService);
+            for(PageData item : listAdd){
+          	    item.put("CanOperate", strHelpful);
+          	    item.put("TableName", TableNameBackup);
+          	    Common.setModelDefault(item, map_HaveColumnsList, map_SetColumnsList);
+            }
+        	
+    		String sqlRetSelect = Common.GetRetSelectColoumns(map_HaveColumnsList, 
+    				TypeCodeDetail, TableNameBackup, SelectedDepartCode, 
+    				//"", 
+    				TmplUtil.keyExtra, keyListBase, 
+    				tmplconfigService);
+    		
+    		List<PageData> dataCalculation = socialincdetailService.getDataCalculation(TableNameBackup, sqlRetSelect, listAdd);
+    		if(dataCalculation!=null){
+    			for(PageData each : dataCalculation){
+    				if(IsAdd){
+    					each.put("SERIAL_NO", "");
+    				}
+    				Common.setModelDefault(each, map_HaveColumnsList, map_SetColumnsList);
+    				each.put("CanOperate", strHelpful);
+    				each.put("TableName", TableNameDetail);
+    			}
+    		}
+    		
+    		//此处执行集合添加 
+    		socialincdetailService.batchUpdateDatabase(dataCalculation);
+    		commonBase.setCode(0);
+    		commonBase.setMessage(strErrorMessage);
+    	}
+		return commonBase;
+    }
 	
 	/**下载模版
 	 * @param response
@@ -894,6 +1006,7 @@ public class SocialIncDetailController extends BaseController {
 	private String CheckState(List<PageData> pdSerialNo) throws Exception{
 		String strRut = "";
 		List<PageData> pdBillCode = socialincdetailService.getBillCodeBySerialNo(pdSerialNo);
+		//String strCanOperate = FilterBillCode.getBillCodeNotInSumInvalidDetail(TableNameSummy) + QueryFeildString.getNotReportBillCode();
 		if(pdBillCode != null){
 			for(PageData pd : pdBillCode){
 				String BILL_CODE = pd.getString("BILL_CODE");
@@ -905,8 +1018,9 @@ public class SocialIncDetailController extends BaseController {
 		return strRut;
 	}
 	
-	private String CheckMustSelectedAndSame(String CUST_COL7, String DEPT_CODE, 
-			String ShowDataDepartCode, String ShowDataCustCol7, String DepartTreeSource) throws Exception{
+	private String CheckMustSelectedAndSame(String CUST_COL7, String ShowDataCustCol7, 
+			String DEPT_CODE, String ShowDataDepartCode, String DepartTreeSource,
+			String BILL_CODE, String ShowDataBillCode) throws Exception{
 		String strRut = "";
 		if(!(CUST_COL7 != null && !CUST_COL7.trim().equals(""))){
 			strRut += "查询条件中的账套必须选择！";
@@ -920,6 +1034,13 @@ public class SocialIncDetailController extends BaseController {
 		} else {
 		    if(!String.valueOf(0).equals(DepartTreeSource) && !DEPT_CODE.equals(ShowDataDepartCode)){
 				strRut += "查询条件中所选责任中心与页面显示数据责任中心不一致，请单击查询再进行操作！";
+		    }
+		}
+		if(!(BILL_CODE != null && !BILL_CODE.trim().equals(""))){
+			strRut += "查询条件中的单号必须选择！";
+		} else {
+		    if(!BILL_CODE.equals(ShowDataBillCode)){
+				strRut += "查询条件中所选单号与页面显示数据单号不一致，请单击查询再进行操作！";
 		    }
 		}
 		return strRut;

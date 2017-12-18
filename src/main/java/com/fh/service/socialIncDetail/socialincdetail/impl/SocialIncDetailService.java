@@ -92,10 +92,10 @@ public class SocialIncDetailService implements SocialIncDetailManager{
 	 * @param pd
 	 * @throws Exception
 	 */
-	public List<PageData> getDataCalculation(String tableName, 
+	public List<PageData> getDataCalculation(String tableNameBackup, 
 			String sqlRetSelect, List<PageData> listAdd)throws Exception{
-		return dao.findDataCalculation(tableName, 
-				    "SocialIncDetailMapper.delete", "SocialIncDetailMapper.save", 
+		return dao.findDataCalculation(tableNameBackup, 
+				    "SocialIncDetailMapper.batchDelAndIns", 
 				    sqlRetSelect, listAdd);
 	}
 	/**更新数据库
@@ -103,7 +103,7 @@ public class SocialIncDetailService implements SocialIncDetailManager{
 	 * @throws Exception
 	 */
 	public void batchUpdateDatabase(List<PageData> listData)throws Exception{
-		dao.batchUpdateDatabase("SocialIncDetailMapper.delete", "SocialIncDetailMapper.save", listData);
+		dao.update("SocialIncDetailMapper.batchDelAndIns", listData);
 	}
 
 	

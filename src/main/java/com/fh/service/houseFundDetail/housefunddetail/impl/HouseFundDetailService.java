@@ -95,7 +95,7 @@ public class HouseFundDetailService implements HouseFundDetailManager{
 	public List<PageData> getDataCalculation(String tableName, 
 			String sqlRetSelect, List<PageData> listAdd)throws Exception{
 		return dao.findDataCalculation(tableName, 
-				    "HouseFundDetailMapper.delete", "HouseFundDetailMapper.save", 
+				    "HouseFundDetailMapper.batchDelAndIns", 
 				    sqlRetSelect, listAdd);
 	}
 	/**更新数据库
@@ -103,7 +103,7 @@ public class HouseFundDetailService implements HouseFundDetailManager{
 	 * @throws Exception
 	 */
 	public void batchUpdateDatabase(List<PageData> listData)throws Exception{
-		dao.batchUpdateDatabase("HouseFundDetailMapper.delete", "HouseFundDetailMapper.save", listData);
+		dao.update("HouseFundDetailMapper.batchDelAndIns", listData);
 	}
 
 	
