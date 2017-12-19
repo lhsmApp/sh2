@@ -88,7 +88,8 @@
                 +'&SalaryOrBonus='+SalaryOrBonus;
 			
 		    var commonBaseCode = '${commonBaseCode}';
-		    var commonMessage = '${commonMessage}';
+		    var commonMessage = "${commonMessage}";
+		    console.log(commonMessage);
 		    if(commonBaseCode != null && $.trim(commonBaseCode) != ""){
 		        if($.trim(commonBaseCode) == 0){
 		            $("#excel").tips({
@@ -99,12 +100,13 @@
 		            });
 		        } else {
 			        if($.trim(commonBaseCode) != -1){
-					    $("#excel").tips({
-					    	side:3,
-			                msg:commonMessage,
-			                bg:'#AE81FF',
-			                time:3
-			            });
+			        	alert(commonMessage);
+					    //$("#excel").tips({
+					    //	side:3,
+			            //    msg:commonMessage,
+			            //    bg:'#AE81FF',
+			            //    time:3
+			            //});
 			        }
 			    }
 		    };

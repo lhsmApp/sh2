@@ -42,7 +42,6 @@ import com.fh.util.SqlTools;
 import com.fh.util.Jurisdiction;
 import com.fh.util.enums.BillNumType;
 import com.fh.util.enums.BillState;
-import com.fh.util.enums.StaffDataType;
 import com.fh.util.enums.SysConfigKeyCode;
 import com.fh.util.enums.TmplType;
 
@@ -523,6 +522,7 @@ public class StaffSummyController extends BaseController {
         JSONArray array = JSONArray.fromObject(json);  
         List<PageData> listData = (List<PageData>) JSONArray.toCollection(array,PageData.class);
 
+        //员工组不能为空
 		if(!(emplGroupType!=null && !emplGroupType.trim().equals(""))){
 			commonBase.setCode(2);
 			commonBase.setMessage(Message.StaffSelectedTabOppositeGroupTypeIsNull);

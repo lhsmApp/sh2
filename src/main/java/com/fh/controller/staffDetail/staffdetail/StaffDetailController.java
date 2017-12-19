@@ -969,17 +969,17 @@ public class StaffDetailController extends BaseController {
 										BigDecimal douImpTax = (BigDecimal) pdSet.get(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra);
 										if(!(douCalTax!=null && douCalTax.compareTo(douImpTax)==0)){
 											strCalculationMessage += "员工编号:" + pdSetUSER_CODE 
-													+ "员工姓名:" + pdSet.getString("USER_NAME")
-													//+ "应纳税额:" + pdSetUSER_CODE 
-													+ "导入的纳税额:" + douImpTax 
-													+ "应导入的纳税额:" + douCalTax;
+													+ " 员工姓名:" + pdSet.getString("USER_NAME")
+													//+ " 应纳税额:" + pdSetUSER_CODE 
+													+ " 导入的纳税额:" + douImpTax 
+													+ " 应导入的纳税额:" + douCalTax + "\\n";
 										}
 									}
 									listUserCode.add(pdSetUSER_CODE);
 								}
 								if(strCalculationMessage!=null && !strCalculationMessage.trim().equals("")){
 									commonBase.setCode(2);
-									commonBase.setMessage("导入的纳税额填写不正确，无法导入！" + strCalculationMessage);
+									commonBase.setMessage("导入的纳税额填写不正确，无法导入！\\n" + strCalculationMessage);
 								} else {
 									commonBase = UpdateDatabase(true, commonBase, strErrorMessage,
 											SelectedTableNo, SelectedCustCol7, SelectedDepartCode, emplGroupType,

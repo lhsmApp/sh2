@@ -62,6 +62,17 @@
 									<div class="widget-main">
 										<form class="form-inline">
 											<span style="margin-right: 5px;">
+												<select class="chosen-select form-control"
+													name="SelectedCustCol7" id="SelectedCustCol7"
+													data-placeholder="请选择帐套"
+													style="vertical-align: top; height:32px;width: 150px;">
+													<option value="">请选择帐套</option>
+													<c:forEach items="${FMISACC}" var="each">
+														<option value="${each.DICT_CODE}">${each.NAME}</option>
+													</c:forEach>
+												</select>
+											</span>
+											<span style="margin-right: 5px;">
 												<div class="selectTree" id="selectTree" multiMode="true"
 													allSelectable="false" noGroup="true"></div>
 												<input type="text" id="SelectedDepartCode" hidden></input>
@@ -73,8 +84,7 @@
 													style="vertical-align: top; height: 32px; width: 150px;">
 														<option value="">请选择分线</option>
 														<c:forEach items="${fxList}" var="fx">
-															<option value="${fx.DICT_CODE}"
-														        <c:if test="${pd.SelectedfxCode==each.DICT_CODE}">selected</c:if>>${fx.NAME}</option>
+															<option value="${fx.DICT_CODE}">${fx.NAME}</option>
 														</c:forEach>
 												</select>
 											</span>
@@ -150,7 +160,8 @@
 	    })
 		
 		$("#jqGrid").jqGrid({
-			url: '<%=basePath%>glZrzxFx/getPageList.do?SelectedDepartCode=' + $("#SelectedDepartCode").val()
+			url: '<%=basePath%>glZrzxFx/getPageList.do?SelectedCustCol7='+$("#SelectedCustCol7").val()
+                    + '&SelectedDepartCode=' + $("#SelectedDepartCode").val()
 		        	+ '&SelectedfxCode=' + $("#SelectedfxCode").val()
 			        + '&SelectedstateCode=' + $("#SelectedstateCode").val(),
 			datatype: "json",
@@ -193,10 +204,12 @@
 					    delbutton: false,//disable delete button
 					}
 				},
-				
+
+				{ label: '账套', name: 'BILL_OFF__', width: 60,hidden : true,editable: true,},
 				{ label: '责任中心',name:'DEPT_CODE__', width:90,hidden : true,editable: true},
 				{ label: '分线', name: 'LINE_NO__', width: 60,hidden : true,editable: true,},
-				
+
+				{ label: '账套', name: 'BILL_OFF', width: 60,editable: true,edittype: 'select',formatter:'select',formatoptions:{value:"${billOffStrAll}"},editoptions:{value:"${billOffStrSelect}"},stype: 'select',searchoptions:{value:"${billOffStrAll}"}},
 				{ label: '责任中心', name: 'DEPT_CODE', width: 90,editable: true,edittype: 'select',formatter:'select',formatoptions:{value:"${departmentStrAll}"},editoptions:{value:"${departmentStrSelect}"},stype: 'select',searchoptions:{value:"${departmentStrAll}"}},
 				{ label: '分线', name: 'LINE_NO', width: 60,editable: true,edittype: 'select',formatter:'select',formatoptions:{value:"${lineNoStrAll}"},editoptions:{value:"${lineNoStrSelect}"},stype: 'select',searchoptions:{value:"${lineNoStrAll}"}},
 				{ label: '状态', name: 'STATE', width: 80, editable: true,align:'center',formatter: customFmatterState,edittype:"checkbox",editoptions: {value:"0:1"},unformat: aceSwitch,search:false}                   
@@ -205,7 +218,8 @@
 			viewrecords: true,
 			rowNum: 100,
 			rowList: [100,200,500],
-			sortname: 'DEPT_CODE',
+            multiSort: true,
+			sortname: 'BILL_OFF,DEPT_CODE,LINE_NO',
 			pager: "#jqGridPager",
 			loadComplete : function() {
 				var table = this;
@@ -222,7 +236,8 @@
             rownumWidth: 35,		
 			/* multiselect: true,
 	        multiboxonly: true, */
-	        editurl: "<%=basePath%>glZrzxFx/save.do?SelectedDepartCode=" + $("#SelectedDepartCode").val()
+	        editurl: '<%=basePath%>glZrzxFx/save.do?SelectedCustCol7='+$("#SelectedCustCol7").val()
+            + '&SelectedDepartCode=' + $("#SelectedDepartCode").val()
         	+ '&SelectedfxCode=' + $("#SelectedfxCode").val()
 	        + '&SelectedstateCode=' + $("#SelectedstateCode").val(),
 		});
@@ -337,7 +352,8 @@
 		top.jzts();
 		$.ajax({
 			type: "POST",
-			url: '<%=basePath%>glZrzxFx/updateAll.do?SelectedDepartCode=' + $("#SelectedDepartCode").val()
+			url: '<%=basePath%>glZrzxFx/updateAll.do?SelectedCustCol7='+$("#SelectedCustCol7").val()
+            + '&SelectedDepartCode=' + $("#SelectedDepartCode").val()
         	+ '&SelectedfxCode=' + $("#SelectedfxCode").val()
 	        + '&SelectedstateCode=' + $("#SelectedstateCode").val(),
 				data:{UpdataDataRows : JSON.stringify(listData)},
@@ -402,11 +418,11 @@
 		//检索
 		function tosearch() {
 			$("#jqGrid").jqGrid('setGridParam',{  // 重新加载数据
-				url:'<%=basePath%>glZrzxFx/getPageList.do?SelectedDepartCode=' + $("#SelectedDepartCode").val()
+				url:'<%=basePath%>glZrzxFx/getPageList.do?SelectedCustCol7='+$("#SelectedCustCol7").val()
+                                        + '&SelectedDepartCode=' + $("#SelectedDepartCode").val()
 										+ '&SelectedfxCode=' + $("#SelectedfxCode").val()
 										+ '&SelectedstateCode=' + $("#SelectedstateCode").val(),
-								datatype : 'json',
-								page : 1
+								datatype : 'json'
 							}).trigger("reloadGrid");
 		}
 

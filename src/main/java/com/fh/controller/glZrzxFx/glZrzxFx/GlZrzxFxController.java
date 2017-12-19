@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 import com.fh.controller.base.BaseController;
 import com.fh.controller.common.DictsUtil;
+import com.fh.controller.common.QueryFeildString;
 import com.fh.entity.CommonBase;
 import com.fh.entity.JqPage;
 import com.fh.entity.Page;
@@ -65,6 +66,9 @@ public class GlZrzxFxController extends BaseController {
 		pd.put("SelectedfxCode", "");
 		page.setPd(pd);
 		mv.addObject("pd", pd);
+		
+		//BILL_OFF FMISACC 帐套字典
+		mv.addObject("FMISACC", DictsUtil.getDictsByParentCode(dictionariesService, "FMISACC"));
 
 		// *********************加载单位树*******************************
 		String departTreeSource = DictsUtil.getDepartmentSelectTreeSource(departmentService, DictsUtil.DepartShowAll);
@@ -72,6 +76,12 @@ public class GlZrzxFxController extends BaseController {
 		// ***********************************************************
 		// LINE_NO fx 分线
 		mv.addObject("fxList", DictsUtil.getDictsByParentBianma(dictionariesService, "LINE_NO"));
+
+		String billOffValus = DictsUtil.getDicValue(dictionariesService, "FMISACC");
+		String billOffStringAll = ":[All];" + billOffValus;
+		String billOffStringSelect = ":;" + billOffValus;
+		mv.addObject("billOffStrAll", billOffStringAll);
+		mv.addObject("billOffStrSelect", billOffStringSelect);
 		
 		String departmentValus = DictsUtil.getDepartmentValue(departmentService);
 		String departmentStringAll = ":[All];" + departmentValus;
@@ -97,6 +107,8 @@ public class GlZrzxFxController extends BaseController {
 		logBefore(logger, Jurisdiction.getUsername()+"列表");
 
 		PageData getPd = this.getPageData();
+		//账套
+		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
 		//责任中心
 		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
 		//分线
@@ -105,8 +117,11 @@ public class GlZrzxFxController extends BaseController {
 		String SelectedstateCode = getPd.getString("SelectedstateCode");
 
 		String QueryFeild = "";
+		if(SelectedCustCol7 != null && !SelectedCustCol7.trim().equals("")){
+			QueryFeild += " and BILL_OFF = '" + SelectedCustCol7 + "' ";
+		}
 		if(SelectedDepartCode != null && !SelectedDepartCode.trim().equals("")){
-			QueryFeild += " and DEPT_CODE = '" + SelectedDepartCode + "' ";
+			QueryFeild += " and DEPT_CODE in (" + QueryFeildString.getSqlInString(SelectedDepartCode) + ") ";
 		}
 		if(SelectedfxCode != null && !SelectedfxCode.trim().equals("")){
 			QueryFeild += " and LINE_NO = '" + SelectedfxCode + "' ";

@@ -273,7 +273,7 @@ public class DaoSupport implements DAO {
 							//所有记录汇总的税额
 							BigDecimal sumTax = (BigDecimal) getSum.get(TableFeildTax);
 							douTableFeildTax = sumNum.subtract(sumTax).add(addTax);
-							eachAdd.put(TableFeildTax, douTableFeildTax);
+							eachAdd.put(TableFeildTax, douTableFeildTax.setScale(2, BigDecimal.ROUND_HALF_UP));
 						}
 						returnList.add(eachAdd);
 					}
@@ -346,7 +346,7 @@ public class DaoSupport implements DAO {
 							}
 							BigDecimal sumTax = (BigDecimal) getSum.get(TableFeildTax);
 							douTableFeildTax = sumNum.subtract(sumTax).add(addTax);
-							eachAdd.put(TableFeildTax, douTableFeildTax);
+							eachAdd.put(TableFeildTax, douTableFeildTax.setScale(2, BigDecimal.ROUND_HALF_UP));
 						}
 						returnList.add(eachAdd);
 					}
