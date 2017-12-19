@@ -86,6 +86,17 @@
 														</c:forEach>
 												</select>
 											</span>
+											<span class="pull-left" style="margin-right: 5px;"> 
+												<select
+													class="chosen-select form-control" name="BILL_OFF"
+													id="BILL_OFF" data-placeholder="请选择帐套"
+													style="vertical-align: top; height: 32px; width: 150px;">
+														<option value="">请选择帐套</option>
+														<c:forEach items="${fmisacc}" var="fmi">
+															<option value="${fmi.DICT_CODE}">${fmi.NAME}</option>
+														</c:forEach>
+												</select>
+											</span>
 											<span class="pull-left" style="margin-right: 5px;">
 												<div class="selectTree" id="selectTree" multiMode="false"
 													allSelectable="false" noGroup="false"></div>
@@ -167,11 +178,13 @@
 			 colModel: [
 				//隐藏where条件
 				{ label: '期间', name: 'RPT_DUR', width: 60,hidden : true,editable: true,},
+				{ label: '帐套', name: 'BILL_OFF', width: 60,hidden : true,editable: true,},
 				{ label: '单位编码', name: 'DEPT_CODE', width: 60,hidden : true,editable: true,},
 				{ label: '表编码', name: 'TABLE_CODE', width: 60,hidden : true,editable: true,},
 				{ label: '列编码', name: 'COL_CODE', width: 60,hidden : true,editable: true,},
 				
 				{ label: '业务期间',name:'RPT_DUR', width:60}, 
+				{ label: '帐套', name: 'BILL_OFF', width: 80,align:'center',editable: true,edittype: 'select',formatter:'select',formatteroptions:{value:"${dictBillOffString}"},editoptions:{value:"${dictBillOffString}"}},
 				{ label: '单位',name:'DNAME', width:100}, 
 				{ label: '表名', name: 'TABLE_NAME', width: 90},
 				{ label: '列编码', name: 'COL_CODE', width: 60},
@@ -205,6 +218,7 @@
             rownumWidth: 35, // the width of the row numbers columns			
 	        ondblClickRow: dbClickRow,//双击表格编辑
 	        //editurl: '<%=basePath%>tmplconfig/edit.do?',
+	        editurl: '',
 		});
 		
 		$(window).triggerHandler('resize.jqGrid');//trigger window resize to make the grid get the correct size
@@ -423,17 +437,30 @@
 			$("#TABLE_NO").focus();
 			return false;
 		}
+		if($("#BILL_OFF").val()==""){
+			$("#BILL_OFF").tips({
+				side:3,
+	            msg:'请选择帐套',
+	            bg:'#AE81FF',
+	            time:2
+	        });
+			$("#BILL_OFF").focus();
+			return false;
+		}
 		/* if($("#selectTree2_input").val()=="请选择"){
 			document.getElementById("DEPARTMENT_CODE").value="001"; 
 			document.getElementById("DNAME").value="总部"; 
 		} */
 		var TABLE_NO = $("#TABLE_NO").val(); 
+		var fmi = $("#BILL_OFF").val(); 
 		var DEPARTMENT_CODE = $("#DEPARTMENT_CODE").val(); 
 		var TABLE_NAME = $("#TABLE_NO").find("option:selected").text();
 		var DNAME = $("#DNAME").val(); 
 		var busiDate = $("#busiDate").val(); 
 		$("#jqGrid").jqGrid('setGridParam',{  // 重新加载数据
-			url:'<%=basePath%>tmplconfig/getPageList.do?TABLE_NO='+TABLE_NO+'&DEPARTMENT_CODE='+DEPARTMENT_CODE
+			url:'<%=basePath%>tmplconfig/getPageList.do?TABLE_NO='+TABLE_NO
+			+'&BILL_OFF='+fmi
+			+'&DEPARTMENT_CODE='+DEPARTMENT_CODE
 			+'&RPT_DUR='+busiDate+'&TABLE_NAME='+TABLE_NAME+'&DNAME='+DNAME,  
 			datatype:'json',
 		      page:1

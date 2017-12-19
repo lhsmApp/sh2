@@ -17,6 +17,7 @@ import com.fh.entity.Page;
 import com.fh.entity.PageResult;
 import com.fh.service.fhoa.department.DepartmentManager;
 import com.fh.service.sysConfig.sysconfig.SysConfigManager;
+import com.fh.service.system.dictionaries.DictionariesManager;
 import com.fh.service.tmplConfigDict.tmplconfigdict.TmplConfigDictManager;
 import com.fh.service.tmplconfig.tmplconfig.TmplConfigManager;
 import com.fh.util.Jurisdiction;
@@ -49,6 +50,9 @@ public class CalculateFormulaController extends BaseController {
 
 	@Resource(name = "sysconfigService")
 	private SysConfigManager sysConfigManager;
+	
+	@Resource(name = "dictionariesService")
+	private DictionariesManager dictionariesService;
 
 	/**
 	 * 列表
@@ -78,6 +82,12 @@ public class CalculateFormulaController extends BaseController {
 		
 		mv.setViewName("calculateFormula/calculateFormula/calculateFormula_list");
 		mv.addObject("listBase", listBase);
+		// CUST_COL7 FMISACC 帐套字典
+		mv.addObject("fmisacc", DictsUtil.getDictsByParentBianma(dictionariesService, "FMISACC"));
+		String dicBillOff = DictsUtil.getDicValue(dictionariesService, "FMISACC");
+		String dictBillOffString = " : ;" + dicBillOff;
+		mv.addObject("dictBillOffString", dictBillOffString);
+		
 		mv.addObject("pd", pd);
 
 		// 设置期间
