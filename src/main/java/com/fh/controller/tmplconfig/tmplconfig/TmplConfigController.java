@@ -17,6 +17,7 @@ import com.fh.entity.Page;
 import com.fh.entity.PageResult;
 import com.fh.service.fhoa.department.DepartmentManager;
 import com.fh.service.sysConfig.sysconfig.SysConfigManager;
+import com.fh.service.system.dictionaries.DictionariesManager;
 import com.fh.service.tmplConfigDict.tmplconfigdict.TmplConfigDictManager;
 import com.fh.service.tmplconfig.tmplconfig.TmplConfigManager;
 import com.fh.util.Jurisdiction;
@@ -49,6 +50,9 @@ public class TmplConfigController extends BaseController {
 
 	@Resource(name = "sysconfigService")
 	private SysConfigManager sysConfigManager;
+	
+	@Resource(name = "dictionariesService")
+	private DictionariesManager dictionariesService;
 
 	/**
 	 * 列表
@@ -74,11 +78,16 @@ public class TmplConfigController extends BaseController {
 
 		String dicTypeValus = DictsUtil.getDicTypeValue(tmplconfigdictService);
 		String dictString = " : ;" + dicTypeValus;
-
 		mv.addObject("dictString", dictString);
 		mv.setViewName("tmplconfig/tmplconfig/tmplconfig_list");
 		mv.addObject("listBase", listBase);
+		// CUST_COL7 BILL_OFF 帐套字典
+		mv.addObject("fmisacc", DictsUtil.getDictsByParentBianma(dictionariesService, "FMISACC"));
 		mv.addObject("pd", pd);
+		String dicBillOff = DictsUtil.getDicValue(dictionariesService, "FMISACC");
+		String dictBillOffString = " : ;" + dicBillOff;
+		mv.addObject("dictBillOffString", dictBillOffString);
+		
 
 		// 设置期间
 		pd.put("KEY_CODE", "SystemDataTime");
@@ -185,6 +194,7 @@ public class TmplConfigController extends BaseController {
 			pd.put("DEPT_CODE", listData.get(0).get("DEPT_CODE"));
 			pd.put("TABLE_CODE", listData.get(0).get("TABLE_CODE"));
 			pd.put("RPT_DUR", listData.get(0).get("RPT_DUR"));
+			pd.put("BILL_OFF", listData.get(0).get("BILL_OFF"));
 			tmplconfigService.deleteTable(pd);
 
 			tmplconfigService.updateAll(listData);

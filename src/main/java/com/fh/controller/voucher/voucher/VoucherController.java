@@ -689,7 +689,8 @@ public class VoucherController extends BaseController {
 		List<PageData> listGlZrzxfx = glZrzxFxService.listAll();
 		for (PageData pdSource : listTransferData) {
 			for (PageData pdGl : listGlZrzxfx) {
-				if (pdSource.getString("DEPT_CODE").equals(pdGl.getString("DEPT_CODE"))) {
+				if (pdSource.getString("DEPT_CODE").equals(pdGl.getString("DEPT_CODE"))
+						&&pdSource.getString("CUST_COL7").equals(pdGl.getString("BILL_OFF"))) {
 					pdSource.put("LINE_NO", pdGl.getString("LINE_NO"));
 				}
 			}

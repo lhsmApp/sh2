@@ -10,6 +10,7 @@
 	<!-- 字段 -->
 	<sql id="Field">
 		RPT_DUR,
+		BILL_OFF,
 		DEPT_CODE,
 		TABLE_CODE,
 		COL_CODE,
@@ -28,6 +29,7 @@
 	<!-- 字段 -->
 	<sql id="FieldTmpl">
 		RPT_DUR,
+		BILL_OFF,
 		DEPT_CODE,
 		TABLE_CODE,
 		COL_CODE,
@@ -39,28 +41,11 @@
 		COL_AVE,
 		COL_TRANSFER
 	</sql>
-	
+
 	<!-- 字段 -->
 	<sql id="FieldTmplCopy">
 		RPT_DUR,
-		DEPT_CODE,
-		TABLE_CODE,
-		COL_CODE,
-		COL_NAME,
-		DISP_ORDER,
-		DICT_TRANS,
-		COL_HIDE,
-		COL_SUM,
-		COL_AVE,
-		COL_TRANSFER,
-		COL_FORMULA,
-		CAL_ORDER,
-		NUM_DGT,
-		DEC_PRECISION
-	</sql>
-	
-	<sql id="FieldColumns">
-		RPT_DUR,
+		BILL_OFF,
 		DEPT_CODE,
 		TABLE_CODE,
 		COL_CODE,
@@ -77,64 +62,58 @@
 		DEC_PRECISION
 	</sql>
 
-	<!-- 字段值 -->
-	<sql id="FieldValue">
-		#{RPT_DUR},
-		#{DEPT_CODE},
-		#{TABLE_CODE},
-		#{COL_CODE},
-		#{COL_NAME},
-		#{DISP_ORDER},
-		#{DICT_TRANS},
-		#{COL_HIDE},
-		#{COL_SUM},
-		#{COL_AVE},
-		#{COL_TRANSFER},
-		#{COL_FORMULA},
-		#{CAL_ORDER},
-		#{NUM_DGT},
-		#{DEC_PRECISION}
+	<sql id="FieldColumns">
+		BILL_OFF,
+		RPT_DUR,
+		DEPT_CODE,
+		TABLE_CODE,
+		COL_CODE,
+		COL_NAME,
+		DISP_ORDER,
+		DICT_TRANS,
+		COL_HIDE,
+		COL_SUM,
+		COL_AVE,
+		COL_TRANSFER,
+		COL_FORMULA,
+		CAL_ORDER,
+		NUM_DGT,
+		DEC_PRECISION
 	</sql>
 
 	<!-- 新增 -->
 	<insert id="save" parameterType="pd">
-		<!-- insert into
-		<include refid="tableName"></include>
-		(
-		<include refid="Field"></include>
-		) values (
-		<include refid="FieldValue"></include>
-		) -->
+		<!-- insert into <include refid="tableName"></include> ( <include refid="Field"></include> 
+			) values ( <include refid="FieldValue"></include> ) -->
 		insert into
 		<include refid="tableName"></include>
 		(
-			COL_FORMULA,
-			CAL_ORDER,
-			NUM_DGT,
-			DEC_PRECISION
+		COL_FORMULA,
+		CAL_ORDER,
+		NUM_DGT,
+		DEC_PRECISION
 		) values (
-			#{COL_FORMULA},
-			#{CAL_ORDER},
-			#{NUM_DGT},
-			#{DEC_PRECISION}
+		#{COL_FORMULA},
+		#{CAL_ORDER},
+		#{NUM_DGT},
+		#{DEC_PRECISION}
 		)
-		
+
 	</insert>
 
 	<!-- 删除 -->
 	<delete id="delete" parameterType="pd">
-		<!-- delete from
-		<include refid="tableName"></include>
-		where
-		TABLE_CODE = #{TABLE_CODE} -->
-		
+		<!-- delete from <include refid="tableName"></include> where TABLE_CODE 
+			= #{TABLE_CODE} -->
+
 		update
 		<include refid="tableName"></include>
 		set
 		<!-- DEPT_CODE = #{DEPT_CODE}, TABLE_CODE = #{TABLE_CODE}, COL_CODE = #{COL_CODE}, -->
 		COL_FORMULA = #{COL_FORMULA},
 		CAL_ORDER = #{CAL_ORDER},
-		NUM_DGT =#{NUM_DGT},
+		NUM_DGT
+		=#{NUM_DGT},
 		COL_HIDE = #{COL_HIDE},
 		DEC_PRECISION = #{DEC_PRECISION}
 		where
@@ -142,7 +121,10 @@
 		and
 		DEPT_CODE = #{DEPT_CODE}
 		and
-		TABLE_CODE = #{TABLE_CODE}
+		TABLE_CODE =
+		#{TABLE_CODE}
+		and
+		BILL_OFF = #{BILL_OFF}
 		and
 		COL_CODE = #{COL_CODE}
 	</delete>
@@ -156,42 +138,44 @@
 		and
 		DEPT_CODE = #{DEPT_CODE}
 		and
-		TABLE_CODE = #{TABLE_CODE}
+		TABLE_CODE =
+		#{TABLE_CODE}
+		and
+		BILL_OFF = #{BILL_OFF}
 	</delete>
 
 	<!-- 修改 -->
 	<update id="edit" parameterType="pd">
-		<!-- update
-		<include refid="tableName"></include>
-		set
-		COL_NAME = #{COL_NAME},
-		DISP_ORDER = #{DISP_ORDER},
-		DICT_TRANS =#{DICT_TRANS},
-		COL_HIDE = #{COL_HIDE},
-		COL_SUM = #{COL_SUM},
-		COL_AVE =#{COL_AVE},
-		COL_TRANSFER =#{COL_TRANSFER}
-		where
-		DEPT_CODE = #{DEPT_CODE}
-		and
-		TABLE_CODE = #{TABLE_CODE}
-		and
-		COL_CODE = #{COL_CODE} -->
-		
-		
+		<!-- update <include refid="tableName"></include> set COL_NAME = #{COL_NAME}, 
+			DISP_ORDER = #{DISP_ORDER}, DICT_TRANS =#{DICT_TRANS}, COL_HIDE = #{COL_HIDE}, 
+			COL_SUM = #{COL_SUM}, COL_AVE =#{COL_AVE}, COL_TRANSFER =#{COL_TRANSFER} 
+			where DEPT_CODE = #{DEPT_CODE} and TABLE_CODE = #{TABLE_CODE} and COL_CODE 
+			= #{COL_CODE} -->
+
+
 		update
 		<include refid="tableName"></include>
 		set
-		COL_FORMULA = #{COL_FORMULA},
-		CAL_ORDER = #{CAL_ORDER},
-		NUM_DGT =#{NUM_DGT},
-		DEC_PRECISION = #{DEC_PRECISION}
+		COL_FORMULA = #{COL_FORMULA}
+		<if test="CAL_ORDER!= null and CAL_ORDER != ''">
+			,CAL_ORDER = #{CAL_ORDER}
+		</if>
+		<if test="NUM_DGT!= null and NUM_DGT != ''">
+			,NUM_DGT = #{NUM_DGT}
+		</if>
+		<if test="DEC_PRECISION!= null and DEC_PRECISION != ''">
+			,DEC_PRECISION = #{DEC_PRECISION}
+		</if>
+		<!-- CAL_ORDER = #{CAL_ORDER}, NUM_DGT =#{NUM_DGT}, DEC_PRECISION = #{DEC_PRECISION} -->
 		where
 		RPT_DUR = #{RPT_DUR}
 		and
 		DEPT_CODE = #{DEPT_CODE}
 		and
-		TABLE_CODE = #{TABLE_CODE}
+		TABLE_CODE =
+		#{TABLE_CODE}
+		and
+		BILL_OFF = #{BILL_OFF}
 		and
 		COL_CODE = #{COL_CODE}
 	</update>
@@ -205,7 +189,7 @@
 		where
 		TABLE_CODE = #{TABLE_CODE}
 	</select>
-	
+
 	<!-- 验证公式是否正确 -->
 	<select id="validateFormula" parameterType="pd" resultType="pd">
 		select
@@ -214,14 +198,14 @@
 		${TABLE_CODE_ORI}
 		LIMIT 1
 	</select>
-	
+
 	<!-- 通过期间获取数据，判断是否已经生成过模板配置信息 -->
 	<select id="findByRptDur" parameterType="String" resultType="String">
 		select 1
 		from
 		<include refid="tableName"></include>
 		where
-		RPT_DUR = #{RPT_DUR} LIMIT 1 
+		RPT_DUR = #{RPT_DUR} LIMIT 1
 	</select>
 
 	<!-- 列表 -->
@@ -237,6 +221,9 @@
 			<if test="pd.TABLE_CODE!= null and pd.TABLE_CODE != ''"><!-- 检索 -->
 				and TABLE_CODE = #{pd.TABLE_CODE}
 			</if>
+			<if test="pd.BILL_OFF!= null and pd.BILL_OFF != ''"><!-- 检索 -->
+				and BILL_OFF = #{pd.BILL_OFF}
+			</if>
 			<if test="pd.RPT_DUR!= null and pd.RPT_DUR != ''"><!-- 检索 -->
 				and RPT_DUR = #{pd.RPT_DUR}
 			</if>
@@ -247,6 +234,7 @@
 	<select id="listAll" parameterType="pd" resultType="pd">
 		SELECT
 		a.RPT_DUR,
+		a.BILL_OFF,
 		a.DEPT_CODE,
 		a.TABLE_CODE,
 		a.COL_CODE,
@@ -265,7 +253,8 @@
 		c.TABLE_NAME,
 		d.DICT_NAME
 		FROM
-		tb_tmpl_config_detail a LEFT JOIN
+		tb_tmpl_config_detail a LEFT
+		JOIN
 		oa_department b
 		on a.DEPT_CODE = b.DEPARTMENT_CODE
 		LEFT JOIN
@@ -280,6 +269,9 @@
 			</if>
 			<if test="TABLE_CODE!= null and TABLE_CODE != ''">
 				and a.TABLE_CODE = #{TABLE_CODE}
+			</if>
+			<if test="BILL_OFF!= null and BILL_OFF != ''">
+				and a.BILL_OFF = #{BILL_OFF}
 			</if>
 			<if test="RPT_DUR!= null and RPT_DUR != ''">
 				and a.RPT_DUR = #{RPT_DUR}
@@ -321,9 +313,13 @@
 		from
 		<include refid="tableName"></include>
 		where DEPT_CODE = #{DEPT_CODE}
-		and UPPER(TABLE_CODE) = UPPER(#{TABLE_CODE})
-		and RPT_DUR in (select KEY_VALUE from tb_sys_config where KEY_CODE = 'SystemDataTime')
-		order by COL_HIDE desc, DISP_ORDER
+		and BILL_OFF = #{BILL_OFF}
+		and
+		UPPER(TABLE_CODE) = UPPER(#{TABLE_CODE})
+		and RPT_DUR in (select
+		KEY_VALUE from tb_sys_config where KEY_CODE = 'SystemDataTime')
+		order
+		by COL_HIDE desc, DISP_ORDER
 		<!-- COL_HIDE必修倒序排列，关系添加或修改弹出框的显示 -->
 	</select>
 	<select id="listFormula" parameterType="com.fh.entity.TmplConfigDetail"
@@ -333,9 +329,13 @@
 		from
 		<include refid="tableName"></include>
 		where DEPT_CODE = #{DEPT_CODE}
-		and UPPER(TABLE_CODE) = UPPER(#{TABLE_CODE})
-		and RPT_DUR in (select KEY_VALUE from tb_sys_config where KEY_CODE = 'SystemDataTime')
-		order by LENGTH(COL_CODE)
+		and BILL_OFF = #{BILL_OFF}
+		and
+		UPPER(TABLE_CODE) = UPPER(#{TABLE_CODE})
+		and RPT_DUR in (select
+		KEY_VALUE from tb_sys_config where KEY_CODE = 'SystemDataTime')
+		order
+		by LENGTH(COL_CODE)
 		<!-- COL_HIDE必修倒序排列，关系添加或修改弹出框的显示 -->
 	</select>
 
@@ -352,6 +352,7 @@
 	<select id="temporaryList" parameterType="page" resultType="pd">
 		SELECT column_name AS COL_CODE, column_comment AS COL_NAME,
 		#{pd.RPT_DUR} as RPT_DUR,
+		#{pd.BILL_OFF} as BILL_OFF,
 		#{pd.DEPARTMENT_CODE} AS DEPT_CODE,#{pd.TABLE_CODE} AS
 		TABLE_CODE,#{pd.DNAME} AS DNAME,#{pd.TABLE_NAME} AS TABLE_NAME,
 		'0' AS
@@ -377,7 +378,7 @@
 			separator=", " close=" ">
 			<if test="item!=null">
 				<trim prefix="(" suffix=")" suffixOverrides=",">
-					#{item.RPT_DUR},#{item.DEPT_CODE},#{item.TABLE_CODE},#{item.COL_CODE},#{item.COL_NAME},#{item.DISP_ORDER},#{item.DICT_TRANS},#{item.COL_HIDE},#{item.COL_SUM},#{item.COL_AVE},#{item.COL_TRANSFER}
+					#{item.RPT_DUR},#{item.BILL_OFF},#{item.DEPT_CODE},#{item.TABLE_CODE},#{item.COL_CODE},#{item.COL_NAME},#{item.DISP_ORDER},#{item.DICT_TRANS},#{item.COL_HIDE},#{item.COL_SUM},#{item.COL_AVE},#{item.COL_TRANSFER}
 					<!-- <include refid="FieldValue"></include> -->
 				</trim>
 			</if>
@@ -396,7 +397,8 @@
 				and
 				DEPT_CODE = #{item}
 				and
-				TABLE_CODE = #{TABLE_CODE}
+				TABLE_CODE =
+				#{TABLE_CODE}
 			</if>
 		</foreach>
 		<!-- 插入保存 -->
@@ -408,14 +410,14 @@
 		<foreach item="item" index="index" collection="DEPT_CODES"
 			open=" " separator="union all " close=" ">
 			<if test="item!=null">
-				SELECT RPT_DUR,#{item} AS 'DEPT_CODE',
+				SELECT RPT_DUR,BILL_OFF,#{item} AS 'DEPT_CODE',
 				TABLE_CODE,COL_CODE,COL_NAME,DISP_ORDER,DICT_TRANS,COL_HIDE,COL_SUM,COL_AVE,COL_TRANSFER,COL_FORMULA,CAL_ORDER,NUM_DGT,DEC_PRECISION
 				FROM tb_tmpl_config_detail WHERE DEPT_CODE=#{DEPT_CODE} AND
 				TABLE_CODE=#{TABLE_CODE}
 			</if>
 		</foreach>
 	</insert>
-	
+
 	<!-- 根据区间批量生成配置信息 -->
 	<insert id="insertBatchNextRptDur" parameterType="pd">
 		<!-- 插入保存 -->
@@ -424,7 +426,7 @@
 		(
 		<include refid="FieldTmplCopy"></include>
 		)
-		SELECT #{NEXT_RPT_DUR} as RPT_DUR,DEPT_CODE,
+		SELECT #{NEXT_RPT_DUR} as RPT_DUR,BILL_OFF,DEPT_CODE,
 		TABLE_CODE,COL_CODE,COL_NAME,DISP_ORDER,DICT_TRANS,COL_HIDE,COL_SUM,COL_AVE,COL_TRANSFER,COL_FORMULA,CAL_ORDER,NUM_DGT,DEC_PRECISION
 		FROM tb_tmpl_config_detail WHERE RPT_DUR=#{CUR_RPT_DUR}
 	</insert>
