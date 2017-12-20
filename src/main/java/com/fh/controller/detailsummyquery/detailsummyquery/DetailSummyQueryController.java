@@ -79,8 +79,6 @@ public class DetailSummyQueryController extends BaseController {
 	// 查询表的主键字段，作为标准列，jqgrid添加带__列，mybaits获取带__列
 	private List<String> keyListBase = Arrays.asList("BILL_CODE", "DEPT_CODE");
 
-	//界面分组字段
-	List<String> jqGridGroupColumn = Arrays.asList("DEPT_CODE");
 	//界面查询字段
     List<String> QueryFeildList = Arrays.asList("BUSI_DATE", "DEPT_CODE", "USER_GROP", "CUST_COL7");
 
@@ -121,24 +119,7 @@ public class DetailSummyQueryController extends BaseController {
 		mv.addObject("zTreeNodes", DepartmentSelectTreeSource);
 		// ***********************************************************
 
-		//当前登录人所在二级单位
-		String UserDepartCode = Jurisdiction.getCurrentDepartmentID();//
-		TmplUtil tmpl = new TmplUtil(tmplconfigService, tmplconfigdictService, dictionariesService, 
-				departmentService,userService, keyListBase, jqGridGroupColumn, null, null);
-		String jqGridColModel = tmpl.generateStructureNoEdit(SelectedTableNo, UserDepartCode);
-
-		//分组字段是否显示在表中
-		List<String> m_jqGridGroupColumnShow = tmpl.getJqGridGroupColumnShow();
-
 		mv.addObject("pd", getPd);
-		mv.addObject("jqGridColModel", jqGridColModel);
-        //分组字段  格式：groupField: ['DEPT_CODE'],
-		String jqGridGroupField = QueryFeildString.tranferListValueToSqlInString(jqGridGroupColumn);
-		mv.addObject("jqGridGroupField", jqGridGroupField);
-        //分组字段是否显示在表中  格式：groupColumnShow: [true],
-		String jqGridGroupColumnShow = QueryFeildString.tranferListStringToGroupbyString(m_jqGridGroupColumnShow);
-		mv.addObject("jqGridGroupColumnShow", jqGridGroupColumnShow);
-		
 		return mv;
 	}
 
@@ -190,6 +171,38 @@ public class DetailSummyQueryController extends BaseController {
 		
 		return commonBase;
 	}
+
+	/**显示结构
+	 * @param
+	 * @throws Exception
+	 */
+	@RequestMapping(value="/getShowColModel")
+	public @ResponseBody CommonBase getShowColModel() throws Exception{
+		logBefore(logger, Jurisdiction.getUsername()+"getFirstDetailColModel");
+		CommonBase commonBase = new CommonBase();
+		commonBase.setCode(-1);
+		
+		PageData getPd = this.getPageData();
+		//员工组
+		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		//单位
+		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
+		//账套
+		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
+
+		String strShowCalModelDepaet = Jurisdiction.getCurrentDepartmentID();
+		if(SelectedDepartCode!=null && !SelectedDepartCode.trim().equals("") && !SelectedDepartCode.contains(",")){
+			strShowCalModelDepaet = SelectedDepartCode;
+		}
+		TmplUtil tmpl = new TmplUtil(tmplconfigService, tmplconfigdictService, dictionariesService, 
+				departmentService,userService, keyListBase, null, null, null);
+		String jqGridColModel = tmpl.generateStructureNoEdit(SelectedTableNo, strShowCalModelDepaet, SelectedCustCol7);
+
+		commonBase.setCode(0);
+		commonBase.setMessage(jqGridColModel);
+		
+		return commonBase;
+	}
 	
 	/**列表
 	 * @param page
@@ -202,9 +215,11 @@ public class DetailSummyQueryController extends BaseController {
 		PageData getPd = this.getPageData();
 		//员工组
 		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
-		//底行显示的求和与平均值字段
-		StringBuilder SqlUserdata = Common.GetSqlUserdata(SelectedTableNo, Jurisdiction.getCurrentDepartmentID(), tmplconfigService);
-
+		//单位
+		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
+		//账套
+		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
+		
 		PageData pdTransfer = setTransferPd(getPd);
 		//表名
 		String tableNameSummy = getSummyBaseTableCode(SelectedTableNo);
@@ -214,6 +229,12 @@ public class DetailSummyQueryController extends BaseController {
 		List<PageData> varList = detailsummyqueryryService.JqPage(page);	//列出Betting列表
 		int records = detailsummyqueryryService.countJqGridExtend(page);
 		PageData userdata = null;
+		String strShowCalModelDepaet = Jurisdiction.getCurrentDepartmentID();
+		if(SelectedDepartCode!=null && !SelectedDepartCode.trim().equals("") && !SelectedDepartCode.contains(",")){
+			strShowCalModelDepaet = SelectedDepartCode;
+		}
+		//底行显示的求和与平均值字段
+		StringBuilder SqlUserdata = Common.GetSqlUserdata(SelectedTableNo, strShowCalModelDepaet, SelectedCustCol7, tmplconfigService);
 		if(SqlUserdata!=null && !SqlUserdata.toString().trim().equals("")){
 			//底行显示的求和与平均值字段
 			getPd.put("Userdata", SqlUserdata.toString());
@@ -247,10 +268,11 @@ public class DetailSummyQueryController extends BaseController {
 		String TypeCodeSummyDetail = implTypeCode.getTypeCodeSummyDetail();
 		List<String> SumFieldDetail = implTypeCode.getSumFieldDetail();
 		String DEPT_CODE = (String) getPd.get("DataDeptCode");
+		String CUST_COL7 = (String) getPd.get("DataCustCol7");
 		
 		TmplUtil tmpl = new TmplUtil(tmplconfigService, tmplconfigdictService, dictionariesService, 
 				departmentService,userService,SumFieldDetail, null, null, null);
-		String detailColModel = tmpl.generateStructureNoEdit(TypeCodeSummyDetail, DEPT_CODE);
+		String detailColModel = tmpl.generateStructureNoEdit(TypeCodeSummyDetail, DEPT_CODE, CUST_COL7);
 		
 		commonBase.setCode(0);
 		commonBase.setMessage(detailColModel);
@@ -306,10 +328,11 @@ public class DetailSummyQueryController extends BaseController {
 		String TypeCodeDetail = implTypeCode.getTypeCodeDetail();
 		
 		String DEPT_CODE = (String) getPd.get("DataDeptCode");
+		String CUST_COL7 = (String) getPd.get("DataCustCol7");
 
 		TmplUtil tmpl = new TmplUtil(tmplconfigService, tmplconfigdictService, dictionariesService, 
 				departmentService,userService);
-		String detailColModel = tmpl.generateStructureNoEdit(TypeCodeDetail, DEPT_CODE);
+		String detailColModel = tmpl.generateStructureNoEdit(TypeCodeDetail, DEPT_CODE, CUST_COL7);
 		
 		commonBase.setCode(0);
 		commonBase.setMessage(detailColModel);
@@ -368,8 +391,18 @@ public class DetailSummyQueryController extends BaseController {
 		PageData getPd = this.getPageData();
 		//员工组
 		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
-		Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(SelectedTableNo, Jurisdiction.getCurrentDepartmentID(), tmplconfigService);
-		Map<String, Object> DicList = Common.GetDicList(SelectedTableNo, Jurisdiction.getCurrentDepartmentID(), 
+		//单位
+		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
+		//账套
+		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
+
+		String strShowCalModelDepaet = Jurisdiction.getCurrentDepartmentID();
+		if(SelectedDepartCode!=null && !SelectedDepartCode.trim().equals("") && !SelectedDepartCode.contains(",")){
+			strShowCalModelDepaet = SelectedDepartCode;
+		}
+		
+		Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(SelectedTableNo, strShowCalModelDepaet, SelectedCustCol7, tmplconfigService);
+		Map<String, Object> DicList = Common.GetDicList(SelectedTableNo, strShowCalModelDepaet, SelectedCustCol7, 
 				tmplconfigService, tmplconfigdictService, dictionariesService, departmentService, userService, "");
 
 		String tableNameSummy = getSummyDetailTableCode(SelectedTableNo);

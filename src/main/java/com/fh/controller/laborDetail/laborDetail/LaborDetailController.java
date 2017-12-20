@@ -153,13 +153,13 @@ public class LaborDetailController extends BaseController {
 		String UserDepartCode = Jurisdiction.getCurrentDepartmentID();//
 		TmplUtil tmpl = new TmplUtil(tmplconfigService, tmplconfigdictService, dictionariesService, 
 				departmentService,userService,keyListBase, null, null, MustInputList);
-		String jqGridColModel = tmpl.generateStructure(TypeCodeDetail, UserDepartCode, 3, MustNotEditList);
+		//String jqGridColModel = tmpl.generateStructure(TypeCodeDetail, UserDepartCode, 3, MustNotEditList);
 		
 		//表结构  
-		map_HaveColumnsList = tmpl.getHaveColumnsList();
+		//map_HaveColumnsList = tmpl.getHaveColumnsList();
 
 		mv.addObject("pd", getPd);
-		mv.addObject("jqGridColModel", jqGridColModel);
+		//mv.addObject("jqGridColModel", jqGridColModel);
 		return mv;
 	}
 	
@@ -276,7 +276,7 @@ public class LaborDetailController extends BaseController {
 			listData.add(getPd);
 			//commonBase = CalculationUpdateDatabase(true, commonBase, "", SelectedDepartCode, listData, strHelpful);
 		} else {
-			Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(TypeCodeDetail, SelectedDepartCode, tmplconfigService);
+			//Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(TypeCodeDetail, SelectedDepartCode, tmplconfigService);
 			List<PageData> listCheckState = new ArrayList<PageData>();
 			listCheckState.add(getPd);
 			String checkState = CheckState(listCheckState);
@@ -288,7 +288,7 @@ public class LaborDetailController extends BaseController {
 			for(String strFeild : MustNotEditList){
 				getPd.put(strFeild, getPd.get(strFeild + TmplUtil.keyExtra));
 			}
-			Common.setModelDefault(getPd, map_HaveColumnsList, map_SetColumnsList);
+			//Common.setModelDefault(getPd, map_HaveColumnsList, map_SetColumnsList);
 			getPd.put("TableName", TableNameDetail);
 			//getPd.put("CanOperate", strHelpful);
 			
@@ -328,7 +328,7 @@ public class LaborDetailController extends BaseController {
 		String ShowDataDepartCode = getPd.getString("ShowDataDepartCode");
 		String ShowDataCustCol7 = getPd.getString("ShowDataCustCol7");
 		String ShowDataBillCode = getPd.getString("ShowDataBillCode");
-		Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(TypeCodeDetail, SelectedDepartCode, tmplconfigService);
+		//Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(TypeCodeDetail, SelectedDepartCode, tmplconfigService);
 
 		//判断选择为必须选择的
 		String strGetCheckMustSelected = CheckMustSelectedAndSame(SelectedCustCol7, ShowDataCustCol7, 
@@ -354,7 +354,7 @@ public class LaborDetailController extends BaseController {
         for(PageData item : listData){
         	//item.put("CanOperate", strHelpful);
       	    item.put("TableName", TableNameDetail);
-        	Common.setModelDefault(item, map_HaveColumnsList, map_SetColumnsList);
+        	//Common.setModelDefault(item, map_HaveColumnsList, map_SetColumnsList);
         }
 		if(null != listData && listData.size() > 0){
 				socialincdetailService.batchUpdateDatabase(listData);
@@ -554,7 +554,7 @@ public class LaborDetailController extends BaseController {
 		String ShowDataDepartCode = getPd.getString("ShowDataDepartCode");
 		String ShowDataCustCol7 = getPd.getString("ShowDataCustCol7");
 		String ShowDataBillCode = getPd.getString("ShowDataBillCode");
-		Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(TypeCodeDetail, SelectedDepartCode, tmplconfigService);
+		//Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(TypeCodeDetail, SelectedDepartCode, tmplconfigService);
 		
 		//判断选择为必须选择的
 		String strGetCheckMustSelected = CheckMustSelectedAndSame(SelectedCustCol7, ShowDataCustCol7, 
@@ -583,11 +583,11 @@ public class LaborDetailController extends BaseController {
 							titleAndAttribute = new LinkedHashMap<String, String>();
 							
 							//配置表设置列
-							if(map_SetColumnsList != null && map_SetColumnsList.size() > 0){
-								for (TmplConfigDetail col : map_SetColumnsList.values()) {
-									titleAndAttribute.put(TransferSbcDbc.ToDBC(col.getCOL_NAME()), col.getCOL_CODE());
-								}
-							}
+							//if(map_SetColumnsList != null && map_SetColumnsList.size() > 0){
+							//	for (TmplConfigDetail col : map_SetColumnsList.values()) {
+							//		titleAndAttribute.put(TransferSbcDbc.ToDBC(col.getCOL_NAME()), col.getCOL_CODE());
+							//	}
+							//}
 
 							// 调用解析工具包
 							testExcel = new LeadingInExcelToPageData<PageData>(formart);
@@ -710,33 +710,33 @@ public class LaborDetailController extends BaseController {
     		String SelectedDepartCode,
     		List<PageData> listAdd, String strHelpful) throws Exception{
     	if(listAdd!=null && listAdd.size()>0){
-    		Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(TypeCodeDetail, SelectedDepartCode, tmplconfigService);
+    		//Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(TypeCodeDetail, SelectedDepartCode, tmplconfigService);
             for(PageData item : listAdd){
           	    item.put("CanOperate", strHelpful);
           	    item.put("TableName", TableNameBackup);
-          	    Common.setModelDefault(item, map_HaveColumnsList, map_SetColumnsList);
+          	   // Common.setModelDefault(item, map_HaveColumnsList, map_SetColumnsList);
             }
         	
-    		String sqlRetSelect = Common.GetRetSelectColoumns(map_HaveColumnsList, 
-    				TypeCodeDetail, TableNameBackup, SelectedDepartCode, 
-    				//"", 
-    				TmplUtil.keyExtra, keyListBase, 
-    				tmplconfigService);
+    		//String sqlRetSelect = Common.GetRetSelectColoumns(map_HaveColumnsList, 
+    		//		TypeCodeDetail, TableNameBackup, SelectedDepartCode, 
+    		//		//"", 
+    		//		TmplUtil.keyExtra, keyListBase, 
+    		//		tmplconfigService);
     		
-    		List<PageData> dataCalculation = socialincdetailService.getDataCalculation(TableNameBackup, sqlRetSelect, listAdd);
-    		if(dataCalculation!=null){
-    			for(PageData each : dataCalculation){
-    				if(IsAdd){
-    					each.put("SERIAL_NO", "");
-    				}
-    				Common.setModelDefault(each, map_HaveColumnsList, map_SetColumnsList);
-    				each.put("CanOperate", strHelpful);
-    				each.put("TableName", TableNameDetail);
-    			}
-    		}
+    		//List<PageData> dataCalculation = socialincdetailService.getDataCalculation(TableNameBackup, sqlRetSelect, listAdd);
+    		//if(dataCalculation!=null){
+    		//	for(PageData each : dataCalculation){
+    		//		if(IsAdd){
+    		//			each.put("SERIAL_NO", "");
+    		//		}
+    				//Common.setModelDefault(each, map_HaveColumnsList, map_SetColumnsList);
+    		//		each.put("CanOperate", strHelpful);
+    		//		each.put("TableName", TableNameDetail);
+    		//	}
+    		//}
     		
     		//此处执行集合添加 
-    		socialincdetailService.batchUpdateDatabase(dataCalculation);
+    		//socialincdetailService.batchUpdateDatabase(dataCalculation);
     		commonBase.setCode(0);
     		commonBase.setMessage(strErrorMessage);
     	}
@@ -759,7 +759,7 @@ public class LaborDetailController extends BaseController {
 		}
 		//账套
 		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
-		Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(TypeCodeDetail, SelectedDepartCode, tmplconfigService);
+		//Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(TypeCodeDetail, SelectedDepartCode, tmplconfigService);
 
 		PageData transferPd = this.getPageData();
 		//页面显示数据的二级单位
@@ -769,7 +769,7 @@ public class LaborDetailController extends BaseController {
 		////员工组
 		//transferPd.put("emplGroupType", emplGroupType);
 		List<PageData> varOList = socialincdetailService.exportModel(transferPd);
-		return export(varOList, "SocialIncDetail", map_SetColumnsList); //社保明细
+		return null;//export(varOList, "SocialIncDetail", map_SetColumnsList); //社保明细
 	}
 	
 	 /**导出到excel
@@ -792,7 +792,7 @@ public class LaborDetailController extends BaseController {
 		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
 		//单号
 		String SelectedBillCode = getPd.getString("SelectedBillCode");
-		Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(TypeCodeDetail, SelectedDepartCode, tmplconfigService);
+		//Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(TypeCodeDetail, SelectedDepartCode, tmplconfigService);
 		
 		//页面显示数据的年月
 		getPd.put("SystemDateTime", SystemDateTime);
@@ -803,7 +803,7 @@ public class LaborDetailController extends BaseController {
 
 		page.setPd(getPd);
 		List<PageData> varOList = socialincdetailService.exportList(page);
-		return export(varOList, "", map_SetColumnsList);
+		return null;//export(varOList, "", map_SetColumnsList);
 	}
 	
 	@SuppressWarnings("unchecked")

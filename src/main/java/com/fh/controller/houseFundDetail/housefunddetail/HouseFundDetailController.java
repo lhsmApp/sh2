@@ -94,13 +94,9 @@ public class HouseFundDetailController extends BaseController {
 
 	//页面显示数据的年月
 	String SystemDateTime = "";
-	//底行显示的求和与平均值字段
-	StringBuilder SqlUserdata = new StringBuilder();
-	//字典
-	Map<String, Object> DicList = new LinkedHashMap<String, Object>();
-	//表结构  
-	Map<String, TableColumns> map_HaveColumnsList = new LinkedHashMap<String, TableColumns>();
-
+    //
+	String AdditionalReportColumns = "";
+	//
 	private List<String> MustInputList = Arrays.asList("USER_CODE");
 	//界面查询字段
     List<String> QueryFeildList = Arrays.asList("CUST_COL7", "DEPT_CODE");
@@ -137,7 +133,7 @@ public class HouseFundDetailController extends BaseController {
 		ModelAndView mv = this.getModelAndView();
 		mv.setViewName("houseFundDetail/housefunddetail/housefunddetail_list");
 		//单号下拉列表
-		getPd.put("SelectNoBillCodeShow", SelectBillCodeFirstShow);
+		//getPd.put("SelectNoBillCodeShow", SelectBillCodeFirstShow);
 		getPd.put("InitBillCodeOptions", SelectBillCodeOptions.getSelectBillCodeOptions(null, SelectBillCodeFirstShow, SelectBillCodeLastShow));
 		//当前期间,取自tb_system_config的SystemDateTime字段
 		SystemDateTime = sysConfigManager.currentSection(getPd);
@@ -161,20 +157,7 @@ public class HouseFundDetailController extends BaseController {
 		mv.addObject("zTreeNodes", DepartmentSelectTreeSource);
 		// ***********************************************************
 
-		//当前登录人所在二级单位
-		String UserDepartCode = Jurisdiction.getCurrentDepartmentID();//
-		TmplUtil tmpl = new TmplUtil(tmplconfigService, tmplconfigdictService, dictionariesService, 
-				departmentService,userService, keyListBase, null, null, MustInputList);
-		String jqGridColModel = tmpl.generateStructure(TypeCodeDetail, UserDepartCode, 3, MustNotEditList);
-		
-		SqlUserdata = tmpl.getSqlUserdata();
-		//字典
-		DicList = tmpl.getDicList();
-		//表结构  
-		map_HaveColumnsList = tmpl.getHaveColumnsList();
-
 		mv.addObject("pd", getPd);
-		mv.addObject("jqGridColModel", jqGridColModel);
 		return mv;
 	}
 
@@ -207,6 +190,36 @@ public class HouseFundDetailController extends BaseController {
 		String returnString = SelectBillCodeOptions.getSelectBillCodeOptions(getCodeList, SelectBillCodeFirstShow, SelectBillCodeLastShow);
 		commonBase.setMessage(returnString);
 		commonBase.setCode(0);
+		
+		return commonBase;
+	}
+
+	/**显示结构
+	 * @param
+	 * @throws Exception
+	 */
+	@RequestMapping(value="/getShowColModel")
+	public @ResponseBody CommonBase getShowColModel() throws Exception{
+		logBefore(logger, Jurisdiction.getUsername()+"getFirstDetailColModel");
+		CommonBase commonBase = new CommonBase();
+		commonBase.setCode(-1);
+		
+		PageData getPd = this.getPageData();
+		//单位
+		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
+		int departSelf = Common.getDepartSelf(departmentService);
+		if(departSelf == 1){
+			SelectedDepartCode = Jurisdiction.getCurrentDepartmentID();
+		}
+		//账套
+		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
+		
+		TmplUtil tmpl = new TmplUtil(tmplconfigService, tmplconfigdictService, dictionariesService, 
+				departmentService,userService, keyListBase, null, AdditionalReportColumns, MustInputList);
+		String jqGridColModel = tmpl.generateStructure(TypeCodeDetail, SelectedDepartCode, SelectedCustCol7, 3, MustNotEditList);
+		
+		commonBase.setCode(0);
+		commonBase.setMessage(jqGridColModel);
 		
 		return commonBase;
 	}
@@ -261,6 +274,8 @@ public class HouseFundDetailController extends BaseController {
 		page.setPd(getPd);
 		List<PageData> varList = housefunddetailService.JqPage(page);	//列出Betting列表
 		int records = housefunddetailService.countJqGridExtend(page);
+		//底行显示的求和与平均值字段
+		StringBuilder SqlUserdata = Common.GetSqlUserdata(TypeCodeDetail, SelectedDepartCode, SelectedCustCol7, tmplconfigService);
 		PageData userdata = null;
 		if(SqlUserdata!=null && !SqlUserdata.toString().trim().equals("")){
 			//底行显示的求和与平均值字段
@@ -339,9 +354,10 @@ public class HouseFundDetailController extends BaseController {
 			}
 			List<PageData> listData = new ArrayList<PageData>();
 			listData.add(getPd);
-			commonBase = CalculationUpdateDatabase(true, commonBase, "", SelectedDepartCode, listData, strHelpful);
+			commonBase = CalculationUpdateDatabase(true, commonBase, "", SelectedDepartCode, SelectedCustCol7, listData, strHelpful);
 		} else {
-			Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(TypeCodeDetail, SelectedDepartCode, tmplconfigService);
+			Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(TypeCodeDetail, SelectedDepartCode, SelectedCustCol7, tmplconfigService);
+			Map<String, TableColumns> map_HaveColumnsList = Common.GetHaveColumnsList(TypeCodeDetail, tmplconfigService);
 			List<PageData> listCheckState = new ArrayList<PageData>();
 			listCheckState.add(getPd);
 			String checkState = CheckState(listCheckState);
@@ -392,7 +408,6 @@ public class HouseFundDetailController extends BaseController {
 		String ShowDataDepartCode = getPd.getString("ShowDataDepartCode");
 		String ShowDataCustCol7 = getPd.getString("ShowDataCustCol7");
 		String ShowDataBillCode = getPd.getString("ShowDataBillCode");
-		Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(TypeCodeDetail, SelectedDepartCode, tmplconfigService);
 
 		//判断选择为必须选择的
 		String strGetCheckMustSelected = CheckMustSelectedAndSame(SelectedCustCol7, ShowDataCustCol7, 
@@ -411,6 +426,7 @@ public class HouseFundDetailController extends BaseController {
 			commonBase.setMessage(Message.GetHelpfulDetailFalue);
 			return commonBase;
 		}
+		
 		Object DATA_ROWS = getPd.get("DataRows");
 		String json = DATA_ROWS.toString();  
         JSONArray array = JSONArray.fromObject(json);  
@@ -422,6 +438,8 @@ public class HouseFundDetailController extends BaseController {
 			return commonBase;
 		}
         
+		Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(TypeCodeDetail, SelectedDepartCode, SelectedCustCol7, tmplconfigService);
+		Map<String, TableColumns> map_HaveColumnsList = Common.GetHaveColumnsList(TypeCodeDetail, tmplconfigService);
         for(PageData item : listData){
         	item.put("CanOperate", strHelpful);
       	    item.put("TableName", TableNameDetail);
@@ -568,7 +586,7 @@ public class HouseFundDetailController extends BaseController {
 			commonBase.setCode(0);
 			commonBase.setMessage(strJson);
 		}*/
-		commonBase = CalculationUpdateDatabase(false, commonBase, "", SelectedDepartCode, listData, strHelpful);
+		commonBase = CalculationUpdateDatabase(false, commonBase, "", SelectedDepartCode, SelectedCustCol7, listData, strHelpful);
 		return commonBase;
 	}
 	
@@ -653,8 +671,7 @@ public class HouseFundDetailController extends BaseController {
 		String ShowDataDepartCode = getPd.getString("ShowDataDepartCode");
 		String ShowDataCustCol7 = getPd.getString("ShowDataCustCol7");
 		String ShowDataBillCode = getPd.getString("ShowDataBillCode");
-		Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(TypeCodeDetail, SelectedDepartCode, tmplconfigService);
-		
+
 		//判断选择为必须选择的
 		String strGetCheckMustSelected = CheckMustSelectedAndSame(SelectedCustCol7, ShowDataCustCol7, 
 				SelectedDepartCode, ShowDataDepartCode, DepartTreeSource,
@@ -663,178 +680,183 @@ public class HouseFundDetailController extends BaseController {
 			commonBase.setCode(2);
 			commonBase.setMessage(strGetCheckMustSelected);
 		} else {
-				if(!(SystemDateTime!=null && !SystemDateTime.trim().equals("")
-						&& SelectedDepartCode!=null && !SelectedDepartCode.trim().equals(""))){
+		    if(!(SystemDateTime!=null && !SystemDateTime.trim().equals("")
+			        && SelectedDepartCode!=null && !SelectedDepartCode.trim().equals(""))){
+			    commonBase.setCode(2);
+				commonBase.setMessage("当前区间和当前单位不能为空！");
+			} else {
+				String strHelpful = FilterBillCode.getBillCodeNotInSumInvalidDetail(TableNameSummy) 
+						+ QueryFeildString.getNotReportBillCode(TypeCodeTransfer, SystemDateTime, SelectedCustCol7, SelectedDepartCode);
+				if(!(strHelpful != null && !strHelpful.trim().equals(""))){
 					commonBase.setCode(2);
-					commonBase.setMessage("当前区间和当前单位不能为空！");
+					commonBase.setMessage(Message.GetHelpfulDetailFalue);
 				} else {
-					String strHelpful = FilterBillCode.getBillCodeNotInSumInvalidDetail(TableNameSummy) 
-							+ QueryFeildString.getNotReportBillCode(TypeCodeTransfer, SystemDateTime, SelectedCustCol7, SelectedDepartCode);
-					if(!(strHelpful != null && !strHelpful.trim().equals(""))){
-						commonBase.setCode(2);
-						commonBase.setMessage(Message.GetHelpfulDetailFalue);
-					} else {
-						// 局部变量
-						LeadingInExcelToPageData<PageData> testExcel = null;
-						Map<Integer, Object> uploadAndReadMap = null;
-						try {
-							// 定义需要读取的数据
-							String formart = "yyyy-MM-dd";
-							String propertiesFileName = "config";
-							String kyeName = "file_path";
-							int sheetIndex = 0;
-							Map<String, String> titleAndAttribute = null;
-							// 定义对应的标题名与对应属性名
-							titleAndAttribute = new LinkedHashMap<String, String>();
-							
-							//配置表设置列
-							if(map_SetColumnsList != null && map_SetColumnsList.size() > 0){
-								for (TmplConfigDetail col : map_SetColumnsList.values()) {
-									titleAndAttribute.put(TransferSbcDbc.ToDBC(col.getCOL_NAME()), col.getCOL_CODE());
-								}
-							}
-
-							// 调用解析工具包
-							testExcel = new LeadingInExcelToPageData<PageData>(formart);
-							// 解析excel，获取客户信息集合
-
-							uploadAndReadMap = testExcel.uploadAndRead(file, propertiesFileName, kyeName, sheetIndex,
-									titleAndAttribute, map_HaveColumnsList, map_SetColumnsList, DicList);
-						} catch (Exception e) {
-							e.printStackTrace();
-							logger.error("读取Excel文件错误", e);
-							throw new CustomException("读取Excel文件错误:" + e.getMessage(),false);
-						}
-						boolean judgement = false;
-
-							Map<String, Object> returnError =  (Map<String, Object>) uploadAndReadMap.get(2);
-							if(returnError != null && returnError.size()>0){
-								strErrorMessage += "字典无此翻译： "; // \n
-								for (String k : returnError.keySet())  
-							    {
-									strErrorMessage += k + " : " + returnError.get(k);
-							    }
-							}
-
-							List<PageData> listUploadAndRead = (List<PageData>) uploadAndReadMap.get(1);
-							List<PageData> listAdd = new ArrayList<PageData>();
-							if (listUploadAndRead != null && !"[]".equals(listUploadAndRead.toString()) && listUploadAndRead.size() >= 1) {
-								judgement = true;
-							}
-							if (judgement) {
-								List<String> sbRet = new ArrayList<String>();
-								int listSize = listUploadAndRead.size();
-								if(listSize > 0){
-									for(int i=0; i<listSize; i++){
-										PageData pdAdd = listUploadAndRead.get(i);
-										String getUSER_CODE = (String) pdAdd.get("USER_CODE");
-										if(getUSER_CODE!=null && !getUSER_CODE.trim().equals("")){
-											pdAdd.put("SERIAL_NO", "");
-											String getBILL_CODE = (String) pdAdd.get("BILL_CODE");
-											if(!(getBILL_CODE!=null && !getBILL_CODE.trim().equals(""))){
-												if(SelectedBillCode.equals(SelectBillCodeFirstShow)){
-													pdAdd.put("BILL_CODE", "");
-													getBILL_CODE = "";
-												} else {
-													pdAdd.put("BILL_CODE", SelectedBillCode);
-													getBILL_CODE = SelectedBillCode;
-												}
-											}
-											if(SelectedBillCode.equals(SelectBillCodeFirstShow)){
-												if(!"".equals(getBILL_CODE)){
-													if(!sbRet.contains("导入单号和当前单号必须一致！")){
-														sbRet.add("导入单号和当前单号必须一致！");
-													}
-												}
-											} else {
-												if(!SelectedBillCode.equals(getBILL_CODE)){
-													if(!sbRet.contains("导入单号和当前单号必须一致！")){
-														sbRet.add("导入单号和当前单号必须一致！");
-													}
-												}
-											}
-											String getCUST_COL7 = (String) pdAdd.get("CUST_COL7");
-										    /*if(!SelectedCustCol7.equals(getCUST_COL7)){
-										    	continue;
-										    }*/
-											if(!(getCUST_COL7!=null && !getCUST_COL7.trim().equals(""))){
-											    pdAdd.put("CUST_COL7", SelectedCustCol7);
-											    getCUST_COL7 = SelectedCustCol7;
-										    }
-										    if(!SelectedCustCol7.equals(getCUST_COL7)){
-											    if(!sbRet.contains("导入账套和当前账套必须一致！")){
-												    sbRet.add("导入账套和当前账套必须一致！");
-											    }
-										    }
-											String getBUSI_DATE = (String) pdAdd.get("BUSI_DATE");
-											String getDEPT_CODE = (String) pdAdd.get("DEPT_CODE");
-											if(!(getBUSI_DATE!=null && !getBUSI_DATE.trim().equals(""))){
-												pdAdd.put("BUSI_DATE", SystemDateTime);
-												getBUSI_DATE = SystemDateTime;
-											}
-											if(!SystemDateTime.equals(getBUSI_DATE)){
-												if(!sbRet.contains("导入区间和当前区间必须一致！")){
-													sbRet.add("导入区间和当前区间必须一致！");
-												}
-											}
-											if(!(getDEPT_CODE!=null && !getDEPT_CODE.trim().equals(""))){
-												pdAdd.put("DEPT_CODE", SelectedDepartCode);
-												getDEPT_CODE = SelectedDepartCode;
-											}
-											if(!SelectedDepartCode.equals(getDEPT_CODE)){
-												if(!sbRet.contains("导入单位和当前单位必须一致！")){
-													sbRet.add("导入单位和当前单位必须一致！");
-												}
-											}
-										    if(!(getUSER_CODE!=null && !getUSER_CODE.trim().equals(""))){
-												if(!sbRet.contains("人员编码不能为空！")){
-													sbRet.add("人员编码不能为空！");
-												}
-											}
-											String getESTB_DEPT = (String) pdAdd.get("ESTB_DEPT");
-											if(!(getESTB_DEPT!=null && !getESTB_DEPT.trim().equals(""))){
-												pdAdd.put("ESTB_DEPT", SelectedDepartCode);
-											}
-											//Common.setModelDefault(pdAdd, map_HaveColumnsList, map_SetColumnsList);
-											//pdAdd.put("CanOperate", strHelpful);
-											//pdAdd.put("TableName", TableNameBackup);
-											listAdd.add(pdAdd);
-										}
-									}
-									if(sbRet.size()>0){
-										StringBuilder sbTitle = new StringBuilder();
-										for(String str : sbRet){
-											sbTitle.append(str + "  "); // \n
-										}
-										commonBase.setCode(2);
-										commonBase.setMessage(sbTitle.toString());
-									} else {
-										commonBase = CalculationUpdateDatabase(true, commonBase, strErrorMessage, SelectedDepartCode, listAdd, strHelpful);
-										
-										/*String strFieldSelectKey = QueryFeildString.getFieldSelectKey(keyListBase, TmplUtil.keyExtra);
-										String sqlRetSelect = Common.GetRetSelectColoumns(map_HaveColumnsList, TypeCodeDetail, TableNameBackup, SelectedDepartCode, strFieldSelectKey, tmplconfigService);
-										
-										List<PageData> dataCalculation = housefunddetailService.getDataCalculation(TableNameBackup, sqlRetSelect, listAdd);
-										if(dataCalculation!=null){
-											for(PageData each : dataCalculation){
-												each.put("SERIAL_NO", "");
-												Common.setModelDefault(each, map_HaveColumnsList, map_SetColumnsList);
-												each.put("CanOperate", strHelpful);
-											}
-										}
-										//此处执行集合添加 
-										housefunddetailService.batchUpdateDatabase(dataCalculation);
-										commonBase.setCode(0);
-										commonBase.setMessage(strErrorMessage);*/
-									}
-								}
-							} else {
-								commonBase.setCode(-1);
-								commonBase.setMessage("TranslateUtil");
-							}
-						}
+					Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(TypeCodeDetail, SelectedDepartCode, SelectedCustCol7, tmplconfigService);
+					Map<String, TableColumns> map_HaveColumnsList = Common.GetHaveColumnsList(TypeCodeDetail, tmplconfigService);
+					Map<String, Object> DicList = Common.GetDicList(TypeCodeDetail, SelectedDepartCode, SelectedCustCol7, 
+							tmplconfigService, tmplconfigdictService, dictionariesService, departmentService, userService, AdditionalReportColumns);
 					
-				}
+					// 局部变量
+					LeadingInExcelToPageData<PageData> testExcel = null;
+					Map<Integer, Object> uploadAndReadMap = null;
+					try {
+						// 定义需要读取的数据
+						String formart = "yyyy-MM-dd";
+						String propertiesFileName = "config";
+						String kyeName = "file_path";
+						int sheetIndex = 0;
+						Map<String, String> titleAndAttribute = null;
+						// 定义对应的标题名与对应属性名
+						titleAndAttribute = new LinkedHashMap<String, String>();
+							
+						//配置表设置列
+						if(map_SetColumnsList != null && map_SetColumnsList.size() > 0){
+							for (TmplConfigDetail col : map_SetColumnsList.values()) {
+								titleAndAttribute.put(TransferSbcDbc.ToDBC(col.getCOL_NAME()), col.getCOL_CODE());
+							}
+						}
+
+						// 调用解析工具包
+						testExcel = new LeadingInExcelToPageData<PageData>(formart);
+						// 解析excel，获取客户信息集合
+
+						uploadAndReadMap = testExcel.uploadAndRead(file, propertiesFileName, kyeName, sheetIndex,
+								titleAndAttribute, map_HaveColumnsList, map_SetColumnsList, DicList);
+					} catch (Exception e) {
+						e.printStackTrace();
+						logger.error("读取Excel文件错误", e);
+						throw new CustomException("读取Excel文件错误:" + e.getMessage(),false);
+					}
+					boolean judgement = false;
+
+					Map<String, Object> returnError =  (Map<String, Object>) uploadAndReadMap.get(2);
+					if(returnError != null && returnError.size()>0){
+						strErrorMessage += "字典无此翻译： "; // \n
+						for (String k : returnError.keySet())  
+						{
+							strErrorMessage += k + " : " + returnError.get(k);
+						}
+					}
+
+					List<PageData> listUploadAndRead = (List<PageData>) uploadAndReadMap.get(1);
+					List<PageData> listAdd = new ArrayList<PageData>();
+					if (listUploadAndRead != null && !"[]".equals(listUploadAndRead.toString()) && listUploadAndRead.size() >= 1) {
+						judgement = true;
+					}
+					if (judgement) {
+						List<String> sbRet = new ArrayList<String>();
+						int listSize = listUploadAndRead.size();
+						if(listSize > 0){
+							for(int i=0; i<listSize; i++){
+								PageData pdAdd = listUploadAndRead.get(i);
+								String getUSER_CODE = (String) pdAdd.get("USER_CODE");
+								if(getUSER_CODE!=null && !getUSER_CODE.trim().equals("")){
+									pdAdd.put("SERIAL_NO", "");
+									String getBILL_CODE = (String) pdAdd.get("BILL_CODE");
+									if(!(getBILL_CODE!=null && !getBILL_CODE.trim().equals(""))){
+										if(SelectedBillCode.equals(SelectBillCodeFirstShow)){
+											pdAdd.put("BILL_CODE", "");
+											getBILL_CODE = "";
+										} else {
+											pdAdd.put("BILL_CODE", SelectedBillCode);
+											getBILL_CODE = SelectedBillCode;
+										}
+									}
+									if(SelectedBillCode.equals(SelectBillCodeFirstShow)){
+										if(!"".equals(getBILL_CODE)){
+											if(!sbRet.contains("导入单号和当前单号必须一致！")){
+												sbRet.add("导入单号和当前单号必须一致！");
+											}
+										}
+									} else {
+										if(!SelectedBillCode.equals(getBILL_CODE)){
+											if(!sbRet.contains("导入单号和当前单号必须一致！")){
+												sbRet.add("导入单号和当前单号必须一致！");
+											}
+										}
+									}
+									String getCUST_COL7 = (String) pdAdd.get("CUST_COL7");
+								    /*if(!SelectedCustCol7.equals(getCUST_COL7)){
+								    	continue;
+								    }*/
+									if(!(getCUST_COL7!=null && !getCUST_COL7.trim().equals(""))){
+									    pdAdd.put("CUST_COL7", SelectedCustCol7);
+									    getCUST_COL7 = SelectedCustCol7;
+								    }
+								    if(!SelectedCustCol7.equals(getCUST_COL7)){
+									    if(!sbRet.contains("导入账套和当前账套必须一致！")){
+										    sbRet.add("导入账套和当前账套必须一致！");
+									    }
+								    }
+									String getBUSI_DATE = (String) pdAdd.get("BUSI_DATE");
+									String getDEPT_CODE = (String) pdAdd.get("DEPT_CODE");
+									if(!(getBUSI_DATE!=null && !getBUSI_DATE.trim().equals(""))){
+										pdAdd.put("BUSI_DATE", SystemDateTime);
+										getBUSI_DATE = SystemDateTime;
+									}
+									if(!SystemDateTime.equals(getBUSI_DATE)){
+										if(!sbRet.contains("导入区间和当前区间必须一致！")){
+											sbRet.add("导入区间和当前区间必须一致！");
+										}
+									}
+									if(!(getDEPT_CODE!=null && !getDEPT_CODE.trim().equals(""))){
+										pdAdd.put("DEPT_CODE", SelectedDepartCode);
+										getDEPT_CODE = SelectedDepartCode;
+									}
+									if(!SelectedDepartCode.equals(getDEPT_CODE)){
+										if(!sbRet.contains("导入单位和当前单位必须一致！")){
+											sbRet.add("导入单位和当前单位必须一致！");
+										}
+									}
+								    if(!(getUSER_CODE!=null && !getUSER_CODE.trim().equals(""))){
+										if(!sbRet.contains("人员编码不能为空！")){
+											sbRet.add("人员编码不能为空！");
+										}
+									}
+									String getESTB_DEPT = (String) pdAdd.get("ESTB_DEPT");
+									if(!(getESTB_DEPT!=null && !getESTB_DEPT.trim().equals(""))){
+										pdAdd.put("ESTB_DEPT", SelectedDepartCode);
+									}
+									//Common.setModelDefault(pdAdd, map_HaveColumnsList, map_SetColumnsList);
+									//pdAdd.put("CanOperate", strHelpful);
+									//pdAdd.put("TableName", TableNameBackup);
+									listAdd.add(pdAdd);
+								}
+							}
+							if(sbRet.size()>0){
+								StringBuilder sbTitle = new StringBuilder();
+								for(String str : sbRet){
+									sbTitle.append(str + "  "); // \n
+								}
+								commonBase.setCode(2);
+								commonBase.setMessage(sbTitle.toString());
+							} else {
+								commonBase = CalculationUpdateDatabase(true, commonBase, strErrorMessage, SelectedDepartCode, SelectedCustCol7, listAdd, strHelpful);
+										
+								/*String strFieldSelectKey = QueryFeildString.getFieldSelectKey(keyListBase, TmplUtil.keyExtra);
+								String sqlRetSelect = Common.GetRetSelectColoumns(map_HaveColumnsList, TypeCodeDetail, TableNameBackup, SelectedDepartCode, strFieldSelectKey, tmplconfigService);
+										
+								List<PageData> dataCalculation = housefunddetailService.getDataCalculation(TableNameBackup, sqlRetSelect, listAdd);
+								if(dataCalculation!=null){
+									for(PageData each : dataCalculation){
+										each.put("SERIAL_NO", "");
+										Common.setModelDefault(each, map_HaveColumnsList, map_SetColumnsList);
+										each.put("CanOperate", strHelpful);
+									}
+								}
+								//此处执行集合添加 
+								housefunddetailService.batchUpdateDatabase(dataCalculation);
+								commonBase.setCode(0);
+								commonBase.setMessage(strErrorMessage);*/
+							}
+					    }
+					} else {
+						commonBase.setCode(-1);
+					    commonBase.setMessage("TranslateUtil");
+				    }
+		        }
+					
+		    }
 		}
 		ModelAndView mv = this.getModelAndView();
 		mv.setViewName("common/uploadExcel");
@@ -852,18 +874,20 @@ public class HouseFundDetailController extends BaseController {
 	}
     
 	private CommonBase CalculationUpdateDatabase(Boolean IsAdd, CommonBase commonBase, String strErrorMessage,
-    		String SelectedDepartCode,
+    		String SelectedDepartCode, String SelectedCustCol7,
     		List<PageData> listAdd, String strHelpful) throws Exception{
     	if(listAdd!=null && listAdd.size()>0){
-    		Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(TypeCodeDetail, SelectedDepartCode, tmplconfigService);
-            for(PageData item : listAdd){
+    		Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(TypeCodeDetail, SelectedDepartCode, SelectedCustCol7, tmplconfigService);
+    		Map<String, TableColumns> map_HaveColumnsList = Common.GetHaveColumnsList(TypeCodeDetail, tmplconfigService);
+			
+    		for(PageData item : listAdd){
           	    item.put("CanOperate", strHelpful);
           	    item.put("TableName", TableNameBackup);
           	    Common.setModelDefault(item, map_HaveColumnsList, map_SetColumnsList);
             }
         	
     		String sqlRetSelect = Common.GetRetSelectColoumns(map_HaveColumnsList, 
-    				TypeCodeDetail, TableNameBackup, SelectedDepartCode, 
+    				TypeCodeDetail, TableNameBackup, SelectedDepartCode, SelectedCustCol7, 
     				//"", 
     				TmplUtil.keyExtra, keyListBase, 
     				tmplconfigService);
@@ -904,7 +928,7 @@ public class HouseFundDetailController extends BaseController {
 		}
 		//账套
 		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
-		Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(TypeCodeDetail, SelectedDepartCode, tmplconfigService);
+		Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(TypeCodeDetail, SelectedDepartCode, SelectedCustCol7, tmplconfigService);
 
 		PageData transferPd = this.getPageData();
 		//页面显示数据的二级单位
@@ -913,7 +937,7 @@ public class HouseFundDetailController extends BaseController {
 		transferPd.put("SelectedCustCol7", SelectedCustCol7);
 		//页面显示数据的二级单位
 		List<PageData> varOList = housefunddetailService.exportModel(transferPd);
-		return export(varOList, "HouseFundDetail", map_SetColumnsList); //公积金明细
+		return export(SelectedDepartCode, SelectedCustCol7, varOList, "HouseFundDetail", map_SetColumnsList); //公积金明细
 	}
 	
 	 /**导出到excel
@@ -936,7 +960,7 @@ public class HouseFundDetailController extends BaseController {
 		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
 		//单号
 		String SelectedBillCode = getPd.getString("SelectedBillCode");
-		Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(TypeCodeDetail, SelectedDepartCode, tmplconfigService);
+		Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(TypeCodeDetail, SelectedDepartCode, SelectedCustCol7, tmplconfigService);
 
 		//页面显示数据的年月
 		getPd.put("SystemDateTime", SystemDateTime);
@@ -950,11 +974,15 @@ public class HouseFundDetailController extends BaseController {
 		
 		page.setPd(getPd);
 		List<PageData> varOList = housefunddetailService.exportList(page);
-		return export(varOList, "", map_SetColumnsList);
+		return export(SelectedDepartCode, SelectedCustCol7, varOList, "", map_SetColumnsList);
 	}
 	
 	@SuppressWarnings("unchecked")
-	private ModelAndView export(List<PageData> varOList, String ExcelName, Map<String, TmplConfigDetail> map_SetColumnsList){
+	private ModelAndView export(String SelectedDepartCode, String SelectedCustCol7, 
+			List<PageData> varOList, String ExcelName, Map<String, TmplConfigDetail> map_SetColumnsList) throws Exception{
+		Map<String, Object> DicList = Common.GetDicList(TypeCodeDetail, SelectedDepartCode, SelectedCustCol7, 
+				tmplconfigService, tmplconfigdictService, dictionariesService, departmentService, userService, AdditionalReportColumns);
+		
 		ModelAndView mv = new ModelAndView();
 		Map<String,Object> dataMap = new LinkedHashMap<String,Object>();
 		dataMap.put("filename", ExcelName);

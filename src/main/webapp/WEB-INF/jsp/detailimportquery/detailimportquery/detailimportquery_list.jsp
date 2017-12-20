@@ -183,176 +183,99 @@
 	<script type="text/javascript" src="static/js/util/toolkit.js"></script>
 	<script src="static/ace/js/ace/ace.widget-box.js"></script>
 	
-<script type="text/javascript"> 
-    var gridBase_selector = "#jqGridBase";  
-    var pagerBase_selector = "#jqGridBasePager";  
+    <script type="text/javascript"> 
+        var gridBase_selector = "#jqGridBase";  
+        var pagerBase_selector = "#jqGridBasePager";  
 
-	var which;
-	//单号下拉列表
-	var BillCodeList;
-	var jqGridColModel;
-	//单号下拉列表
-	var InitBillCodeOptions;
-	var SelectBillCodeOptions;
+        var which;
+        //单号下拉列表
+	    var InitBillCodeOptions;
+	    //var SelectBillCodeOptions;
+	    //前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
+        var jqGridColModel;
     
-    function getSelectBillCodeOptions(){
-    	console.log("getSelectBillCodeOptions()");
-		setSelectBillCodeOptions(InitBillCodeOptions);
-		top.jzts();
-		$.ajax({
-			type: "POST",
-			url: '<%=basePath%>detailimportquery/getBillCodeList.do?SelectedTableNo='+which
-                +'&SelectedBusiDate='+$("#SelectedBusiDate").val()
-                +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
-                +'&SelectedCustCol7='+$("#SelectedCustCol7").val(),
-			dataType:'json',
-			cache: false,
-			success: function(response){
-				if(response.code==0){
-					$(top.hangge());//关闭加载状态
-					setSelectBillCodeOptions(response.message);
-				}else{
-					$(top.hangge());//关闭加载状态
-					$("#subTitle").tips({
-						side:3,
-			            msg:'获取单号列表失败,'+response.message,
-			            bg:'#cc0033',
-			            time:3
-			        });
-				}
-			},
-	    	error: function(response) {
-				$(top.hangge());//关闭加载状态
-				$("#subTitle").tips({
-					side:3,
-		            msg:'获取单号列表出错:'+response.responseJSON.message,
-		            bg:'#cc0033',
-		            time:3
-		        });
-	    	}
-		});
-    }
+        function getSelectBillCodeOptions(){
+        	console.log("getSelectBillCodeOptions()");
+    		setSelectBillCodeOptions(InitBillCodeOptions);
+    		top.jzts();
+    		$.ajax({
+    			type: "POST",
+    			url: '<%=basePath%>detailimportquery/getBillCodeList.do?SelectedTableNo='+which
+                    +'&SelectedBusiDate='+$("#SelectedBusiDate").val()
+                    +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
+                    +'&SelectedCustCol7='+$("#SelectedCustCol7").val(),
+    			dataType:'json',
+    			cache: false,
+    			success: function(response){
+    				if(response.code==0){
+    					$(top.hangge());//关闭加载状态
+    					setSelectBillCodeOptions(response.message);
+    				}else{
+    					$(top.hangge());//关闭加载状态
+    					$("#subTitle").tips({
+    						side:3,
+    			            msg:'获取单号列表失败,'+response.message,
+    			            bg:'#cc0033',
+    			            time:3
+    			        });
+    				}
+    			},
+    	    	error: function(response) {
+    				$(top.hangge());//关闭加载状态
+    				$("#subTitle").tips({
+    					side:3,
+    		            msg:'获取单号列表出错:'+response.responseJSON.message,
+    		            bg:'#cc0033',
+    		            time:3
+    		        });
+    	    	}
+    		});
+        }
     
-    function setSelectBillCodeOptions(selectBillCodeOptions){
-        $("#SelectedBillCode").empty();   //先清空
-        $("#SelectedBillCode").append(selectBillCodeOptions);  //再赋值
-    }
+        function setSelectBillCodeOptions(selectBillCodeOptions){
+            $("#SelectedBillCode").empty();   //先清空
+            $("#SelectedBillCode").append(selectBillCodeOptions);  //再赋值
+        }
 	
-	$(document).ready(function () {
-		$(top.hangge());//关闭加载状态
-		$('.input-mask-date').mask('999999');
-	    
-		//当前期间,取自tb_system_config的SystemDateTime字段
-	    var SystemDateTime = '${SystemDateTime}';
-		$("#SelectedBusiDate").val(SystemDateTime);
-		//前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
-	    jqGridColModel = eval("(${jqGridColModel})");//此处记得用eval()行数将string转为array
-		//单号下拉列表
-		InitBillCodeOptions = "${pd.InitBillCodeOptions}";
-		setSelectBillCodeOptions(InitBillCodeOptions);
-	    
-		//resize to fit page size
-		$(window).on('resize.jqGrid', function () {
-			$(gridBase_selector).jqGrid( 'setGridWidth', $(".page-content").width());
-			resizeGridHeight($(gridBase_selector),null,true);
-	    });
-		
-		//初始化当前选择凭证类型
-		if('${pd.which}'!=""){
-			$('[data-toggle="buttons"] .btn').each(function(index, data){
+	    $(document).ready(function () {
+			$(top.hangge());//关闭加载状态
+			$('.input-mask-date').mask('999999');
+		    
+			//当前期间,取自tb_system_config的SystemDateTime字段
+		    var SystemDateTime = '${SystemDateTime}';
+			$("#SelectedBusiDate").val(SystemDateTime);
+			//前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
+		    jqGridColModel = eval("(${jqGridColModel})");//此处记得用eval()行数将string转为array
+			//单号下拉列表
+			InitBillCodeOptions = "${pd.InitBillCodeOptions}";
+			setSelectBillCodeOptions(InitBillCodeOptions);
+			//前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
+		    jqGridColModel = "[]";
+			
+			//初始化当前选择凭证类型
+			if('${pd.which}'!=""){
+				$('[data-toggle="buttons"] .btn').each(function(index, data){
+					var target = $(this).find('input[type=radio]');
+					$(this).removeClass('active');
+					var whichCur = parseInt(target.val());
+					console.log(which);
+					if(whichCur=='${pd.which}'){
+						$(this).addClass('active');
+						which=whichCur;
+					}
+				});
+			} 
+		    
+			//凭证类型变化
+			$('[data-toggle="buttons"] .btn').on('click', function(e){
 				var target = $(this).find('input[type=radio]');
-				$(this).removeClass('active');
-				var whichCur = parseInt(target.val());
-				console.log(which);
-				if(whichCur=='${pd.which}'){
-					$(this).addClass('active');
-					which=whichCur;
+				which = parseInt(target.val());
+				if(which!='${pd.which}'){
+					window.location.href="<%=basePath%>detailimportquery/list.do?SelectedTableNo="+which;
 				}
 			});
-		} 
-	    
-		//凭证类型变化
-		$('[data-toggle="buttons"] .btn').on('click', function(e){
-			var target = $(this).find('input[type=radio]');
-			which = parseInt(target.val());
-			if(which!='${pd.which}'){
-				window.location.href="<%=basePath%>detailimportquery/list.do?SelectedTableNo="+which;
-			}
-		});
+		});  
 		
-		$(gridBase_selector).jqGrid({
-			url: '<%=basePath%>detailimportquery/getPageList.do?SelectedTableNo='+which
-                 +'&SelectedBusiDate='+$("#SelectedBusiDate").val()
-                 +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
-                 +'&SelectedCustCol7='+$("#SelectedCustCol7").val()
-                 +'&SelectedBillCode='+$("#SelectedBillCode").val(),
-			datatype: "json",
-			colModel: jqGridColModel,
-			viewrecords: true, 
-			shrinkToFit: false,
-			rowNum: 100,
-			rowList: [100,200,500],
-            sortable: true,
-			altRows: true, //斑马条纹
-			
-			pager: pagerBase_selector,
-			footerrow: true,
-			userDataOnFooter: true,
-			
-			loadComplete : function() {
-				var table = this;
-				setTimeout(function(){
-					styleCheckbox(table);
-					updateActionIcons(table);
-					updatePagerIcons(table);
-					enableTooltips(table);
-				}, 0);
-			},
-		});
-	    
-		$(window).triggerHandler('resize.jqGrid');//trigger window resize to make the grid get the correct size
-		
-			$(gridBase_selector).navGrid(pagerBase_selector, 
-					{
-			            //navbar options
-				        edit: false,
-			            editicon : 'ace-icon fa fa-pencil blue',
-			            add: false,
-			            addicon : 'ace-icon fa fa-plus-circle purple',
-			            del: false,
-			            delicon : 'ace-icon fa fa-trash-o red',
-			            search: true,
-			            searchicon : 'ace-icon fa fa-search orange',
-			            refresh: true,
-			            refreshicon : 'ace-icon fa fa-refresh green',
-			            view: false,
-			            viewicon : 'ace-icon fa fa-search-plus grey',
-		        }, { }, { }, { },
-		        {
-					//search form
-					recreateForm: true,
-					afterShowSearch: beforeSearchCallback,
-					afterRedraw: function(){
-						style_search_filters($(this));
-					},
-					multipleSearch: true,
-					//multipleGroup:true,
-					showQuery: false
-		        },
-		        {},{});
-	        		$(gridBase_selector).navSeparatorAdd(pagerBase_selector, {
-	        			sepclass : "ui-separator",
-	        			sepcontent: ""
-	        		});
-					$(gridBase_selector).navButtonAdd(pagerBase_selector, {
-			             caption : "导出",
-			             buttonicon : "ace-icon fa fa-cloud-download",
-			             onClickButton : exportItems,
-			             position : "last",
-			             title : "导出",
-			             cursor : "pointer"
-			         });
-					getSelectBillCodeOptions();
 		/**
 		 * 导出
 		 */
@@ -363,37 +286,148 @@
             +'&SelectedCustCol7='+$("#SelectedCustCol7").val()
             +'&SelectedBillCode='+$("#SelectedBillCode").val();
 	    }
-	});  
 	
-	//加载单位树
-	function initComplete(){
-		//下拉树
-		var defaultNodes = {"treeNodes":${zTreeNodes}};
-		//绑定change事件
-		$("#selectTree").bind("change",function(){
-			$("#SelectedDepartCode").val("");
-			if($(this).attr("relValue")){
-				$("#SelectedDepartCode").val($(this).attr("relValue"));
-		    }
-			getSelectBillCodeOptions();
-		});
-		//赋给data属性
-		$("#selectTree").data("data",defaultNodes);  
-		$("#selectTree").render();
-		$("#selectTree2_input").val("请选择单位");
-	}
+	    //加载单位树
+	    function initComplete(){
+			//下拉树
+			var defaultNodes = {"treeNodes":${zTreeNodes}};
+			//绑定change事件
+			$("#selectTree").bind("change",function(){
+				$("#SelectedDepartCode").val("");
+				if($(this).attr("relValue")){
+					$("#SelectedDepartCode").val($(this).attr("relValue"));
+			    }
+				getSelectBillCodeOptions();
+			});
+			//赋给data属性
+			$("#selectTree").data("data",defaultNodes);  
+			$("#selectTree").render();
+			$("#selectTree2_input").val("请选择单位");
+		}
 	
-	//检索
-	function tosearch() {
-		$(gridBase_selector).jqGrid('setGridParam',{  // 重新加载数据 
-			url:'<%=basePath%>detailimportquery/getPageList.do?SelectedTableNo='+which
-            +'&SelectedBusiDate='+$("#SelectedBusiDate").val()
-            +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
-            +'&SelectedCustCol7='+$("#SelectedCustCol7").val()
-            +'&SelectedBillCode='+$("#SelectedBillCode").val(),  
-			datatype:'json',
-		      page:1
-		}).trigger("reloadGrid");
-	}  
+	    //检索
+	    function tosearch() {
+			$(gridBase_selector).jqGrid('GridUnload'); 
+			//前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
+		    jqGridColModel = "[]";
+			
+			top.jzts();
+			$.ajax({
+				type: "POST",
+				url: '<%=basePath%>detailimportquery/getShowColModel.do?SelectedTableNo='+which
+	                 +'&SelectedBusiDate='+$("#SelectedBusiDate").val()
+                     +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
+                     +'&SelectedCustCol7='+$("#SelectedCustCol7").val(),
+				dataType:'json',
+				cache: false,
+				success: function(response){
+					if(response.code==0){
+						$(top.hangge());//关闭加载状态
+						//前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
+					    jqGridColModel = eval("(" + response.message + ")");//此处记得用eval()行数将string转为array
+						SetStructure();
+					}else{
+						$(top.hangge());//关闭加载状态
+						$("#subTitle").tips({
+							side:3,
+				            msg:'获取显示结构失败：'+response.message,
+				            bg:'#cc0033',
+				            time:3
+				        });
+					}
+				},
+		    	error: function(response) {
+					$(top.hangge());//关闭加载状态
+					$("#subTitle").tips({
+						side:3,
+			            msg:'获取显示结构出错：'+response.responseJSON.message,
+			            bg:'#cc0033',
+			            time:3
+			        });
+		    	}
+			});
+		}  
+    
+        function SetStructure(){
+		    
+			//resize to fit page size
+			$(window).on('resize.jqGrid', function () {
+				$(gridBase_selector).jqGrid( 'setGridWidth', $(".page-content").width());
+				resizeGridHeight($(gridBase_selector),null,true);
+		    });
+			
+			$(gridBase_selector).jqGrid({
+				url: '<%=basePath%>detailimportquery/getPageList.do?SelectedTableNo='+which
+	                 +'&SelectedBusiDate='+$("#SelectedBusiDate").val()
+	                 +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
+	                 +'&SelectedCustCol7='+$("#SelectedCustCol7").val()
+	                 +'&SelectedBillCode='+$("#SelectedBillCode").val(),
+				datatype: "json",
+				colModel: jqGridColModel,
+				viewrecords: true, 
+				shrinkToFit: false,
+				rowNum: 100,
+				rowList: [100,200,500],
+	            sortable: true,
+				altRows: true, //斑马条纹
+				
+				pager: pagerBase_selector,
+				footerrow: true,
+				userDataOnFooter: true,
+				
+				loadComplete : function() {
+					var table = this;
+					setTimeout(function(){
+						styleCheckbox(table);
+						updateActionIcons(table);
+						updatePagerIcons(table);
+						enableTooltips(table);
+					}, 0);
+				},
+			});
+		    
+			$(window).triggerHandler('resize.jqGrid');//trigger window resize to make the grid get the correct size
+			
+				$(gridBase_selector).navGrid(pagerBase_selector, 
+						{
+				            //navbar options
+					        edit: false,
+				            editicon : 'ace-icon fa fa-pencil blue',
+				            add: false,
+				            addicon : 'ace-icon fa fa-plus-circle purple',
+				            del: false,
+				            delicon : 'ace-icon fa fa-trash-o red',
+				            search: true,
+				            searchicon : 'ace-icon fa fa-search orange',
+				            refresh: true,
+				            refreshicon : 'ace-icon fa fa-refresh green',
+				            view: false,
+				            viewicon : 'ace-icon fa fa-search-plus grey',
+			        }, { }, { }, { },
+			        {
+						//search form
+						recreateForm: true,
+						afterShowSearch: beforeSearchCallback,
+						afterRedraw: function(){
+							style_search_filters($(this));
+						},
+						multipleSearch: true,
+						//multipleGroup:true,
+						showQuery: false
+			        },
+			        {},{});
+		        		$(gridBase_selector).navSeparatorAdd(pagerBase_selector, {
+		        			sepclass : "ui-separator",
+		        			sepcontent: ""
+		        		});
+						$(gridBase_selector).navButtonAdd(pagerBase_selector, {
+				             caption : "导出",
+				             buttonicon : "ace-icon fa fa-cloud-download",
+				             onClickButton : exportItems,
+				             position : "last",
+				             title : "导出",
+				             cursor : "pointer"
+				         });
+        }
 </script>
 </html>

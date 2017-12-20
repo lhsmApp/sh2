@@ -94,13 +94,9 @@ public class SocialIncDetailController extends BaseController {
 
 	//页面显示数据的年月
 	String SystemDateTime = "";
-	//底行显示的求和与平均值字段
-	StringBuilder SqlUserdata = new StringBuilder();
-	//字典
-	Map<String, Object> DicList = new LinkedHashMap<String, Object>();
-	//表结构  
-	Map<String, TableColumns> map_HaveColumnsList = new LinkedHashMap<String, TableColumns>();
-
+    //
+	String AdditionalReportColumns = "";
+	//
 	private List<String> MustInputList = Arrays.asList("USER_CODE");
 	//界面查询字段
     List<String> QueryFeildList = Arrays.asList("CUST_COL7", "DEPT_CODE");
@@ -137,7 +133,7 @@ public class SocialIncDetailController extends BaseController {
 		ModelAndView mv = this.getModelAndView();
 		mv.setViewName("socialIncDetail/socialincdetail/socialincdetail_list");
 		//单号下拉列表
-		getPd.put("SelectNoBillCodeShow", SelectBillCodeFirstShow);
+		//getPd.put("SelectNoBillCodeShow", SelectBillCodeFirstShow);
 		getPd.put("InitBillCodeOptions", SelectBillCodeOptions.getSelectBillCodeOptions(null, SelectBillCodeFirstShow, SelectBillCodeLastShow));
 		//当前期间,取自tb_system_config的SystemDateTime字段
 		SystemDateTime = sysConfigManager.currentSection(getPd);
@@ -161,20 +157,7 @@ public class SocialIncDetailController extends BaseController {
 		mv.addObject("zTreeNodes", DepartmentSelectTreeSource);
 		// ***********************************************************
 
-		//当前登录人所在二级单位
-		String UserDepartCode = Jurisdiction.getCurrentDepartmentID();//
-		TmplUtil tmpl = new TmplUtil(tmplconfigService, tmplconfigdictService, dictionariesService, 
-				departmentService,userService,keyListBase, null, null, MustInputList);
-		String jqGridColModel = tmpl.generateStructure(TypeCodeDetail, UserDepartCode, 3, MustNotEditList);
-		
-		SqlUserdata = tmpl.getSqlUserdata();
-		//字典
-		DicList = tmpl.getDicList();
-		//表结构  
-		map_HaveColumnsList = tmpl.getHaveColumnsList();
-
 		mv.addObject("pd", getPd);
-		mv.addObject("jqGridColModel", jqGridColModel);
 		return mv;
 	}
 
@@ -207,6 +190,36 @@ public class SocialIncDetailController extends BaseController {
 		String returnString = SelectBillCodeOptions.getSelectBillCodeOptions(getCodeList, SelectBillCodeFirstShow, SelectBillCodeLastShow);
 		commonBase.setMessage(returnString);
 		commonBase.setCode(0);
+		
+		return commonBase;
+	}
+
+	/**显示结构
+	 * @param
+	 * @throws Exception
+	 */
+	@RequestMapping(value="/getShowColModel")
+	public @ResponseBody CommonBase getShowColModel() throws Exception{
+		logBefore(logger, Jurisdiction.getUsername()+"getFirstDetailColModel");
+		CommonBase commonBase = new CommonBase();
+		commonBase.setCode(-1);
+		
+		PageData getPd = this.getPageData();
+		//单位
+		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
+		int departSelf = Common.getDepartSelf(departmentService);
+		if(departSelf == 1){
+			SelectedDepartCode = Jurisdiction.getCurrentDepartmentID();
+		}
+		//账套
+		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
+		
+		TmplUtil tmpl = new TmplUtil(tmplconfigService, tmplconfigdictService, dictionariesService, 
+				departmentService,userService, keyListBase, null, AdditionalReportColumns, MustInputList);
+		String jqGridColModel = tmpl.generateStructure(TypeCodeDetail, SelectedDepartCode, SelectedCustCol7, 3, MustNotEditList);
+		
+		commonBase.setCode(0);
+		commonBase.setMessage(jqGridColModel);
 		
 		return commonBase;
 	}
@@ -261,6 +274,8 @@ public class SocialIncDetailController extends BaseController {
 		List<PageData> varList = socialincdetailService.JqPage(page);	//列出Betting列表
 		int records = socialincdetailService.countJqGridExtend(page);
 		PageData userdata = null;
+		//底行显示的求和与平均值字段
+		StringBuilder SqlUserdata = Common.GetSqlUserdata(TypeCodeDetail, SelectedDepartCode, SelectedCustCol7, tmplconfigService);
 		if(SqlUserdata!=null && !SqlUserdata.toString().trim().equals("")){
 			//底行显示的求和与平均值字段
 			getPd.put("Userdata", SqlUserdata.toString());
@@ -338,9 +353,10 @@ public class SocialIncDetailController extends BaseController {
 			}
 			List<PageData> listData = new ArrayList<PageData>();
 			listData.add(getPd);
-			commonBase = CalculationUpdateDatabase(true, commonBase, "", SelectedDepartCode, listData, strHelpful);
+			commonBase = CalculationUpdateDatabase(true, commonBase, "", SelectedDepartCode, SelectedCustCol7, listData, strHelpful);
 		} else {
-			Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(TypeCodeDetail, SelectedDepartCode, tmplconfigService);
+			Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(TypeCodeDetail, SelectedDepartCode, SelectedCustCol7, tmplconfigService);
+			Map<String, TableColumns> map_HaveColumnsList = Common.GetHaveColumnsList(TypeCodeDetail, tmplconfigService);
 			List<PageData> listCheckState = new ArrayList<PageData>();
 			listCheckState.add(getPd);
 			String checkState = CheckState(listCheckState);
@@ -392,8 +408,7 @@ public class SocialIncDetailController extends BaseController {
 		String ShowDataDepartCode = getPd.getString("ShowDataDepartCode");
 		String ShowDataCustCol7 = getPd.getString("ShowDataCustCol7");
 		String ShowDataBillCode = getPd.getString("ShowDataBillCode");
-		Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(TypeCodeDetail, SelectedDepartCode, tmplconfigService);
-
+		
 		//判断选择为必须选择的
 		String strGetCheckMustSelected = CheckMustSelectedAndSame(SelectedCustCol7, ShowDataCustCol7, 
 				SelectedDepartCode, ShowDataDepartCode, DepartTreeSource,
@@ -423,6 +438,8 @@ public class SocialIncDetailController extends BaseController {
 			return commonBase;
 		}
 
+		Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(TypeCodeDetail, SelectedDepartCode, SelectedCustCol7, tmplconfigService);
+		Map<String, TableColumns> map_HaveColumnsList = Common.GetHaveColumnsList(TypeCodeDetail, tmplconfigService);
         for(PageData item : listData){
         	item.put("CanOperate", strHelpful);
       	    item.put("TableName", TableNameDetail);
@@ -571,7 +588,7 @@ public class SocialIncDetailController extends BaseController {
 			commonBase.setCode(0);
 			commonBase.setMessage(strJson);
 		}*/
-		commonBase = CalculationUpdateDatabase(false, commonBase, "", SelectedDepartCode, listData, strHelpful);
+		commonBase = CalculationUpdateDatabase(false, commonBase, "", SelectedDepartCode, SelectedCustCol7, listData, strHelpful);
 		return commonBase;
 	}
 	
@@ -656,8 +673,7 @@ public class SocialIncDetailController extends BaseController {
 		String ShowDataDepartCode = getPd.getString("ShowDataDepartCode");
 		String ShowDataCustCol7 = getPd.getString("ShowDataCustCol7");
 		String ShowDataBillCode = getPd.getString("ShowDataBillCode");
-		Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(TypeCodeDetail, SelectedDepartCode, tmplconfigService);
-		
+
 		//判断选择为必须选择的
 		String strGetCheckMustSelected = CheckMustSelectedAndSame(SelectedCustCol7, ShowDataCustCol7, 
 				SelectedDepartCode, ShowDataDepartCode, DepartTreeSource,
@@ -677,6 +693,10 @@ public class SocialIncDetailController extends BaseController {
 						commonBase.setCode(2);
 						commonBase.setMessage(Message.GetHelpfulDetailFalue);
 					} else {
+						Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(TypeCodeDetail, SelectedDepartCode, SelectedCustCol7, tmplconfigService);
+						Map<String, TableColumns> map_HaveColumnsList = Common.GetHaveColumnsList(TypeCodeDetail, tmplconfigService);
+						Map<String, Object> DicList = Common.GetDicList(TypeCodeDetail, SelectedDepartCode, SelectedCustCol7, 
+								tmplconfigService, tmplconfigdictService, dictionariesService, departmentService, userService, AdditionalReportColumns);
 						// 局部变量
 						LeadingInExcelToPageData<PageData> testExcel = null;
 						Map<Integer, Object> uploadAndReadMap = null;
@@ -812,7 +832,7 @@ public class SocialIncDetailController extends BaseController {
 										commonBase.setCode(2);
 										commonBase.setMessage(sbTitle.toString());
 									} else {
-										commonBase = CalculationUpdateDatabase(true, commonBase, strErrorMessage, SelectedDepartCode, listAdd, strHelpful);
+										commonBase = CalculationUpdateDatabase(true, commonBase, strErrorMessage, SelectedDepartCode, SelectedCustCol7, listAdd, strHelpful);
 										
 										/*String strFieldSelectKey = QueryFeildString.getFieldSelectKey(keyListBase, TmplUtil.keyExtra);
 										String sqlRetSelect = Common.GetRetSelectColoumns(map_HaveColumnsList, TypeCodeDetail, TableNameBackup, SelectedDepartCode, strFieldSelectKey, tmplconfigService);
@@ -857,10 +877,11 @@ public class SocialIncDetailController extends BaseController {
 	}
     
 	private CommonBase CalculationUpdateDatabase(Boolean IsAdd, CommonBase commonBase, String strErrorMessage,
-    		String SelectedDepartCode,
+    		String SelectedDepartCode, String SelectedCustCol7, 
     		List<PageData> listAdd, String strHelpful) throws Exception{
     	if(listAdd!=null && listAdd.size()>0){
-    		Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(TypeCodeDetail, SelectedDepartCode, tmplconfigService);
+    		Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(TypeCodeDetail, SelectedDepartCode, SelectedCustCol7, tmplconfigService);
+    		Map<String, TableColumns> map_HaveColumnsList = Common.GetHaveColumnsList(TypeCodeDetail, tmplconfigService);
             for(PageData item : listAdd){
           	    item.put("CanOperate", strHelpful);
           	    item.put("TableName", TableNameBackup);
@@ -868,7 +889,7 @@ public class SocialIncDetailController extends BaseController {
             }
         	
     		String sqlRetSelect = Common.GetRetSelectColoumns(map_HaveColumnsList, 
-    				TypeCodeDetail, TableNameBackup, SelectedDepartCode, 
+    				TypeCodeDetail, TableNameBackup, SelectedDepartCode, SelectedCustCol7, 
     				//"", 
     				TmplUtil.keyExtra, keyListBase, 
     				tmplconfigService);
@@ -909,7 +930,7 @@ public class SocialIncDetailController extends BaseController {
 		}
 		//账套
 		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
-		Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(TypeCodeDetail, SelectedDepartCode, tmplconfigService);
+		Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(TypeCodeDetail, SelectedDepartCode, SelectedCustCol7, tmplconfigService);
 
 		PageData transferPd = this.getPageData();
 		//页面显示数据的二级单位
@@ -919,7 +940,7 @@ public class SocialIncDetailController extends BaseController {
 		////员工组
 		//transferPd.put("emplGroupType", emplGroupType);
 		List<PageData> varOList = socialincdetailService.exportModel(transferPd);
-		return export(varOList, "SocialIncDetail", map_SetColumnsList); //社保明细
+		return export(SelectedDepartCode, SelectedCustCol7, varOList, "SocialIncDetail", map_SetColumnsList); //社保明细
 	}
 	
 	 /**导出到excel
@@ -942,7 +963,7 @@ public class SocialIncDetailController extends BaseController {
 		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
 		//单号
 		String SelectedBillCode = getPd.getString("SelectedBillCode");
-		Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(TypeCodeDetail, SelectedDepartCode, tmplconfigService);
+		Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(TypeCodeDetail, SelectedDepartCode, SelectedCustCol7, tmplconfigService);
 		
 		//页面显示数据的年月
 		getPd.put("SystemDateTime", SystemDateTime);
@@ -956,11 +977,14 @@ public class SocialIncDetailController extends BaseController {
 		
 		page.setPd(getPd);
 		List<PageData> varOList = socialincdetailService.exportList(page);
-		return export(varOList, "", map_SetColumnsList);
+		return export(SelectedDepartCode, SelectedCustCol7, varOList, "", map_SetColumnsList);
 	}
 	
 	@SuppressWarnings("unchecked")
-	private ModelAndView export(List<PageData> varOList, String ExcelName, Map<String, TmplConfigDetail> map_SetColumnsList){
+	private ModelAndView export(String SelectedDepartCode, String SelectedCustCol7, 
+			List<PageData> varOList, String ExcelName, Map<String, TmplConfigDetail> map_SetColumnsList) throws Exception{
+		Map<String, Object> DicList = Common.GetDicList(TypeCodeDetail, SelectedDepartCode, SelectedCustCol7, 
+				tmplconfigService, tmplconfigdictService, dictionariesService, departmentService, userService, AdditionalReportColumns);
 		ModelAndView mv = new ModelAndView();
 		Map<String,Object> dataMap = new LinkedHashMap<String,Object>();
 		dataMap.put("filename", ExcelName);

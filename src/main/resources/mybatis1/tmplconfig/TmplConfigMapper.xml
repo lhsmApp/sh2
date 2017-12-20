@@ -322,22 +322,6 @@
 		by COL_HIDE desc, DISP_ORDER
 		<!-- COL_HIDE必修倒序排列，关系添加或修改弹出框的显示 -->
 	</select>
-	<select id="listFormula" parameterType="com.fh.entity.TmplConfigDetail"
-		resultType="com.fh.entity.TmplConfigDetail">
-		select
-		<include refid="FieldColumns"></include>
-		from
-		<include refid="tableName"></include>
-		where DEPT_CODE = #{DEPT_CODE}
-		and BILL_OFF = #{BILL_OFF}
-		and
-		UPPER(TABLE_CODE) = UPPER(#{TABLE_CODE})
-		and RPT_DUR in (select
-		KEY_VALUE from tb_sys_config where KEY_CODE = 'SystemDataTime')
-		order
-		by LENGTH(COL_CODE)
-		<!-- COL_HIDE必修倒序排列，关系添加或修改弹出框的显示 -->
-	</select>
 
 	<!-- 根据TABLE_NO获取TABLE_CODE -->
 	<select id="findTableCodeByTableNo" parameterType="String"

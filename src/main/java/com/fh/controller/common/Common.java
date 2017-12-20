@@ -34,14 +34,14 @@ import net.sf.json.JSONArray;
  */
 public class Common {
 	
-	public static StringBuilder GetSqlUserdata(String tableNo, String departCode, 
+	public static StringBuilder GetSqlUserdata(String tableNo, String departCode, String billOff, 
 			TmplConfigManager tmplconfigService) throws Exception{
 		//底行显示的求和与平均值字段
 		StringBuilder m_sqlUserdata = new StringBuilder();
 		String tableCodeTmpl = getTableCodeTmpl(tableNo, tmplconfigService);
 		
 		// 前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
-		List<TmplConfigDetail> m_columnsList = Common.getShowColumnList(tableCodeTmpl, departCode,tmplconfigService);
+		List<TmplConfigDetail> m_columnsList = Common.getShowColumnList(tableCodeTmpl, departCode, billOff, tmplconfigService);
 		if (m_columnsList != null && m_columnsList.size() > 0) {
 			for (int i = 0; i < m_columnsList.size(); i++) {
 				// 底行显示的求和与平均值字段
@@ -66,7 +66,7 @@ public class Common {
 		return m_sqlUserdata;
 	}
 
-	public static Map<String, Object> GetDicList(String tableNo, String departCode, 
+	public static Map<String, Object> GetDicList(String tableNo, String departCode, String billOff, 
 			TmplConfigManager tmplconfigService,
 			TmplConfigDictManager tmplConfigDictService, DictionariesManager dictionariesService, 
 			DepartmentManager departmentService,UserManager userService,
@@ -75,12 +75,12 @@ public class Common {
 		String tableCodeTmpl = getTableCodeTmpl(tableNo, tmplconfigService);
 		
 		// 前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
-		List<TmplConfigDetail> m_columnsList = Common.getShowColumnList(tableCodeTmpl, departCode,tmplconfigService);
+		List<TmplConfigDetail> m_columnsList = Common.getShowColumnList(tableCodeTmpl, departCode, billOff,tmplconfigService);
 		if (m_columnsList != null && m_columnsList.size() > 0) {
 			for (int i = 0; i < m_columnsList.size(); i++) {
 				String getDICT_TRANS = m_columnsList.get(i).getDICT_TRANS();
 				if (getDICT_TRANS != null && !getDICT_TRANS.trim().equals("") && !m_DicList.containsKey(getDICT_TRANS)) {
-				Common.getDicValue(m_DicList, m_columnsList.get(i).getDICT_TRANS(),
+				Common.getDicValue(m_columnsList.get(i).getDICT_TRANS(), //m_DicList, 
 						tmplConfigDictService, dictionariesService, 
 						departmentService, userService, AdditionalReportColumns);
 				}
@@ -111,13 +111,13 @@ public class Common {
 		String tableCodeTmpl=pdResult.getString("TABLE_CODE");
 		return tableCodeTmpl;
 	}
-	public static Map<String, TmplConfigDetail> GetSetColumnsList(String tableNo, String departCode,
+	public static Map<String, TmplConfigDetail> GetSetColumnsList(String tableNo, String departCode, String billOff,
 			TmplConfigManager tmplconfigService) throws Exception{
 		Map<String, TmplConfigDetail> m_SetColumnsList = new LinkedHashMap<String, TmplConfigDetail>();
 		String tableCodeTmpl = getTableCodeTmpl(tableNo, tmplconfigService);
 		
 		// 前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
-		List<TmplConfigDetail> m_columnsList = Common.getShowColumnList(tableCodeTmpl, departCode,tmplconfigService);
+		List<TmplConfigDetail> m_columnsList = Common.getShowColumnList(tableCodeTmpl, departCode, billOff,tmplconfigService);
 		if (m_columnsList != null && m_columnsList.size() > 0) {
 			for (int i = 0; i < m_columnsList.size(); i++) {
 				String getCOL_CODE = m_columnsList.get(i).getCOL_CODE();
@@ -128,7 +128,7 @@ public class Common {
 	}
 
 	public static String GetRetSelectColoumns(Map<String, TableColumns> haveColumnsList,
-			String tableNo, String tableNameBackup, String departCode, 
+			String tableNo, String tableNameBackup, String departCode, String billOff, 
 			//String TaxCanNotHaveFormulaFeildList, 
 			String keyExtra, List<String> keyListBase,
 			TmplConfigManager tmplconfigService) throws Exception{
@@ -136,7 +136,7 @@ public class Common {
 
 		String tableCodeTmpl = getTableCodeTmpl(tableNo, tmplconfigService);
 		// 前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
-		List<TmplConfigDetail> setColumnsList = Common.getFormulaColumnList(tableCodeTmpl, departCode,tmplconfigService);
+		List<TmplConfigDetail> setColumnsList = Common.getShowColumnList(tableCodeTmpl, departCode, billOff,tmplconfigService);
 		
 		if(haveColumnsList!=null && haveColumnsList.size()>0 && setColumnsList != null && setColumnsList.size() > 0){
 			List<String> listInitColumns = new ArrayList<String>();
@@ -203,13 +203,13 @@ public class Common {
 		return strRetSelectBonusColoumn;
 	}
 	
-	public static List<String> GetSalaryFeildUpdate(String tableNo, String tableNameBackup, String departCode, 
+	public static List<String> GetSalaryFeildUpdate(String tableNo, String tableNameBackup, String departCode, String billOff, 
 			TmplConfigManager tmplconfigService) throws Exception{
 		List<String> listSalaryFeildCal = new ArrayList<String>();
 
 		String tableCodeTmpl = getTableCodeTmpl(tableNo, tmplconfigService);
 		// 前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
-		List<TmplConfigDetail> setColumnsList = Common.getFormulaColumnList(tableCodeTmpl, departCode,tmplconfigService);
+		List<TmplConfigDetail> setColumnsList = Common.getShowColumnList(tableCodeTmpl, departCode, billOff,tmplconfigService);
 		
 		if(setColumnsList != null && setColumnsList.size() > 0){
 			int MinCAL_ORDER = 0;
@@ -242,11 +242,14 @@ public class Common {
 	}
 	
 	public static String GetRetSumByUserColoumns(String tableName, String QueryFeild, 
-			String configFormula, String TableFeildSumOper,
+			String configFormula, String salaryExemptionTax, String TableFeildSumOper,
 			String TableFeildTax, String DATA_TYPE, 
 			TmplConfigManager tmplconfigService) throws Exception{
+		if(!(salaryExemptionTax!=null && !salaryExemptionTax.trim().equals(""))){
+			salaryExemptionTax = "0";
+		}
 		String strRetSelectSalaryColoumn = " select USER_CODE, " 
-		        + " sum(" + configFormula + ") " + TableFeildSumOper + ", "
+		        + " sum(" + configFormula + ") - " + salaryExemptionTax + " " + TableFeildSumOper + ", "
 				+ " sum(" + TableFeildTax + ") " + TableFeildTax + " "
 				+ " from " + tableName 
 				+ " where DATA_TYPE = '" + DATA_TYPE + "' "
@@ -262,12 +265,13 @@ public class Common {
 	 * @return
 	 * @throws Exception
 	 */
-	public static List<TmplConfigDetail> getShowColumnList(String tableCode, String departCode,
+	public static List<TmplConfigDetail> getShowColumnList(String tableCode, String departCode, String billOff,
 			TmplConfigManager tmplconfigService) throws Exception{
 		// 前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
 		TmplConfigDetail item = new TmplConfigDetail();
 		item.setDEPT_CODE(departCode);
 		item.setTABLE_CODE(tableCode);
+		item.setBILL_OFF(billOff);
 		List<TmplConfigDetail> m_columnsList = tmplconfigService.listNeed(item);
 		if(m_columnsList.size()==0){
 			String rootDeptCode=Tools.readTxtFile(Const.ROOT_DEPT_CODE);
@@ -277,25 +281,10 @@ public class Common {
 		}
 		return m_columnsList;
 	}
-	public static List<TmplConfigDetail> getFormulaColumnList(String tableCode, String departCode,
-			TmplConfigManager tmplconfigService) throws Exception{
-		// 前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
-		TmplConfigDetail item = new TmplConfigDetail();
-		item.setDEPT_CODE(departCode);
-		item.setTABLE_CODE(tableCode);
-		List<TmplConfigDetail> m_columnsList = tmplconfigService.listFormula(item);
-		if(m_columnsList.size()==0){
-			String rootDeptCode=Tools.readTxtFile(Const.ROOT_DEPT_CODE);
-			item.setDEPT_CODE(rootDeptCode);
-			item.setTABLE_CODE(tableCode);
-			m_columnsList = tmplconfigService.listFormula(item);
-		}
-		return m_columnsList;
-	}
 
 
 
-	public static String getDicValue(Map<String, Object> m_dicList, String dicName,
+	public static String getDicValue(String dicName, //Map<String, Object> m_dicList, 
 			TmplConfigDictManager tmplConfigDictService, DictionariesManager dictionariesService, 
 			DepartmentManager departmentService,UserManager userService,
 			String AdditionalReportColumns) throws Exception {
@@ -366,9 +355,9 @@ public class Common {
 				}
 			}
 		}
-		if (!m_dicList.containsKey(dicName)) {
-			m_dicList.put(dicName, dicAdd);
-		}
+		//if (!m_dicList.containsKey(dicName)) {
+		//	m_dicList.put(dicName, dicAdd);
+		//}
 		return ret.toString();
 	}
 	

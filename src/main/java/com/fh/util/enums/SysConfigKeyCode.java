@@ -15,6 +15,9 @@ public class SysConfigKeyCode {
 	//计算税率（）里的汇总公式
 	public static final String StaffFormulaSalary = "StaffFormulaSalary";
 	public static final String StaffFormulaBonus = "StaffFormulaBonus";
+
+	//免征税
+	public static final String ExemptionTax = "ExemptionTax";
 	
 	//定义核算汇总字段
 	//核算合同化工资汇总

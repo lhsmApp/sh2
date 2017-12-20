@@ -1,28 +1,18 @@
 package com.fh.controller.common;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import com.fh.entity.TableColumns;
 import com.fh.entity.TmplConfigDetail;
-import com.fh.entity.system.Department;
-import com.fh.entity.system.Dictionaries;
 import com.fh.service.fhoa.department.DepartmentManager;
 import com.fh.service.system.dictionaries.DictionariesManager;
 import com.fh.service.system.user.UserManager;
 import com.fh.service.tmplConfigDict.tmplconfigdict.TmplConfigDictManager;
 import com.fh.service.tmplconfig.tmplconfig.TmplConfigManager;
-import com.fh.util.Const;
 import com.fh.util.PageData;
-import com.fh.util.Tools;
-import com.fh.util.enums.BillState;
-import com.fh.util.enums.DurState;
-
-import net.sf.json.JSONArray;
 
 /**
  * 模板通用类
@@ -46,10 +36,10 @@ public class TmplUtil {
 	// 查询表的主键字段
 	private List<String> keyList = new ArrayList<String>();
 	// 底行显示的求和与平均值字段
-	StringBuilder m_sqlUserdata = new StringBuilder();
-	public StringBuilder getSqlUserdata() {
-		return m_sqlUserdata;
-	}
+	//StringBuilder m_sqlUserdata = new StringBuilder();
+	//public StringBuilder getSqlUserdata() {
+	//	return m_sqlUserdata;
+	//}
 	//界面分组字段
 	private List<String> jqGridGroupColumn = new ArrayList<String>();
 	//分组字段是否显示在表中
@@ -59,22 +49,22 @@ public class TmplUtil {
 	}
 
 	// 字典
-	private Map<String, Object> m_dicList = new LinkedHashMap<String, Object>();
-	public Map<String, Object> getDicList() {
-		return m_dicList;
-	}
+	//private Map<String, Object> m_dicList = new LinkedHashMap<String, Object>();
+	//public Map<String, Object> getDicList() {
+	//	return m_dicList;
+	//}
 	
 	//表结构  
-	private Map<String, TableColumns> map_HaveColumnsList = new LinkedHashMap<String, TableColumns>();
-	public Map<String, TableColumns> getHaveColumnsList() {
-		return map_HaveColumnsList;
-	}
+	//private Map<String, TableColumns> map_HaveColumnsList = new LinkedHashMap<String, TableColumns>();
+	//public Map<String, TableColumns> getHaveColumnsList() {
+	//	return map_HaveColumnsList;
+	//}
 
 	// 前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
-	private Map<String, TmplConfigDetail> map_SetColumnsList = new LinkedHashMap<String, TmplConfigDetail>();
-	public Map<String, TmplConfigDetail> getSetColumnsList() {
-		return map_SetColumnsList;
-	}
+	//private Map<String, TmplConfigDetail> map_SetColumnsList = new LinkedHashMap<String, TmplConfigDetail>();
+	//public Map<String, TmplConfigDetail> getSetColumnsList() {
+	//	return map_SetColumnsList;
+	//}
 	
 	//另加的列、配置模板之外的列
 	private String AdditionalReportColumns = "";
@@ -127,17 +117,17 @@ public class TmplUtil {
 	 * @return
 	 * @throws Exception
 	 */
-	public String generateStructure(String tableNo, String departCode, int columnCount, List<String> MustNotEditFeildList) throws Exception {
+	public String generateStructure(String tableNo, String departCode, String billOff, int columnCount, List<String> MustNotEditFeildList) throws Exception {
 		//分组字段是否显示在表中
 		InitJqGridGroupColumnShow();
 		// 字典
-		m_dicList = new LinkedHashMap<String, Object>();
+		//m_dicList = new LinkedHashMap<String, Object>();
 		//表结构
-		map_HaveColumnsList = new LinkedHashMap<String, TableColumns>();
+		//map_HaveColumnsList = new LinkedHashMap<String, TableColumns>();
 		// 前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
-		map_SetColumnsList = new LinkedHashMap<String, TmplConfigDetail>();
+		//map_SetColumnsList = new LinkedHashMap<String, TmplConfigDetail>();
 		// 底行显示的求和与平均值字段
-		m_sqlUserdata = new StringBuilder();
+		//m_sqlUserdata = new StringBuilder();
 		
 		PageData pd=new PageData();
 		pd.put("TABLE_NO", tableNo);
@@ -148,7 +138,7 @@ public class TmplUtil {
 		List<TableColumns> tableColumns = tmplconfigService.getTableColumns(tableCodeOri);
 		Map<String, Map<String, Object>> listColModelAll = jqGridColModelAll(tableColumns);
 		// 前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
-		List<TmplConfigDetail> m_columnsList = Common.getShowColumnList(tableCodeTmpl, departCode,tmplconfigService);
+		List<TmplConfigDetail> m_columnsList = Common.getShowColumnList(tableCodeTmpl, departCode, billOff,tmplconfigService);
 		int row = 1;
 		int col = 1;
 		
@@ -157,7 +147,7 @@ public class TmplUtil {
 		if (m_columnsList != null && m_columnsList.size() > 0) {
 			for (int i = 0; i < m_columnsList.size(); i++) {
 				String getCOL_CODE = m_columnsList.get(i).getCOL_CODE();
-				map_SetColumnsList.put(getCOL_CODE, m_columnsList.get(i));
+				//map_SetColumnsList.put(getCOL_CODE, m_columnsList.get(i));
 				if (listColModelAll.containsKey(getCOL_CODE.toUpperCase())) {
 					Map<String, Object> itemColModel = listColModelAll.get(getCOL_CODE);
 					String name = (String) itemColModel.get("name");
@@ -176,7 +166,7 @@ public class TmplUtil {
 					// 配置表中的字典
 					if (m_columnsList.get(i).getDICT_TRANS() != null
 							&& !m_columnsList.get(i).getDICT_TRANS().trim().equals("")) {
-						String strDicValue = Common.getDicValue(m_dicList, m_columnsList.get(i).getDICT_TRANS(),
+						String strDicValue = Common.getDicValue(m_columnsList.get(i).getDICT_TRANS(), //m_dicList, 
 								tmplConfigDictService, dictionariesService, 
 								departmentService, userService, AdditionalReportColumns);
 						String strSelectValue = ":";
@@ -245,20 +235,20 @@ public class TmplUtil {
 					// 底行显示的求和与平均值字段
 					// 1汇总 0不汇总,默认0
 					if (Integer.parseInt(m_columnsList.get(i).getCOL_SUM()) == 1) {
-						if (m_sqlUserdata != null && !m_sqlUserdata.toString().trim().equals("")) {
-							m_sqlUserdata.append(", ");
-						}
-						m_sqlUserdata.append(" sum(" + getCOL_CODE + ") "
-								+ getCOL_CODE);
+						//if (m_sqlUserdata != null && !m_sqlUserdata.toString().trim().equals("")) {
+						//	m_sqlUserdata.append(", ");
+						//}
+						//m_sqlUserdata.append(" sum(" + getCOL_CODE + ") "
+						//		+ getCOL_CODE);
 						jqGridColModelCustom.append(" summaryType:'sum', summaryTpl:'<b>sum:{0}</b>', ");
 					}
 					// 0不计算 1计算 默认0
 					else if (Integer.parseInt(m_columnsList.get(i).getCOL_AVE()) == 1) {
-						if (m_sqlUserdata != null && !m_sqlUserdata.toString().trim().equals("")) {
-							m_sqlUserdata.append(", ");
-						}
-						m_sqlUserdata.append(" round(avg(" + getCOL_CODE + "), 2) "
-								+ m_columnsList.get(i).getCOL_CODE());
+						//if (m_sqlUserdata != null && !m_sqlUserdata.toString().trim().equals("")) {
+						//	m_sqlUserdata.append(", ");
+						//}
+						//m_sqlUserdata.append(" round(avg(" + getCOL_CODE + "), 2) "
+						//		+ m_columnsList.get(i).getCOL_CODE());
 						jqGridColModelCustom.append(" summaryType:'avg', summaryTpl:'<b>avg:{0}</b>', ");
 					}
 					// 配置表中的表头显示
@@ -314,7 +304,7 @@ public class TmplUtil {
 
 		for (TableColumns col : columns) {
 			//表结构
-			map_HaveColumnsList.put(col.getColumn_name(), col);
+			//map_HaveColumnsList.put(col.getColumn_name(), col);
 
 			Map<String, Object> MapAdd = new LinkedHashMap<String, Object>();
 
@@ -369,17 +359,17 @@ public class TmplUtil {
 	 * @return
 	 * @throws Exception
 	 */
-	public String generateStructureNoEdit(String tableNo, String departCode) throws Exception {
+	public String generateStructureNoEdit(String tableNo, String departCode, String billOff) throws Exception {
 		//分组字段是否显示在表中
 		InitJqGridGroupColumnShow();
 		// 底行显示的求和与平均值字段
-		m_sqlUserdata = new StringBuilder();
+		//m_sqlUserdata = new StringBuilder();
 		// 字典
-		m_dicList = new LinkedHashMap<String, Object>();
+		//m_dicList = new LinkedHashMap<String, Object>();
 		//表结构
-		map_HaveColumnsList = new LinkedHashMap<String, TableColumns>();
+		//map_HaveColumnsList = new LinkedHashMap<String, TableColumns>();
 		// 前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
-		map_SetColumnsList = new LinkedHashMap<String, TmplConfigDetail>();
+		//map_SetColumnsList = new LinkedHashMap<String, TmplConfigDetail>();
 		
 		StringBuilder jqGridColModelAdditionalColumns = new StringBuilder();
 		if(AdditionalReportColumns != null && !AdditionalReportColumns.trim().equals("")){
@@ -390,7 +380,7 @@ public class TmplUtil {
 			jqGridColModelAdditionalColumns.append(" name: '").append(AdditionalReportColumns).append("', ");
 			jqGridColModelAdditionalColumns.append(" label: '封存状态', ");
 
-			String strDicValue = Common.getDicValue(m_dicList, AdditionalReportColumns,
+			String strDicValue = Common.getDicValue(AdditionalReportColumns,//m_dicList, 
 					tmplConfigDictService, dictionariesService, 
 					departmentService, userService, AdditionalReportColumns);
 			String strSelectValue = ":";
@@ -420,13 +410,13 @@ public class TmplUtil {
 		List<TableColumns> tableColumns = tmplconfigService.getTableColumns(tableCodeOri);
 		Map<String, Map<String, Object>> listColModelAll = jqGridColModelAllNoEdit(tableColumns);
 		// 前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
-		List<TmplConfigDetail> m_columnsList = Common.getShowColumnList(tableCodeTmpl, departCode,tmplconfigService);
+		List<TmplConfigDetail> m_columnsList = Common.getShowColumnList(tableCodeTmpl, departCode, billOff,tmplconfigService);
 		
 		StringBuilder jqGridColModelCustom = new StringBuilder();
 		// 添加配置表设置列，字典（未设置就使用表默认，text或number）、隐藏、表头显示
 		if (m_columnsList != null && m_columnsList.size() > 0) {
 			for (int i = 0; i < m_columnsList.size(); i++) {
-				map_SetColumnsList.put(m_columnsList.get(i).getCOL_CODE(), m_columnsList.get(i));
+				//map_SetColumnsList.put(m_columnsList.get(i).getCOL_CODE(), m_columnsList.get(i));
 				if (listColModelAll.containsKey(m_columnsList.get(i).getCOL_CODE().toUpperCase())) {
 					Map<String, Object> itemColModel = listColModelAll.get(m_columnsList.get(i).getCOL_CODE());
 					String name = (String) itemColModel.get("name");
@@ -442,7 +432,7 @@ public class TmplUtil {
 					// 配置表中的字典
 					if (m_columnsList.get(i).getDICT_TRANS() != null
 							&& !m_columnsList.get(i).getDICT_TRANS().trim().equals("")) {
-						String strDicValue = Common.getDicValue(m_dicList, m_columnsList.get(i).getDICT_TRANS(),
+						String strDicValue = Common.getDicValue(m_columnsList.get(i).getDICT_TRANS(),//m_dicList, 
 								tmplConfigDictService, dictionariesService, 
 								departmentService, userService, AdditionalReportColumns);
 
@@ -477,20 +467,20 @@ public class TmplUtil {
 					// 底行显示的求和与平均值字段
 					// 1汇总 0不汇总,默认0
 					if (Integer.parseInt(m_columnsList.get(i).getCOL_SUM()) == 1) {
-						if (m_sqlUserdata != null && !m_sqlUserdata.toString().trim().equals("")) {
-							m_sqlUserdata.append(", ");
-						}
-						m_sqlUserdata.append(" sum(" + m_columnsList.get(i).getCOL_CODE() + ") "
-								+ m_columnsList.get(i).getCOL_CODE());
+						//if (m_sqlUserdata != null && !m_sqlUserdata.toString().trim().equals("")) {
+						//	m_sqlUserdata.append(", ");
+						//}
+						//m_sqlUserdata.append(" sum(" + m_columnsList.get(i).getCOL_CODE() + ") "
+						//		+ m_columnsList.get(i).getCOL_CODE());
 						jqGridColModelCustom.append(" summaryType:'sum', summaryTpl:'<b>sum:{0}</b>', ");
 					}
 					// 0不计算 1计算 默认0
 					else if (Integer.parseInt(m_columnsList.get(i).getCOL_AVE()) == 1) {
-						if (m_sqlUserdata != null && !m_sqlUserdata.toString().trim().equals("")) {
-							m_sqlUserdata.append(", ");
-						}
-						m_sqlUserdata.append(" round(avg(" + m_columnsList.get(i).getCOL_CODE() + "), 2) "
-								+ m_columnsList.get(i).getCOL_CODE());
+						//if (m_sqlUserdata != null && !m_sqlUserdata.toString().trim().equals("")) {
+						//	m_sqlUserdata.append(", ");
+						//}
+						//m_sqlUserdata.append(" round(avg(" + m_columnsList.get(i).getCOL_CODE() + "), 2) "
+						//		+ m_columnsList.get(i).getCOL_CODE());
 						jqGridColModelCustom.append(" summaryType:'avg', summaryTpl:'<b>avg:{0}</b>', ");
 					}
 					// 配置表中的表头显示
@@ -544,7 +534,7 @@ public class TmplUtil {
 
 		for (TableColumns col : columns) {
 			//表结构
-			map_HaveColumnsList.put(col.getColumn_name(), col);
+			//map_HaveColumnsList.put(col.getColumn_name(), col);
 			
 			
 			Map<String, Object> MapAdd = new LinkedHashMap<String, Object>();
@@ -576,17 +566,17 @@ public class TmplUtil {
 	 * @return
 	 * @throws Exception
 	 */
-	public String generateStructureAccount(String tableNo, String departCode) throws Exception {
+	public String generateStructureAccount(String tableNo, String departCode, String billOff) throws Exception {
 		//分组字段是否显示在表中
 		InitJqGridGroupColumnShow();
 		// 底行显示的求和与平均值字段
-		m_sqlUserdata = new StringBuilder();
+		//m_sqlUserdata = new StringBuilder();
 		// 字典
-		m_dicList = new LinkedHashMap<String, Object>();
+		//m_dicList = new LinkedHashMap<String, Object>();
 		//表结构
-		map_HaveColumnsList = new LinkedHashMap<String, TableColumns>();
+		//map_HaveColumnsList = new LinkedHashMap<String, TableColumns>();
 		// 前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
-		map_SetColumnsList = new LinkedHashMap<String, TmplConfigDetail>();
+		//map_SetColumnsList = new LinkedHashMap<String, TmplConfigDetail>();
 		
 		PageData pd=new PageData();
 		pd.put("TABLE_NO", tableNo);
@@ -598,13 +588,13 @@ public class TmplUtil {
 		List<TableColumns> tableColumns = tmplconfigService.getTableColumns(tableCodeOri);
 		Map<String, Map<String, Object>> listColModelAll = jqGridColModelAccount(tableColumns);
 		// 前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
-		List<TmplConfigDetail> m_columnsList = Common.getShowColumnList(tableCodeTmpl, departCode, tmplconfigService);
+		List<TmplConfigDetail> m_columnsList = Common.getShowColumnList(tableCodeTmpl, departCode, billOff, tmplconfigService);
 		
 		StringBuilder jqGridColModelCustom = new StringBuilder();
 		// 添加配置表设置列，字典（未设置就使用表默认，text或number）、隐藏、表头显示
 		if (m_columnsList != null && m_columnsList.size() > 0) {
 			for (int i = 0; i < m_columnsList.size(); i++) {
-				map_SetColumnsList.put(m_columnsList.get(i).getCOL_CODE(), m_columnsList.get(i));
+				//map_SetColumnsList.put(m_columnsList.get(i).getCOL_CODE(), m_columnsList.get(i));
 				if (listColModelAll.containsKey(m_columnsList.get(i).getCOL_CODE().toUpperCase())) {
 					Map<String, Object> itemColModel = listColModelAll.get(m_columnsList.get(i).getCOL_CODE());
 					String name = (String) itemColModel.get("name");
@@ -620,7 +610,7 @@ public class TmplUtil {
 					// 配置表中的字典
 					if (m_columnsList.get(i).getDICT_TRANS() != null
 							&& !m_columnsList.get(i).getDICT_TRANS().trim().equals("")) {
-						String strDicValue = Common.getDicValue(m_dicList, m_columnsList.get(i).getDICT_TRANS(),
+						String strDicValue = Common.getDicValue(m_columnsList.get(i).getDICT_TRANS(),//m_dicList, 
 								tmplConfigDictService, dictionariesService, 
 								departmentService, userService, AdditionalReportColumns);
 
@@ -697,7 +687,7 @@ public class TmplUtil {
 
 		for (TableColumns col : columns) {
 			//表结构
-			map_HaveColumnsList.put(col.getColumn_name(), col);
+			//map_HaveColumnsList.put(col.getColumn_name(), col);
 			
 			Map<String, Object> MapAdd = new LinkedHashMap<String, Object>();
 

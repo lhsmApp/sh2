@@ -164,7 +164,7 @@ public class AuditEditController extends BaseController {
 		List<String> keyListBase = getKeyListBase(MustNotEditList);
 		TmplUtil tmpl = new TmplUtil(tmplconfigService, tmplconfigdictService, dictionariesService, 
 				departmentService,userService, keyListBase, null, null, MustInputList);
-		String jqGridColModel = tmpl.generateStructure(SelectedTableNo, UserDepartCode, 3, MustNotEditList);
+		//String jqGridColModel = tmpl.generateStructure(SelectedTableNo, UserDepartCode, 3, MustNotEditList);
 		
 		//SqlUserdata = tmpl.getSqlUserdata();
 		//字典
@@ -174,7 +174,7 @@ public class AuditEditController extends BaseController {
 		// 前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
 		//map_SetColumnsList = tmpl.getSetColumnsList();
 		
-		mv.addObject("jqGridColModel", jqGridColModel);
+		//mv.addObject("jqGridColModel", jqGridColModel);
 		return mv;
 	}
 	
@@ -203,7 +203,7 @@ public class AuditEditController extends BaseController {
 		//账套
 		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
 		//底行显示的求和与平均值字段
-		StringBuilder SqlUserdata = Common.GetSqlUserdata(SelectedTableNo, SelectedDepartCode, tmplconfigService);
+		//StringBuilder SqlUserdata = Common.GetSqlUserdata(SelectedTableNo, SelectedDepartCode, tmplconfigService);
 		
 		//getPageListSelectedCustCol7 = SelectedCustCol7;
 		//getPageListSelectedDepartCode = SelectedDepartCode;
@@ -247,11 +247,11 @@ public class AuditEditController extends BaseController {
 		List<PageData> varList = auditeditService.JqPage(page);	//列出Betting列表
 		int records = auditeditService.countJqGridExtend(page);
 		PageData userdata = null;
-		if(SqlUserdata!=null && !SqlUserdata.toString().trim().equals("")){
-			//底行显示的求和与平均值字段
-			getPd.put("Userdata", SqlUserdata.toString());
-			userdata = auditeditService.getFooterSummary(page);
-		}
+		//if(SqlUserdata!=null && !SqlUserdata.toString().trim().equals("")){
+		//	//底行显示的求和与平均值字段
+		//	getPd.put("Userdata", SqlUserdata.toString());
+		//	userdata = auditeditService.getFooterSummary(page);
+		//}
 		
 		PageResult<PageData> result = new PageResult<PageData>();
 		result.setRows(varList);
@@ -292,7 +292,7 @@ public class AuditEditController extends BaseController {
 		String ShowDataCustCol7 = getPd.getString("ShowDataCustCol7");
 		//操作
 		String oper = getPd.getString("oper");
-		Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(SelectedTableNo, SelectedDepartCode, tmplconfigService);
+		//Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(SelectedTableNo, SelectedDepartCode, tmplconfigService);
 		Map<String, TableColumns> map_HaveColumnsList = Common.GetHaveColumnsList(SelectedTableNo, tmplconfigService);
 
 		//判断选择为必须选择的
@@ -325,7 +325,7 @@ public class AuditEditController extends BaseController {
 				getPd.put(strFeild, getPd.get(strFeild + TmplUtil.keyExtra));
 			}
 		}
-		Common.setModelDefault(getPd, map_HaveColumnsList, map_SetColumnsList);
+		//Common.setModelDefault(getPd, map_HaveColumnsList, map_SetColumnsList);
 		//表名
 		getPd.put("TableName", tableName);
 		
@@ -373,7 +373,7 @@ public class AuditEditController extends BaseController {
 		String DepartTreeSource = getPd.getString("DepartTreeSource");
 		String ShowDataDepartCode = getPd.getString("ShowDataDepartCode");
 		String ShowDataCustCol7 = getPd.getString("ShowDataCustCol7");
-		Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(SelectedTableNo, SelectedDepartCode, tmplconfigService);
+		//Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(SelectedTableNo, SelectedDepartCode, tmplconfigService);
 		Map<String, TableColumns> map_HaveColumnsList = Common.GetHaveColumnsList(SelectedTableNo, tmplconfigService);
 
 		Boolean isStaffOrNot = CheckStaffOrNot(SelectedTableNo);
@@ -405,7 +405,7 @@ public class AuditEditController extends BaseController {
     			item.put("StaffOrNot", "true");
     		}
         	item.put("BILL_CODE", " ");
-        	Common.setModelDefault(item, map_HaveColumnsList, map_SetColumnsList);
+        	//Common.setModelDefault(item, map_HaveColumnsList, map_SetColumnsList);
 			//表名
 			item.put("TableName", tableName);
         }
@@ -566,10 +566,10 @@ public class AuditEditController extends BaseController {
 		String DepartTreeSource = getPd.getString("DepartTreeSource");
 		String ShowDataDepartCode = getPd.getString("ShowDataDepartCode");
 		String ShowDataCustCol7 = getPd.getString("ShowDataCustCol7");
-		Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(SelectedTableNo, SelectedDepartCode, tmplconfigService);
+		//Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(SelectedTableNo, SelectedDepartCode, tmplconfigService);
 		Map<String, TableColumns> map_HaveColumnsList = Common.GetHaveColumnsList(SelectedTableNo, tmplconfigService);
-		Map<String, Object> DicList = Common.GetDicList(SelectedTableNo, SelectedDepartCode, 
-				tmplconfigService, tmplconfigdictService, dictionariesService, departmentService, userService, "");
+		//Map<String, Object> DicList = Common.GetDicList(SelectedTableNo, SelectedDepartCode, 
+		//		tmplconfigService, tmplconfigdictService, dictionariesService, departmentService, userService, "");
 		
 		String tableName = getAuditTableCode(SelectedTableNo);
 
@@ -598,18 +598,18 @@ public class AuditEditController extends BaseController {
 					titleAndAttribute = new LinkedHashMap<String, String>();
 					
 					//配置表设置列
-					if(map_SetColumnsList != null && map_SetColumnsList.size() > 0){
-						for (TmplConfigDetail col : map_SetColumnsList.values()) {
-							titleAndAttribute.put(TransferSbcDbc.ToDBC(col.getCOL_NAME()), col.getCOL_CODE());
-						}
-					}
+					//if(map_SetColumnsList != null && map_SetColumnsList.size() > 0){
+					//	for (TmplConfigDetail col : map_SetColumnsList.values()) {
+					//		titleAndAttribute.put(TransferSbcDbc.ToDBC(col.getCOL_NAME()), col.getCOL_CODE());
+					//	}
+					//}
 
 					// 调用解析工具包
 					testExcel = new LeadingInExcelToPageData<PageData>(formart);
 					// 解析excel，获取客户信息集合
 
-					uploadAndReadMap = testExcel.uploadAndRead(file, propertiesFileName, kyeName, sheetIndex,
-							titleAndAttribute, map_HaveColumnsList, map_SetColumnsList, DicList);
+					//uploadAndReadMap = testExcel.uploadAndRead(file, propertiesFileName, kyeName, sheetIndex,
+					//		titleAndAttribute, map_HaveColumnsList, map_SetColumnsList, DicList);
 				} catch (Exception e) {
 					e.printStackTrace();
 					logger.error("读取Excel文件错误", e);
@@ -716,7 +716,7 @@ public class AuditEditController extends BaseController {
 									if(!(getESTB_DEPT!=null && !getESTB_DEPT.trim().equals(""))){
 										pdAdd.put("ESTB_DEPT", Jurisdiction.getCurrentDepartmentID());
 									}
-									Common.setModelDefault(pdAdd, map_HaveColumnsList, map_SetColumnsList);
+									//Common.setModelDefault(pdAdd, map_HaveColumnsList, map_SetColumnsList);
 									//表名
 									pdAdd.put("TableName", tableName);
 									listAdd.add(pdAdd);
@@ -777,9 +777,9 @@ public class AuditEditController extends BaseController {
 		}
 		//账套
 		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
-		Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(SelectedTableNo, SelectedDepartCode, tmplconfigService);
-		Map<String, Object> DicList = Common.GetDicList(SelectedTableNo, SelectedDepartCode, 
-				tmplconfigService, tmplconfigdictService, dictionariesService, departmentService, userService, "");
+		//Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(SelectedTableNo, SelectedDepartCode, tmplconfigService);
+		//Map<String, Object> DicList = Common.GetDicList(SelectedTableNo, SelectedDepartCode, 
+		//		tmplconfigService, tmplconfigdictService, dictionariesService, departmentService, userService, "");
 		
 		PageData getQueryFeildPd = new PageData();
 		//工资分的类型, 只有工资返回值
@@ -805,7 +805,7 @@ public class AuditEditController extends BaseController {
 		page.setPd(getPd);
 		
 		List<PageData> varOList = auditeditService.exportModel(page);
-		return export(varOList, "AuditEdit", map_SetColumnsList, DicList); //工资明细
+		return null;//export(varOList, "AuditEdit", map_SetColumnsList, DicList); //工资明细
 	}
 	
 	 /**导出到excel
@@ -825,9 +825,9 @@ public class AuditEditController extends BaseController {
 		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
 		//账套
 		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
-		Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(SelectedTableNo, SelectedDepartCode, tmplconfigService);
-		Map<String, Object> DicList = Common.GetDicList(SelectedTableNo, SelectedDepartCode, 
-				tmplconfigService, tmplconfigdictService, dictionariesService, departmentService, userService, "");
+		//Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(SelectedTableNo, SelectedDepartCode, tmplconfigService);
+		//Map<String, Object> DicList = Common.GetDicList(SelectedTableNo, SelectedDepartCode, 
+		//		tmplconfigService, tmplconfigdictService, dictionariesService, departmentService, userService, "");
 		
 		PageData getQueryFeildPd = new PageData();
 		//工资分的类型, 只有工资返回值
@@ -854,7 +854,7 @@ public class AuditEditController extends BaseController {
 		getPd.put("SystemDateTime", SystemDateTime);
 		page.setPd(getPd);
 		List<PageData> varOList = auditeditService.exportList(page);
-		return export(varOList, "", map_SetColumnsList, DicList);
+		return null;//export(varOList, "", map_SetColumnsList, DicList);
 	}
 	
 	@SuppressWarnings("unchecked")

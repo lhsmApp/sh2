@@ -85,7 +85,6 @@ public interface TmplConfigManager{
 	 * @throws Exception
 	 */
 	public List<TmplConfigDetail> listNeed(TmplConfigDetail item)throws Exception;
-	public List<TmplConfigDetail> listFormula(TmplConfigDetail item)throws Exception;
 	
 	/**
 	 * 临时数据表明细

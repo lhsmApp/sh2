@@ -23,7 +23,14 @@ public class TmplConfigDetail implements Serializable {
 	private int CAL_ORDER;
 	private String NUM_DGT;
 	private String DEC_PRECISION;
+	private String BILL_OFF;
 	
+	public String getBILL_OFF() {
+		return BILL_OFF;
+	}
+	public void setBILL_OFF(String bILL_OFF) {
+		BILL_OFF = bILL_OFF;
+	}
 	public int getCAL_ORDER() {
 		return CAL_ORDER;
 	}

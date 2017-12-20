@@ -97,7 +97,6 @@ public class DetailImportQueryController extends BaseController {
 		getPd.put("which", SelectedTableNo);
 		//单号下拉列表
 		getPd.put("InitBillCodeOptions", SelectBillCodeOptions.getSelectBillCodeOptions(null, SelectBillCodeFirstShow, SelectBillCodeLastShow));
-		mv.addObject("pd", getPd);
 		
 		//"BUSI_DATE", "DEPT_CODE", "USER_CATG", "USER_GROP", "CUST_COL7"
 		//CUST_COL7 FMISACC 帐套字典
@@ -113,13 +112,7 @@ public class DetailImportQueryController extends BaseController {
 		mv.addObject("zTreeNodes", DepartmentSelectTreeSource);
 		// ***********************************************************
 
-		//当前登录人所在二级单位
-		String UserDepartCode = Jurisdiction.getCurrentDepartmentID();//
-		TmplUtil tmpl = new TmplUtil(tmplconfigService, tmplconfigdictService, dictionariesService, 
-				departmentService,userService);
-		String jqGridColModel = tmpl.generateStructureNoEdit(SelectedTableNo, UserDepartCode);
-		mv.addObject("jqGridColModel", jqGridColModel);
-		
+		mv.addObject("pd", getPd);
 		return mv;
 	}
 
@@ -165,6 +158,38 @@ public class DetailImportQueryController extends BaseController {
 		
 		return commonBase;
 	}
+
+	/**显示结构
+	 * @param
+	 * @throws Exception
+	 */
+	@RequestMapping(value="/getShowColModel")
+	public @ResponseBody CommonBase getShowColModel() throws Exception{
+		logBefore(logger, Jurisdiction.getUsername()+"getFirstDetailColModel");
+		CommonBase commonBase = new CommonBase();
+		commonBase.setCode(-1);
+		
+		PageData getPd = this.getPageData();
+		//员工组
+		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		//单位
+		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
+		int departSelf = Common.getDepartSelf(departmentService);
+		if(departSelf == 1){
+			SelectedDepartCode = Jurisdiction.getCurrentDepartmentID();
+		}
+		//账套
+		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
+		
+		TmplUtil tmpl = new TmplUtil(tmplconfigService, tmplconfigdictService, dictionariesService, 
+				departmentService,userService);
+		String jqGridColModel = tmpl.generateStructureNoEdit(SelectedTableNo, SelectedDepartCode, SelectedCustCol7);
+		
+		commonBase.setCode(0);
+		commonBase.setMessage(jqGridColModel);
+		
+		return commonBase;
+	}
 	
 	/**列表
 	 * @param page
@@ -177,14 +202,23 @@ public class DetailImportQueryController extends BaseController {
 		PageData getPd = this.getPageData();
 		//员工组
 		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
-		//底行显示的求和与平均值字段
-		StringBuilder SqlUserdata = Common.GetSqlUserdata(SelectedTableNo, Jurisdiction.getCurrentDepartmentID(), tmplconfigService);
+		//账套
+		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
+		//单位
+		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
+		
+		String strShowCalModelDepaet = Jurisdiction.getCurrentDepartmentID();
+		if(SelectedDepartCode!=null && !SelectedDepartCode.trim().equals("") && !SelectedDepartCode.contains(",")){
+			strShowCalModelDepaet = SelectedDepartCode;
+		}
 		
 		PageData pdTransfer = setPutPd(getPd);
 		page.setPd(pdTransfer);
 		List<PageData> varList = detailimportqueryService.JqPage(page);	//列出Betting列表
 		int records = detailimportqueryService.countJqGridExtend(page);
 		PageData userdata = null;
+		//底行显示的求和与平均值字段
+		StringBuilder SqlUserdata = Common.GetSqlUserdata(SelectedTableNo, strShowCalModelDepaet, SelectedCustCol7, tmplconfigService);
 		if(SqlUserdata!=null && !SqlUserdata.toString().trim().equals("")){
 			//底行显示的求和与平均值字段
 			pdTransfer.put("Userdata", SqlUserdata.toString());
@@ -281,8 +315,18 @@ public class DetailImportQueryController extends BaseController {
 		PageData getPd = this.getPageData();
 		//员工组
 		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
-		Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(SelectedTableNo, Jurisdiction.getCurrentDepartmentID(), tmplconfigService);
-		Map<String, Object> DicList = Common.GetDicList(SelectedTableNo, Jurisdiction.getCurrentDepartmentID(), 
+		//账套
+		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
+		//单位
+		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
+		
+		String strShowCalModelDepaet = Jurisdiction.getCurrentDepartmentID();
+		if(SelectedDepartCode!=null && !SelectedDepartCode.trim().equals("") && !SelectedDepartCode.contains(",")){
+			strShowCalModelDepaet = SelectedDepartCode;
+		}
+		
+		Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(SelectedTableNo, strShowCalModelDepaet, SelectedCustCol7, tmplconfigService);
+		Map<String, Object> DicList = Common.GetDicList(SelectedTableNo, strShowCalModelDepaet, SelectedCustCol7, 
 				tmplconfigService, tmplconfigdictService, dictionariesService, departmentService, userService, "");
 		
 		PageData pdTransfer = setPutPd(getPd);

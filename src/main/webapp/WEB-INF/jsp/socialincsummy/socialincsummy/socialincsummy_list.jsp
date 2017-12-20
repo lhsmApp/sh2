@@ -163,11 +163,10 @@
 		//单号下拉列表
 	    var SelectNoBillCodeShowOption;
 		var InitBillCodeOptions;
-		var SelectBillCodeOptions;
+		//var SelectBillCodeOptions;
 
 		//前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
-	    var jqGridColModelDetail;
-	    var jqGridColModelSummy;
+	    var jqGridColModel;
 	    //分组字段
 	    var jqGridGroupField;
 	    //分组字段是否显示在表中
@@ -225,8 +224,7 @@
 		    $("#showDur").text('当前期间：' + SystemDateTime + ' 登录人责任中心：' + DepartName);
 
 			//前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
-	        jqGridColModelDetail = eval("(${jqGridColModelDetail})");//此处记得用eval()行数将string转为array
-	        jqGridColModelSummy = eval("(${jqGridColModelSummy})");//此处记得用eval()行数将string转为array
+	        jqGridColModel = "[]";
 		    //分组字段
 		    jqGridGroupField = "${jqGridGroupField}";
 		    //分组字段是否显示在表中
@@ -236,8 +234,6 @@
 		    SelectNoBillCodeShowOption =  "${pd.SelectNoBillCodeShow}";
 			InitBillCodeOptions = "${pd.InitBillCodeOptions}";
 			setSelectBillCodeOptions(InitBillCodeOptions);
-
-			tosearch();
 		});
 
         // the event handler on expanding parent row receives two parameters
@@ -249,6 +245,8 @@
         	console.log(BILL_CODE);
         	var DEPT_CODE = rowData.DEPT_CODE__;
         	console.log(DEPT_CODE);
+        	var CUST_COL7 = rowData.CUST_COL7__;
+        	console.log(CUST_COL7);
         	
             var detailColModel = "[]";
 			$.ajax({
@@ -256,7 +254,7 @@
 				url: '<%=basePath%>socialincsummy/getFirstDetailColModel.do?'
 		            +'SelectedCustCol7='+$("#SelectedCustCol7").val()
 		            +'&SelectedDepartCode='+$("#SelectedDepartCode").val(),
-		    	data: {DataDeptCode:DEPT_CODE},
+		    	data: {DataDeptCode:DEPT_CODE,DataCustCol7:CUST_COL7},
 				dataType:'json',
 				cache: false,
 				success: function(response){
@@ -349,12 +347,14 @@
 			var rowData = $("#" + gridSelect).getRowData(parentRowKey);
 	    	var DEPT_CODE = rowData.DEPT_CODE__;
 	    	console.log(DEPT_CODE);
+        	var CUST_COL7 = rowData.CUST_COL7__;
+        	console.log(CUST_COL7);
 	    	
 	        var detailColModel = "[]";
 			$.ajax({
 				type: "GET",
 				url: '<%=basePath%>socialincsummy/getSecondDetailColModel.do?',
-		    	data: {DataDeptCode:DEPT_CODE},
+		    	data: {DataDeptCode:DEPT_CODE,DataCustCol7:CUST_COL7},
 				dataType:'json',
 				cache: false,
 				success: function(response){
@@ -593,9 +593,46 @@
 		//检索
 		function tosearch() {
 			ShowDataBillCode = $("#SelectedBillCode").val();
+
 			$(gridBase_selector).jqGrid('GridUnload'); 
-			SetStructure();
-			$(gridBase_selector).trigger("reloadGrid");  
+			//前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
+		    jqGridColModel = "[]";
+			
+			top.jzts();
+			$.ajax({
+				type: "POST",
+				url: '<%=basePath%>socialincsummy/getShowColModel.do?'
+                    +'SelectedDepartCode='+$("#SelectedDepartCode").val()
+                    +'&SelectedCustCol7='+$("#SelectedCustCol7").val()
+                    +'&SelectedBillCode='+$("#SelectedBillCode").val(),
+				dataType:'json',
+				cache: false,
+				success: function(response){
+					if(response.code==0){
+						$(top.hangge());//关闭加载状态
+						//前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
+					    jqGridColModel = eval("(" + response.message + ")");//此处记得用eval()行数将string转为array
+						SetStructure();
+					}else{
+						$(top.hangge());//关闭加载状态
+						$("#subTitle").tips({
+							side:3,
+				            msg:'获取显示结构失败：'+response.message,
+				            bg:'#cc0033',
+				            time:3
+				        });
+					}
+				},
+		    	error: function(response) {
+					$(top.hangge());//关闭加载状态
+					$("#subTitle").tips({
+						side:3,
+			            msg:'获取显示结构出错：'+response.responseJSON.message,
+			            bg:'#cc0033',
+			            time:3
+			        });
+		    	}
+			});
 		}  
 		
 		function SetStructure(){
@@ -613,7 +650,7 @@
 			            +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
 			            +'&SelectedBillCode='+$("#SelectedBillCode").val(),
 					datatype: "json",
-					colModel: jqGridColModelSummy,
+					colModel: jqGridColModel,
 					viewrecords: true, 
 					shrinkToFit: false,
 					rowNum: 0,
@@ -672,7 +709,7 @@
 				            +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
 				            +'&SelectedBillCode='+$("#SelectedBillCode").val(),
 					datatype: "json",
-					colModel: jqGridColModelDetail,
+					colModel: jqGridColModel,
 					viewrecords: true, 
 					shrinkToFit: false,
 					rowNum: 0,

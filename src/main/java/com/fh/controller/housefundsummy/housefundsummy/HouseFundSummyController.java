@@ -101,13 +101,7 @@ public class HouseFundSummyController extends BaseController {
 	
 	//页面显示数据的年月
 	String SystemDateTime = "";
-	//底行显示的求和与平均值字段
-	StringBuilder SqlUserdataSummy = new StringBuilder();
-	StringBuilder SqlUserdataDetail = new StringBuilder();
 	
-	//界面分组字段
-	List<String> jqGridGroupColumn = Arrays.asList("DEPT_CODE");
-
 	// 查询表的主键字段，作为标准列，jqgrid添加带__列，mybaits获取带__列
 	private List<String> keyListBase = Arrays.asList("BILL_CODE", "BUSI_DATE", "DEPT_CODE", "CUST_COL7");
     //汇总字段
@@ -164,30 +158,7 @@ public class HouseFundSummyController extends BaseController {
 		mv.addObject("zTreeNodes1", DepartmentSelectTreeSource);
 		// ***********************************************************
 
-		//当前登录人所在二级单位
-		String UserDepartCode = Jurisdiction.getCurrentDepartmentID();//
-		TmplUtil tmplSummy = new TmplUtil(tmplconfigService, tmplconfigdictService, dictionariesService, 
-				departmentService,userService, keyListBase, jqGridGroupColumn, AdditionalReportColumn, null);
-		String jqGridColModelSummy = tmplSummy.generateStructureNoEdit(TypeCodeSummyBill, UserDepartCode);
-		//分组字段是否显示在表中
-		List<String> m_jqGridGroupColumnShow = tmplSummy.getJqGridGroupColumnShow();
-		//底行显示的求和与平均值字段
-		SqlUserdataSummy = tmplSummy.getSqlUserdata();
-
-		TmplUtil tmplDetail = new TmplUtil(tmplconfigService, tmplconfigdictService, dictionariesService, 
-				departmentService,userService);
-		String jqGridColModelDetail = tmplDetail.generateStructureNoEdit(TypeCodeDetail, UserDepartCode);
-		SqlUserdataDetail = tmplDetail.getSqlUserdata();
-
 		mv.addObject("pd", getPd);
-		mv.addObject("jqGridColModelSummy", jqGridColModelSummy);
-		mv.addObject("jqGridColModelDetail", jqGridColModelDetail);
-        //分组字段  格式：groupField: ['DEPT_CODE'],
-		String jqGridGroupField = QueryFeildString.tranferListValueToSqlInString(jqGridGroupColumn);
-		mv.addObject("jqGridGroupField", jqGridGroupField);
-        //分组字段是否显示在表中  格式：groupColumnShow: [true],
-		String jqGridGroupColumnShow = QueryFeildString.tranferListStringToGroupbyString(m_jqGridGroupColumnShow);
-		mv.addObject("jqGridGroupColumnShow", jqGridGroupColumnShow);
 		return mv;
 	}
 
@@ -202,24 +173,24 @@ public class HouseFundSummyController extends BaseController {
 		
 		PageData getPd = this.getPageData();
 		//单位
-		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
+		String getPdSelectedDepartCode = getPd.getString("SelectedDepartCode");
 		int departSelf = Common.getDepartSelf(departmentService);
 		List<String> AllDeptCode = Common.getAllDeptCode(departmentService, Jurisdiction.getCurrentDepartmentID());
 		if(departSelf == 1){
-			SelectedDepartCode = Jurisdiction.getCurrentDepartmentID();
+			getPdSelectedDepartCode = Jurisdiction.getCurrentDepartmentID();
 		}
 		//账套
-		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
+		String getPdSelectedCustCol7 = getPd.getString("SelectedCustCol7");
 		
 		PageData getQueryFeildPd = new PageData();
-		getQueryFeildPd.put("DEPT_CODE", SelectedDepartCode);
-		getQueryFeildPd.put("CUST_COL7", SelectedCustCol7);
+		getQueryFeildPd.put("DEPT_CODE", getPdSelectedDepartCode);
+		getQueryFeildPd.put("CUST_COL7", getPdSelectedCustCol7);
 		String QueryFeild = QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList);
 		QueryFeild += " and BILL_STATE = '" + BillState.Normal.getNameKey() + "' ";
-		QueryFeild += QueryFeildString.getNotReportBillCode(TypeCodeTransfer, SystemDateTime, SelectedCustCol7, AllDeptCode + "," + SelectedDepartCode);
+		QueryFeild += QueryFeildString.getNotReportBillCode(TypeCodeTransfer, SystemDateTime, getPdSelectedCustCol7, AllDeptCode + "," + getPdSelectedDepartCode);
 		QueryFeild += " and DEPT_CODE in (" + QueryFeildString.tranferListValueToSqlInString(AllDeptCode) + ") ";
 		//工资无账套无数据
-		if(!(SelectedCustCol7!=null && !SelectedCustCol7.trim().equals(""))){
+		if(!(getPdSelectedCustCol7!=null && !getPdSelectedCustCol7.trim().equals(""))){
 			QueryFeild += " and 1 != 1 ";
 		}
 		
@@ -230,6 +201,43 @@ public class HouseFundSummyController extends BaseController {
 		String returnString = SelectBillCodeOptions.getSelectBillCodeOptions(getCodeList, SelectBillCodeFirstShow, SelectBillCodeLastShow);
 		commonBase.setMessage(returnString);
 		commonBase.setCode(0);
+		
+		return commonBase;
+	}
+
+	/**显示结构
+	 * @param
+	 * @throws Exception
+	 */
+	@RequestMapping(value="/getShowColModel")
+	public @ResponseBody CommonBase getShowColModel() throws Exception{
+		logBefore(logger, Jurisdiction.getUsername()+"getFirstDetailColModel");
+		CommonBase commonBase = new CommonBase();
+		commonBase.setCode(-1);
+		
+		PageData getPd = this.getPageData();
+		//单位
+		String getPdSelectedDepartCode = getPd.getString("SelectedDepartCode");
+		//账套
+		String getPdSelectedCustCol7 = getPd.getString("SelectedCustCol7");
+		//单号
+		String getPdSelectedBillCode = getPd.getString("SelectedBillCode");
+
+		String strShowCalModelDepaet = Jurisdiction.getCurrentDepartmentID();
+		if(getPdSelectedDepartCode!=null && !getPdSelectedDepartCode.trim().equals("") && !getPdSelectedDepartCode.contains(",")){
+			strShowCalModelDepaet = getPdSelectedDepartCode;
+		}
+		String jqGridColModel = "";
+		TmplUtil tmpl = new TmplUtil(tmplconfigService, tmplconfigdictService, dictionariesService, 
+				departmentService,userService, keyListBase, null, AdditionalReportColumn, null);
+		if(getPdSelectedBillCode.equals(SelectBillCodeFirstShow)){
+			jqGridColModel = tmpl.generateStructureNoEdit(TypeCodeDetail, strShowCalModelDepaet, getPdSelectedCustCol7);
+		} else {
+			jqGridColModel = tmpl.generateStructureNoEdit(TypeCodeSummyBill, strShowCalModelDepaet, getPdSelectedCustCol7);
+		}
+
+		commonBase.setCode(0);
+		commonBase.setMessage(jqGridColModel);
 		
 		return commonBase;
 	}
@@ -244,31 +252,31 @@ public class HouseFundSummyController extends BaseController {
 		
 		PageData getPd = this.getPageData();
 		//账套
-		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
+		String getPdSelectedCustCol7 = getPd.getString("SelectedCustCol7");
 		//单位
-		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
+		String getPdSelectedDepartCode = getPd.getString("SelectedDepartCode");
 		int departSelf = Common.getDepartSelf(departmentService);
 		List<String> AllDeptCode = Common.getAllDeptCode(departmentService, Jurisdiction.getCurrentDepartmentID());
 		if(departSelf == 1){
-			SelectedDepartCode = Jurisdiction.getCurrentDepartmentID();
+			getPdSelectedDepartCode = Jurisdiction.getCurrentDepartmentID();
 		}
 		//单号
-		String SelectedBillCode = getPd.getString("SelectedBillCode");
+		String getPdSelectedBillCode = getPd.getString("SelectedBillCode");
 		
 		PageData getQueryFeildPd = new PageData();
-		getQueryFeildPd.put("CUST_COL7", SelectedCustCol7);
-		getQueryFeildPd.put("DEPT_CODE", SelectedDepartCode);
+		getQueryFeildPd.put("CUST_COL7", getPdSelectedCustCol7);
+		getQueryFeildPd.put("DEPT_CODE", getPdSelectedDepartCode);
 		String QueryFeild = QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList);
-		if(SelectedBillCode!=null && !SelectedBillCode.equals(SelectBillCodeFirstShow)){
+		if(getPdSelectedBillCode!=null && !getPdSelectedBillCode.equals(SelectBillCodeFirstShow)){
 			QueryFeild += " and BILL_STATE = '" + BillState.Normal.getNameKey() + "' ";
-			QueryFeild += QueryFeildString.getNotReportBillCode(TypeCodeTransfer, SystemDateTime, SelectedCustCol7, AllDeptCode + "," + SelectedDepartCode);
+			QueryFeild += QueryFeildString.getNotReportBillCode(TypeCodeTransfer, SystemDateTime, getPdSelectedCustCol7, AllDeptCode + "," + getPdSelectedDepartCode);
 		}
 		QueryFeild += " and DEPT_CODE in (" + QueryFeildString.tranferListValueToSqlInString(AllDeptCode) + ") ";
 		//工资无账套无数据
-		if(!(SelectedCustCol7!=null && !SelectedCustCol7.trim().equals(""))){
+		if(!(getPdSelectedCustCol7!=null && !getPdSelectedCustCol7.trim().equals(""))){
 			QueryFeild += " and 1 != 1 ";
 		}
-        QueryFeild += QueryFeildString.getQueryFeildBillCodeSummy(SelectedBillCode, SelectBillCodeLastShow, SelectBillCodeFirstShow);
+        QueryFeild += QueryFeildString.getQueryFeildBillCodeSummy(getPdSelectedBillCode, SelectBillCodeLastShow, SelectBillCodeFirstShow);
 		getPd.put("QueryFeild", QueryFeild);
 
 		//多条件过滤条件
@@ -279,7 +287,7 @@ public class HouseFundSummyController extends BaseController {
 
 		//页面显示数据的年月
 		getPd.put("SystemDateTime", SystemDateTime);
-		if(SelectedBillCode!=null && !SelectedBillCode.equals(SelectBillCodeFirstShow)){
+		if(getPdSelectedBillCode!=null && !getPdSelectedBillCode.equals(SelectBillCodeFirstShow)){
 			getPd.put("tableName", TableNameBase);
 		} else {
 			getPd.put("tableName", TableNameSecondDetail);
@@ -294,18 +302,22 @@ public class HouseFundSummyController extends BaseController {
 		List<PageData> varList = housefundsummyService.JqPage(page);	//列出Betting列表
 		int records = housefundsummyService.countJqGridExtend(page);
 		PageData userdata = null;
-		if(SelectedBillCode!=null && !SelectedBillCode.equals(SelectBillCodeFirstShow)){
-			if(SqlUserdataSummy!=null && !SqlUserdataSummy.toString().trim().equals("")){
-				//底行显示的求和与平均值字段
-				getPd.put("Userdata", SqlUserdataSummy.toString());
-				userdata = housefundsummyService.getFooterSummary(page);
-			}
+		StringBuilder SqlUserdata = new StringBuilder();
+		String strShowCalModelDepaet = Jurisdiction.getCurrentDepartmentID();
+		if(getPdSelectedDepartCode!=null && !getPdSelectedDepartCode.trim().equals("") && !getPdSelectedDepartCode.contains(",")){
+			strShowCalModelDepaet = getPdSelectedDepartCode;
+		}
+		if(getPdSelectedBillCode.equals(SelectBillCodeFirstShow)){
+			//底行显示的求和与平均值字段
+			SqlUserdata = Common.GetSqlUserdata(TypeCodeDetail, strShowCalModelDepaet, getPdSelectedCustCol7, tmplconfigService);
 		} else {
-			if(SqlUserdataDetail!=null && !SqlUserdataDetail.toString().trim().equals("")){
-				//底行显示的求和与平均值字段
-				getPd.put("Userdata", SqlUserdataDetail.toString());
-				userdata = housefundsummyService.getFooterSummary(page);
-			}
+			//底行显示的求和与平均值字段
+			SqlUserdata = Common.GetSqlUserdata(TypeCodeSummyBill, strShowCalModelDepaet, getPdSelectedCustCol7, tmplconfigService);
+		}
+		if(SqlUserdata!=null && !SqlUserdata.toString().trim().equals("")){
+			//底行显示的求和与平均值字段
+			getPd.put("Userdata", SqlUserdata.toString());
+			userdata = housefundsummyService.getFooterSummary(page);
 		}
 		
 		PageResult<PageData> result = new PageResult<PageData>();
@@ -330,9 +342,10 @@ public class HouseFundSummyController extends BaseController {
 		
 		PageData getPd = this.getPageData();
 		String DEPT_CODE = (String) getPd.get("DataDeptCode");
+		String CUST_COL7 = (String) getPd.get("DataCustCol7");
 		TmplUtil tmpl = new TmplUtil(tmplconfigService, tmplconfigdictService, dictionariesService, 
 				departmentService,userService, SumFieldDetail, null, null, null);
-		String detailColModel = tmpl.generateStructureNoEdit(TypeCodeSummyDetail, DEPT_CODE);
+		String detailColModel = tmpl.generateStructureNoEdit(TypeCodeSummyDetail, DEPT_CODE, CUST_COL7);
 		
 		commonBase.setCode(0);
 		commonBase.setMessage(detailColModel);
@@ -374,9 +387,10 @@ public class HouseFundSummyController extends BaseController {
 		
 		PageData getPd = this.getPageData();
 		String DEPT_CODE = (String) getPd.get("DataDeptCode");
+		String CUST_COL7 = (String) getPd.get("DataCustCol7");
 		TmplUtil tmpl = new TmplUtil(tmplconfigService, tmplconfigdictService, dictionariesService, 
 				departmentService,userService);
-		String detailColModel = tmpl.generateStructureNoEdit(TypeCodeDetail, DEPT_CODE);
+		String detailColModel = tmpl.generateStructureNoEdit(TypeCodeDetail, DEPT_CODE, CUST_COL7);
 		
 		commonBase.setCode(0);
 		commonBase.setMessage(detailColModel);
@@ -475,9 +489,7 @@ public class HouseFundSummyController extends BaseController {
 
 		String UserDepartCode = Jurisdiction.getCurrentDepartmentID();
 
-		Map<String, TmplConfigDetail> map_SetColumnsListBill = Common.GetSetColumnsList(TypeCodeSummyBill, UserDepartCode, tmplconfigService);
 		Map<String, TableColumns> map_HaveColumnsListBill = Common.GetHaveColumnsList(TypeCodeSummyBill, tmplconfigService);
-		Map<String, TmplConfigDetail> map_SetColumnsListDetail = Common.GetSetColumnsList(TypeCodeSummyDetail, UserDepartCode, tmplconfigService);
 		Map<String, TableColumns> map_HaveColumnsListDetail = Common.GetHaveColumnsList(TypeCodeSummyDetail, tmplconfigService);
 
 		//获取汇总的select的字段
@@ -553,7 +565,10 @@ public class HouseFundSummyController extends BaseController {
 		PageData pdBillNum=new PageData();
 		if(bolDeleteSummy){//删除添加
 			for(PageData bill : getSaveBill){
-				bill.put("BILL_STATE", BillState.Normal.getNameKey());
+				String strDepartCode = bill.getString("DEPT_CODE" + TmplUtil.keyExtra);
+        		Map<String, TmplConfigDetail> map_SetColumnsListBill = Common.GetSetColumnsList(TypeCodeSummyBill, strDepartCode, SelectedCustCol7, tmplconfigService);
+				
+        		bill.put("BILL_STATE", BillState.Normal.getNameKey());
         		User user = (User) Jurisdiction.getSession().getAttribute(Const.SESSION_USERROL);
         		bill.put("BILL_USER", user.getUSER_ID());
         		bill.put("BILL_DATE", DateUtil.getTime());
@@ -566,6 +581,9 @@ public class HouseFundSummyController extends BaseController {
     			Common.setModelDefault(bill, map_HaveColumnsListBill, map_SetColumnsListBill);
 			}
 			for(PageData detail : getSaveDetail){
+				String strDepartCode = detail.getString("DEPT_CODE" + TmplUtil.keyExtra);
+				Map<String, TmplConfigDetail> map_SetColumnsListDetail = Common.GetSetColumnsList(TypeCodeSummyDetail, strDepartCode, SelectedCustCol7, tmplconfigService);
+				
 				detail.put("BILL_STATE", BillState.Normal.getNameKey());
         		User user = (User) Jurisdiction.getSession().getAttribute(Const.SESSION_USERROL);
         		detail.put("BILL_USER", user.getUSER_ID());
@@ -594,6 +612,9 @@ public class HouseFundSummyController extends BaseController {
 			int billNum=getNum;
 			/***************************************************/
 			for(PageData bill : getSaveBill){
+				String strDepartCode = bill.getString("DEPT_CODE" + TmplUtil.keyExtra);
+        		Map<String, TmplConfigDetail> map_SetColumnsListBill = Common.GetSetColumnsList(TypeCodeSummyBill, strDepartCode, SelectedCustCol7, tmplconfigService);
+				
 				billNum++;
 				String getBILL_CODE = BillCodeUtil.getBillCode(billNumType, month, billNum);
 				bill.put("BILL_CODE", getBILL_CODE);
@@ -612,6 +633,9 @@ public class HouseFundSummyController extends BaseController {
 			
 			//未匹配的单号和没有单号的记录
 			for(PageData detail : getSaveDetail){
+				String strDepartCode = detail.getString("DEPT_CODE" + TmplUtil.keyExtra);
+				Map<String, TmplConfigDetail> map_SetColumnsListDetail = Common.GetSetColumnsList(TypeCodeSummyDetail, strDepartCode, SelectedCustCol7, tmplconfigService);
+				
 				detail.put("BILL_STATE", BillState.Normal.getNameKey());
         		User user = (User) Jurisdiction.getSession().getAttribute(Const.SESSION_USERROL);
         		detail.put("BILL_USER", user.getUSER_ID());

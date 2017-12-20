@@ -163,8 +163,8 @@ public class FinanceAccountsController extends BaseController {
 				
 		TmplUtil tmpl = new TmplUtil(tmplconfigService, tmplconfigdictService, dictionariesService, 
 				departmentService,userService, keyListBase, null, null, null);
-		String jqGridColModel = tmpl.generateStructureAccount(SelectedTableNo, UserDepartCode);
-		mv.addObject("jqGridColModel", jqGridColModel);
+		//String jqGridColModel = tmpl.generateStructureAccount(SelectedTableNo, UserDepartCode);
+		//mv.addObject("jqGridColModel", jqGridColModel);
 
 		return mv;
 	}
@@ -313,15 +313,15 @@ public class FinanceAccountsController extends BaseController {
 		List<String> resetList = Arrays.asList("USER_CODE");
 		TmplUtil tmpl = new TmplUtil(tmplconfigService, tmplconfigdictService, dictionariesService, 
 				departmentService,userService,resetList, null, null, null);
-		String detailColModel = tmpl.generateStructureAccount(strTapTypeCode, DEPT_CODE);
+		//String detailColModel = tmpl.generateStructureAccount(strTapTypeCode, DEPT_CODE);
 
 		// 字典
-		excel_dicList = tmpl.getDicList();
+		//excel_dicList = tmpl.getDicList();
 		// 前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
-		excel_SetColumnsList = tmpl.getSetColumnsList();
+		//excel_SetColumnsList = tmpl.getSetColumnsList();
 		
 		commonBase.setCode(0);
-		commonBase.setMessage(detailColModel);
+		//commonBase.setMessage(detailColModel);
 		
 		return commonBase;
 	}
