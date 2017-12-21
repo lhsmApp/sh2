@@ -36,10 +36,10 @@ public class TmplUtil {
 	// 查询表的主键字段
 	private List<String> keyList = new ArrayList<String>();
 	// 底行显示的求和与平均值字段
-	//StringBuilder m_sqlUserdata = new StringBuilder();
-	//public StringBuilder getSqlUserdata() {
-	//	return m_sqlUserdata;
-	//}
+	StringBuilder m_sqlUserdata = new StringBuilder();
+	public StringBuilder getSqlUserdata() {
+		return m_sqlUserdata;
+	}
 	//界面分组字段
 	private List<String> jqGridGroupColumn = new ArrayList<String>();
 	//分组字段是否显示在表中
@@ -127,7 +127,7 @@ public class TmplUtil {
 		// 前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
 		//map_SetColumnsList = new LinkedHashMap<String, TmplConfigDetail>();
 		// 底行显示的求和与平均值字段
-		//m_sqlUserdata = new StringBuilder();
+		m_sqlUserdata = new StringBuilder();
 		
 		PageData pd=new PageData();
 		pd.put("TABLE_NO", tableNo);
@@ -235,20 +235,20 @@ public class TmplUtil {
 					// 底行显示的求和与平均值字段
 					// 1汇总 0不汇总,默认0
 					if (Integer.parseInt(m_columnsList.get(i).getCOL_SUM()) == 1) {
-						//if (m_sqlUserdata != null && !m_sqlUserdata.toString().trim().equals("")) {
-						//	m_sqlUserdata.append(", ");
-						//}
-						//m_sqlUserdata.append(" sum(" + getCOL_CODE + ") "
-						//		+ getCOL_CODE);
+						if (m_sqlUserdata != null && !m_sqlUserdata.toString().trim().equals("")) {
+							m_sqlUserdata.append(", ");
+						}
+						m_sqlUserdata.append(" sum(" + getCOL_CODE + ") "
+								+ getCOL_CODE);
 						jqGridColModelCustom.append(" summaryType:'sum', summaryTpl:'<b>sum:{0}</b>', ");
 					}
 					// 0不计算 1计算 默认0
 					else if (Integer.parseInt(m_columnsList.get(i).getCOL_AVE()) == 1) {
-						//if (m_sqlUserdata != null && !m_sqlUserdata.toString().trim().equals("")) {
-						//	m_sqlUserdata.append(", ");
-						//}
-						//m_sqlUserdata.append(" round(avg(" + getCOL_CODE + "), 2) "
-						//		+ m_columnsList.get(i).getCOL_CODE());
+						if (m_sqlUserdata != null && !m_sqlUserdata.toString().trim().equals("")) {
+							m_sqlUserdata.append(", ");
+						}
+						m_sqlUserdata.append(" round(avg(" + getCOL_CODE + "), 2) "
+								+ m_columnsList.get(i).getCOL_CODE());
 						jqGridColModelCustom.append(" summaryType:'avg', summaryTpl:'<b>avg:{0}</b>', ");
 					}
 					// 配置表中的表头显示
@@ -363,7 +363,7 @@ public class TmplUtil {
 		//分组字段是否显示在表中
 		InitJqGridGroupColumnShow();
 		// 底行显示的求和与平均值字段
-		//m_sqlUserdata = new StringBuilder();
+		m_sqlUserdata = new StringBuilder();
 		// 字典
 		m_dicList = new LinkedHashMap<String, Object>();
 		//表结构
@@ -467,20 +467,20 @@ public class TmplUtil {
 					// 底行显示的求和与平均值字段
 					// 1汇总 0不汇总,默认0
 					if (Integer.parseInt(m_columnsList.get(i).getCOL_SUM()) == 1) {
-						//if (m_sqlUserdata != null && !m_sqlUserdata.toString().trim().equals("")) {
-						//	m_sqlUserdata.append(", ");
-						//}
-						//m_sqlUserdata.append(" sum(" + m_columnsList.get(i).getCOL_CODE() + ") "
-						//		+ m_columnsList.get(i).getCOL_CODE());
+						if (m_sqlUserdata != null && !m_sqlUserdata.toString().trim().equals("")) {
+							m_sqlUserdata.append(", ");
+						}
+					    m_sqlUserdata.append(" sum(" + m_columnsList.get(i).getCOL_CODE() + ") "
+								+ m_columnsList.get(i).getCOL_CODE());
 						jqGridColModelCustom.append(" summaryType:'sum', summaryTpl:'<b>sum:{0}</b>', ");
 					}
 					// 0不计算 1计算 默认0
 					else if (Integer.parseInt(m_columnsList.get(i).getCOL_AVE()) == 1) {
-						//if (m_sqlUserdata != null && !m_sqlUserdata.toString().trim().equals("")) {
-						//	m_sqlUserdata.append(", ");
-						//}
-						//m_sqlUserdata.append(" round(avg(" + m_columnsList.get(i).getCOL_CODE() + "), 2) "
-						//		+ m_columnsList.get(i).getCOL_CODE());
+						if (m_sqlUserdata != null && !m_sqlUserdata.toString().trim().equals("")) {
+							m_sqlUserdata.append(", ");
+						}
+						m_sqlUserdata.append(" round(avg(" + m_columnsList.get(i).getCOL_CODE() + "), 2) "
+								+ m_columnsList.get(i).getCOL_CODE());
 						jqGridColModelCustom.append(" summaryType:'avg', summaryTpl:'<b>avg:{0}</b>', ");
 					}
 					// 配置表中的表头显示
@@ -570,7 +570,7 @@ public class TmplUtil {
 		//分组字段是否显示在表中
 		InitJqGridGroupColumnShow();
 		// 底行显示的求和与平均值字段
-		//m_sqlUserdata = new StringBuilder();
+		m_sqlUserdata = new StringBuilder();
 		// 字典
 		m_dicList = new LinkedHashMap<String, Object>();
 		//表结构
