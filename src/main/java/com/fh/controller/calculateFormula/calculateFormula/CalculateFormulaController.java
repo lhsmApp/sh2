@@ -23,6 +23,7 @@ import com.fh.service.tmplconfig.tmplconfig.TmplConfigManager;
 import com.fh.util.Jurisdiction;
 import com.fh.util.PageData;
 import com.fh.util.SqlTools;
+import com.fh.util.enums.TmplType;
 
 import net.sf.json.JSONArray;
 
@@ -81,7 +82,19 @@ public class CalculateFormulaController extends BaseController {
 		mv.addObject("dictString", dictString);*/
 		
 		mv.setViewName("calculateFormula/calculateFormula/calculateFormula_list");
-		mv.addObject("listBase", listBase);
+		List<PageData> listBaseImport=new ArrayList<PageData>();
+		for(PageData tableBase:listBase){
+			if(tableBase.get("TABLE_NO").toString().equals(TmplType.TB_STAFF_DETAIL_CONTRACT.getNameKey())
+			||tableBase.get("TABLE_NO").toString().equals(TmplType.TB_STAFF_DETAIL_MARKET.getNameKey())
+			||tableBase.get("TABLE_NO").toString().equals(TmplType.TB_STAFF_DETAIL_LABOR.getNameKey())
+			||tableBase.get("TABLE_NO").toString().equals(TmplType.TB_STAFF_DETAIL_SYS_LABOR.getNameKey())
+			||tableBase.get("TABLE_NO").toString().equals(TmplType.TB_STAFF_DETAIL_OPER_LABOR.getNameKey())
+			||tableBase.get("TABLE_NO").toString().equals(TmplType.TB_SOCIAL_INC_DETAIL.getNameKey())
+			||tableBase.get("TABLE_NO").toString().equals(TmplType.TB_HOUSE_FUND_DETAIL.getNameKey())){
+				listBaseImport.add(tableBase);
+			}
+		}
+		mv.addObject("listBase", listBaseImport);
 		// CUST_COL7 FMISACC 帐套字典
 		mv.addObject("fmisacc", DictsUtil.getDictsByParentBianma(dictionariesService, "FMISACC"));
 		String dicBillOff = DictsUtil.getDicValue(dictionariesService, "FMISACC");
