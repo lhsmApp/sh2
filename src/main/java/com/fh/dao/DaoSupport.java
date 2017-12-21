@@ -163,9 +163,9 @@ public class DaoSupport implements DAO {
 					}
 				}
 				sqlSession.update(sqlBatchDelAndIns, listAdd);
-				sqlSession.flushStatements();
-				sqlSession.commit();
-				sqlSession.clearCache();
+				//sqlSession.flushStatements();
+				//sqlSession.commit();
+				//sqlSession.clearCache();
 				PageData getAddSerialNo = new PageData();
 				getAddSerialNo.put("tableName", tableNameBackup);
 				getAddSerialNo.put("strMaxNum", strMaxNum);
@@ -352,9 +352,9 @@ public class DaoSupport implements DAO {
 					}
 				}
 			}
-			sqlSession.flushStatements();
-			sqlSession.commit();
-			sqlSession.clearCache();
+			//sqlSession.flushStatements();
+			//sqlSession.commit();
+			//sqlSession.clearCache();
 		} finally{
 			sqlSession.rollback(); 
 			sqlSession.close();
