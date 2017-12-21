@@ -20,7 +20,6 @@ import com.fh.controller.base.BaseController;
 import com.fh.controller.common.AcconutsShowList;
 import com.fh.controller.common.Common;
 import com.fh.controller.common.DictsUtil;
-import com.fh.controller.common.FilterBillCode;
 import com.fh.controller.common.QueryFeildString;
 import com.fh.controller.common.TmplUtil;
 import com.fh.entity.CommonBase;
@@ -227,9 +226,9 @@ public class AccountsQueryController extends BaseController {
 		detailReport += "                                      where STATE = '" + DurState.Sealed.getNameKey() + "' ";
 		detailReport += "                                      and BILL_TYPE = '" + getDetailTypeCode(SelectedTableNo) + "' ";
 		detailReport += "                                      ) ";
-		detailReport += FilterBillCode.getBillCodeNotInSumInvalidDetail(tbHouseFundSummy);
-		detailReport += FilterBillCode.getBillCodeNotInSumInvalidDetail(tbSocialIncSummy);
-		detailReport += FilterBillCode.getBillCodeNotInSumInvalidDetail(tbStaffSummy);
+		detailReport += QueryFeildString.getBillCodeNotInSumInvalidDetail(tbHouseFundSummy);
+		detailReport += QueryFeildString.getBillCodeNotInSumInvalidDetail(tbSocialIncSummy);
+		detailReport += QueryFeildString.getBillCodeNotInSumInvalidDetail(tbStaffSummy);
 		
 		//detailReport += FilterBillCode.getReportListenNotSummy(tbHouseFundSummy, TypeCodeGoldSummy, TypeCodeGoldListen);
 		//detailReport += FilterBillCode.getReportListenNotSummy(tbSocialIncSummy, TypeCodeSocialSummy, TypeCodeSocialListen);
@@ -736,9 +735,9 @@ public class AccountsQueryController extends BaseController {
 		String detailReport = "";
 		if("1".equals(tabType)){
 			if(bolFirst){
-				detailReport += FilterBillCode.getBillCodeNotInSumInvalidDetail(tbHouseFundSummy);
-				detailReport += FilterBillCode.getBillCodeNotInSumInvalidDetail(tbSocialIncSummy);
-				detailReport += FilterBillCode.getBillCodeNotInSumInvalidDetail(tbStaffSummy);
+				detailReport += QueryFeildString.getBillCodeNotInSumInvalidDetail(tbHouseFundSummy);
+				detailReport += QueryFeildString.getBillCodeNotInSumInvalidDetail(tbSocialIncSummy);
+				detailReport += QueryFeildString.getBillCodeNotInSumInvalidDetail(tbStaffSummy);
 				
 				//detailReport += FilterBillCode.getReportListenNotSummy(tbHouseFundSummy, TypeCodeGoldSummy, TypeCodeGoldListen);
 				//detailReport += FilterBillCode.getReportListenNotSummy(tbSocialIncSummy, TypeCodeSocialSummy, TypeCodeSocialListen);
@@ -746,9 +745,9 @@ public class AccountsQueryController extends BaseController {
 			}
 		} else if("2".equals(tabType)){
 			if(!bolFirst){
-				detailReport += FilterBillCode.getBillCodeNotInSumInvalidDetail(tbHouseFundSummy);
-				detailReport += FilterBillCode.getBillCodeNotInSumInvalidDetail(tbSocialIncSummy);
-				detailReport += FilterBillCode.getBillCodeNotInSumInvalidDetail(tbStaffSummy);
+				detailReport += QueryFeildString.getBillCodeNotInSumInvalidDetail(tbHouseFundSummy);
+				detailReport += QueryFeildString.getBillCodeNotInSumInvalidDetail(tbSocialIncSummy);
+				detailReport += QueryFeildString.getBillCodeNotInSumInvalidDetail(tbStaffSummy);
 				
 				//detailReport += FilterBillCode.getReportListenNotSummy(tbHouseFundSummy, TypeCodeGoldSummy, TypeCodeGoldListen);
 				//detailReport += FilterBillCode.getReportListenNotSummy(tbSocialIncSummy, TypeCodeSocialSummy, TypeCodeSocialListen);

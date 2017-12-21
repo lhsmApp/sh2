@@ -11,6 +11,7 @@ package com.fh.controller.common;
  *
  */
 public class Message {
+	public static String OperDataSumAlreadyChange = "操作的数据汇总已传输或已作废，请刷新！";
 	public static String OperDataAlreadySum = "操作的数据已汇总，请刷新！";
 	public static String RowDataTypeMustInput = "记录数据类型必须选择！";
 	public static String RowDataTypeInputError = "记录数据类型选择有误！";

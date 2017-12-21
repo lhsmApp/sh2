@@ -119,20 +119,56 @@
 		    $(gridBase_selector).jqGrid({
 			    url: '<%=basePath%>laborDetail/getPageList.do?',
 			    datatype: "json",
-			    colModel: jqGridColModel,
+			    colModel: [
+						{ name: 'SERIAL_NO', hidden: true, key: true, frozen: true},
+						{ name: 'USER_CODE__', hidden: true, key: true, frozen: true},
+						{ label: '员工编号', name: 'USER_CODE', 
+							editable: true, edittype:'text', editoptions:{maxLength:'30'}, editrules:{required:true}
+						},
+						{ label: '员工姓名', name: 'USER_NAME',
+							editable: true, edittype:'text', editoptions:{maxLength:'20'}
+						},
+						{ label: '应发合计', name: 'GROSS_PAY', sorttype: 'number', align: 'right', summaryType:'sum', summaryTpl:'<b>sum:{0}</b>',
+							editable: true, edittype:'text', editoptions:{maxlength:'12', number: true}, editrules: {number: true}, 
+						    searchrules: {number: true}
+						},
+						{ label: '应交税金', name: 'ACCRD_TAX', sorttype: 'number', align: 'right', summaryType:'sum', summaryTpl:'<b>sum:{0}</b>',
+							editable: true, edittype:'text', editoptions:{maxlength:'12', number: true}, editrules: {number: true}, 
+						    searchrules: {number: true}
+						},
+						{ label: '实发合计', name: 'ACT_SALY', sorttype: 'number', align: 'right', summaryType:'sum', summaryTpl:'<b>sum:{0}</b>',
+							editable: true, edittype:'text', editoptions:{maxlength:'12', number: true}, editrules: {number: true}, 
+						    searchrules: {number: true}
+						}],
 			    reloadAfterSubmit: true, 
 			    viewrecords: true, 
 			    shrinkToFit: false,
-			    rowNum: 100,
-			    rowList: [100,200,500],
-                sortable: true,
+			    rowNum: 0,
+				scroll: 1,
                 altRows: true, //斑马条纹
                 editurl: '<%=basePath%>laborDetail/edit.do?',
-			
+
+                sortable: true,
+                sortname: 'USER_CODE',
+    			sortorder: 'asc',
+    			
 	            pager: pagerBase_selector,
 	            footerrow: true,
 	            userDataOnFooter: true,
 	            ondblClickRow: doubleClickRow,
+	            
+	            grouping: true,
+				groupingView: {
+					groupField: ['USER_CODE'],
+					groupOrder: ['asc'],
+					groupColumnShow: [true],
+					groupText: ['<b>{0}</b>'],
+					groupSummary: [true],
+					groupSummaryPos: ['footer'], //header
+					groupCollapse: false,
+	                plusicon : 'fa fa-chevron-down bigger-110',
+					minusicon : 'fa fa-chevron-up bigger-110'
+				},
 			
 	            loadComplete : function() {
 	                var table = this;
@@ -375,9 +411,7 @@
     					top.jzts();
     					$.ajax({
     						type: "POST",
-    						url: '<%=basePath%>laborDetail/deleteAll.do?'
-    							+ 'SelectedDepartCode='+$("#SelectedDepartCode").val()
-    				            + '&SelectedCustCol7='+$("#SelectedCustCol7").val(),
+    						url: '<%=basePath%>laborDetail/deleteAll.do?',
     				    	data: {DataRows:JSON.stringify(listData)},
     						dataType:'json',
     						cache: false,
@@ -445,9 +479,7 @@
      					top.jzts();
      					$.ajax({
      						type: "POST",
-     						url: '<%=basePath%>laborDetail/updateAll.do?'
-     							+ 'SelectedDepartCode='+$("#SelectedDepartCode").val()
-     				            + '&SelectedCustCol7='+$("#SelectedCustCol7").val(),
+     						url: '<%=basePath%>laborDetail/updateAll.do?',
      				    	data: {DataRows:JSON.stringify(listData)},
      						dataType:'json',
      						cache: false,
@@ -518,9 +550,7 @@
 			            top.jzts();
 			            $.ajax({
 			                type: "POST",
-			                url: '<%=basePath%>laborDetail/calculation.do?'
-			                    +'SelectedDepartCode='+$("#SelectedDepartCode").val()
-                                +'&SelectedCustCol7='+$("#SelectedCustCol7").val(),
+			                url: '<%=basePath%>laborDetail/calculation.do?',
                             data: {DataRows:JSON.stringify(listData)},
                             dataType:'json',
                             cache: false,
@@ -571,9 +601,7 @@
             var diag = new top.Dialog();
             diag.Drag=true;
             diag.Title ="EXCEL 导入到数据库";
-            diag.URL = '<%=basePath%>laborDetail/goUploadExcel.do?'
-                + 'SelectedDepartCode='+$("#SelectedDepartCode").val()
-                + '&SelectedCustCol7='+$("#SelectedCustCol7").val();
+            diag.URL = '<%=basePath%>laborDetail/goUploadExcel.do?';
             diag.Width = 300;
             diag.Height = 150;
             diag.CancelEvent = function(){ //关闭事件
@@ -589,9 +617,7 @@
          * 导出
          */
         function exportItems(){
-            window.location.href='<%=basePath%>laborDetail/excel.do?'
-                + 'SelectedDepartCode='+$("#SelectedDepartCode").val()
-                + '&SelectedCustCol7='+$("#SelectedCustCol7").val();
+            window.location.href='<%=basePath%>laborDetail/excel.do?';
         }
 
         /**

@@ -21,7 +21,6 @@ import com.fh.controller.base.BaseController;
 import com.fh.controller.common.BillCodeUtil;
 import com.fh.controller.common.Common;
 import com.fh.controller.common.DictsUtil;
-import com.fh.controller.common.FilterBillCode;
 import com.fh.controller.common.QueryFeildString;
 import com.fh.controller.common.SelectBillCodeOptions;
 import com.fh.controller.common.TmplUtil;
@@ -512,7 +511,7 @@ public class HouseFundSummyController extends BaseController {
 			}
 			QueryFeild += " and BILL_CODE in (" + QueryFeildString.tranferListValueToSqlInString(listBillCode) + ") ";
 			QueryFeild += QueryFeildString.getNotReportBillCode(TypeCodeTransfer, SystemDateTime, SelectedCustCol7, AllDeptCode + "," + SelectedDepartCode);
-			QueryFeild += FilterBillCode.getBillCodeNotInSumInvalidDetail(TableNameBase);
+			QueryFeild += QueryFeildString.getBillCodeNotInSumInvalidDetail(TableNameBase);
 		} else {
 			bolDeleteSummy = false;
 			PageData getQueryFeildPd = new PageData();
@@ -559,8 +558,8 @@ public class HouseFundSummyController extends BaseController {
 		//TableName CanOperate
 
 		String CanOperNotReport = QueryFeildString.getNotReportBillCode(TypeCodeTransfer, SystemDateTime, SelectedCustCol7, AllDeptCode + "," + SelectedDepartCode);
-		String CanOperNotReportNotInSumInvalidBill = CanOperNotReport + FilterBillCode.getBillCodeNotInSumInvalidBill();
-		String CanOperNotReportNotInSumInvalidDetail = CanOperNotReport + FilterBillCode.getBillCodeNotInSumInvalidDetail(TableNameBase);
+		String CanOperNotReportNotInSumInvalidBill = CanOperNotReport + QueryFeildString.getBillCodeNotInSumInvalidBill();
+		String CanOperNotReportNotInSumInvalidDetail = CanOperNotReport + QueryFeildString.getBillCodeNotInSumInvalidDetail(TableNameBase);
 		
 		PageData pdBillNum=new PageData();
 		if(bolDeleteSummy){//删除添加

@@ -7,6 +7,7 @@ import java.util.Map;
 
 import com.fh.entity.TableColumns;
 import com.fh.util.PageData;
+import com.fh.util.enums.BillState;
 
 /**
  * 
@@ -150,6 +151,62 @@ public class QueryFeildString {
 				+ "                             AND BILL_OFF = '" + BILL_OFF + "') ";
 		return strRet;
 	}
+	
+	public static String getReportBillCode(String BILL_TYPE, String RPT_DUR, String BILL_OFF, String SqlInRPT_DEPT) throws Exception{
+		String strInRPT_DEPT = getSqlInString(SqlInRPT_DEPT);
+		String strRet = " and BILL_CODE in (SELECT bill_code FROM tb_sys_sealed_info "
+				+ "                             WHERE state = '1' "
+				+ "                             AND RPT_DUR = '" + RPT_DUR + "' "
+				+ "                             AND RPT_DEPT in (" + strInRPT_DEPT + ") "
+				+ "                             AND BILL_TYPE = '" + BILL_TYPE + "' "
+				+ "                             AND BILL_OFF = '" + BILL_OFF + "') ";
+		return strRet;
+	}
+	
+    //汇总单据状态不为0，就是没汇总或汇总但没作废
+	public static String getBillCodeNotInSumInvalidBill(){
+		String strReturn = " and BILL_STATE not in ('" + BillState.Invalid.getNameKey() + "') ";
+		return strReturn;
+	}
+	
+    //汇总单据状态不为0，就是没汇总或汇总但没作废
+	public static String getBillCodeNotInSumInvalidDetail(String tableNameSummy){
+		String strReturn = " and BILL_CODE not in (select BILL_CODE from " + tableNameSummy + " where BILL_STATE = '" + BillState.Invalid.getNameKey() + "') ";
+		return strReturn;
+	}
+	
+    //单据没汇总
+	public static String getBillCodeNotSum(String tableNameSummy){
+		String strReturn = " and BILL_CODE not in (select BILL_CODE from " + tableNameSummy + ") ";
+		return strReturn;
+	}
+	
+    //
+	public static String getCheckDetailBillCode(String tableNameSummy,
+			String BILL_TYPE, String RPT_DUR, String BILL_OFF, String SqlInRPT_DEPT) throws Exception{
+		String strReturn = " and (BILL_CODE in (select BILL_CODE from " + tableNameSummy + " where BILL_STATE = '" + BillState.Invalid.getNameKey() + "') "
+				+ "               or "
+				+ "               (1=1 " + getReportBillCode(BILL_TYPE, RPT_DUR, BILL_OFF, SqlInRPT_DEPT) + ") "
+				+ "               ) ";
+		return strReturn;
+	}
+	
+    //
+	public static String getCheckSummyBillCode(String BILL_TYPE, String RPT_DUR, String BILL_OFF, String SqlInRPT_DEPT) throws Exception{
+		String strReturn = " and (BILL_STATE = '" + BillState.Invalid.getNameKey() + "' "
+				+ "               or "
+				+ "               (1=1 " + getReportBillCode(BILL_TYPE, RPT_DUR, BILL_OFF, SqlInRPT_DEPT) + ") "
+				+ "               ) ";
+		return strReturn;
+	}
+	
+	
+	
+	
+	
+	
+	
+	
 
 	public static String getDetailQueryFeild(PageData pd, List<String> SumFieldDetail, String keyExtra){
     	String strQueryFeild = "";
@@ -180,6 +237,18 @@ public class QueryFeildString {
 			}
 		}
 		return strIn;
+	}
+	
+	public static String getSqlInString(List<PageData> pdList, String str, String strFeild, String strFeildExtra){
+		StringBuilder ret = new StringBuilder();
+		if(str==null) str = "";
+		for(PageData val : pdList){
+			if(!ret.toString().trim().equals("")){
+				ret.append(",");
+			}
+			ret.append(" " + str + val.get(strFeild + strFeildExtra) + str + " ");
+		}
+		return ret.toString();
 	}
 	
 	public static String getFieldSelectKey(List<String> keyListBase, String keyExtra) throws Exception{

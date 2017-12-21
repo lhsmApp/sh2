@@ -3,17 +3,17 @@
 <mapper namespace="LaborDetailMapper">
 	
 <!-- 
- * 说明： 社保明细
+ * 说明： 劳务报酬所得导入
  * 创建人：zhangxiaoliu
  * 创建时间：2017-06-19
  * @version
  -->
 	<!--表名 -->
 	<sql id="tableNameDetail">
-		tb_social_inc_detail
+		TB_LABOR_DETAIL
 	</sql>
 	<sql id="tableNameBackup">
-		tb_social_inc_detail_backup
+		TB_LABOR_DETAIL_backup
 	</sql>
 	
 	<!-- 获取单号下拉列表数据源 -->

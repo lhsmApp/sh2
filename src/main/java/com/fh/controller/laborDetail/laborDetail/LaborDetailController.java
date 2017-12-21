@@ -21,10 +21,8 @@ import org.springframework.web.servlet.ModelAndView;
 import com.fh.controller.base.BaseController;
 import com.fh.controller.common.Common;
 import com.fh.controller.common.DictsUtil;
-import com.fh.controller.common.FilterBillCode;
 import com.fh.controller.common.Message;
 import com.fh.controller.common.QueryFeildString;
-import com.fh.controller.common.SelectBillCodeOptions;
 import com.fh.controller.common.TmplUtil;
 import com.fh.entity.CommonBase;
 import com.fh.entity.JqPage;
@@ -38,15 +36,13 @@ import com.fh.util.Const;
 import com.fh.util.ObjectExcelView;
 import com.fh.util.PageData;
 import com.fh.util.SqlTools;
-import com.fh.util.enums.TmplType;
 import com.fh.util.Jurisdiction;
 import com.fh.util.excel.LeadingInExcelToPageData;
-import com.fh.util.excel.TransferSbcDbc;
 
 import net.sf.json.JSONArray;
 
 import com.fh.service.fhoa.department.impl.DepartmentService;
-import com.fh.service.socialIncDetail.socialincdetail.impl.SocialIncDetailService;
+import com.fh.service.laborDetail.laborDetail.impl.LaborDetailService;
 import com.fh.service.sysConfig.sysconfig.SysConfigManager;
 import com.fh.service.sysSealedInfo.syssealedinfo.impl.SysSealedInfoService;
 import com.fh.service.system.dictionaries.impl.DictionariesService;
@@ -55,7 +51,7 @@ import com.fh.service.tmplConfigDict.tmplconfigdict.impl.TmplConfigDictService;
 import com.fh.service.tmplconfig.tmplconfig.impl.TmplConfigService;
 
 /** 
- * 说明：社保明细
+ * 说明：劳务报酬所得导入
  * 创建人：zhangxiaoliu
  * 创建时间：2017-06-30
  */
@@ -64,8 +60,8 @@ import com.fh.service.tmplconfig.tmplconfig.impl.TmplConfigService;
 public class LaborDetailController extends BaseController {
 	
 	String menuUrl = "laborDetail/list.do"; //菜单地址(权限用)
-	@Resource(name="socialincdetailService")
-	private SocialIncDetailService socialincdetailService;
+	@Resource(name="laborDetailService")
+	private LaborDetailService laborDetailService;
 	@Resource(name="tmplconfigService")
 	private TmplConfigService tmplconfigService;
 	@Resource(name="syssealedinfoService")
@@ -82,10 +78,8 @@ public class LaborDetailController extends BaseController {
 	private UserManager userService;
 	
 	//表名
-	String TableNameDetail = "tb_social_inc_detail";
-	String TableNameBackup = "tb_social_inc_detail_backup";
-	//枚举类型  1工资明细,2工资汇总,3公积金明细,4公积金汇总,5社保明细,6社保汇总,7工资接口,8公积金接口,9社保接口
-    String TypeCodeDetail = TmplType.TB_SOCIAL_INC_DETAIL.getNameKey();
+	String TableNameDetail = "TB_LABOR_DETAIL";
+	String TableNameBackup = "TB_LABOR_DETAIL_backup";
 
 	//页面显示数据的年月
 	String SystemDateTime = "";
@@ -207,13 +201,13 @@ public class LaborDetailController extends BaseController {
 			getPd.put("FieldSelectKey", strFieldSelectKey);
 		}
 		page.setPd(getPd);
-		List<PageData> varList = socialincdetailService.JqPage(page);	//列出Betting列表
-		int records = socialincdetailService.countJqGridExtend(page);
+		List<PageData> varList = laborDetailService.JqPage(page);	//列出Betting列表
+		int records = laborDetailService.countJqGridExtend(page);
 		PageData userdata = null;
 		//if(SqlUserdata!=null && !SqlUserdata.toString().trim().equals("")){
 		//	//底行显示的求和与平均值字段
 		//	getPd.put("Userdata", SqlUserdata.toString());
-		//    userdata=socialincdetailService.getFooterSummary(page);
+		//    userdata=laborDetailService.getFooterSummary(page);
 		//}
 		
 		PageResult<PageData> result = new PageResult<PageData>();
@@ -294,7 +288,7 @@ public class LaborDetailController extends BaseController {
 			
 			List<PageData> listData = new ArrayList<PageData>();
 			listData.add(getPd);
-			socialincdetailService.batchUpdateDatabase(listData);
+			laborDetailService.batchUpdateDatabase(listData);
 			commonBase.setCode(0);
 		}
 	
@@ -357,7 +351,7 @@ public class LaborDetailController extends BaseController {
         	//Common.setModelDefault(item, map_HaveColumnsList, map_SetColumnsList);
         }
 		if(null != listData && listData.size() > 0){
-				socialincdetailService.batchUpdateDatabase(listData);
+				laborDetailService.batchUpdateDatabase(listData);
 				commonBase.setCode(0);
 		}
 		return commonBase;
@@ -415,7 +409,7 @@ public class LaborDetailController extends BaseController {
         	for(PageData item : listData){
         	    //item.put("CanOperate", strHelpful);
             }
-			socialincdetailService.deleteAll(listData);
+			laborDetailService.deleteAll(listData);
 			commonBase.setCode(0);
 		}
 		return commonBase;
@@ -723,7 +717,7 @@ public class LaborDetailController extends BaseController {
     		//		TmplUtil.keyExtra, keyListBase, 
     		//		tmplconfigService);
     		
-    		//List<PageData> dataCalculation = socialincdetailService.getDataCalculation(TableNameBackup, sqlRetSelect, listAdd);
+    		//List<PageData> dataCalculation = laborDetailService.getDataCalculation(TableNameBackup, sqlRetSelect, listAdd);
     		//if(dataCalculation!=null){
     		//	for(PageData each : dataCalculation){
     		//		if(IsAdd){
@@ -736,7 +730,7 @@ public class LaborDetailController extends BaseController {
     		//}
     		
     		//此处执行集合添加 
-    		//socialincdetailService.batchUpdateDatabase(dataCalculation);
+    		//laborDetailService.batchUpdateDatabase(dataCalculation);
     		commonBase.setCode(0);
     		commonBase.setMessage(strErrorMessage);
     	}
@@ -768,8 +762,8 @@ public class LaborDetailController extends BaseController {
 		transferPd.put("SelectedCustCol7", SelectedCustCol7);
 		////员工组
 		//transferPd.put("emplGroupType", emplGroupType);
-		List<PageData> varOList = socialincdetailService.exportModel(transferPd);
-		return null;//export(varOList, "SocialIncDetail", map_SetColumnsList); //社保明细
+		List<PageData> varOList = laborDetailService.exportModel(transferPd);
+		return null;//export(varOList, "LaborDetail", map_SetColumnsList); //社保明细
 	}
 	
 	 /**导出到excel
@@ -802,7 +796,7 @@ public class LaborDetailController extends BaseController {
 		getPd.put("SelectedDepartCode", SelectedDepartCode);
 
 		page.setPd(getPd);
-		List<PageData> varOList = socialincdetailService.exportList(page);
+		List<PageData> varOList = laborDetailService.exportList(page);
 		return null;//export(varOList, "", map_SetColumnsList);
 	}
 	
@@ -852,7 +846,7 @@ public class LaborDetailController extends BaseController {
 	
 	private String CheckState(List<PageData> pdSerialNo) throws Exception{
 		String strRut = "";
-		List<PageData> pdBillCode = socialincdetailService.getBillCodeBySerialNo(pdSerialNo);
+		List<PageData> pdBillCode = laborDetailService.getBillCodeBySerialNo(pdSerialNo);
 		//String strCanOperate = FilterBillCode.getBillCodeNotInSumInvalidDetail(TableNameSummy) + QueryFeildString.getNotReportBillCode();
 		if(pdBillCode != null){
 			for(PageData pd : pdBillCode){

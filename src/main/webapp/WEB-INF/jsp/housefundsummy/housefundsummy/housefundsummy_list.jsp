@@ -90,7 +90,7 @@
 											<span class="pull-left" style="margin-right: 5px;">
 												<select class="chosen-select form-control"
 													name="SelectedBillCode" id="SelectedBillCode"
-													style="vertical-align: top; height:32px;width: 150px;">
+													style="vertical-align: top; height:32px;width: 160px;">
 												</select>
 											</span>
 											
