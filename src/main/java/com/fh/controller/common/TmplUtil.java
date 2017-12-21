@@ -49,10 +49,10 @@ public class TmplUtil {
 	}
 
 	// 字典
-	//private Map<String, Object> m_dicList = new LinkedHashMap<String, Object>();
-	//public Map<String, Object> getDicList() {
-	//	return m_dicList;
-	//}
+	private Map<String, Object> m_dicList = new LinkedHashMap<String, Object>();
+	public Map<String, Object> getDicList() {
+		return m_dicList;
+	}
 	
 	//表结构  
 	//private Map<String, TableColumns> map_HaveColumnsList = new LinkedHashMap<String, TableColumns>();
@@ -121,7 +121,7 @@ public class TmplUtil {
 		//分组字段是否显示在表中
 		InitJqGridGroupColumnShow();
 		// 字典
-		//m_dicList = new LinkedHashMap<String, Object>();
+		m_dicList = new LinkedHashMap<String, Object>();
 		//表结构
 		//map_HaveColumnsList = new LinkedHashMap<String, TableColumns>();
 		// 前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
@@ -166,7 +166,7 @@ public class TmplUtil {
 					// 配置表中的字典
 					if (m_columnsList.get(i).getDICT_TRANS() != null
 							&& !m_columnsList.get(i).getDICT_TRANS().trim().equals("")) {
-						String strDicValue = Common.getDicValue(m_columnsList.get(i).getDICT_TRANS(), //m_dicList, 
+						String strDicValue = Common.getDicValue(m_dicList, m_columnsList.get(i).getDICT_TRANS(), //
 								tmplConfigDictService, dictionariesService, 
 								departmentService, userService, AdditionalReportColumns);
 						String strSelectValue = ":";
@@ -365,7 +365,7 @@ public class TmplUtil {
 		// 底行显示的求和与平均值字段
 		//m_sqlUserdata = new StringBuilder();
 		// 字典
-		//m_dicList = new LinkedHashMap<String, Object>();
+		m_dicList = new LinkedHashMap<String, Object>();
 		//表结构
 		//map_HaveColumnsList = new LinkedHashMap<String, TableColumns>();
 		// 前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
@@ -380,7 +380,7 @@ public class TmplUtil {
 			jqGridColModelAdditionalColumns.append(" name: '").append(AdditionalReportColumns).append("', ");
 			jqGridColModelAdditionalColumns.append(" label: '封存状态', ");
 
-			String strDicValue = Common.getDicValue(AdditionalReportColumns,//m_dicList, 
+			String strDicValue = Common.getDicValue(m_dicList, AdditionalReportColumns,//
 					tmplConfigDictService, dictionariesService, 
 					departmentService, userService, AdditionalReportColumns);
 			String strSelectValue = ":";
@@ -432,7 +432,7 @@ public class TmplUtil {
 					// 配置表中的字典
 					if (m_columnsList.get(i).getDICT_TRANS() != null
 							&& !m_columnsList.get(i).getDICT_TRANS().trim().equals("")) {
-						String strDicValue = Common.getDicValue(m_columnsList.get(i).getDICT_TRANS(),//m_dicList, 
+						String strDicValue = Common.getDicValue(m_dicList, m_columnsList.get(i).getDICT_TRANS(),//
 								tmplConfigDictService, dictionariesService, 
 								departmentService, userService, AdditionalReportColumns);
 
@@ -572,7 +572,7 @@ public class TmplUtil {
 		// 底行显示的求和与平均值字段
 		//m_sqlUserdata = new StringBuilder();
 		// 字典
-		//m_dicList = new LinkedHashMap<String, Object>();
+		m_dicList = new LinkedHashMap<String, Object>();
 		//表结构
 		//map_HaveColumnsList = new LinkedHashMap<String, TableColumns>();
 		// 前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
@@ -610,7 +610,7 @@ public class TmplUtil {
 					// 配置表中的字典
 					if (m_columnsList.get(i).getDICT_TRANS() != null
 							&& !m_columnsList.get(i).getDICT_TRANS().trim().equals("")) {
-						String strDicValue = Common.getDicValue(m_columnsList.get(i).getDICT_TRANS(),//m_dicList, 
+						String strDicValue = Common.getDicValue(m_dicList, m_columnsList.get(i).getDICT_TRANS(),//
 								tmplConfigDictService, dictionariesService, 
 								departmentService, userService, AdditionalReportColumns);
 

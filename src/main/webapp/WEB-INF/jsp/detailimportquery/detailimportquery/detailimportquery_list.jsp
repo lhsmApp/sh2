@@ -94,7 +94,7 @@
 			
 							<div class="row">
 							<div class="col-xs-12">
-								<div class="widget-box" hidden>
+								<div class="widget-box">
 									<div class="widget-body">
 										<div class="widget-main">
 											<form class="form-inline">
@@ -323,9 +323,13 @@
 				success: function(response){
 					if(response.code==0){
 						$(top.hangge());//关闭加载状态
-						//前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
-					    jqGridColModel = eval("(" + response.message + ")");//此处记得用eval()行数将string转为array
-						SetStructure();
+						var mes = response.message;
+						mes = mes.replace("[", "").replace("]", "");
+						if($.trim(mes)!=""){
+						    //前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
+					        jqGridColModel = eval("(" + response.message + ")");//此处记得用eval()行数将string转为array
+						    SetStructure();
+						}
 					}else{
 						$(top.hangge());//关闭加载状态
 						$("#subTitle").tips({

@@ -984,19 +984,24 @@ public class StaffDetailController extends BaseController {
 								List<String> listUserCode = new ArrayList<String>();
 								String strCalculationMessage = "";
 								for(PageData pdSet : getCommonBaseAndList.getList()){
-									String pdSetUSER_CODE = pdSet.getString("USER_CODE");
-									if(!listUserCode.contains(pdSetUSER_CODE)){
-										BigDecimal douCalTax = (BigDecimal) pdSet.get(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra + TmplUtil.keyExtra);
-										BigDecimal douImpTax = (BigDecimal) pdSet.get(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra);
-										if(!(douCalTax!=null && douCalTax.compareTo(douImpTax)==0)){
-											strCalculationMessage += "员工编号:" + pdSetUSER_CODE 
-													+ " 员工姓名:" + pdSet.getString("USER_NAME")
-													//+ " 应纳税额:" + pdSetUSER_CODE 
-													+ " 导入的纳税额:" + douImpTax 
-													+ " 应导入的纳税额:" + douCalTax + "\\n";
+									//if(SelectedTableNo.equals(TmplType.TB_STAFF_DETAIL_CONTRACT.getNameKey()) 
+									//		|| SelectedTableNo.equals(TmplType.TB_STAFF_DETAIL_MARKET.getNameKey())){
+										String pdSetUSER_CODE = pdSet.getString("USER_CODE");
+										if(!listUserCode.contains(pdSetUSER_CODE)){
+											BigDecimal douCalTax = (BigDecimal) pdSet.get(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra + TmplUtil.keyExtra);
+											BigDecimal douImpTax = (BigDecimal) pdSet.get(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra);
+											if(!(douCalTax!=null && douCalTax.compareTo(douImpTax)==0)){
+												strCalculationMessage += "员工编号:" + pdSetUSER_CODE 
+														+ " 员工姓名:" + pdSet.getString("USER_NAME")
+														//+ " 应纳税额:" + pdSetUSER_CODE 
+														+ " 导入的纳税额:" + douImpTax 
+														+ " 应导入的纳税额:" + douCalTax + "\\n";
+											}
 										}
-									}
-									listUserCode.add(pdSetUSER_CODE);
+										listUserCode.add(pdSetUSER_CODE);
+									//} else {
+									//	pdSet.put(TableFeildTaxCanNotHaveFormula, pdSet.get(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra));
+									//}
 								}
 								if(strCalculationMessage!=null && !strCalculationMessage.trim().equals("")){
 									commonBase.setCode(2);

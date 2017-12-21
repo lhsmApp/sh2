@@ -80,7 +80,7 @@ public class Common {
 			for (int i = 0; i < m_columnsList.size(); i++) {
 				String getDICT_TRANS = m_columnsList.get(i).getDICT_TRANS();
 				if (getDICT_TRANS != null && !getDICT_TRANS.trim().equals("") && !m_DicList.containsKey(getDICT_TRANS)) {
-				Common.getDicValue(m_columnsList.get(i).getDICT_TRANS(), //m_DicList, 
+				Common.getDicValue(m_DicList, m_columnsList.get(i).getDICT_TRANS(),
 						tmplConfigDictService, dictionariesService, 
 						departmentService, userService, AdditionalReportColumns);
 				}
@@ -284,7 +284,7 @@ public class Common {
 
 
 
-	public static String getDicValue(String dicName, //Map<String, Object> m_dicList, 
+	public static String getDicValue(Map<String, Object> m_dicList, String dicName,
 			TmplConfigDictManager tmplConfigDictService, DictionariesManager dictionariesService, 
 			DepartmentManager departmentService,UserManager userService,
 			String AdditionalReportColumns) throws Exception {
@@ -355,9 +355,9 @@ public class Common {
 				}
 			}
 		}
-		//if (!m_dicList.containsKey(dicName)) {
-		//	m_dicList.put(dicName, dicAdd);
-		//}
+		if (m_dicList!=null && !m_dicList.containsKey(dicName)) {
+			m_dicList.put(dicName, dicAdd);
+		}
 		return ret.toString();
 	}
 	
