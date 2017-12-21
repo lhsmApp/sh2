@@ -50,7 +50,7 @@
 
 						<button id="btnQuery" class="btn btn-white btn-info btn-sm"
 							onclick="showQueryCondi($('#jqGrid'),gridHeight)">
-							<i class="ace-icon fa fa-chevron-down bigger-120 blue"></i> <span>显示查询</span>
+							<i class="ace-icon fa fa-chevron-up bigger-120 blue"></i> <span>隐藏查询</span>
 						</button>
 						<!-- <button id="btnValidate" class="btn btn-white btn-info btn-sm" title="校验还未进行上报的二级单位汇总数据"
 							onclick="transferValidate()">
@@ -247,27 +247,15 @@
 		
 		//dropDownStyle();
 		//前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
-	    jqGridColModel = eval("(${jqGridColModel})");//此处记得用eval()行数将string转为array
+	    //jqGridColModel = eval("(${jqGridColModel})");//此处记得用eval()行数将string转为array
 	    //jqGridColModelSub = eval("(${jqGridColModelSub})");
-	    var certCode={label: '凭证号',name:'CERT_CODE', width:100};
-	    var revcertCode={label: '冲销凭证号',name:'REVCERT_CODE', width:100};
-	    var certBillDate={label: '凭证日期',name:'CERT_BILL_DATE', width:100,hidden:true};
 	    
-	    jqGridColModel.unshift(certCode,revcertCode,certBillDate);
+	    
+	    
 	    //jqGridColModel1=jqGridColModel.concat();
 	    //jqGridColModel1.unshift(certCode,revcertCode);
-		//resize to fit page size
-		$(window).on('resize.jqGrid', function () {
-			$("#jqGrid").jqGrid( 'setGridWidth', $(".page-content").width());
-			if(${HasUserData}){
-				//gridHeight=251;
-				gridHeight=236;
-			}else{
-				//gridHeight=213;
-				gridHeight=198;
-			}
-			resizeGridHeight($("#jqGrid"),gridHeight);
-	    });
+		
+	    
 		
 		//初始化当前选择凭证类型
 		if('${pd.which}'!=""){
@@ -378,9 +366,31 @@
 			}
 		});
 		
+		
+	});
+	
+	function SetStructure(){
+		var certCode={label: '凭证号',name:'CERT_CODE', width:100};
+	    var revcertCode={label: '冲销凭证号',name:'REVCERT_CODE', width:100};
+	    var certBillDate={label: '凭证日期',name:'CERT_BILL_DATE', width:100,hidden:true};
+	    jqGridColModel.unshift(certCode,revcertCode,certBillDate);
+		
+		//resize to fit page size
+		$(window).on('resize.jqGrid', function () {
+			$("#jqGrid").jqGrid( 'setGridWidth', $(".page-content").width());
+			if(${HasUserData}){
+				//gridHeight=251;
+				gridHeight=236;
+			}else{
+				//gridHeight=213;
+				gridHeight=198;
+			}
+			resizeGridHeight($("#jqGrid"),gridHeight);
+	    });	
+	
 		$("#jqGrid").jqGrid({
 			url: "<%=basePath%>voucher/getPageList.do",
-			postData:{"VOUCHER_TYPE":1,"TABLE_CODE":"${pd.which}","BUSI_DATE":$("#busiDate").val(),"FMISACC":$("#FMISACC").val()},
+			postData:{"VOUCHER_TYPE":1,"TABLE_CODE":"${pd.which}","BUSI_DATE":$("#busiDate").val(),"DEPT_CODE":$("#departCode").val(),"FMISACC":$("#FMISACC").val()},
 			datatype: "json",
 			colModel: jqGridColModel,
 			reloadAfterSubmit: true, 
@@ -510,7 +520,7 @@
            position: "last",
            onClickButton: batchVoucher
        }); */
-	});
+	}
 	
 
 	//批量获取凭证号
@@ -863,13 +873,14 @@
     	console.log("gridSelect  "+gridSelect);
 		var parentRowData = $("#" + gridSelect).getRowData(parentRowKey);
     	var DEPT_CODE = parentRowData.DEPT_CODE;
+    	var fmi = parentRowData.CUST_COL7;
     	console.log(DEPT_CODE);
     	
     	var detailColModel = "[]";
 		$.ajax({
 			type: "GET",
 			url: '<%=basePath%>voucher/getDetailColModel.do?',
-	    	data: {DEPT_CODE:DEPT_CODE,TABLE_CODE:which},
+	    	data: {DEPT_CODE:DEPT_CODE,TABLE_CODE:which,FMISACC:fmi},
 			dataType:'json',
 			cache: false,
 			success: function(response){
@@ -1013,14 +1024,55 @@
 			});
 	        return;
         }
-        var busiDate = $("#busiDate").val(); 
+        $("#jqGrid").jqGrid('GridUnload'); 
+        //前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
+	    jqGridColModel = "[]";
+	    top.jzts();
+		$.ajax({
+			type: "POST",
+			url: '<%=basePath%>voucher/getShowColModel.do?'
+                +'SelectedDepartCode='+$("#departCode").val()
+                +'&SelectedCustCol7='+$("#FMISACC").val()
+	            +'&SelectedBillCode='+$("#SelectedBillCode").val(),
+			dataType:'json',
+			cache: false,
+			success: function(response){
+				if(response.code==0){
+					$(top.hangge());//关闭加载状态
+					var mes = response.message;
+					mes = mes.replace("[", "").replace("]", "");
+					if($.trim(mes)!=""){
+					    //前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
+				        jqGridColModel = eval("(" + response.message + ")");//此处记得用eval()行数将string转为array
+					    SetStructure();
+					}
+				}else{
+					$(top.hangge());//关闭加载状态
+					$("#subTitle").tips({
+						side:3,
+			            msg:'获取显示结构失败：'+response.message,
+			            bg:'#cc0033',
+			            time:3
+			        });
+				}
+			},
+	    	error: function(response) {
+				$(top.hangge());//关闭加载状态
+				$("#subTitle").tips({
+					side:3,
+		            msg:'获取显示结构出错：'+response.responseJSON.message,
+		            bg:'#cc0033',
+		            time:3
+		        });
+	    	}
+		});
+		
+        /* var busiDate = $("#busiDate").val(); 
 		var deptCode = $("#departCode").val(); 
 		var fmi = $("#FMISACC").val();
 		var partUserType = $("#PARTUSERTYPE").val(); 
 		var salaryRange = $("#SALARYRANGE").val();
 		var billCode=$("#SelectedBillCode").val();
-		console.log(billCode);
-		console.log(voucherType);
 		if(voucherType=="1"){
 			console.log("cccc");
 			$("#jqGrid").jqGrid("setGridParam",{postData:{"BILL_CODE":billCode,"VOUCHER_TYPE":voucherType,"TABLE_CODE":'${pd.which}',"BUSI_DATE":busiDate,"DEPT_CODE":deptCode,"FMISACC":fmi,"USER_CATG":partUserType,"SAL_RANGE":salaryRange}})
@@ -1029,8 +1081,7 @@
 			console.log("dddd");
 			$("#jqGrid").jqGrid("setGridParam",{postData:{"VOUCHER_TYPE":voucherType,"TABLE_CODE":'${pd.which}',"BUSI_DATE":busiDate,"DEPT_CODE":deptCode,"FMISACC":fmi,"USER_CATG":partUserType,"SAL_RANGE":salaryRange}})
 			.trigger("reloadGrid");
-		}
-		
+		} */
 	}  
 	
 	//加载单位树

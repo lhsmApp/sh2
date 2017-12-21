@@ -50,7 +50,7 @@
 
 						<button id="btnQuery" class="btn btn-white btn-info btn-sm"
 							onclick="showQueryCondi($('#jqGrid'),gridHeight)">
-							<i class="ace-icon fa fa-chevron-down bigger-120 blue"></i> <span>显示查询</span>
+							<i class="ace-icon fa fa-chevron-up bigger-120 blue"></i> <span>隐藏查询</span>
 						</button>
 						<div class="pull-right">
 							<span class="green middle bolder">凭证数据类型: &nbsp;</span>
@@ -86,7 +86,7 @@
 
 					<div class="row">
 						<div class="col-xs-12">
-							<div class="widget-box" hidden>
+							<div class="widget-box">
 								<div class="widget-body">
 									<div class="widget-main">
 											<form class="form-inline">
@@ -107,7 +107,7 @@
 													class="chosen-select form-control" name="FMISACC"
 													id="FMISACC" data-placeholder="请选择帐套"
 													style="vertical-align: top; height: 32px; width: 150px;">
-														<option value="">请选择帐套</option>
+														<option value="0">请选择帐套</option>
 														<c:forEach items="${fmisacc}" var="fmi">
 															<option value="${fmi.DICT_CODE}">${fmi.NAME}</option>
 														</c:forEach>
@@ -225,27 +225,15 @@
 		$("#busiDate").val('${pd.busiDate}');
 		//dropDownStyle();
 		//前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
-	    jqGridColModel = eval("(${jqGridColModel})");//此处记得用eval()行数将string转为array
+	    //jqGridColModel = eval("(${jqGridColModel})");//此处记得用eval()行数将string转为array
 	    //jqGridColModelSub = eval("(${jqGridColModelSub})");
-	    var certCode={label: '凭证号',name:'CERT_CODE', width:100};
-	    var revcertCode={label: '冲销凭证号',name:'REVCERT_CODE', width:100};
-	    var certBillDate={label: '凭证日期',name:'CERT_BILL_DATE', width:100,hidden:true};
 	    
-	    jqGridColModel.unshift(certCode,revcertCode,certBillDate);
+	    
+	    
 	    //jqGridColModel1=jqGridColModel.concat();
 	    //jqGridColModel1.unshift(certCode,revcertCode);
 		//resize to fit page size
-		$(window).on('resize.jqGrid', function () {
-			$("#jqGrid").jqGrid( 'setGridWidth', $(".page-content").width());
-			if(${HasUserData}){
-				//gridHeight=251;
-				resizeGridHeight($("#jqGrid"),gridHeight,true);
-			}else{
-				//gridHeight=213;
-				resizeGridHeight($("#jqGrid"),gridHeight,false);
-			}
-			
-	    });
+		
 		
 		//初始化当前选择凭证类型
 		if('${pd.which}'!=""){
@@ -269,7 +257,27 @@
 				window.location.href="<%=basePath%>voucher/voucherSearch.do?TABLE_CODE="+which;
 			}
 		});
-		
+	});
+	
+	function SetStructure(){
+		var certCode={label: '凭证号',name:'CERT_CODE', width:100};
+	    var revcertCode={label: '冲销凭证号',name:'REVCERT_CODE', width:100};
+	    var certBillDate={label: '凭证日期',name:'CERT_BILL_DATE', width:100,hidden:true};
+	    jqGridColModel.unshift(certCode,revcertCode,certBillDate);
+	    
+	  	//resize to fit page size
+		$(window).on('resize.jqGrid', function () {
+			$("#jqGrid").jqGrid( 'setGridWidth', $(".page-content").width());
+			if(${HasUserData}){
+				//gridHeight=251;
+				resizeGridHeight($("#jqGrid"),gridHeight,true);
+			}else{
+				//gridHeight=213;
+				resizeGridHeight($("#jqGrid"),gridHeight,false);
+			}
+			
+	    });
+
 		$("#jqGrid").jqGrid({
 			url: "<%=basePath%>voucher/getPageList.do",
 			postData:{"VOUCHER_TYPE":2,"TABLE_CODE":"${pd.which}","BUSI_DATE":$("#busiDate").val()},
@@ -382,7 +390,7 @@
 				showQuery: false
 			}
 		);
-	});
+	}
 	
 	// the event handler on expanding parent row receives two parameters
     // the ID of the grid tow  and the primary key of the row
@@ -471,13 +479,14 @@
     	console.log("gridSelect  "+gridSelect);
 		var parentRowData = $("#" + gridSelect).getRowData(parentRowKey);
     	var DEPT_CODE = parentRowData.DEPT_CODE;
+    	var fmi = parentRowData.CUST_COL7;
     	console.log(DEPT_CODE);
     	
     	var detailColModel = "[]";
 		$.ajax({
 			type: "GET",
 			url: '<%=basePath%>voucher/getDetailColModel.do?',
-	    	data: {DEPT_CODE:DEPT_CODE,TABLE_CODE:which},
+	    	data: {DEPT_CODE:DEPT_CODE,TABLE_CODE:which,FMISACC:fmi},
 			dataType:'json',
 			cache: false,
 			success: function(response){
@@ -582,15 +591,66 @@
 	
 	//检索
 	function tosearch() {
-		var busiDate = $("#busiDate").val(); 
+		if($("#FMISACC").val()=="0"){
+	        bootbox.dialog({
+				message: "<span class='bigger-110'>请您先选择帐套,然后再进行查询!</span>",
+				buttons: 			
+				{ "button":{ "label":"确定", "className":"btn-sm btn-success"}}
+			});
+	        return;
+        }
+		$("#jqGrid").jqGrid('GridUnload'); 
+        //前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
+	    jqGridColModel = "[]";
+	    top.jzts();
+		$.ajax({
+			type: "POST",
+			url: '<%=basePath%>voucher/getShowColModel.do?'
+                +'SelectedDepartCode='+$("#departCode").val()
+                +'&SelectedCustCol7='+$("#FMISACC").val()
+	            +'&SelectedBillCode='+$("#SelectedBillCode").val(),
+			dataType:'json',
+			cache: false,
+			success: function(response){
+				if(response.code==0){
+					$(top.hangge());//关闭加载状态
+					var mes = response.message;
+					mes = mes.replace("[", "").replace("]", "");
+					if($.trim(mes)!=""){
+					    //前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
+				        jqGridColModel = eval("(" + response.message + ")");//此处记得用eval()行数将string转为array
+					    SetStructure();
+					}
+				}else{
+					$(top.hangge());//关闭加载状态
+					$("#subTitle").tips({
+						side:3,
+			            msg:'获取显示结构失败：'+response.message,
+			            bg:'#cc0033',
+			            time:3
+			        });
+				}
+			},
+	    	error: function(response) {
+				$(top.hangge());//关闭加载状态
+				$("#subTitle").tips({
+					side:3,
+		            msg:'获取显示结构出错：'+response.responseJSON.message,
+		            bg:'#cc0033',
+		            time:3
+		        });
+	    	}
+		});
+		
+		
+		/* var busiDate = $("#busiDate").val(); 
 		var deptCode = $("#departCode").val(); 
-		//var empl = $("#EMPLGRP").val(); 
+		var empl = $("#EMPLGRP").val(); 
 		var fmi = $("#FMISACC").val(); 
 		var partUserType = $("#PARTUSERTYPE").val(); 
 		var salaryRange = $("#SALARYRANGE").val(); 
-		/* ,"USER_GROP":empl */
 		$("#jqGrid").jqGrid("setGridParam",{postData:{"VOUCHER_TYPE":voucherType,"TABLE_CODE":'${pd.which}',"BUSI_DATE":busiDate,"DEPT_CODE":deptCode,"FMISACC":fmi,"USER_CATG":partUserType,"SAL_RANGE":salaryRange}})
-		.trigger("reloadGrid");
+		.trigger("reloadGrid"); */
 	}  
 	
 	//加载单位树

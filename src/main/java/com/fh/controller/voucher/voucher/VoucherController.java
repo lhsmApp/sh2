@@ -142,6 +142,7 @@ public class VoucherController extends BaseController {
 		ModelAndView mv = this.getModelAndView();
 		mv.setViewName("voucher/voucher/voucher_list");
 		PageData pd = this.getPageData();
+		// String billOff = pd.getString("FMISACC");
 		String which = pd.getString("TABLE_CODE");
 		if (which == null)
 			which = "16";// 取默认值-合同化工资传输表
@@ -171,10 +172,14 @@ public class VoucherController extends BaseController {
 
 		// 前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
 		// 生成主表结构
-		TmplUtil tmplUtil = new TmplUtil(tmplconfigService, tmplConfigDictService, dictionariesService,
-				departmentService, userService);
-		String jqGridColModel = tmplUtil.generateStructureNoEdit(which, Jurisdiction.getCurrentDepartmentID());
-		mv.addObject("jqGridColModel", jqGridColModel);
+		/*
+		 * TmplUtil tmplUtil = new TmplUtil(tmplconfigService,
+		 * tmplConfigDictService, dictionariesService, departmentService,
+		 * userService); String jqGridColModel =
+		 * tmplUtil.generateStructureNoEdit(which,
+		 * Jurisdiction.getCurrentDepartmentID(), billOff);
+		 * mv.addObject("jqGridColModel", jqGridColModel);
+		 */
 
 		// 生成子表结构
 		/*
@@ -185,12 +190,12 @@ public class VoucherController extends BaseController {
 		 */
 
 		// 底行显示的求和与平均值字段
-		SqlUserdata = tmplUtil.getSqlUserdata();
-		boolean hasUserData = false;
-		if (SqlUserdata != null && !SqlUserdata.toString().trim().equals("")) {
-			hasUserData = true;
-		}
-		mv.addObject("HasUserData", hasUserData);
+		/*
+		 * SqlUserdata = tmplUtil.getSqlUserdata(); boolean hasUserData = false;
+		 * if (SqlUserdata != null && !SqlUserdata.toString().trim().equals(""))
+		 * { hasUserData = true; } mv.addObject("HasUserData", hasUserData);
+		 */
+		mv.addObject("HasUserData", true);
 
 		// CUST_COL7 FMISACC 帐套字典
 		mv.addObject("fmisacc", DictsUtil.getDictsByParentBianma(dictionariesService, "FMISACC"));
@@ -199,6 +204,49 @@ public class VoucherController extends BaseController {
 		// SAL_RANGE SALARYRANGE 工资范围字典
 		mv.addObject("salaryrange", DictsUtil.getDictsByParentBianma(dictionariesService, "SALARYRANGE"));
 		return mv;
+	}
+
+	/**
+	 * 显示结构
+	 * 
+	 * @param
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/getShowColModel")
+	public @ResponseBody CommonBase getShowColModel() throws Exception {
+		logBefore(logger, Jurisdiction.getUsername() + "getShowColModel");
+		CommonBase commonBase = new CommonBase();
+		commonBase.setCode(-1);
+
+		PageData getPd = this.getPageData();
+		// 单位
+		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
+		int departSelf = Common.getDepartSelf(departmentService);
+		if (departSelf == 1) {
+			SelectedDepartCode = Jurisdiction.getCurrentDepartmentID();
+		}
+		// 账套
+		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
+		String which = getPd.getString("TABLE_CODE");
+		if (which == null)
+			which = "16";// 取默认值-合同化工资传输表
+		// 生成主表结构
+		TmplUtil tmplUtil = new TmplUtil(tmplconfigService, tmplConfigDictService, dictionariesService,
+				departmentService, userService);
+		String jqGridColModel = tmplUtil.generateStructureNoEdit(which, SelectedDepartCode, SelectedCustCol7);
+
+		// 底行显示的求和与平均值字段
+		/*SqlUserdata = tmplUtil.getSqlUserdata();
+		boolean hasUserData = false;
+		if (SqlUserdata != null && !SqlUserdata.toString().trim().equals("")) {
+			hasUserData = true;
+		}
+		mv.addObject("HasUserData", hasUserData);*/
+
+		commonBase.setCode(0);
+		commonBase.setMessage(jqGridColModel);
+
+		return commonBase;
 	}
 
 	/**
@@ -231,7 +279,8 @@ public class VoucherController extends BaseController {
 		getQueryFeildPd.put("CUST_COL7", SelectedCustCol7);
 		String QueryFeild = QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList);
 		QueryFeild += " and BILL_STATE = '" + BillState.Normal.getNameKey() + "' ";
-		QueryFeild += QueryFeildString.getNotReportBillCode(sealTypeTransfer,SystemDateTime,SelectedCustCol7,AllDeptCode + "," + SelectedDepartCode);
+		QueryFeild += QueryFeildString.getNotReportBillCode(sealTypeTransfer, SystemDateTime, SelectedCustCol7,
+				AllDeptCode + "," + SelectedDepartCode);
 		QueryFeild += " and DEPT_CODE in (" + QueryFeildString.tranferListValueToSqlInString(AllDeptCode) + ") ";
 		// 工资无账套无数据
 		/*
@@ -267,6 +316,7 @@ public class VoucherController extends BaseController {
 		ModelAndView mv = this.getModelAndView();
 		mv.setViewName("voucher/voucher/voucher_search");
 		PageData pd = this.getPageData();
+		String billOff = pd.getString("FMISACC");
 		String which = pd.getString("TABLE_CODE");
 		if (which == null)
 			which = "16";// 取默认值-合同化工资传输表
@@ -292,10 +342,10 @@ public class VoucherController extends BaseController {
 
 		// 前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
 		// 生成主表结构
-		TmplUtil tmplUtil = new TmplUtil(tmplconfigService, tmplConfigDictService, dictionariesService,
+		/*TmplUtil tmplUtil = new TmplUtil(tmplconfigService, tmplConfigDictService, dictionariesService,
 				departmentService, userService);
-		String jqGridColModel = tmplUtil.generateStructureNoEdit(which, Jurisdiction.getCurrentDepartmentID());
-		mv.addObject("jqGridColModel", jqGridColModel);
+		String jqGridColModel = tmplUtil.generateStructureNoEdit(which, Jurisdiction.getCurrentDepartmentID(), billOff);
+		mv.addObject("jqGridColModel", jqGridColModel);*/
 
 		// 生成子表结构
 		/*
@@ -306,12 +356,13 @@ public class VoucherController extends BaseController {
 		 */
 
 		// 底行显示的求和与平均值字段
-		SqlUserdata = tmplUtil.getSqlUserdata();
+		/*SqlUserdata = tmplUtil.getSqlUserdata();
 		boolean hasUserData = false;
 		if (SqlUserdata != null && !SqlUserdata.toString().trim().equals("")) {
 			hasUserData = true;
 		}
-		mv.addObject("HasUserData", hasUserData);
+		mv.addObject("HasUserData", hasUserData);*/
+		mv.addObject("HasUserData", true);
 
 		// mv.addObject("emplgrp",
 		// DictsUtil.getDictsByParentBianma(dictionariesService, "EMPLGRP"));
@@ -338,6 +389,7 @@ public class VoucherController extends BaseController {
 			pd.put("BILL_CODE", "");
 		}
 		String which = pd.getString("TABLE_CODE");
+		String billOff = pd.getString("FMISACC");
 		String voucherType = pd.getString("VOUCHER_TYPE");
 		String tableCode = getTableCodeBill(which);
 		pd.put("TABLE_CODE", tableCode);
@@ -381,6 +433,9 @@ public class VoucherController extends BaseController {
 		// result.setRowNum(page.getRowNum());
 		// result.setRecords(records);
 		// result.setPage(page.getPage());
+
+		// 底行显示的求和与平均值字段
+		StringBuilder SqlUserdata = Common.GetSqlUserdata(which, strDeptCode, billOff, tmplconfigService);
 		PageData userdata = null;
 		if (SqlUserdata != null && !SqlUserdata.toString().trim().equals("")) {
 			// 底行显示的求和与平均值字段
@@ -464,6 +519,7 @@ public class VoucherController extends BaseController {
 		commonBase.setCode(-1);
 
 		PageData pd = this.getPageData();
+		String billOff = pd.getString("FMISACC");
 		String DEPT_CODE = (String) pd.get("DEPT_CODE");
 		String which = pd.getString("TABLE_CODE");
 		/*
@@ -475,7 +531,7 @@ public class VoucherController extends BaseController {
 		 */
 		TmplUtil tmpl = new TmplUtil(tmplconfigService, tmplConfigDictService, dictionariesService, departmentService,
 				userService);
-		String detailColModel = tmpl.generateStructureNoEdit(which, DEPT_CODE);
+		String detailColModel = tmpl.generateStructureNoEdit(which, DEPT_CODE, billOff);
 
 		commonBase.setCode(0);
 		commonBase.setMessage(detailColModel);
@@ -558,13 +614,15 @@ public class VoucherController extends BaseController {
 
 			String tableCodeOnFmis = getTableCodeOnFmis(which);
 			// String voucherType=pd.getString("VOUCHER_TYPE");
+
+			PageData pdFirst = listTransferData.get(0);
+			String orgCode = pdFirst.getString("CUST_COL7");
 			// 根据表编号和真实表名称获取用于传输的字段列配置信息
-			List<TableColumns> tableColumnsForTransfer = getTableColumnsForTransfer(which, tableCode);
+			List<TableColumns> tableColumnsForTransfer = getTableColumnsForTransfer(which, tableCode, orgCode);
 			GenerateTransferData generateTransferData = new GenerateTransferData();
 			Map<String, List<PageData>> mapTransferData = new HashMap<String, List<PageData>>();
 			mapTransferData.put(tableCodeOnFmis, listTransferDataDetail);
-			PageData pdFirst = listTransferData.get(0);
-			String orgCode = pdFirst.getString("CUST_COL7");
+
 			/*
 			 * String transferData = generateTransferData.generateTransferData(
 			 * tableColumnsForTransfer, mapTransferData, orgCode,
@@ -635,7 +693,8 @@ public class VoucherController extends BaseController {
 	 * @return
 	 * @throws Exception
 	 */
-	private List<TableColumns> getTableColumnsForTransfer(String which, String tableCode) throws Exception {
+	private List<TableColumns> getTableColumnsForTransfer(String which, String tableCode, String billOff)
+			throws Exception {
 		// 用语句查询出数据库表的所有字段及其属性；拼接成jqgrid全部列
 		List<TableColumns> tableColumns = tmplconfigService.getTableColumns(tableCode);
 		// TmplUtil tmplUtil = new TmplUtil(tmplconfigService,
@@ -649,7 +708,7 @@ public class VoucherController extends BaseController {
 		// tmplUtil.getShowColumnList(tableCodeTmpl,
 		// Jurisdiction.getCurrentDepartmentID());
 		List<TmplConfigDetail> tmplColumns = Common.getShowColumnList(tableCodeTmpl,
-				Jurisdiction.getCurrentDepartmentID(), tmplconfigService);
+				Jurisdiction.getCurrentDepartmentID(), billOff, tmplconfigService);
 		List<TableColumns> tableColumnsMerge = new ArrayList<TableColumns>();
 		for (TmplConfigDetail tmplConfigDetail : tmplColumns) {
 			if (tmplConfigDetail.getCOL_TRANSFER().equals("1")) {
@@ -690,7 +749,7 @@ public class VoucherController extends BaseController {
 		for (PageData pdSource : listTransferData) {
 			for (PageData pdGl : listGlZrzxfx) {
 				if (pdSource.getString("DEPT_CODE").equals(pdGl.getString("DEPT_CODE"))
-						&&pdSource.getString("CUST_COL7").equals(pdGl.getString("BILL_OFF"))) {
+						&& pdSource.getString("CUST_COL7").equals(pdGl.getString("BILL_OFF"))) {
 					pdSource.put("LINE_NO", pdGl.getString("LINE_NO"));
 				}
 			}
@@ -744,12 +803,14 @@ public class VoucherController extends BaseController {
 			// 根据表编号和真实表名称获取用于传输的字段列配置信息
 			// List<TableColumns> tableColumns =
 			// tmplconfigService.getTableColumns(tableCode);
-			List<TableColumns> tableColumnsForTransfer = getTableColumnsForTransfer(which, tableCode);
+			PageData pdFirst = listTransferData.get(0);
+			String orgCode = pdFirst.getString("CUST_COL7");
+
+			List<TableColumns> tableColumnsForTransfer = getTableColumnsForTransfer(which, tableCode, orgCode);
 			GenerateTransferData generateTransferData = new GenerateTransferData();
 			Map<String, List<PageData>> mapTransferData = new HashMap<String, List<PageData>>();
 			mapTransferData.put(tableCodeOnFmis, listTransferData);
-			PageData pdFirst = listTransferData.get(0);
-			String orgCode = pdFirst.getString("CUST_COL7");
+
 			String transferData = generateTransferData.generateTransferData(tableColumnsForTransfer, mapTransferData,
 					orgCode, TransferOperType.DELETE);
 
