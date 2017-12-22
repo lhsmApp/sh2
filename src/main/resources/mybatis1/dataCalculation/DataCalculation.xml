@@ -2,6 +2,10 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="DataCalculation">
 	
+	<delete id="deleteTableData" parameterType="String">
+	    delete from ${value}
+	</delete>
+	
 	<!--  -->
 	<select id="getStaffTax" resultType="com.fh.entity.StaffTax">
 		SELECT * FROM TB_STAFF_TAX order by MIN_VALUE

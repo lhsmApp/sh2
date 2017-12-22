@@ -150,7 +150,7 @@ public class DetailImportQueryController extends BaseController {
 		
 		//表名
 		getPd.put("TableName", tableNameDetail);
-		
+		           
 		List<String> getCodeList = detailimportqueryService.getBillCodeList(getPd);
 		String returnString = SelectBillCodeOptions.getSelectBillCodeOptions(getCodeList, SelectBillCodeFirstShow, SelectBillCodeLastShow);
 		commonBase.setMessage(returnString);

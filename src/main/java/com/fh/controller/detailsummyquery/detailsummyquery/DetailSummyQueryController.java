@@ -77,7 +77,7 @@ public class DetailSummyQueryController extends BaseController {
 	//默认的which值
 	String DefaultWhile = TmplType.TB_STAFF_SUMMY_CONTRACT.getNameKey();
 	// 查询表的主键字段，作为标准列，jqgrid添加带__列，mybaits获取带__列
-	private List<String> keyListBase = Arrays.asList("BILL_CODE", "DEPT_CODE");
+	private List<String> keyListBase = Arrays.asList("BILL_CODE", "DEPT_CODE", "CUST_COL7");
 
 	//界面查询字段
     List<String> QueryFeildList = Arrays.asList("BUSI_DATE", "DEPT_CODE", "USER_GROP", "CUST_COL7");

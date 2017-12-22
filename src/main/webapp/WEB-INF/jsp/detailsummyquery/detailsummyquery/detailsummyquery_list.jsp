@@ -270,9 +270,9 @@
 		$('[data-toggle="buttons"] .btn').on('click', function(e){
 			var target = $(this).find('input[type=radio]');
 			which = parseInt(target.val());
-			if(which!='${pd.which}'){
+			//if(which!='${pd.which}'){
 				window.location.href='<%=basePath%>detailsummyquery/list.do?SelectedTableNo='+which;
-			}
+			//}
 		});
 	});  
 	

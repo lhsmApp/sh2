@@ -720,7 +720,7 @@ public class SocialIncSummyController extends BaseController {
 		//List<PageData> pdBillCode = staffdetailService.getBillCodeBySerialNo(pdSerialNo);
 		//if(pdBillCode != null){
 		//	for(PageData pd : pdBillCode){
-		//		String BILL_CODE = pd.getString("BILL_CODE");
+		///		String BILL_CODE = pd.getString("BILL_CODE");
 		//		if(BILL_CODE!=null && !BILL_CODE.trim().equals("")){
 		//			strRut = Message.OperDataAlreadySum;
 		//		}

@@ -238,14 +238,13 @@
         }
 	
 	    $(document).ready(function () {
+			console.log("ready");
 			$(top.hangge());//关闭加载状态
 			$('.input-mask-date').mask('999999');
 		    
 			//当前期间,取自tb_system_config的SystemDateTime字段
 		    var SystemDateTime = '${SystemDateTime}';
 			$("#SelectedBusiDate").val(SystemDateTime);
-			//前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
-		    jqGridColModel = eval("(${jqGridColModel})");//此处记得用eval()行数将string转为array
 			//单号下拉列表
 			InitBillCodeOptions = "${pd.InitBillCodeOptions}";
 			setSelectBillCodeOptions(InitBillCodeOptions);
@@ -254,11 +253,13 @@
 			
 			//初始化当前选择凭证类型
 			if('${pd.which}'!=""){
+				console.log("pd.which");
+				console.log('${pd.which}');
 				$('[data-toggle="buttons"] .btn').each(function(index, data){
 					var target = $(this).find('input[type=radio]');
 					$(this).removeClass('active');
 					var whichCur = parseInt(target.val());
-					console.log(which);
+					console.log(whichCur);
 					if(whichCur=='${pd.which}'){
 						$(this).addClass('active');
 						which=whichCur;
@@ -270,9 +271,9 @@
 			$('[data-toggle="buttons"] .btn').on('click', function(e){
 				var target = $(this).find('input[type=radio]');
 				which = parseInt(target.val());
-				if(which!='${pd.which}'){
+				//if(which!='${pd.which}'){
 					window.location.href="<%=basePath%>detailimportquery/list.do?SelectedTableNo="+which;
-				}
+				//}
 			});
 		});  
 		
@@ -406,7 +407,7 @@
 				            refresh: true,
 				            refreshicon : 'ace-icon fa fa-refresh green',
 				            view: false,
-				            viewicon : 'ace-icon fa fa-search-plus grey',
+				            viewicon : 'ace-icon fa fa-search-plus grey'
 			        }, { }, { }, { },
 			        {
 						//search form

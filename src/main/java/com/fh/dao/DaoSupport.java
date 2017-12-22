@@ -151,6 +151,7 @@ public class DaoSupport implements DAO {
 		List<PageData> returnList = new ArrayList<PageData>();
 		try{
 			if(listAdd!=null && !listAdd.isEmpty()){
+				sqlSession.delete("DataCalculation.deleteTableData", tableNameBackup);
 				Integer strMaxNum = sqlSession.selectOne("DataCalculation.getMaxSerialNo", tableNameBackup);
 				String SqlInBillCode = "";
 				for(PageData eachPd : listAdd){
@@ -163,9 +164,9 @@ public class DaoSupport implements DAO {
 					}
 				}
 				sqlSession.update(sqlBatchDelAndIns, listAdd);
-				//sqlSession.flushStatements();
-				//sqlSession.commit();
-				//sqlSession.clearCache();
+				sqlSession.flushStatements();
+				sqlSession.commit();
+				sqlSession.clearCache();
 				PageData getAddSerialNo = new PageData();
 				getAddSerialNo.put("tableName", tableNameBackup);
 				getAddSerialNo.put("strMaxNum", strMaxNum);
@@ -197,7 +198,7 @@ public class DaoSupport implements DAO {
 	 * @return
 	 * @throws Exception
 	 */
-	public List<PageData> findDataCalculation(String tableName, String TableFeildTax, String TmplUtil_KeyExtra,
+	public List<PageData> findDataCalculation(String tableNameBackup, String TableFeildTax, String TmplUtil_KeyExtra,
 			String sqlInsetBackup, PageData pdInsetBackup,
 			String sqlBatchDelAndIns, 
 			List<String> listSalaryFeildUpdate, String sqlRetSelect, 
@@ -207,12 +208,13 @@ public class DaoSupport implements DAO {
 		//批量执行器
 		SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH,false);
 		List<StaffTax> listStaffTax = sqlSession.selectList("DataCalculation.getStaffTax");
+		sqlSession.delete("DataCalculation.deleteTableData", tableNameBackup);
 		
 		List<PageData> returnList = new ArrayList<PageData>();
 		try{
 			sqlSession.update(sqlInsetBackup, pdInsetBackup);
 			if(listAddBonus!=null && !listAddBonus.isEmpty()){
-				Integer strMaxNum = sqlSession.selectOne("DataCalculation.getMaxSerialNo", tableName);
+				Integer strMaxNum = sqlSession.selectOne("DataCalculation.getMaxSerialNo", tableNameBackup);
 				String SqlInBillCode = "";
 				for(PageData eachPd : listAddBonus){
 					String SERIAL_NO = eachPd.getString("SERIAL_NO");
@@ -225,7 +227,7 @@ public class DaoSupport implements DAO {
 				}
 				sqlSession.update(sqlBatchDelAndIns, listAddBonus);
 				PageData getAddSerialNo = new PageData();
-				getAddSerialNo.put("tableName", tableName);
+				getAddSerialNo.put("tableName", tableNameBackup);
 				getAddSerialNo.put("strMaxNum", strMaxNum);
 				List<Integer> getInsertBillCodeList =  sqlSession.selectList("DataCalculation.getAddSerialNo",  getAddSerialNo);
 				if(getInsertBillCodeList!=null){
@@ -280,7 +282,7 @@ public class DaoSupport implements DAO {
 				}
 			}
 			if(listAddSalary!=null && !listAddSalary.isEmpty()){
-				Integer strMaxNum = sqlSession.selectOne("DataCalculation.getMaxSerialNo", tableName);
+				Integer strMaxNum = sqlSession.selectOne("DataCalculation.getMaxSerialNo", tableNameBackup);
 				String SqlInBillCode = "";
 				for(PageData eachPd : listAddSalary){
 					String SERIAL_NO = eachPd.getString("SERIAL_NO");
@@ -293,7 +295,7 @@ public class DaoSupport implements DAO {
 				}
 				sqlSession.update(sqlBatchDelAndIns, listAddSalary);
 				PageData getAddSerialNo = new PageData();
-				getAddSerialNo.put("tableName", tableName);
+				getAddSerialNo.put("tableName", tableNameBackup);
 				getAddSerialNo.put("strMaxNum", strMaxNum);
 				List<Integer> getInsertBillCodeList =  sqlSession.selectList("DataCalculation.getAddSerialNo",  getAddSerialNo);
 				if(getInsertBillCodeList!=null){
@@ -352,9 +354,9 @@ public class DaoSupport implements DAO {
 					}
 				}
 			}
-			//sqlSession.flushStatements();
-			//sqlSession.commit();
-			//sqlSession.clearCache();
+			sqlSession.flushStatements();
+			sqlSession.commit();
+			sqlSession.clearCache();
 		} finally{
 			sqlSession.rollback(); 
 			sqlSession.close();
