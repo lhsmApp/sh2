@@ -390,7 +390,7 @@
 	
 		$("#jqGrid").jqGrid({
 			url: "<%=basePath%>voucher/getPageList.do",
-			postData:{"VOUCHER_TYPE":1,"TABLE_CODE":"${pd.which}","BUSI_DATE":$("#busiDate").val(),"DEPT_CODE":$("#departCode").val(),"FMISACC":$("#FMISACC").val()},
+			postData:{"VOUCHER_TYPE":1,"TABLE_CODE":"${pd.which}","BILL_CODE":$("#SelectedBillCode").val(),"BUSI_DATE":$("#busiDate").val(),"DEPT_CODE":$("#departCode").val(),"FMISACC":$("#FMISACC").val()},
 			datatype: "json",
 			colModel: jqGridColModel,
 			reloadAfterSubmit: true, 
@@ -893,9 +893,13 @@
 			        var childGridURL = '<%=basePath%>voucher/getDetailList.do?BILL_CODE='+parentRowData.BILL_CODE+'&TABLE_CODE='+which;
 			        //childGridURL = childGridURL + "&parentRowID=" + encodeURIComponent(parentRowKey)
 			        // add a table and pager HTML elements to the parent grid row - we will render the child grid here
+			        var listData =new Array();
+				    listData.push(parentRowData);
+			        
 			        $('#' + parentRowID).append('<table id=' + childGridID + '></table><div id=' + childGridPagerID + ' class=scroll></div>');
 			        $("#" + childGridID).jqGrid({
 			            url: childGridURL,
+			            postData: {DataRows:JSON.stringify(listData)},
 			            mtype: "GET",
 			            datatype: "json",
 			            page: 1,
@@ -1031,7 +1035,8 @@
 		$.ajax({
 			type: "POST",
 			url: '<%=basePath%>voucher/getShowColModel.do?'
-                +'SelectedDepartCode='+$("#departCode").val()
+				+'TABLE_CODE='+which
+                +'&SelectedDepartCode='+$("#departCode").val()
                 +'&SelectedCustCol7='+$("#FMISACC").val()
 	            +'&SelectedBillCode='+$("#SelectedBillCode").val(),
 			dataType:'json',
