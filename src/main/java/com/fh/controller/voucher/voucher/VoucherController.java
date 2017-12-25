@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.alibaba.druid.sql.dialect.oracle.ast.stmt.OracleIfStatement.Else;
 import com.alibaba.druid.sql.visitor.functions.If;
 import com.fh.controller.base.BaseController;
 import com.fh.controller.common.Common;
@@ -66,6 +67,7 @@ import com.fh.util.date.DateFormatUtils;
 import com.fh.util.date.DateUtils;
 import com.fh.util.enums.BillState;
 import com.fh.util.enums.BillType;
+import com.fh.util.enums.SysConfigKeyCode;
 import com.fh.util.enums.TmplType;
 import com.fh.util.enums.TransferOperType;
 
@@ -529,9 +531,30 @@ public class VoucherController extends BaseController {
 		 * (which != null && which.equals("3")) { tableCodeSub =
 		 * "TB_HOUSE_FUND_DETAIL"; } else { tableCodeSub = "TB_STAFF_DETAIL"; }
 		 */
+		
+		String detailWhich="";
+		if(which.equals(TmplType.TB_STAFF_TRANSFER_CONTRACT.getNameKey())){
+			detailWhich=TmplType.TB_STAFF_DETAIL_CONTRACT.getNameKey();
+		}else if(which.equals(TmplType.TB_STAFF_TRANSFER_MARKET.getNameKey())){
+			detailWhich=TmplType.TB_STAFF_DETAIL_MARKET.getNameKey();
+		}else if(which.equals(TmplType.TB_STAFF_TRANSFER_LABOR.getNameKey())){
+			detailWhich=TmplType.TB_STAFF_DETAIL_LABOR.getNameKey();
+		}else if(which.equals(TmplType.TB_STAFF_TRANSFER_SYS_LABOR.getNameKey())){
+			detailWhich=TmplType.TB_STAFF_DETAIL_SYS_LABOR.getNameKey();
+		}else if(which.equals(TmplType.TB_STAFF_TRANSFER_OPER_LABOR.getNameKey())){
+			detailWhich=TmplType.TB_STAFF_DETAIL_OPER_LABOR.getNameKey();
+		}else if(which.equals(TmplType.TB_SOCIAL_INC_TRANSFER.getNameKey())){
+			detailWhich=TmplType.TB_SOCIAL_INC_DETAIL.getNameKey();
+		}else if(which.equals(TmplType.TB_HOUSE_FUND_TRANSFER.getNameKey())){
+			detailWhich=TmplType.TB_HOUSE_FUND_DETAIL.getNameKey();
+		}else{
+			detailWhich=TmplType.TB_STAFF_DETAIL_CONTRACT.getNameKey();
+		}
+		
+		
 		TmplUtil tmpl = new TmplUtil(tmplconfigService, tmplConfigDictService, dictionariesService, departmentService,
 				userService);
-		String detailColModel = tmpl.generateStructureNoEdit(which, DEPT_CODE, billOff);
+		String detailColModel = tmpl.generateStructureNoEdit(detailWhich, DEPT_CODE, billOff);
 
 		commonBase.setCode(0);
 		commonBase.setMessage(detailColModel);
@@ -571,6 +594,42 @@ public class VoucherController extends BaseController {
 		String which = pd.getString("TABLE_CODE");
 		String subTableCode = getSubTableCode(which);
 		pd.put("TABLE_CODE", subTableCode);
+		
+		Object DATA_ROWS = pd.get("DataRows");
+		String json = DATA_ROWS.toString();  
+        JSONArray array = JSONArray.fromObject(json);  
+        List<PageData> listData = (List<PageData>) JSONArray.toCollection(array,PageData.class);
+        PageData pdGet = listData.get(0);
+		
+		PageData pdSysConfig = new PageData();
+		if(which.equals(TmplType.TB_STAFF_TRANSFER_CONTRACT.getNameKey())){
+			pdSysConfig.put("KEY_CODE", SysConfigKeyCode.ContractGRPCond);
+		}else if(which.equals(TmplType.TB_STAFF_TRANSFER_MARKET.getNameKey())){
+			pdSysConfig.put("KEY_CODE", SysConfigKeyCode.MarketGRPCond);
+		}else if(which.equals(TmplType.TB_STAFF_TRANSFER_LABOR.getNameKey())){
+			pdSysConfig.put("KEY_CODE", SysConfigKeyCode.LaborGRPCond);
+		}else if(which.equals(TmplType.TB_STAFF_TRANSFER_OPER_LABOR.getNameKey())){
+			pdSysConfig.put("KEY_CODE", SysConfigKeyCode.OperLaborGRPCond);
+		}else if(which.equals(TmplType.TB_STAFF_TRANSFER_SYS_LABOR.getNameKey())){
+			pdSysConfig.put("KEY_CODE", SysConfigKeyCode.SysLaborGRPCond);
+		}else if(which.equals(TmplType.TB_SOCIAL_INC_TRANSFER.getNameKey())){
+			pdSysConfig.put("KEY_CODE", SysConfigKeyCode.SocialIncGRPCond);
+		}else if(which.equals(TmplType.TB_HOUSE_FUND_TRANSFER.getNameKey())){
+			pdSysConfig.put("KEY_CODE", SysConfigKeyCode.HouseFundGRPCond);
+		}else{
+			pdSysConfig.put("KEY_CODE", SysConfigKeyCode.ContractGRPCond);
+		}
+		
+		String strSumFieldDetail = sysConfigManager.getSysConfigByKey(pdSysConfig);
+		List<String> listSumFieldDetail = QueryFeildString.tranferStringToList(strSumFieldDetail);
+		//listSumFieldDetail = QueryFeildString.extraSumField(listSumFieldDetail, SumFieldBill);
+		String strQueryFeild = "";
+	    if(listSumFieldDetail!=null && listSumFieldDetail.size()>0){
+	    	for(String feild : listSumFieldDetail){
+	    		strQueryFeild += " and " + feild + " = '" + pdGet.getString(feild) + "' ";
+	    	}
+	    }
+		pd.put("QueryFeild", strQueryFeild);
 		List<PageData> varList = voucherService.listDetail(pd); // 列出Betting列表
 		PageResult<PageData> result = new PageResult<PageData>();
 		result.setRows(varList);

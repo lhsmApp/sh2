@@ -473,16 +473,16 @@
 				and A.BILL_CODE not in (SELECT bill_code FROM
 				tb_sys_sealed_info WHERE state = '1'
 				and
-				bill_type=#{BILL_TYPE_TRANSFER} and RPT_DUR=#{BUSI_DATE} and
-				BILL_OFF=#{FMISACC})
+				bill_type=#{pd.BILL_TYPE_TRANSFER} and RPT_DUR=#{pd.BUSI_DATE} and
+				BILL_OFF=#{pd.FMISACC})
 
 				and A.BILL_CODE not in (SELECT bill_code FROM
 				tb_sys_unlock_info WHERE
 				DEL_STATE = '0'
 				and
-				bill_type=#{BILL_TYPE_TRANSFER} and
-				UNLK_DUR=#{BUSI_DATE} and
-				BILL_OFF=#{FMISACC})
+				bill_type=#{pd.BILL_TYPE_TRANSFER} and
+				UNLK_DUR=#{pd.BUSI_DATE} and
+				BILL_OFF=#{pd.FMISACC})
 				<!-- and A.USER_GROP=#{pd.USER_GROP} -->
 				<if test="pd.keywords!= null and pd.keywords != ''"><!-- 关键词检索 -->
 					and
@@ -769,6 +769,10 @@
 			F on A.ESTB_DEPT=F.DEPARTMENT_CODE -->
 		<where>
 			A.BILL_CODE=#{BILL_CODE}
+			<if test="QueryFeild!= null and QueryFeild != ''">
+				${QueryFeild}
+			</if>
+
 		</where>
 	</select>
 
