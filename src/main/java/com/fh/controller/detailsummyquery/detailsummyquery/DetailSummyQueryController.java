@@ -156,6 +156,12 @@ public class DetailSummyQueryController extends BaseController {
 		if(!(SelectedCustCol7!=null && !SelectedCustCol7.trim().equals(""))){
 			QueryFeild += " and 1 != 1 ";
 		}
+		if(!(SelectedDepartCode!=null && !SelectedDepartCode.trim().equals(""))){
+			QueryFeild += " and 1 != 1 ";
+		}
+		if(!(SelectedBusiDate!=null && !SelectedBusiDate.trim().equals(""))){
+			QueryFeild += " and 1 != 1 ";
+		}
 		getPd.put("QueryFeild", QueryFeild);
 		
 		//表名
@@ -541,6 +547,9 @@ public class DetailSummyQueryController extends BaseController {
 		QueryFeild += QueryFeildString.getQueryFeildBillCodeSummy(SelectedBillCode, SelectBillCodeFirstShow, SelectBillCodeLastShow);
 		QueryFeild += " and DEPT_CODE in (" + QueryFeildString.tranferListValueToSqlInString(AllDeptCode) + ") ";
 		if(!(SelectedCustCol7!=null && !SelectedCustCol7.trim().equals(""))){
+			QueryFeild += " and 1 != 1 ";
+		}
+		if(!(SelectedDepartCode!=null && !SelectedDepartCode.trim().equals(""))){
 			QueryFeild += " and 1 != 1 ";
 		}
 		if(!(SelectedBusiDate!=null && !SelectedBusiDate.trim().equals(""))){

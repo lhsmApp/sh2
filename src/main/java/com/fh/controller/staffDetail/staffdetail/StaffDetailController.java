@@ -962,67 +962,72 @@ public class StaffDetailController extends BaseController {
 								commonBase.setCode(2);
 								commonBase.setMessage(sbTitle.toString());
 							} else {
-								CommonBaseAndList getCommonBaseAndList = getCalculationData(true, true, commonBase,
-										SelectedTableNo, SelectedCustCol7, SelectedDepartCode, emplGroupType,
-										listAdd, strHelpful);
-								for(PageData pdSet : getCommonBaseAndList.getList()){
-									String pdSetUSER_CODE = pdSet.getString("USER_CODE");
-									for(PageData pdsum : getCommonBaseAndList.getList()){
-										String pdsumUSER_CODE = pdsum.getString("USER_CODE");
-										if(pdSetUSER_CODE!=null && pdSetUSER_CODE.equals(pdsumUSER_CODE)){
-											BigDecimal douCalTax = (BigDecimal) pdSet.get(TableFeildTaxCanNotHaveFormula);
-											BigDecimal douImpTax = (BigDecimal) pdSet.get(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra);
-											douCalTax.add((BigDecimal) pdsum.get(TableFeildTaxCanNotHaveFormula));
-											douImpTax.add((BigDecimal) pdsum.get(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra));
-											pdSet.put(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra + TmplUtil.keyExtra, douCalTax);
-											pdSet.put(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra, douImpTax);
-										}
-									}
-								}
-								List<String> listUserCode = new ArrayList<String>();
-								String strCalculationMessage = "";
-								for(PageData pdSet : getCommonBaseAndList.getList()){
-									//if(SelectedTableNo.equals(TmplType.TB_STAFF_DETAIL_CONTRACT.getNameKey()) 
-									//		|| SelectedTableNo.equals(TmplType.TB_STAFF_DETAIL_MARKET.getNameKey())){
+								if(listAdd!=null && listAdd.size()>0){
+									commonBase.setCode(2);
+									commonBase.setMessage("请导入符合条件的数据！");
+								} else {
+									CommonBaseAndList getCommonBaseAndList = getCalculationData(true, true, commonBase,
+											SelectedTableNo, SelectedCustCol7, SelectedDepartCode, emplGroupType,
+											listAdd, strHelpful);
+									for(PageData pdSet : getCommonBaseAndList.getList()){
 										String pdSetUSER_CODE = pdSet.getString("USER_CODE");
-										if(!listUserCode.contains(pdSetUSER_CODE)){
-											BigDecimal douCalTax = (BigDecimal) pdSet.get(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra + TmplUtil.keyExtra);
-											BigDecimal douImpTax = (BigDecimal) pdSet.get(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra);
-											if(!(douCalTax!=null && douCalTax.compareTo(douImpTax)==0)){
-												strCalculationMessage += "员工编号:" + pdSetUSER_CODE 
-														+ " 员工姓名:" + pdSet.getString("USER_NAME")
-														//+ " 应纳税额:" + pdSetUSER_CODE 
-														+ " 导入的纳税额:" + douImpTax 
-														+ " 应导入的纳税额:" + douCalTax + "\\n";
+										for(PageData pdsum : getCommonBaseAndList.getList()){
+											String pdsumUSER_CODE = pdsum.getString("USER_CODE");
+											if(pdSetUSER_CODE!=null && pdSetUSER_CODE.equals(pdsumUSER_CODE)){
+												BigDecimal douCalTax = (BigDecimal) pdSet.get(TableFeildTaxCanNotHaveFormula);
+												BigDecimal douImpTax = (BigDecimal) pdSet.get(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra);
+												douCalTax.add((BigDecimal) pdsum.get(TableFeildTaxCanNotHaveFormula));
+												douImpTax.add((BigDecimal) pdsum.get(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra));
+												pdSet.put(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra + TmplUtil.keyExtra, douCalTax);
+												pdSet.put(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra, douImpTax);
 											}
 										}
-										listUserCode.add(pdSetUSER_CODE);
-									//} else {
-									//	pdSet.put(TableFeildTaxCanNotHaveFormula, pdSet.get(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra));
-									//}
-								}
-								if(strCalculationMessage!=null && !strCalculationMessage.trim().equals("")){
-									commonBase.setCode(2);
-									commonBase.setMessage("导入的纳税额填写不正确，无法导入！\\n" + strCalculationMessage);
-								} else {
-									commonBase = UpdateDatabase(true, commonBase, strErrorMessage,
-											SelectedTableNo, SelectedCustCol7, SelectedDepartCode, emplGroupType,
-											getCommonBaseAndList, strHelpful);
-								}
-								/*
-								List<PageData> dataCalculation = getCalculation(SelectedTableNo, SelectedCustCol7, SelectedDepartCode, emplGroupType,
-												listAddSalary, listAddBonus);
-								if(dataCalculation!=null){
-									for(PageData each : dataCalculation){
-										each.put("SERIAL_NO", "");
-										Common.setModelDefault(each, map_HaveColumnsList, map_SetColumnsList);
-										each.put("CanOperate", strHelpful);
 									}
+									List<String> listUserCode = new ArrayList<String>();
+									String strCalculationMessage = "";
+									for(PageData pdSet : getCommonBaseAndList.getList()){
+										//if(SelectedTableNo.equals(TmplType.TB_STAFF_DETAIL_CONTRACT.getNameKey()) 
+										//		|| SelectedTableNo.equals(TmplType.TB_STAFF_DETAIL_MARKET.getNameKey())){
+											String pdSetUSER_CODE = pdSet.getString("USER_CODE");
+											if(!listUserCode.contains(pdSetUSER_CODE)){
+												BigDecimal douCalTax = (BigDecimal) pdSet.get(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra + TmplUtil.keyExtra);
+												BigDecimal douImpTax = (BigDecimal) pdSet.get(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra);
+												if(!(douCalTax!=null && douCalTax.compareTo(douImpTax)==0)){
+													strCalculationMessage += "员工编号:" + pdSetUSER_CODE 
+															+ " 员工姓名:" + pdSet.getString("USER_NAME")
+															//+ " 应纳税额:" + pdSetUSER_CODE 
+															+ " 导入的纳税额:" + douImpTax 
+															+ " 应导入的纳税额:" + douCalTax + "\\n";
+												}
+											}
+											listUserCode.add(pdSetUSER_CODE);
+										//} else {
+										//	pdSet.put(TableFeildTaxCanNotHaveFormula, pdSet.get(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra));
+										//}
+									}
+									if(strCalculationMessage!=null && !strCalculationMessage.trim().equals("")){
+										commonBase.setCode(2);
+										commonBase.setMessage("导入的纳税额填写不正确，无法导入！\\n" + strCalculationMessage);
+									} else {
+										commonBase = UpdateDatabase(true, commonBase, strErrorMessage,
+												SelectedTableNo, SelectedCustCol7, SelectedDepartCode, emplGroupType,
+												getCommonBaseAndList, strHelpful);
+									}
+									/*
+									List<PageData> dataCalculation = getCalculation(SelectedTableNo, SelectedCustCol7, SelectedDepartCode, emplGroupType,
+													listAddSalary, listAddBonus);
+									if(dataCalculation!=null){
+										for(PageData each : dataCalculation){
+											each.put("SERIAL_NO", "");
+											Common.setModelDefault(each, map_HaveColumnsList, map_SetColumnsList);
+											each.put("CanOperate", strHelpful);
+										}
+									}
+									//此处执行集合添加 
+									staffdetailService.batchUpdateDatabase(dataCalculation);
+									commonBase.setCode(0);
+									commonBase.setMessage(strErrorMessage);*/
 								}
-								//此处执行集合添加 
-								staffdetailService.batchUpdateDatabase(dataCalculation);
-								commonBase.setCode(0);
-								commonBase.setMessage(strErrorMessage);*/
 							}
 						}
 					} else {

@@ -139,6 +139,7 @@ public class StaffSummyController extends BaseController {
 		getPd.put("which", SelectedTableNo);
 		//单号下拉列表
 		getPd.put("SelectNoBillCodeShow", SelectBillCodeFirstShow);
+		getPd.put("SelectAllBillCodeShow", SelectBillCodeLastShow);
 		getPd.put("InitBillCodeOptions", SelectBillCodeOptions.getSelectBillCodeOptions(null, SelectBillCodeFirstShow, SelectBillCodeLastShow));
 		mv.addObject("SystemDateTime", SystemDateTime);
 		User user = (User) Jurisdiction.getSession().getAttribute(Const.SESSION_USERROL);
@@ -200,6 +201,9 @@ public class StaffSummyController extends BaseController {
 			QueryFeild += " and 1 != 1 ";
 		}
 		if(!(emplGroupType!=null && !emplGroupType.trim().equals(""))){
+			QueryFeild += " and 1 != 1 ";
+		}
+		if(!(SelectedDepartCode!=null && !SelectedDepartCode.trim().equals(""))){
 			QueryFeild += " and 1 != 1 ";
 		}
 		
@@ -301,6 +305,9 @@ public class StaffSummyController extends BaseController {
 			QueryFeild += " and 1 != 1 ";
 		}
 		if(!(emplGroupType!=null && !emplGroupType.trim().equals(""))){
+			QueryFeild += " and 1 != 1 ";
+		}
+		if(!(SelectedDepartCode!=null && !SelectedDepartCode.trim().equals(""))){
 			QueryFeild += " and 1 != 1 ";
 		}
         QueryFeild += QueryFeildString.getQueryFeildBillCodeSummy(SelectedBillCode, SelectBillCodeLastShow, SelectBillCodeFirstShow);
@@ -645,7 +652,8 @@ public class StaffSummyController extends BaseController {
 			for(PageData bill : getSaveBill){
 				String strDepartCode = bill.getString("DEPT_CODE" + TmplUtil.keyExtra);
         		Map<String, TmplConfigDetail> map_SetColumnsListBill = Common.GetSetColumnsList(TypeCodeSummyBill, strDepartCode, SelectedCustCol7, tmplconfigService);
-				
+
+        		bill.put("SERIAL_NO", "");
 				bill.put("BILL_STATE", BillState.Normal.getNameKey());
         		User user = (User) Jurisdiction.getSession().getAttribute(Const.SESSION_USERROL);
         		bill.put("BILL_USER", user.getUSER_ID());
@@ -661,7 +669,8 @@ public class StaffSummyController extends BaseController {
 			for(PageData detail : getSaveDetail){
 				String strDepartCode = detail.getString("DEPT_CODE" + TmplUtil.keyExtra);
 				Map<String, TmplConfigDetail> map_SetColumnsListDetail = Common.GetSetColumnsList(TypeCodeSummyDetail, strDepartCode, SelectedCustCol7, tmplconfigService);
-				
+
+				detail.put("SERIAL_NO", "");
 				detail.put("BILL_STATE", BillState.Normal.getNameKey());
         		User user = (User) Jurisdiction.getSession().getAttribute(Const.SESSION_USERROL);
         		detail.put("BILL_USER", user.getUSER_ID());
@@ -694,6 +703,7 @@ public class StaffSummyController extends BaseController {
         		Map<String, TmplConfigDetail> map_SetColumnsListBill = Common.GetSetColumnsList(TypeCodeSummyBill, strDepartCode, SelectedCustCol7, tmplconfigService);
 				
 				billNum++;
+        		bill.put("SERIAL_NO", "");
 				String getBILL_CODE = BillCodeUtil.getBillCode(billNumType, month, billNum);
 				bill.put("BILL_CODE", getBILL_CODE);
 				bill.put("BILL_STATE", BillState.Normal.getNameKey());
@@ -713,7 +723,8 @@ public class StaffSummyController extends BaseController {
 			for(PageData detail : getSaveDetail){
 				String strDepartCode = detail.getString("DEPT_CODE" + TmplUtil.keyExtra);
 				Map<String, TmplConfigDetail> map_SetColumnsListDetail = Common.GetSetColumnsList(TypeCodeSummyDetail, strDepartCode, SelectedCustCol7, tmplconfigService);
-				
+
+				detail.put("SERIAL_NO", "");
 				detail.put("BILL_STATE", BillState.Normal.getNameKey());
         		User user = (User) Jurisdiction.getSession().getAttribute(Const.SESSION_USERROL);
         		detail.put("BILL_USER", user.getUSER_ID());

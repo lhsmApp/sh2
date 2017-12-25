@@ -96,6 +96,9 @@
 											    		style="vertical-align: top; height:32px;width: 160px;">
 											    	</select>
 											    </span>
+											    <button type="button" class="btn btn-info btn-sm" onclick="getSelectBillCodeOptions();">
+												    <i class="ace-icon fa fa-refresh bigger-110"></i>
+											    </button>
 											    <button type="button" class="btn btn-info btn-sm" onclick="tosearch();">
 											    	<i class="ace-icon fa fa-search bigger-110"></i>
 											    </button>
@@ -320,9 +323,9 @@
 	     */
         function batchDelete(){
         	//获得选中的行ids的方法
-        	var id = $(gridBase_selector).getGridParam("selrow");  
+        	var ids = $(gridBase_selector).getGridParam("selarrrow");  
         	
-    		if(!(id!=null)){// && ids.length>0
+    		if(!(ids!=null && ids.length>0)){//
     			bootbox.dialog({
     				message: "<span class='bigger-110'>您没有选择任何内容!</span>",
     				buttons: 			
@@ -335,10 +338,10 @@
     					var listData =new Array();
     					
     					//遍历访问这个集合  
-    					//$(ids).each(function (index, id){  
+    					$(ids).each(function (index, id){  
     			            var rowData = $(gridBase_selector).getRowData(id);
     			            listData.push(rowData);
-    					//});
+    					});
     					
     					top.jzts();
     					$.ajax({
@@ -471,9 +474,9 @@
          */
         function calculation(){
         	//获得选中的行ids的方法
-        	var id = $(gridBase_selector).getGridParam("selrow");  
+        	var ids = $(gridBase_selector).getGridParam("selarrrow");  
         	
-        	if(!(id!=null)){// && ids.length>0
+        	if(!(ids!=null && ids.length>0)){//
         		bootbox.dialog({
         			message: "<span class='bigger-110'>您没有选择任何内容!</span>",
         			buttons: 			
@@ -486,12 +489,12 @@
         			    var listData =new Array();
         			
         			    //遍历访问这个集合  
-        			    //$(ids).each(function (index, id){  
+        			    $(ids).each(function (index, id){  
         			        $(gridBase_selector).saveRow(id, false, 'clientArray');
         			        var rowData = $(gridBase_selector).getRowData(id);
         	                listData.push(rowData);
         	            	$(gridBase_selector).jqGrid('editRow',id);
-        			    //});
+        			    });
         			
         			    top.jzts();
         			    $.ajax({
@@ -702,8 +705,8 @@
     			shrinkToFit: false,
     			rowNum: 100,
     			rowList: [100,200,500],
-                //multiselect: true,
-                //multiboxonly: true,
+                multiselect: true,
+                multiboxonly: true,
                 sortable: true,
     			altRows: true, //斑马条纹
     			editurl: '<%=basePath%>housefunddetail/edit.do?'

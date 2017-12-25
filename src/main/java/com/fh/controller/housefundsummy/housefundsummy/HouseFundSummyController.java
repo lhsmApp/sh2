@@ -133,6 +133,7 @@ public class HouseFundSummyController extends BaseController {
 		PageData getPd = this.getPageData();
 		//单号下拉列表
 		getPd.put("SelectNoBillCodeShow", SelectBillCodeFirstShow);
+		getPd.put("SelectAllBillCodeShow", SelectBillCodeLastShow);
 		getPd.put("InitBillCodeOptions", SelectBillCodeOptions.getSelectBillCodeOptions(null, SelectBillCodeFirstShow, SelectBillCodeLastShow));
 		//当前期间,取自tb_system_config的SystemDateTime字段
 		SystemDateTime = sysConfigManager.currentSection(getPd);
@@ -190,6 +191,9 @@ public class HouseFundSummyController extends BaseController {
 		QueryFeild += " and DEPT_CODE in (" + QueryFeildString.tranferListValueToSqlInString(AllDeptCode) + ") ";
 		//工资无账套无数据
 		if(!(getPdSelectedCustCol7!=null && !getPdSelectedCustCol7.trim().equals(""))){
+			QueryFeild += " and 1 != 1 ";
+		}
+		if(!(getPdSelectedDepartCode!=null && !getPdSelectedDepartCode.trim().equals(""))){
 			QueryFeild += " and 1 != 1 ";
 		}
 		
@@ -273,6 +277,9 @@ public class HouseFundSummyController extends BaseController {
 		QueryFeild += " and DEPT_CODE in (" + QueryFeildString.tranferListValueToSqlInString(AllDeptCode) + ") ";
 		//工资无账套无数据
 		if(!(getPdSelectedCustCol7!=null && !getPdSelectedCustCol7.trim().equals(""))){
+			QueryFeild += " and 1 != 1 ";
+		}
+		if(!(getPdSelectedDepartCode!=null && !getPdSelectedDepartCode.trim().equals(""))){
 			QueryFeild += " and 1 != 1 ";
 		}
         QueryFeild += QueryFeildString.getQueryFeildBillCodeSummy(getPdSelectedBillCode, SelectBillCodeLastShow, SelectBillCodeFirstShow);
@@ -477,6 +484,8 @@ public class HouseFundSummyController extends BaseController {
 		}
 		//账套
 		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
+		//单号
+		String SelectedBillCode = getPd.getString("SelectedBillCode");
 
 		String strSumFieldBill = QueryFeildString.tranferListStringToGroupbyString(SumFieldBill);
 		String strSumFieldDetail = QueryFeildString.tranferListStringToGroupbyString(SumFieldDetail);
@@ -485,8 +494,6 @@ public class HouseFundSummyController extends BaseController {
 		String json = DATA_ROWS.toString();  
         JSONArray array = JSONArray.fromObject(json);  
         List<PageData> listData = (List<PageData>) JSONArray.toCollection(array,PageData.class);
-
-		String UserDepartCode = Jurisdiction.getCurrentDepartmentID();
 
 		Map<String, TableColumns> map_HaveColumnsListBill = Common.GetHaveColumnsList(TypeCodeSummyBill, tmplconfigService);
 		Map<String, TableColumns> map_HaveColumnsListDetail = Common.GetHaveColumnsList(TypeCodeSummyDetail, tmplconfigService);
@@ -503,7 +510,7 @@ public class HouseFundSummyController extends BaseController {
 			retSetBillCodeFeild.add(strfeild);
 		}
 		retSetBillCodeFeild = QueryFeildString.extraSumField(retSetBillCodeFeild, SumFieldBill);
-		if(listData!=null && listData.size()>0){
+		if(listData!=null && listData.size()>0){//if(!SelectedBillCode.equals(SelectBillCodeFirstShow)){//
 			bolDeleteSummy = true;
 			List<String> listBillCode = new ArrayList<String>(); 
 			for(PageData each : listData){
@@ -566,7 +573,8 @@ public class HouseFundSummyController extends BaseController {
 			for(PageData bill : getSaveBill){
 				String strDepartCode = bill.getString("DEPT_CODE" + TmplUtil.keyExtra);
         		Map<String, TmplConfigDetail> map_SetColumnsListBill = Common.GetSetColumnsList(TypeCodeSummyBill, strDepartCode, SelectedCustCol7, tmplconfigService);
-				
+
+        		bill.put("SERIAL_NO", "");
         		bill.put("BILL_STATE", BillState.Normal.getNameKey());
         		User user = (User) Jurisdiction.getSession().getAttribute(Const.SESSION_USERROL);
         		bill.put("BILL_USER", user.getUSER_ID());
@@ -582,7 +590,8 @@ public class HouseFundSummyController extends BaseController {
 			for(PageData detail : getSaveDetail){
 				String strDepartCode = detail.getString("DEPT_CODE" + TmplUtil.keyExtra);
 				Map<String, TmplConfigDetail> map_SetColumnsListDetail = Common.GetSetColumnsList(TypeCodeSummyDetail, strDepartCode, SelectedCustCol7, tmplconfigService);
-				
+
+				detail.put("SERIAL_NO", "");
 				detail.put("BILL_STATE", BillState.Normal.getNameKey());
         		User user = (User) Jurisdiction.getSession().getAttribute(Const.SESSION_USERROL);
         		detail.put("BILL_USER", user.getUSER_ID());
@@ -615,6 +624,7 @@ public class HouseFundSummyController extends BaseController {
         		Map<String, TmplConfigDetail> map_SetColumnsListBill = Common.GetSetColumnsList(TypeCodeSummyBill, strDepartCode, SelectedCustCol7, tmplconfigService);
 				
 				billNum++;
+        		bill.put("SERIAL_NO", "");
 				String getBILL_CODE = BillCodeUtil.getBillCode(billNumType, month, billNum);
 				bill.put("BILL_CODE", getBILL_CODE);
 				bill.put("BILL_STATE", BillState.Normal.getNameKey());
@@ -634,7 +644,8 @@ public class HouseFundSummyController extends BaseController {
 			for(PageData detail : getSaveDetail){
 				String strDepartCode = detail.getString("DEPT_CODE" + TmplUtil.keyExtra);
 				Map<String, TmplConfigDetail> map_SetColumnsListDetail = Common.GetSetColumnsList(TypeCodeSummyDetail, strDepartCode, SelectedCustCol7, tmplconfigService);
-				
+
+				detail.put("SERIAL_NO", "");
 				detail.put("BILL_STATE", BillState.Normal.getNameKey());
         		User user = (User) Jurisdiction.getSession().getAttribute(Const.SESSION_USERROL);
         		detail.put("BILL_USER", user.getUSER_ID());

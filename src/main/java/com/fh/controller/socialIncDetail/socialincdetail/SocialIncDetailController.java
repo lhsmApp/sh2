@@ -831,25 +831,30 @@ public class SocialIncDetailController extends BaseController {
 										commonBase.setCode(2);
 										commonBase.setMessage(sbTitle.toString());
 									} else {
-										commonBase = CalculationUpdateDatabase(true, commonBase, strErrorMessage, SelectedDepartCode, SelectedCustCol7, listAdd, strHelpful);
-										
-										/*String strFieldSelectKey = QueryFeildString.getFieldSelectKey(keyListBase, TmplUtil.keyExtra);
-										String sqlRetSelect = Common.GetRetSelectColoumns(map_HaveColumnsList, TypeCodeDetail, TableNameBackup, SelectedDepartCode, strFieldSelectKey, tmplconfigService);
-										
-										List<PageData> dataCalculation = socialincdetailService.getDataCalculation(TableNameBackup, sqlRetSelect, listAdd);
-										if(dataCalculation!=null){
-											for(PageData each : dataCalculation){
-												each.put("SERIAL_NO", "");
-												Common.setModelDefault(each, map_HaveColumnsList, map_SetColumnsList);
-												each.put("CanOperate", strHelpful);
-												each.put("TableName", TableNameDetail);
+										if(listAdd!=null && listAdd.size()>0){
+											commonBase.setCode(2);
+											commonBase.setMessage("请导入符合条件的数据！");
+										} else {
+											commonBase = CalculationUpdateDatabase(true, commonBase, strErrorMessage, SelectedDepartCode, SelectedCustCol7, listAdd, strHelpful);
+											
+											/*String strFieldSelectKey = QueryFeildString.getFieldSelectKey(keyListBase, TmplUtil.keyExtra);
+											String sqlRetSelect = Common.GetRetSelectColoumns(map_HaveColumnsList, TypeCodeDetail, TableNameBackup, SelectedDepartCode, strFieldSelectKey, tmplconfigService);
+											
+											List<PageData> dataCalculation = socialincdetailService.getDataCalculation(TableNameBackup, sqlRetSelect, listAdd);
+											if(dataCalculation!=null){
+												for(PageData each : dataCalculation){
+													each.put("SERIAL_NO", "");
+													Common.setModelDefault(each, map_HaveColumnsList, map_SetColumnsList);
+													each.put("CanOperate", strHelpful);
+													each.put("TableName", TableNameDetail);
+												}
 											}
+											
+											//此处执行集合添加 
+											socialincdetailService.batchUpdateDatabase(dataCalculation);
+											commonBase.setCode(0);
+											commonBase.setMessage(strErrorMessage);*/
 										}
-										
-										//此处执行集合添加 
-										socialincdetailService.batchUpdateDatabase(dataCalculation);
-										commonBase.setCode(0);
-										commonBase.setMessage(strErrorMessage);*/
 									}
 								}
 							} else {

@@ -163,7 +163,7 @@
 		//单号下拉列表
 	    var SelectNoBillCodeShowOption;
 		var InitBillCodeOptions;
-		//var SelectBillCodeOptions;
+		var SelectAllBillCodeShow;
 		
 		//前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
 	    var jqGridColModel;
@@ -233,6 +233,7 @@
 			//单号下拉列表
 		    SelectNoBillCodeShowOption =  "${pd.SelectNoBillCodeShow}";
 			InitBillCodeOptions = "${pd.InitBillCodeOptions}";
+			SelectAllBillCodeShow = "${pd.SelectAllBillCodeShow}";
 			setSelectBillCodeOptions(InitBillCodeOptions);
 		});
 
@@ -513,8 +514,32 @@
 		function btnSummyClick(){
 			var transferCustCol7 = $("#SelectedCustCol7").val();
 			var transferDepartCode = $("#SelectedDepartCode").val();
+			var transferBillCode = $("#SelectedBillCode").val();
+
+			/*if(!$("#spanSelectTree").is(":hidden") && !(transferDepartCode!=null && transferDepartCode.trim()!="")){
+			    bootbox.dialog({
+				    message: "<span class='bigger-110'>您没有选择任何单位!</span>",
+				    buttons: 			
+				    { "button":{ "label":"确定", "className":"btn-sm btn-success"}}
+			    }); 
+			    return;
+			} else if (!(transferCustCol7!=null && transferCustCol7.trim()!="")){
+			    bootbox.dialog({
+			        message: "<span class='bigger-110'>您没有选择账套信息!</span>",
+			        buttons: 			
+			        { "button":{ "label":"确定", "className":"btn-sm btn-success"}}
+		        }); 
+			    return;
+			} else if(transferBillCode == SelectAllBillCodeShow){
+			    bootbox.dialog({
+			        message: "<span class='bigger-110'>请选择具体单号或临时数据!</span>",
+			        buttons: 			
+			        { "button":{ "label":"确定", "className":"btn-sm btn-success"}}
+		        }); 
+			    return;
+			}*/
+
 			var listData =new Array();
-			
 	    	//获得选中的行ids的方法
 	    	var ids = $(gridBase_selector).getGridParam("selarrrow");  
 			if(!(ids!=null && ids.length>0)){
