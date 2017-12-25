@@ -21,6 +21,7 @@ import com.fh.controller.base.BaseController;
 import com.fh.controller.common.BillCodeUtil;
 import com.fh.controller.common.Common;
 import com.fh.controller.common.DictsUtil;
+import com.fh.controller.common.Message;
 import com.fh.controller.common.QueryFeildString;
 import com.fh.controller.common.SelectBillCodeOptions;
 import com.fh.controller.common.TmplUtil;
@@ -445,7 +446,11 @@ public class SocialIncSummyController extends BaseController {
 		String json = DATA_ROWS.toString();  
         JSONArray array = JSONArray.fromObject(json);  
         List<PageData> listData = (List<PageData>) JSONArray.toCollection(array,PageData.class);
-		String checkState = CheckState(listData);
+        List<String> listBillCode = new ArrayList<String>();
+        for(PageData each : listData){
+        	listBillCode.add(each.getString("BILL_CODE" + TmplUtil.keyExtra));
+        }
+		String checkState = CheckState(QueryFeildString.tranferListValueToSqlInString(listBillCode));
 		if(checkState!=null && !checkState.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(checkState);
@@ -481,16 +486,22 @@ public class SocialIncSummyController extends BaseController {
 		}
 		//账套
 		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
+		//单号
+		String SelectedBillCode = getPd.getString("SelectedBillCode");
+
+		if(!(SelectedBillCode!=null && !SelectedBillCode.equals(SelectBillCodeLastShow))){
+			commonBase.setCode(2);
+			commonBase.setMessage(Message.SelectCanSumOption);
+			return commonBase;
+		}
 
 		String strSumFieldBill = QueryFeildString.tranferListStringToGroupbyString(SumFieldBill);
 		String strSumFieldDetail = QueryFeildString.tranferListStringToGroupbyString(SumFieldDetail);
 
-		Object DATA_ROWS = getPd.get("DataRows");
-		String json = DATA_ROWS.toString();  
-        JSONArray array = JSONArray.fromObject(json);  
-        List<PageData> listData = (List<PageData>) JSONArray.toCollection(array,PageData.class);
-
-		String UserDepartCode = Jurisdiction.getCurrentDepartmentID();
+		//Object DATA_ROWS = getPd.get("DataRows");
+		//String json = DATA_ROWS.toString();  
+        //JSONArray array = JSONArray.fromObject(json);  
+        //List<PageData> listData = (List<PageData>) JSONArray.toCollection(array,PageData.class);
 
 		//Map<String, TmplConfigDetail> map_SetColumnsListBill = Common.GetSetColumnsList(TypeCodeSummyBill, UserDepartCode, tmplconfigService);
 		Map<String, TableColumns> map_HaveColumnsListBill = Common.GetHaveColumnsList(TypeCodeSummyBill, tmplconfigService);
@@ -509,12 +520,19 @@ public class SocialIncSummyController extends BaseController {
 			retSetBillCodeFeild.add(strfeild);
 		}
 		retSetBillCodeFeild = QueryFeildString.extraSumField(retSetBillCodeFeild, SumFieldBill);
-		if(listData!=null && listData.size()>0){
+		if(!SelectedBillCode.equals(SelectBillCodeFirstShow)){//if(listData!=null && listData.size()>0){//
+			String checkState = CheckState("'" + SelectedBillCode + "'");
+			if(checkState!=null && !checkState.trim().equals("")){
+				commonBase.setCode(2);
+				commonBase.setMessage(checkState);
+				return commonBase;
+			}
 			bolDeleteSummy = true;
 			List<String> listBillCode = new ArrayList<String>(); 
-			for(PageData each : listData){
-				listBillCode.add(each.getString("BILL_CODE" + TmplUtil.keyExtra));
-			}
+			listBillCode.add(SelectedBillCode);
+			//for(PageData each : listData){
+			//	listBillCode.add(each.getString("BILL_CODE" + TmplUtil.keyExtra));
+			//}
 			QueryFeild += " and BILL_CODE in (" + QueryFeildString.tranferListValueToSqlInString(listBillCode) + ") ";
 			QueryFeild += QueryFeildString.getNotReportBillCode(TypeCodeTransfer, SystemDateTime, SelectedCustCol7, AllDeptCode + "," + SelectedDepartCode);
 			QueryFeild += QueryFeildString.getBillCodeNotInSumInvalidDetail(TableNameBase);
@@ -726,17 +744,21 @@ public class SocialIncSummyController extends BaseController {
 	}
 
 	//判断已传输或作废或删除
-	private String CheckState(List<PageData> pdSerialNo) throws Exception{
+	private String CheckState(String strSqlInBillCode) throws Exception{
 		String strRut = "";
-		//List<PageData> pdBillCode = staffdetailService.getBillCodeBySerialNo(pdSerialNo);
-		//if(pdBillCode != null){
-		//	for(PageData pd : pdBillCode){
-		///		String BILL_CODE = pd.getString("BILL_CODE");
-		//		if(BILL_CODE!=null && !BILL_CODE.trim().equals("")){
-		//			strRut = Message.OperDataAlreadySum;
-		//		}
-		//	}
-		//}
+		
+		String QueryFeild = " and BILL_CODE in (" + strSqlInBillCode + ") ";
+		QueryFeild += " and BILL_STATE = '" + BillState.Normal.getNameKey() + "' ";
+		QueryFeild += " and BILL_CODE in (SELECT bill_code FROM tb_sys_sealed_info WHERE state = '1') ";
+		
+		PageData transferPd = new PageData();
+		transferPd.put("SystemDateTime", SystemDateTime);
+		transferPd.put("CanOperate", QueryFeild);
+		List<String> getCodeList = socialincsummyService.getBillCodeList(transferPd);
+		
+		if(getCodeList != null && getCodeList.size()>0){
+			strRut = Message.OperDataSumAlreadyChange;
+		}
 		return strRut;
 	}
 	

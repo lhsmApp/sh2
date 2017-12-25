@@ -100,7 +100,8 @@
 		            });
 		        } else {
 			        if($.trim(commonBaseCode) != -1){
-			        	alert(commonMessage);
+			        	prompt("", commonMessage);
+			        	//alert(commonMessage);
 					    //$("#excel").tips({
 					    //	side:3,
 			            //    msg:commonMessage,
