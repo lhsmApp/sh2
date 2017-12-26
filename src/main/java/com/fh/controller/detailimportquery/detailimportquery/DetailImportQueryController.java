@@ -131,6 +131,10 @@ public class DetailImportQueryController extends BaseController {
 		String emplGroupType = DictsUtil.getEmplGroupType(SelectedTableNo);
 		//单位
 		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
+		int departSelf = Common.getDepartSelf(departmentService);
+		if(departSelf == 1){
+			SelectedDepartCode = Jurisdiction.getCurrentDepartmentID();
+		}
 		//账套
 		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
 		//日期
@@ -146,6 +150,15 @@ public class DetailImportQueryController extends BaseController {
 		getQueryFeildPd.put("BUSI_DATE", SelectedBusiDate);
 		String QueryFeild = QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList);
 		QueryFeild += " and DEPT_CODE in (" + QueryFeildString.tranferListValueToSqlInString(AllDeptCode) + ") ";
+		if(!(SelectedCustCol7!=null && !SelectedCustCol7.trim().equals(""))){
+			QueryFeild += " and 1 != 1 ";
+		}
+		if(!(SelectedDepartCode!=null && !SelectedDepartCode.trim().equals(""))){
+			QueryFeild += " and 1 != 1 ";
+		}
+		if(!(SelectedBusiDate!=null && !SelectedBusiDate.trim().equals(""))){
+			QueryFeild += " and 1 != 1 ";
+		}
 		getPd.put("QueryFeild", QueryFeild);
 		
 		//表名
@@ -272,6 +285,10 @@ public class DetailImportQueryController extends BaseController {
 		String emplGroupType = DictsUtil.getEmplGroupType(SelectedTableNo);
 		//单位
 		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
+		int departSelf = Common.getDepartSelf(departmentService);
+		if(departSelf == 1){
+			SelectedDepartCode = Jurisdiction.getCurrentDepartmentID();
+		}
 		//账套
 		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
 		//日期
@@ -290,6 +307,15 @@ public class DetailImportQueryController extends BaseController {
 		String QueryFeild = QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList);
 		QueryFeild += QueryFeildString.getQueryFeildBillCodeDetail(SelectedBillCode, SelectBillCodeFirstShow);
 		QueryFeild += " and DEPT_CODE in (" + QueryFeildString.tranferListValueToSqlInString(AllDeptCode) + ") ";
+		if(!(SelectedCustCol7!=null && !SelectedCustCol7.trim().equals(""))){
+			QueryFeild += " and 1 != 1 ";
+		}
+		if(!(SelectedDepartCode!=null && !SelectedDepartCode.trim().equals(""))){
+			QueryFeild += " and 1 != 1 ";
+		}
+		if(!(SelectedBusiDate!=null && !SelectedBusiDate.trim().equals(""))){
+			QueryFeild += " and 1 != 1 ";
+		}
 		getPd.put("QueryFeild", QueryFeild);
 		
 		//表名

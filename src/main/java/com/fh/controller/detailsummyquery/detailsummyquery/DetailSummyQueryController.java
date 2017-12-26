@@ -138,6 +138,10 @@ public class DetailSummyQueryController extends BaseController {
 		String emplGroupType = DictsUtil.getEmplGroupType(SelectedTableNo);
 		//单位
 		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
+		int departSelf = Common.getDepartSelf(departmentService);
+		if(departSelf == 1){
+			SelectedDepartCode = Jurisdiction.getCurrentDepartmentID();
+		}
 		//账套
 		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
 		//日期
@@ -530,6 +534,10 @@ public class DetailSummyQueryController extends BaseController {
 		String emplGroupType = DictsUtil.getEmplGroupType(SelectedTableNo);
 		//单位
 		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
+		int departSelf = Common.getDepartSelf(departmentService);
+		if(departSelf == 1){
+			SelectedDepartCode = Jurisdiction.getCurrentDepartmentID();
+		}
 		//账套
 		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
 		//日期

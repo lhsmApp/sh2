@@ -197,8 +197,18 @@ public class StaffDetailController extends BaseController {
 		transferPd.put("SelectedDepartCode", SelectedDepartCode);
 		transferPd.put("SystemDateTime", SystemDateTime);
 		transferPd.put("emplGroupType", emplGroupType);
-		String strCanOperate = QueryFeildString.getBillCodeNotInSumInvalidDetail(TableNameSummy) 
-				+ QueryFeildString.getNotReportBillCode(strTypeCodeTramsfer, SystemDateTime, SelectedCustCol7, SelectedDepartCode);
+		String strCanOperate = QueryFeildString.getBillCodeNotInSumInvalidDetail(TableNameSummy);
+		if(!(SelectedDepartCode != null && !SelectedDepartCode.trim().equals(""))){
+			strCanOperate += " and 1 != 1 ";
+		} else {
+			strCanOperate += QueryFeildString.getNotReportBillCode(strTypeCodeTramsfer, SystemDateTime, SelectedCustCol7, SelectedDepartCode);
+		}
+		if(!(SelectedCustCol7 != null && !SelectedCustCol7.trim().equals(""))){
+			strCanOperate += " and 1 != 1 ";
+		}
+		if(!(emplGroupType!=null && !emplGroupType.trim().equals(""))){
+			strCanOperate += " and 1 != 1 ";
+		}
 		transferPd.put("CanOperate", strCanOperate);
 		List<String> getCodeList = staffdetailService.getBillCodeList(transferPd);
 		String returnString = SelectBillCodeOptions.getSelectBillCodeOptions(getCodeList, SelectBillCodeFirstShow, SelectBillCodeLastShow);
@@ -962,7 +972,7 @@ public class StaffDetailController extends BaseController {
 								commonBase.setCode(2);
 								commonBase.setMessage(sbTitle.toString());
 							} else {
-								if(listAdd!=null && listAdd.size()>0){
+								if(!(listAdd!=null && listAdd.size()>0)){
 									commonBase.setCode(2);
 									commonBase.setMessage("请导入符合条件的数据！");
 								} else {
@@ -1006,7 +1016,7 @@ public class StaffDetailController extends BaseController {
 										//}
 									}
 									if(strCalculationMessage!=null && !strCalculationMessage.trim().equals("")){
-										commonBase.setCode(2);
+										commonBase.setCode(3);
 										commonBase.setMessage("导入的纳税额填写不正确，无法导入！\\n" + strCalculationMessage);
 									} else {
 										commonBase = UpdateDatabase(true, commonBase, strErrorMessage,

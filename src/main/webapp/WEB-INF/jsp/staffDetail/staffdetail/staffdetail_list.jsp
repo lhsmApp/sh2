@@ -192,46 +192,43 @@
     	var jqGridColModel;
 
     	function getSelectBillCodeOptions(){
+        	console.log("getSelectBillCodeOptions()");
             var SelectedDepartCode = $("#SelectedDepartCode").val();
             var SelectedCustCol7 = $("#SelectedCustCol7").val();
     		setSelectBillCodeOptions(InitBillCodeOptions);
-            if(SelectedDepartCode!=null && $.trim(SelectedDepartCode)!=""
-            		&& SelectedCustCol7!=null && $.trim(SelectedCustCol7)!=""){
-            	console.log("getSelectBillCodeOptions()");
-    			top.jzts();
-    			$.ajax({
-    				type: "POST",
-    				url: '<%=basePath%>staffdetail/getBillCodeList.do?SelectedTableNo='+which
-                        +'&SelectedDepartCode='+SelectedDepartCode
-                        +'&SelectedCustCol7='+SelectedCustCol7
-                        +'&DepartTreeSource='+DepartTreeSource,
-    				dataType:'json',
-    				cache: false,
-    				success: function(response){
-    					if(response.code==0){
-    						$(top.hangge());//关闭加载状态
-    						setSelectBillCodeOptions(response.message);
-    					}else{
-    						$(top.hangge());//关闭加载状态
-    						$("#subTitle").tips({
-    							side:3,
-    				            msg:'获取单号列表失败,'+response.message,
-    				            bg:'#cc0033',
-    				            time:3
-    				        });
-    					}
-    				},
-    		    	error: function(response) {
-    					$(top.hangge());//关闭加载状态
-    					$("#subTitle").tips({
-    						side:3,
-    			            msg:'获取单号列表出错:'+response.responseJSON.message,
-    			            bg:'#cc0033',
-    			            time:3
-    			        });
-    		    	}
-    			});
-            }
+			top.jzts();
+			$.ajax({
+				type: "POST",
+				url: '<%=basePath%>staffdetail/getBillCodeList.do?SelectedTableNo='+which
+                    +'&SelectedDepartCode='+SelectedDepartCode
+                    +'&SelectedCustCol7='+SelectedCustCol7
+                    +'&DepartTreeSource='+DepartTreeSource,
+				dataType:'json',
+				cache: false,
+				success: function(response){
+					if(response.code==0){
+						$(top.hangge());//关闭加载状态
+						setSelectBillCodeOptions(response.message);
+					}else{
+						$(top.hangge());//关闭加载状态
+						$("#subTitle").tips({
+							side:3,
+				            msg:'获取单号列表失败,'+response.message,
+				            bg:'#cc0033',
+				            time:3
+				        });
+					}
+				},
+		    	error: function(response) {
+					$(top.hangge());//关闭加载状态
+					$("#subTitle").tips({
+						side:3,
+			            msg:'获取单号列表出错:'+response.responseJSON.message,
+			            bg:'#cc0033',
+			            time:3
+			        });
+		    	}
+			});
         }
     
     	function setSelectBillCodeOptions(selectBillCodeOptions){

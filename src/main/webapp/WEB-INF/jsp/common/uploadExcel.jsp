@@ -99,15 +99,16 @@
 		                time:3
 		            });
 		        } else {
-			        if($.trim(commonBaseCode) != -1){
-			        	prompt("", commonMessage);
-			        	//alert(commonMessage);
-					    //$("#excel").tips({
-					    //	side:3,
-			            //    msg:commonMessage,
-			            //    bg:'#AE81FF',
-			            //    time:3
-			            //});
+		        	if($.trim(commonBaseCode) == 3){
+			        	//prompt("", commonMessage);
+			        	alert(commonMessage);
+		        	} else if($.trim(commonBaseCode) != -1){
+					    $("#excel").tips({
+					    	side:3,
+			                msg:commonMessage,
+			                bg:'#AE81FF',
+			                time:3
+			            });
 			        }
 			    }
 		    };

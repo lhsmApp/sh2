@@ -182,8 +182,15 @@ public class HouseFundDetailController extends BaseController {
 		transferPd.put("SelectedCustCol7", SelectedCustCol7);
 		transferPd.put("SelectedDepartCode", SelectedDepartCode);
 		transferPd.put("SystemDateTime", SystemDateTime);
-		String strCanOperate = QueryFeildString.getBillCodeNotInSumInvalidDetail(TableNameSummy) 
-				+ QueryFeildString.getNotReportBillCode(TypeCodeTransfer, SystemDateTime, SelectedCustCol7, SelectedDepartCode);
+		String strCanOperate = QueryFeildString.getBillCodeNotInSumInvalidDetail(TableNameSummy);
+		if(!(SelectedDepartCode != null && !SelectedDepartCode.trim().equals(""))){
+			strCanOperate += " and 1 != 1 ";
+		} else {
+			strCanOperate += QueryFeildString.getNotReportBillCode(TypeCodeTransfer, SystemDateTime, SelectedCustCol7, SelectedDepartCode);
+		}
+		if(!(SelectedCustCol7 != null && !SelectedCustCol7.trim().equals(""))){
+			strCanOperate += " and 1 != 1 ";
+		}
 		transferPd.put("CanOperate", strCanOperate);
 		List<String> getCodeList = housefunddetailService.getBillCodeList(transferPd);
 		String returnString = SelectBillCodeOptions.getSelectBillCodeOptions(getCodeList, SelectBillCodeFirstShow, SelectBillCodeLastShow);
@@ -830,7 +837,7 @@ public class HouseFundDetailController extends BaseController {
 								commonBase.setCode(2);
 								commonBase.setMessage(sbTitle.toString());
 							} else {
-								if(listAdd!=null && listAdd.size()>0){
+								if(!(listAdd!=null && listAdd.size()>0)){
 									commonBase.setCode(2);
 									commonBase.setMessage("请导入符合条件的数据！");
 								} else {
