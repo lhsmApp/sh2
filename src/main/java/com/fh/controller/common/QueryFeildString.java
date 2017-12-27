@@ -141,6 +141,17 @@ public class QueryFeildString {
 		return QueryFeild;
 	}
 	
+	public static String getNotLockBillCode(String BILL_TYPE, String RPT_DUR, String BILL_OFF, String SqlInRPT_DEPT) throws Exception{
+		String strInRPT_DEPT = getSqlInString(SqlInRPT_DEPT);
+		String strRet = " and BILL_CODE not in (SELECT bill_code FROM tb_sys_unlock_info "
+				+ "                             WHERE DEL_STATE = '0' "
+				+ "                             AND UNLK_DUR = '" + RPT_DUR + "' "
+				+ "                             AND UNLK_DEPT in (" + strInRPT_DEPT + ") "
+				+ "                             AND BILL_TYPE = '" + BILL_TYPE + "' "
+				+ "                             AND BILL_OFF = '" + BILL_OFF + "') ";
+		return strRet;
+	}
+	
 	public static String getNotReportBillCode(String BILL_TYPE, String RPT_DUR, String BILL_OFF, String SqlInRPT_DEPT) throws Exception{
 		String strInRPT_DEPT = getSqlInString(SqlInRPT_DEPT);
 		String strRet = " and BILL_CODE not in (SELECT bill_code FROM tb_sys_sealed_info "
