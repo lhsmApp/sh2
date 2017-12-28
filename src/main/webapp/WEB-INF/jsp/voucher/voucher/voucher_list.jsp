@@ -387,10 +387,21 @@
 			}
 			resizeGridHeight($("#jqGrid"),gridHeight);
 	    });	
-	
+		var curUrl="<%=basePath%>voucher/getPageList.do";
+		var curPostData={"VOUCHER_TYPE":voucherType,"TABLE_CODE":"${pd.which}","BILL_CODE":$("#SelectedBillCode").val(),"BUSI_DATE":$("#busiDate").val(),"DEPT_CODE":$("#departCode").val(),"FMISACC":$("#FMISACC").val()};
+		if(tabIndex==3){
+			curUrl="<%=basePath%>voucher/getSyncDelList.do";
+		}else{
+			curUrl="<%=basePath%>voucher/getPageList.do";
+		}
+		if(tabIndex==1){
+			curPostData={"VOUCHER_TYPE":voucherType,"TABLE_CODE":"${pd.which}","BILL_CODE":$("#SelectedBillCode").val(),"BUSI_DATE":$("#busiDate").val(),"DEPT_CODE":$("#departCode").val(),"FMISACC":$("#FMISACC").val()}
+		}else{
+			curPostData={"VOUCHER_TYPE":voucherType,"TABLE_CODE":"${pd.which}","BUSI_DATE":$("#busiDate").val(),"DEPT_CODE":$("#departCode").val(),"FMISACC":$("#FMISACC").val()}
+		}
 		$("#jqGrid").jqGrid({
-			url: "<%=basePath%>voucher/getPageList.do",
-			postData:{"VOUCHER_TYPE":1,"TABLE_CODE":"${pd.which}","BILL_CODE":$("#SelectedBillCode").val(),"BUSI_DATE":$("#busiDate").val(),"DEPT_CODE":$("#departCode").val(),"FMISACC":$("#FMISACC").val()},
+			url: curUrl,
+			postData:curPostData,
 			datatype: "json",
 			colModel: jqGridColModel,
 			reloadAfterSubmit: true, 

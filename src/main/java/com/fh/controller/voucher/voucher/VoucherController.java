@@ -283,6 +283,8 @@ public class VoucherController extends BaseController {
 		QueryFeild += " and BILL_STATE = '" + BillState.Normal.getNameKey() + "' ";
 		QueryFeild += QueryFeildString.getNotReportBillCode(sealTypeTransfer, SystemDateTime, SelectedCustCol7,
 				AllDeptCode + "," + SelectedDepartCode);
+		QueryFeild += QueryFeildString.getNotLockBillCode(sealTypeTransfer, SystemDateTime, SelectedCustCol7,
+				AllDeptCode + "," + SelectedDepartCode);
 		QueryFeild += " and DEPT_CODE in (" + QueryFeildString.tranferListValueToSqlInString(AllDeptCode) + ") ";
 		// 工资无账套无数据
 		/*
