@@ -280,6 +280,20 @@
 		/**
 		 * 导出
 		 */
+	    /*function exportSalaryItems(){
+	        importItems("1");
+	    }
+	    function exportBonusItems(){
+	        importItems("2");
+	    }
+	    function exportItems(SalaryOrBonus){
+	    	window.location.href='<%=basePath%>detailimportquery/excel.do?SelectedTableNo='+which
+            +'&SelectedBusiDate='+$("#SelectedBusiDate").val()
+            +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
+            +'&SelectedCustCol7='+$("#SelectedCustCol7").val()
+            +'&SelectedBillCode='+$("#SelectedBillCode").val()
+            + '&SalaryOrBonus='+SalaryOrBonus;
+	    }*/
 	    function exportItems(){
 	    	window.location.href='<%=basePath%>detailimportquery/excel.do?SelectedTableNo='+which
             +'&SelectedBusiDate='+$("#SelectedBusiDate").val()
@@ -433,6 +447,22 @@
 				             title : "导出",
 				             cursor : "pointer"
 				         });
+		                /*$(gridBase_selector).navButtonAdd(pagerBase_selector, {
+				             caption : "工资个税",
+				             buttonicon : "ace-icon fa fa-cloud-download",
+				             onClickButton : exportSalaryItems,
+				             position : "last",
+				             title : "导出工资个税",
+				             cursor : "pointer"
+				         });
+		                $(gridBase_selector).navButtonAdd(pagerBase_selector, {
+				             caption : "奖金个税",
+				             buttonicon : "ace-icon fa fa-cloud-download",
+				             onClickButton : exportBonusItems,
+				             position : "last",
+				             title : "导出奖金个税",
+				             cursor : "pointer"
+				         });*/
         }
 </script>
 </html>

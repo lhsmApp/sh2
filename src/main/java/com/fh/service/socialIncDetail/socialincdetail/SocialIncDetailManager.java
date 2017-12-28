@@ -36,11 +36,11 @@ public interface SocialIncDetailManager{
 	 */
 	public PageData getFooterSummary(JqPage page)throws Exception;
 	
-	/**通过流水号获取单号，用于判断数据是否已汇总
+	/**通过流水号获取流水号，用于判断数据是否变更 
 	 * @param pd
 	 * @throws Exception
 	 */
-	public List<PageData> getBillCodeBySerialNo(List<PageData> listCode)throws Exception;
+	public List<PageData> getSerialNoBySerialNo(PageData pd)throws Exception;
 
 	/**导出列表
 	 * @param page

@@ -30,6 +30,7 @@ import com.fh.entity.TmplConfigDetail;
 import com.fh.util.ObjectExcelView;
 import com.fh.util.PageData;
 import com.fh.util.SqlTools;
+import com.fh.util.enums.StaffDataType;
 import com.fh.util.enums.TmplType;
 
 import com.fh.util.Jurisdiction;
@@ -345,6 +346,8 @@ public class DetailImportQueryController extends BaseController {
 		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
 		//单位
 		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
+		//工资或奖金枚举编码
+		//String SalaryOrBonus = getPd.getString("SalaryOrBonus");
 		
 		String strShowCalModelDepaet = Jurisdiction.getCurrentDepartmentID();
 		if(SelectedDepartCode!=null && !SelectedDepartCode.trim().equals("") && !SelectedDepartCode.contains(",")){
@@ -358,6 +361,85 @@ public class DetailImportQueryController extends BaseController {
 		PageData pdTransfer = setPutPd(getPd);
 		page.setPd(pdTransfer);
 		List<PageData> varOList = detailimportqueryService.datalistExport(page);
+		
+		/*
+		
+		Map<String, Object> DicList = new LinkedHashMap<String, Object>();
+				//Common.GetDicList(SelectedTableNo, SelectedDepartCode, SelectedCustCol7, 
+				//tmplconfigService, tmplconfigdictService, dictionariesService, departmentService, userService, AdditionalReportColumns);
+
+		Map<String, TmplConfigDetail> map_SetColumnsList = new LinkedHashMap<String, TmplConfigDetail>();
+				//Common.GetSetColumnsList(SelectedTableNo, SelectedDepartCode, SelectedCustCol7, tmplconfigService);
+		map_SetColumnsList.put("USER_CODE", new TmplConfigDetail("USER_CODE", "工号", "1"));
+		map_SetColumnsList.put("USER_NAME", new TmplConfigDetail("USER_NAME", "姓名", "1"));
+		map_SetColumnsList.put("CERT_TYPE", new TmplConfigDetail("CERT_TYPE", "证件类型", "1"));
+		map_SetColumnsList.put("STAFF_IDENT", new TmplConfigDetail("STAFF_IDENT", "证件号码", "1"));
+		map_SetColumnsList.put("TAX_BURDENS", new TmplConfigDetail("TAX_BURDENS", "税款负担方式", "1"));
+		if(SalaryOrBonus.equals(StaffDataType.Salary.getNameKey())){
+			map_SetColumnsList.put("GROSS_PAY", new TmplConfigDetail("GROSS_PAY", "收入额", "1"));
+			map_SetColumnsList.put("", new TmplConfigDetail("", "免税所得", "1"));
+			map_SetColumnsList.put("ENDW_INS", new TmplConfigDetail("ENDW_INS", "基本养老保险费", "1"));
+			map_SetColumnsList.put("MED_INS", new TmplConfigDetail("MED_INS", "基本医疗保险费", "1"));
+			map_SetColumnsList.put("UNEMPL_INS", new TmplConfigDetail("UNEMPL_INS", "失业保险费", "1"));
+			map_SetColumnsList.put("HOUSE_FUND", new TmplConfigDetail("HOUSE_FUND", "住房公积金", "1"));
+			map_SetColumnsList.put("KID_ALLE", new TmplConfigDetail("KID_ALLE", "允许扣除的税费", "1"));
+			map_SetColumnsList.put("SUP_PESN", new TmplConfigDetail("SUP_PESN", "年金", "1"));
+			map_SetColumnsList.put("", new TmplConfigDetail("", "商业健康保险费", "1"));
+			map_SetColumnsList.put("", new TmplConfigDetail("", "其他扣除", "1"));
+			map_SetColumnsList.put("", new TmplConfigDetail("", "减除费用", "1"));
+			map_SetColumnsList.put("", new TmplConfigDetail("", "实际捐赠额", "1"));
+			map_SetColumnsList.put("", new TmplConfigDetail("", "允许列支的捐赠比例", "1"));
+			map_SetColumnsList.put("", new TmplConfigDetail("", "准予扣除的捐赠额", "1"));
+			map_SetColumnsList.put("", new TmplConfigDetail("", "减免税额", "1"));
+			map_SetColumnsList.put("", new TmplConfigDetail("", "已扣缴税额", "1"));
+		}
+        if(SalaryOrBonus.equals(StaffDataType.Bonus.getNameKey())){
+			map_SetColumnsList.put("CUST_COL14", new TmplConfigDetail("CUST_COL14", "全年一次性奖金额", "1"));
+			map_SetColumnsList.put("", new TmplConfigDetail("", "免税所得", "1"));
+			map_SetColumnsList.put("", new TmplConfigDetail("", "允许扣除的税费", "1"));
+			map_SetColumnsList.put("", new TmplConfigDetail("", "商业健康保险费", "1"));
+			map_SetColumnsList.put("", new TmplConfigDetail("", "其他费用", "1"));
+			map_SetColumnsList.put("", new TmplConfigDetail("", "实际捐赠额", "1"));
+			map_SetColumnsList.put("", new TmplConfigDetail("", "允许列支的捐赠比例", "1"));
+			map_SetColumnsList.put("", new TmplConfigDetail("", "准予扣除的捐赠额", "1"));
+			map_SetColumnsList.put("", new TmplConfigDetail("", "减免税额", "1"));
+			map_SetColumnsList.put("", new TmplConfigDetail("", "已缴税额", "1"));
+		}
+		TmplConfigDetail col = new TmplConfigDetail("", "备注", "1");
+		map_SetColumnsList.put("", col);
+
+		//页面显示数据的年月
+		getPd.put("SystemDateTime", SystemDateTime);
+		//页面显示数据的二级单位
+		getPd.put("SelectedDepartCode", SelectedDepartCode);
+		//账套
+		getPd.put("SelectedCustCol7", SelectedCustCol7);
+		//员工组
+		getPd.put("emplGroupType", emplGroupType);
+
+		String strBillCode = QueryFeildString.getQueryFeildBillCodeDetail(SelectedBillCode, SelectBillCodeFirstShow);
+		getPd.put("CheckBillCode", strBillCode);
+		
+		String strSelectFeild = " USER_CODE, USER_NAME, STAFF_IDENT, "
+				+ " sum(GROSS_PAY) GROSS_PAY, "
+				+ " sum(ENDW_INS) ENDW_INS, "
+				+ " sum(MED_INS - CASD_INS) MED_INS, "
+				+ " sum(UNEMPL_INS) UNEMPL_INS, "
+				+ " sum(HOUSE_FUND) HOUSE_FUND, "
+				+ " sum(KID_ALLE) KID_ALLE, "
+				+ " sum(SUP_PESN) SUP_PESN, "
+				+ " sum(CUST_COL14) CUST_COL14 ";
+		getPd.put("SelectFeild", strSelectFeild);
+		getPd.put("OrderByFeild", " USER_CODE, USER_NAME, STAFF_IDENT ");
+		
+		page.setPd(getPd);
+		List<PageData> varOList = staffdetailService.exportList(page);
+		if(varOList!=null && varOList.size()>0){
+			for(PageData each : varOList){
+				each.put("CERT_TYPE", "居民身份证");
+				each.put("TAX_BURDENS", "自行负担");
+			}
+		}*/
 		
 		ModelAndView mv = new ModelAndView();
 		Map<String,Object> dataMap = new LinkedHashMap<String,Object>();
@@ -376,17 +458,17 @@ public class DetailImportQueryController extends BaseController {
 					int j = 1;
 					for (TmplConfigDetail col : map_SetColumnsList.values()) {
 						if(col.getCOL_HIDE().equals("1")){
-						String trans = col.getDICT_TRANS();
-						Object getCellValue = varOList.get(i).get(col.getCOL_CODE().toUpperCase());
-						if(trans != null && !trans.trim().equals("")){
-							String value = "";
-							Map<String, String> dicAdd = (Map<String, String>) DicList.getOrDefault(trans, new LinkedHashMap<String, String>());
-							value = dicAdd.getOrDefault(getCellValue, "");
-							vpd.put("var" + j, value);
-						} else {
-							vpd.put("var" + j, getCellValue.toString());
-						}
-						j++;
+						    String trans = col.getDICT_TRANS();
+						    Object getCellValue = varOList.get(i).get(col.getCOL_CODE().toUpperCase());
+						    if(trans != null && !trans.trim().equals("")){
+							    String value = "";
+							    Map<String, String> dicAdd = (Map<String, String>) DicList.getOrDefault(trans, new LinkedHashMap<String, String>());
+							    value = dicAdd.getOrDefault(getCellValue, "");
+							    vpd.put("var" + j, value);
+						    } else {
+							    vpd.put("var" + j, getCellValue.toString());
+						    }
+						    j++;
 						}
 					}
 					varList.add(vpd);

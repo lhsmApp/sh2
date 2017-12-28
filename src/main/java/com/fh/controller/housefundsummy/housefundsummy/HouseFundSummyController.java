@@ -271,7 +271,7 @@ public class HouseFundSummyController extends BaseController {
 		getQueryFeildPd.put("CUST_COL7", getPdSelectedCustCol7);
 		getQueryFeildPd.put("DEPT_CODE", getPdSelectedDepartCode);
 		String QueryFeild = QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList);
-		if(getPdSelectedBillCode!=null && !getPdSelectedBillCode.equals(SelectBillCodeFirstShow)){
+		if(!getPdSelectedBillCode.equals(SelectBillCodeFirstShow)){
 			QueryFeild += " and BILL_STATE = '" + BillState.Normal.getNameKey() + "' ";
 			QueryFeild += QueryFeildString.getNotReportBillCode(TypeCodeTransfer, SystemDateTime, getPdSelectedCustCol7, AllDeptCode + "," + getPdSelectedDepartCode);
 		}
@@ -603,7 +603,7 @@ public class HouseFundSummyController extends BaseController {
         		bill.put("CanOperateBill", CanOperNotReportNotInSumInvalidBill);//未传输 未作废
         		bill.put("CanOperateDetail", CanOperNotReportNotInSumInvalidDetail);//未传输 未作废
                 //添加未设置字段默认值
-    			Common.setModelDefault(bill, map_HaveColumnsListBill, map_SetColumnsListBill);
+    			Common.setModelDefault(bill, map_HaveColumnsListBill, map_SetColumnsListBill, null);
 			}
 			for(PageData detail : getSaveDetail){
 				String strDepartCode = detail.getString("DEPT_CODE" + TmplUtil.keyExtra);
@@ -618,7 +618,7 @@ public class HouseFundSummyController extends BaseController {
                 
 				detail.put("TableName", TableNameFirstDetail);
                 //添加未设置字段默认值
-    			Common.setModelDefault(detail, map_HaveColumnsListDetail, map_SetColumnsListDetail);
+    			Common.setModelDefault(detail, map_HaveColumnsListDetail, map_SetColumnsListDetail, null);
 			}
 		} else {//设置单号，直接添加
 			/***************获取最大单号及更新最大单号********************/
@@ -653,7 +653,7 @@ public class HouseFundSummyController extends BaseController {
                 
         		bill.put("TableName", TableNameBase);
                 //添加未设置字段默认值
-    			Common.setModelDefault(bill, map_HaveColumnsListBill, map_SetColumnsListBill);
+    			Common.setModelDefault(bill, map_HaveColumnsListBill, map_SetColumnsListBill, null);
 			}
 			getSaveDetail = getListTo(getSaveBill, getSaveDetail, SumFieldBill);
 			getDetailSetBillCode = getListTo(getSaveBill, getDetailSetBillCode, SumFieldBill);
@@ -672,7 +672,7 @@ public class HouseFundSummyController extends BaseController {
                 
 				detail.put("TableName", TableNameFirstDetail);
                 //添加未设置字段默认值
-    			Common.setModelDefault(detail, map_HaveColumnsListDetail, map_SetColumnsListDetail);
+    			Common.setModelDefault(detail, map_HaveColumnsListDetail, map_SetColumnsListDetail, null);
     			
 				Object getBILL_CODE = detail.get("BILL_CODE");
 				if(!(getBILL_CODE != null && !getBILL_CODE.toString().trim().equals(""))){
@@ -750,14 +750,14 @@ public class HouseFundSummyController extends BaseController {
 		
 		String QueryFeild = " and BILL_CODE in (" + strSqlInBillCode + ") ";
 		QueryFeild += " and BILL_STATE = '" + BillState.Normal.getNameKey() + "' ";
-		QueryFeild += " and BILL_CODE in (SELECT bill_code FROM tb_sys_sealed_info WHERE state = '1') ";
+		QueryFeild += " and BILL_CODE not in (SELECT bill_code FROM tb_sys_sealed_info WHERE state = '1') ";
 		
 		PageData transferPd = new PageData();
 		transferPd.put("SystemDateTime", SystemDateTime);
 		transferPd.put("CanOperate", QueryFeild);
 		List<String> getCodeList = housefundsummyService.getBillCodeList(transferPd);
 		
-		if(getCodeList != null && getCodeList.size()>0){
+		if(!(getCodeList != null && getCodeList.size()>0)){
 			strRut = Message.OperDataSumAlreadyChange;
 		}
 		return strRut;

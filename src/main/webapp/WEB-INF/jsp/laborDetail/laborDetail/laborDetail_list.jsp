@@ -54,6 +54,11 @@
 						    <span class="label label-xlg label-yellow arrowed-in arrowed-right"
 						    	id="subTitle" style="margin-left: 2px;">劳务报酬所得导入</span> 
                             <span style="border-left: 1px solid #e2e2e2; margin: 0px 10px;">&nbsp;</span>
+								
+						    <div class="pull-right">
+								<span class="label label-xlg label-blue arrowed-left"
+									id = "showDur" style="background:#428bca; margin-right: 2px;"></span> 
+							</div>
 					    </div>
 
 					    <div class="row">
@@ -109,6 +114,7 @@
 	    
             //当前期间,取自tb_system_config的SystemDateTime字段
 	        var SystemDateTime = '${SystemDateTime}';
+		    $("#showDur").text('当前期间：' + SystemDateTime);
 
 	        //resize to fit page size
 		    $(window).on('resize.jqGrid', function () {
@@ -121,7 +127,7 @@
 			    datatype: "json",
 			    colModel: [
 						{ name: 'SERIAL_NO', hidden: true, key: true, frozen: true},
-						{ name: 'USER_CODE__', hidden: true, key: true, frozen: true},
+						{ name: 'BUSI_DATE', hidden: true, frozen: true},
 						{ label: '员工编号', name: 'USER_CODE', 
 							editable: true, edittype:'text', editoptions:{maxLength:'30'}, editrules:{required:true}
 						},
@@ -388,7 +394,7 @@
 	     */
         function batchDelete(){
         	//获得选中的行ids的方法
-        	var id = $(gridBase_selector).getGridParam("selrow");  
+        	var id = $(gridBase_selector).getGridParam("selarrrow");  
 
     		if(!(id!=null)){// && ids.length>0
     			bootbox.dialog({
@@ -455,7 +461,8 @@
      	 */
      	function batchSave(){
      		//获得选中行ids的方法
-     	    var ids = $(gridBase_selector).getDataIDs();  
+	        var id = $(gridBase_selector).getGridParam("selarrrow");  
+     	    //var ids = $(gridBase_selector).getDataIDs();  
      		
      		if(!(ids!=null&&ids.length>0)){
      			bootbox.dialog({
@@ -525,7 +532,7 @@
          */
         function calculation(){
             //获得选中的行ids的方法
-	        var id = $(gridBase_selector).getGridParam("selrow");  
+	        var id = $(gridBase_selector).getGridParam("selarrrow");  
 	
 	        if(!(id!=null)){// && ids.length>0
 	            bootbox.dialog({

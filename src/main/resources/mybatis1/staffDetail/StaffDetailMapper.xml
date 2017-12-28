@@ -71,14 +71,14 @@
 		</if>
 	</select>
     
-    <!-- 通过流水号获取单号，用于判断数据是否已汇总 -->
-	<select id="getBillCodeBySerialNo" parameterType="pd" resultType="pd">
-		select BILL_CODE
+    <!-- 通过流水号获取流水号，用于判断数据是否变更 -->
+	<select id="getSerialNoBySerialNo" parameterType="pd" resultType="pd">
+		select ${SelectFeildName}
 		from <include refid="tableName"></include>
-		where
-		<foreach item="item" index="index" collection="list" open=" (" separator=" or " close=") ">
-            SERIAL_NO = #{item.SERIAL_NO__}
-		</foreach>
+		where BUSI_DATE = '${SystemDateTime}'
+		<if test="QueryFeild!= null and QueryFeild != ''">
+		    ${QueryFeild}
+		</if>
 	</select>
     
 	<!-- 导出列表 -->
