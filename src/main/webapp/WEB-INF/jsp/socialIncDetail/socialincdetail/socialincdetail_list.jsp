@@ -760,7 +760,7 @@
     		        },
     		        {
     					//edit record form
-    				id: "edit",
+    				    id: "edit",
     				    width: 900,
     					closeAfterEdit: true,
     					recreateForm: true,
@@ -769,7 +769,7 @@
     		        },
     		        {
     					//new record form
-    				id: "add",
+    				    id: "add",
     				    width: 900,
     					closeAfterAdd: true,
     					recreateForm: true,

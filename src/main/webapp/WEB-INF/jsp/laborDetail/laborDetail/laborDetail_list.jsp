@@ -224,16 +224,16 @@
 	                plusicon : 'fa fa-chevron-down bigger-110',
 					minusicon : 'fa fa-chevron-up bigger-110'
 				},*/
-			
-	            loadComplete : function() {
-	                var table = this;
-	                setTimeout(function(){
-	                    styleCheckbox(table);
-	                    updateActionIcons(table);
-	                    updatePagerIcons(table);
-	                    enableTooltips(table);
-	                }, 0);
-			    },
+    			
+    			loadComplete : function() {
+    				var table = this;
+    				setTimeout(function(){
+    					styleCheckbox(table);
+    					updateActionIcons(table);
+    					updatePagerIcons(table);
+    					enableTooltips(table);
+    				}, 0);
+    			},
 		    });
 	    
 		    $(window).triggerHandler('resize.jqGrid');//trigger window resize to make the grid get the correct size
@@ -763,7 +763,12 @@
 				url:'<%=basePath%>laborDetail/getPageList.do?'
 					+ 'SelectedDepartCode='+$("#SelectedDepartCode").val()
 		            + '&SelectedCustCol7='+$("#SelectedCustCol7").val(),
-				datatype : 'json'
+				datatype : 'json',
+                editurl: '<%=basePath%>laborDetail/edit.do?'
+					+ 'SelectedDepartCode='+$("#SelectedDepartCode").val()
+		            + '&SelectedCustCol7='+$("#SelectedCustCol7").val()
+                    + '&ShowDataDepartCode='+ShowDataDepartCode
+                    + '&ShowDataCustCol7='+ShowDataCustCol7
 			}).trigger("reloadGrid");
 		}  
  	</script>
