@@ -293,6 +293,17 @@
 				$("[data-original-title='获取凭证号']").addClass("hidden");
 				$("[data-original-title='获取冲销凭证号']").addClass("hidden");
 				$("[data-original-title='同步删除']").addClass("hidden");
+				if($("[data-original-title='上传']").length==0){
+					$('#jqGrid').navButtonAdd('#jqGridPager',
+			       {
+			           buttonicon: "ace-icon fa fa-cloud-upload green",
+			           title: "上传",
+			           caption: "上传",
+			           position: "last",
+			           onClickButton: batchSave
+			       });
+				}
+				
 				jQuery('#jqGrid').hideCol(['CERT_CODE','REVCERT_CODE']);
 				var busiDate = $("#busiDate").val(); 
 				var deptCode = $("#departCode").val(); 
@@ -387,6 +398,7 @@
 			}
 			resizeGridHeight($("#jqGrid"),gridHeight);
 	    });	
+		
 		var curUrl="<%=basePath%>voucher/getPageList.do";
 		var curPostData={"VOUCHER_TYPE":voucherType,"TABLE_CODE":"${pd.which}","BILL_CODE":$("#SelectedBillCode").val(),"BUSI_DATE":$("#busiDate").val(),"DEPT_CODE":$("#departCode").val(),"FMISACC":$("#FMISACC").val()};
 		if(tabIndex==3){
@@ -513,15 +525,56 @@
 			}
 		);
 
-       //批量传输
-       $('#jqGrid').navButtonAdd('#jqGridPager',
-       {
-           buttonicon: "ace-icon fa fa-cloud-upload green",
-           title: "上传",
-           caption: "上传",
-           position: "last",
-           onClickButton: batchSave
-       });
+		console.log(tabIndex);
+		if(tabIndex==1){
+		   //批量传输
+	       $('#jqGrid').navButtonAdd('#jqGridPager',
+	       {
+	           buttonicon: "ace-icon fa fa-cloud-upload green",
+	           title: "上传",
+	           caption: "上传",
+	           position: "last",
+	           onClickButton: batchSave
+	       });
+		   jQuery('#jqGrid').hideCol(['CERT_CODE','REVCERT_CODE']);
+		}else if(tabIndex==2){
+			
+			//获取凭证号
+	       $('#jqGrid').navButtonAdd('#jqGridPager',
+	       {
+	    	   /* bigger-150 */
+	           buttonicon: "ace-icon fa fa-book purple",
+	           title: "获取凭证号",
+	           caption: "获取凭证号",
+	           position: "last",
+	           onClickButton: batchVoucher
+	       });
+			
+			//获取冲销凭证号
+	       $('#jqGrid').navButtonAdd('#jqGridPager',
+	       {
+	    	   /* bigger-150 */
+	           buttonicon: "ace-icon fa fa-bookmark orange",
+	           title: "获取冲销凭证号",
+	           caption: "获取冲销凭证号",
+	           position: "last",
+	           onClickButton: batchWriteOffVoucher
+	       });
+			jQuery('#jqGrid').showCol(['CERT_CODE','REVCERT_CODE']);
+		}else{
+			//同步删除
+	       $('#jqGrid').navButtonAdd('#jqGridPager',
+	       {
+	    	   /* bigger-150 */
+	           buttonicon: "ace-icon fa fa-exchange red",
+	           title: "同步删除",
+	           caption: "同步删除",
+	           position: "last",
+	           onClickButton: syncDel
+	       });
+			jQuery('#jqGrid').hideCol(['CERT_CODE','REVCERT_CODE']);
+		}
+		
        //获取凭证号
        /* $('#jqGrid').navButtonAdd('#jqGridPager',
        {
