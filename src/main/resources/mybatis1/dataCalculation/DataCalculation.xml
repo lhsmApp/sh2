@@ -10,6 +10,9 @@
 	<select id="getStaffTax" resultType="com.fh.entity.StaffTax">
 		SELECT * FROM TB_STAFF_TAX order by MIN_VALUE
 	</select>
+	<select id="getLaborTax" resultType="com.fh.entity.LaborTax">
+		SELECT * FROM TB_LABOR_TAX order by MIN_VALUE
+	</select>
 	
 	<!--  -->
 	<select id="getMaxSerialNo" parameterType="String" resultType="Integer">
@@ -34,5 +37,10 @@
 	<update id="editSalaryFeild" parameterType="pd">
 	    ${sqlUpdateFeild} where SERIAL_NO in (${SqlInBillCode})
 	</update>
+	
+	<!--  -->
+	<select id="getTaxFormula" parameterType="pd" resultType="pd">
+	    select ${taxFormula} from ${tableName} limit 1
+	</select>
 	
 </mapper>

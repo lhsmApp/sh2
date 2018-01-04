@@ -12,6 +12,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.stereotype.Repository;
 
+import com.fh.entity.LaborTax;
 import com.fh.entity.StaffTax;
 import com.fh.util.PageData;
 /**
@@ -350,6 +351,115 @@ public class DaoSupport implements DAO {
 							douTableFeildTax = sumNum.subtract(sumTax).add(addTax);
 							eachAdd.put(TableFeildTax, douTableFeildTax.setScale(2, BigDecimal.ROUND_HALF_UP));
 						}
+						returnList.add(eachAdd);
+					}
+				}
+			}
+			sqlSession.flushStatements();
+			sqlSession.commit();
+			sqlSession.clearCache();
+		} finally{
+			sqlSession.rollback(); 
+			sqlSession.close();
+		}
+		return returnList;
+	}
+
+	/**
+	 * 获取计算数据
+	 * @param str
+	 * @param obj
+	 * @return
+	 * @throws Exception
+	 */
+	public List<PageData> findDataCalculationLaborDetail(String tableNameBackup, String ccTmplUtil_KeyExtra,
+			String sqlInsetBackup, PageData pdInsetBackup,
+			String sqlBatchDelAndIns, List<PageData> listAdd,
+			String sqlRetSelect, 
+			String sqlSumByUserCode)throws Exception{
+		SqlSessionFactory sqlSessionFactory = sqlSessionTemplate.getSqlSessionFactory();
+		//批量执行器
+		SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH,false);
+		List<LaborTax> listLaborTax = sqlSession.selectList("DataCalculation.getLaborTax");
+		sqlSession.delete("DataCalculation.deleteTableData", tableNameBackup);
+		
+		List<PageData> returnList = new ArrayList<PageData>();
+		try{
+			sqlSession.update(sqlInsetBackup, pdInsetBackup);
+			if(listAdd!=null && !listAdd.isEmpty()){
+				Integer strMaxNum = sqlSession.selectOne("DataCalculation.getMaxSerialNo", tableNameBackup);
+				String SqlInBillCode = "";
+				for(PageData eachPd : listAdd){
+					String SERIAL_NO = eachPd.getString("SERIAL_NO");
+					if(SERIAL_NO!=null && !SERIAL_NO.trim().equals("")){
+						if(SqlInBillCode!=null && !SqlInBillCode.trim().equals("")){
+							SqlInBillCode += ",";
+						}
+						SqlInBillCode += SERIAL_NO;
+					}
+				}
+				sqlSession.update(sqlBatchDelAndIns, listAdd);
+				PageData getAddSerialNo = new PageData();
+				getAddSerialNo.put("tableName", tableNameBackup);
+				getAddSerialNo.put("strMaxNum", strMaxNum);
+				List<Integer> getInsertBillCodeList =  sqlSession.selectList("DataCalculation.getAddSerialNo",  getAddSerialNo);
+				if(getInsertBillCodeList!=null){
+					for(Integer billCode : getInsertBillCodeList){
+						if(SqlInBillCode!=null && !SqlInBillCode.trim().equals("")){
+							SqlInBillCode += ",";
+						}
+						SqlInBillCode += billCode;
+					}
+				}
+				PageData getListBySerialNo = new PageData();
+				getListBySerialNo.put("sqlRetSelect", sqlRetSelect);
+				getListBySerialNo.put("SqlInBillCode", SqlInBillCode);
+				List<PageData> retList = sqlSession.selectList("DataCalculation.getListBySerialNo",  getListBySerialNo);
+				if(retList!=null){
+					List<String> userCodeList = new ArrayList<String>();
+					for(PageData eachAdd : retList){
+						String USER_CODE = eachAdd.getString("USER_CODE");
+						BigDecimal addTax = (BigDecimal) eachAdd.get("ACCRD_TAX");
+						if(!userCodeList.contains(USER_CODE)){
+							userCodeList.add(USER_CODE);
+							BigDecimal douTableFeildTax = new BigDecimal(0);
+							PageData getSumByUserCode = new PageData();
+							getSumByUserCode.put("sqlSumByUserCode", sqlSumByUserCode);
+							getSumByUserCode.put("USER_CODE", USER_CODE);
+							PageData getSum = sqlSession.selectOne("DataCalculation.getSumByUserCode",  getSumByUserCode);
+							//所有记录计算的税额
+							BigDecimal sumNumCheck = (BigDecimal) getSum.get("GROSS_PAY");
+							String strTAX_FORMULA = "";
+							if(listLaborTax!=null){
+								for(int i=0; i<listLaborTax.size(); i++){
+									LaborTax eachTax = listLaborTax.get(i);
+									if(sumNumCheck.doubleValue() >= eachTax.getMIN_VALUE()){
+										if(i == listLaborTax.size() -1){
+											strTAX_FORMULA = eachTax.getTAX_FORMULA();
+										} else {
+											if(sumNumCheck.doubleValue() <= eachTax.getMAX_VALUE()){
+												strTAX_FORMULA = eachTax.getTAX_FORMULA();
+											}
+										}
+									}
+								}
+							}
+							BigDecimal sumNum = new BigDecimal(0);
+							if(strTAX_FORMULA!=null && !strTAX_FORMULA.trim().equals("")){
+								PageData getTaxFormula = new PageData();
+								getTaxFormula.put("taxFormula", strTAX_FORMULA.replace("累计应发评审费", sumNumCheck.toString()) + " TaxFormulaValue ");
+								getTaxFormula.put("tableName", tableNameBackup);
+								List<PageData> getListTaxFormula = sqlSession.selectList("DataCalculation.getTaxFormula",  getTaxFormula);
+								sumNum = new BigDecimal(getListTaxFormula.get(0).get("TaxFormulaValue").toString());
+							}
+							//所有记录汇总的税额
+							BigDecimal sumTax = (BigDecimal) getSum.get("ACCRD_TAX");
+							douTableFeildTax = sumNum.subtract(sumTax).add(addTax);
+							eachAdd.put("ACCRD_TAX", douTableFeildTax.setScale(2, BigDecimal.ROUND_HALF_UP));
+						}
+						BigDecimal decGROSS_PAY = (BigDecimal) eachAdd.get("GROSS_PAY");
+						BigDecimal decACCRD_TAX = (BigDecimal) eachAdd.get("ACCRD_TAX");
+						eachAdd.put("ACT_SALY", decGROSS_PAY.subtract(decACCRD_TAX));
 						returnList.add(eachAdd);
 					}
 				}

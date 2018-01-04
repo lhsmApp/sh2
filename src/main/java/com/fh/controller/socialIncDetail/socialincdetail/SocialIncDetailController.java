@@ -103,7 +103,7 @@ public class SocialIncDetailController extends BaseController {
 	private List<String> MustInputList = Arrays.asList("USER_CODE");
 	//界面查询字段
     List<String> QueryFeildList = Arrays.asList("CUST_COL7", "DEPT_CODE");
-    //设置必定不用编辑的列
+    //设置必定不用编辑的列            SERIAL_NO 设置字段类型是数字，但不管隐藏 或显示都必须保存的
     List<String> MustNotEditList = Arrays.asList("SERIAL_NO", "BILL_CODE", "BUSI_DATE", "DEPT_CODE", "CUST_COL7");
 	// 查询表的主键字段，作为标准列，jqgrid添加带__列，mybaits获取带__列
     List<String> keyListAdd = new ArrayList<String>();
@@ -364,6 +364,10 @@ public class SocialIncDetailController extends BaseController {
 				getPd.put("BILL_CODE", "");
 			} else {
 				getPd.put("BILL_CODE", SelectedBillCode);
+			}
+			String getESTB_DEPT = (String) getPd.get("ESTB_DEPT");
+			if(!(getESTB_DEPT!=null && !getESTB_DEPT.trim().equals(""))){
+				getPd.put("ESTB_DEPT", SelectedDepartCode);
 			}
 			List<PageData> listData = new ArrayList<PageData>();
 			listData.add(getPd);

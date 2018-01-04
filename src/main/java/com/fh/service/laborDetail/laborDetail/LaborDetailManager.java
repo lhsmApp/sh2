@@ -1,7 +1,6 @@
 package com.fh.service.laborDetail.laborDetail;
 
 import java.util.List;
-import java.util.Map;
 
 import com.fh.entity.JqPage;
 import com.fh.util.PageData;
@@ -13,12 +12,6 @@ import com.fh.util.PageData;
  * @version
  */
 public interface LaborDetailManager{
-	
-	/**获取单号下拉列表数据源 
-	 * @param pd
-	 * @throws Exception
-	 */
-	public List<String> getBillCodeList(PageData pd)throws Exception;
 	
 	/**列表
 	 * @param page
@@ -36,11 +29,11 @@ public interface LaborDetailManager{
 	 */
 	public PageData getFooterSummary(JqPage page)throws Exception;
 	
-	/**通过流水号获取单号，用于判断数据是否已汇总
+	/**通过流水号获取单号，用于判断数据是否变更
 	 * @param pd
 	 * @throws Exception
 	 */
-	public List<PageData> getBillCodeBySerialNo(List<PageData> listCode)throws Exception;
+	public List<PageData> getSerialNoBySerialNo(PageData pd)throws Exception;
 
 	/**导出列表
 	 * @param page
@@ -63,68 +56,13 @@ public interface LaborDetailManager{
 	 * @param pd
 	 * @throws Exception
 	 */
-	public List<PageData> getDataCalculation(String tableName, String sqlRetSelect, List<PageData> listAdd)throws Exception;
+	public List<PageData> getDataCalculation(String tableName, String TmplUtil_KeyExtra,
+			PageData pdInsetBackup, List<PageData> listAdd,
+			String sqlRetSelect, String sqlSumByUserCode)throws Exception;
 	/**更新数据库
 	 * @param pd
 	 * @throws Exception
 	 */
 	public void batchUpdateDatabase(List<PageData> listData)throws Exception;
-
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-
-	/**获取汇总里的明细
-	 * @param
-	 * @throws Exception
-	 */
-	public List<PageData> getDetailList(PageData pd)throws Exception;
-
-	/**获取汇总数据
-	 * @param
-	 * @throws Exception
-	 */
-	public List<PageData> getSum(Map<String, String> map)throws Exception;
-	
-	
-	
-	
 }
 

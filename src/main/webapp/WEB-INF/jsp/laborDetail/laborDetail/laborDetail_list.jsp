@@ -55,10 +55,48 @@
 						    	id="subTitle" style="margin-left: 2px;">劳务报酬所得导入</span> 
                             <span style="border-left: 1px solid #e2e2e2; margin: 0px 10px;">&nbsp;</span>
 								
+							<button id="btnQuery" class="btn btn-white btn-info btn-sm"
+									onclick="showQueryCondi($('#jqGridBase'),null,true)">
+								<i class="ace-icon fa fa-chevron-down bigger-120 blue"></i> <span>隐藏查询</span>
+							</button>
+								
 						    <div class="pull-right">
 								<span class="label label-xlg label-blue arrowed-left"
 									id = "showDur" style="background:#428bca; margin-right: 2px;"></span> 
 							</div>
+					    </div>
+			
+						<div class="row">
+						    <div class="col-xs-12">
+							    <div class="widget-box"  >
+								    <div class="widget-body">
+									    <div class="widget-main">
+										    <form class="form-inline">
+											    <span class="pull-left" style="margin-right: 5px;">
+												    <select class="chosen-select form-control"
+													    name="SelectedCustCol7" id="SelectedCustCol7"
+													    data-placeholder="请选择帐套"
+													    style="vertical-align: top; height:32px;width: 150px;">
+													    <option value="">请选择帐套</option>
+													    <c:forEach items="${FMISACC}" var="each">
+														    <option value="${each.DICT_CODE}" 
+														        <c:if test="${pd.SelectedCustCol7==each.DICT_CODE}">selected</c:if>>${each.NAME}</option>
+													    </c:forEach>
+												    </select>
+											    </span>
+											    <span class="pull-left" style="margin-right: 5px;" <c:if test="${pd.departTreeSource=='0'}">hidden</c:if>>
+												    <div class="selectTree" id="selectTree" multiMode="false"
+												        allSelectable="false" noGroup="false"></div>
+											        <input id="SelectedDepartCode" type="hidden"></input>
+											    </span>
+											    <button type="button" class="btn btn-info btn-sm" onclick="tosearch();">
+											    	<i class="ace-icon fa fa-search bigger-110"></i>
+											    </button>
+										    </form>
+									    </div>
+								    </div>
+							    </div>
+						    </div>
 					    </div>
 
 					    <div class="row">
@@ -109,13 +147,11 @@
         var gridBase_selector = "#jqGridBase";  
         var pagerBase_selector = "#jqGridBasePager";  
 
-        $(document).ready(function () {
-            $(top.hangge());//关闭加载状态
-	    
-            //当前期间,取自tb_system_config的SystemDateTime字段
-	        var SystemDateTime = '${SystemDateTime}';
-		    $("#showDur").text('当前期间：' + SystemDateTime);
-
+	    //页面显示的数据的责任中心和账套信息，在tosearch()里赋值
+	    var ShowDataDepartCode = "";
+	    var ShowDataCustCol7 = "";
+        
+        function SetStructure(){
 	        //resize to fit page size
 		    $(window).on('resize.jqGrid', function () {
 		        $(gridBase_selector).jqGrid( 'setGridWidth', $(".page-content").width());
@@ -123,36 +159,49 @@
 		    });
 		
 		    $(gridBase_selector).jqGrid({
-			    url: '<%=basePath%>laborDetail/getPageList.do?',
+			    url: '<%=basePath%>laborDetail/getPageList.do?'
+					+ 'SelectedDepartCode='+$("#SelectedDepartCode").val()
+		            + '&SelectedCustCol7='+$("#SelectedCustCol7").val(),
 			    datatype: "json",
 			    colModel: [
-						{ name: 'SERIAL_NO', hidden: true, key: true, frozen: true},
-						{ name: 'BUSI_DATE', hidden: true, frozen: true},
-						{ label: '员工编号', name: 'USER_CODE', 
+						{ label: '编号', name: 'USER_CODE', 
 							editable: true, edittype:'text', editoptions:{maxLength:'30'}, editrules:{required:true}
 						},
-						{ label: '员工姓名', name: 'USER_NAME',
+						{ label: '姓名', name: 'USER_NAME',
+							editable: true, edittype:'text', editoptions:{maxLength:'20'}
+						},
+						{ label: '身份证号', name: 'STAFF_IDENT',
 							editable: true, edittype:'text', editoptions:{maxLength:'20'}
 						},
 						{ label: '应发合计', name: 'GROSS_PAY', sorttype: 'number', align: 'right', summaryType:'sum', summaryTpl:'<b>sum:{0}</b>',
 							editable: true, edittype:'text', editoptions:{maxlength:'12', number: true}, editrules: {number: true}, 
-						    searchrules: {number: true}
+						    searchrules: {number: true}, formatter: 'number'
 						},
 						{ label: '应交税金', name: 'ACCRD_TAX', sorttype: 'number', align: 'right', summaryType:'sum', summaryTpl:'<b>sum:{0}</b>',
 							editable: true, edittype:'text', editoptions:{maxlength:'12', number: true}, editrules: {number: true}, 
-						    searchrules: {number: true}
+						    searchrules: {number: true}, formatter: 'number'
 						},
 						{ label: '实发合计', name: 'ACT_SALY', sorttype: 'number', align: 'right', summaryType:'sum', summaryTpl:'<b>sum:{0}</b>',
 							editable: true, edittype:'text', editoptions:{maxlength:'12', number: true}, editrules: {number: true}, 
-						    searchrules: {number: true}
-						}],
+						    searchrules: {number: true}, formatter: 'number'
+						},
+						{ name: 'SERIAL_NO', hidden: true, editable: true, editrules: {edithidden: false}},
+						{ name: 'BUSI_DATE', hidden: true, editable: true, editrules: {edithidden: false}},
+						{ name: 'BILL_OFF', hidden: true, editable: true, editrules: {edithidden: false}},
+						{ name: 'DEPT_CODE', hidden: true, editable: true, editrules: {edithidden: false}}],
 			    reloadAfterSubmit: true, 
 			    viewrecords: true, 
-			    shrinkToFit: false,
+			    shrinkToFit: true,
+                multiselect: true,
+                multiboxonly: true,
 			    rowNum: 0,
 				scroll: 1,
                 altRows: true, //斑马条纹
-                editurl: '<%=basePath%>laborDetail/edit.do?',
+                editurl: '<%=basePath%>laborDetail/edit.do?'
+					+ 'SelectedDepartCode='+$("#SelectedDepartCode").val()
+		            + '&SelectedCustCol7='+$("#SelectedCustCol7").val()
+                    + '&ShowDataDepartCode='+ShowDataDepartCode
+                    + '&ShowDataCustCol7='+ShowDataCustCol7,
 
                 sortable: true,
                 sortname: 'USER_CODE',
@@ -163,7 +212,7 @@
 	            userDataOnFooter: true,
 	            ondblClickRow: doubleClickRow,
 	            
-	            grouping: true,
+	            /*grouping: true,
 				groupingView: {
 					groupField: ['USER_CODE'],
 					groupOrder: ['asc'],
@@ -174,7 +223,7 @@
 					groupCollapse: false,
 	                plusicon : 'fa fa-chevron-down bigger-110',
 					minusicon : 'fa fa-chevron-up bigger-110'
-				},
+				},*/
 			
 	            loadComplete : function() {
 	                var table = this;
@@ -208,7 +257,6 @@
 		        {
 					//edit record form
 				    id: "edit",
-				    width: 900,
 					closeAfterEdit: true,
 					recreateForm: true,
 					beforeShowForm :beforeEditOrAddCallback,
@@ -217,7 +265,6 @@
 		        {
 					//new record form
 				    id: "add",
-				    width: 900,
 					closeAfterAdd: true,
 					recreateForm: true,
 					viewPagerButtons: false,
@@ -314,6 +361,18 @@
 			            title : "导出",
 			            cursor : "pointer"
 			         });
+        }
+	    
+        $(document).ready(function () {
+            $(top.hangge());//关闭加载状态
+	    
+            //当前期间,取自tb_system_config的SystemDateTime字段
+	        var SystemDateTime = '${SystemDateTime}';
+			//当前登录人所在二级单位
+		    var DepartName = '${DepartName}';
+		    $("#showDur").text('当前期间：' + SystemDateTime + ' 登录人责任中心：' + DepartName);
+		    
+		    SetStructure();
 	    });
 	
 	    //双击编辑行
@@ -417,7 +476,11 @@
     					top.jzts();
     					$.ajax({
     						type: "POST",
-    						url: '<%=basePath%>laborDetail/deleteAll.do?',
+    						url: '<%=basePath%>laborDetail/deleteAll.do?'
+    							+ 'SelectedDepartCode='+$("#SelectedDepartCode").val()
+    				            + '&SelectedCustCol7='+$("#SelectedCustCol7").val()
+    		                    + '&ShowDataDepartCode='+ShowDataDepartCode
+    		                    + '&ShowDataCustCol7='+ShowDataCustCol7,
     				    	data: {DataRows:JSON.stringify(listData)},
     						dataType:'json',
     						cache: false,
@@ -461,7 +524,7 @@
      	 */
      	function batchSave(){
      		//获得选中行ids的方法
-	        var id = $(gridBase_selector).getGridParam("selarrrow");  
+	        var ids = $(gridBase_selector).getGridParam("selarrrow");  
      	    //var ids = $(gridBase_selector).getDataIDs();  
      		
      		if(!(ids!=null&&ids.length>0)){
@@ -486,7 +549,11 @@
      					top.jzts();
      					$.ajax({
      						type: "POST",
-     						url: '<%=basePath%>laborDetail/updateAll.do?',
+     						url: '<%=basePath%>laborDetail/updateAll.do?'
+     							+ 'SelectedDepartCode='+$("#SelectedDepartCode").val()
+     				            + '&SelectedCustCol7='+$("#SelectedCustCol7").val()
+     		                    + '&ShowDataDepartCode='+ShowDataDepartCode
+     		                    + '&ShowDataCustCol7='+ShowDataCustCol7,
      				    	data: {DataRows:JSON.stringify(listData)},
      						dataType:'json',
      						cache: false,
@@ -557,7 +624,11 @@
 			            top.jzts();
 			            $.ajax({
 			                type: "POST",
-			                url: '<%=basePath%>laborDetail/calculation.do?',
+			                url: '<%=basePath%>laborDetail/calculation.do?'
+								+ 'SelectedDepartCode='+$("#SelectedDepartCode").val()
+					            + '&SelectedCustCol7='+$("#SelectedCustCol7").val()
+			                    + '&ShowDataDepartCode='+ShowDataDepartCode
+			                    + '&ShowDataCustCol7='+ShowDataCustCol7,
                             data: {DataRows:JSON.stringify(listData)},
                             dataType:'json',
                             cache: false,
@@ -608,7 +679,11 @@
             var diag = new top.Dialog();
             diag.Drag=true;
             diag.Title ="EXCEL 导入到数据库";
-            diag.URL = '<%=basePath%>laborDetail/goUploadExcel.do?';
+            diag.URL = '<%=basePath%>laborDetail/goUploadExcel.do?'
+				+ 'SelectedDepartCode='+$("#SelectedDepartCode").val()
+	            + '&SelectedCustCol7='+$("#SelectedCustCol7").val()
+                + '&ShowDataDepartCode='+ShowDataDepartCode
+                + '&ShowDataCustCol7='+ShowDataCustCol7;
             diag.Width = 300;
             diag.Height = 150;
             diag.CancelEvent = function(){ //关闭事件
@@ -624,7 +699,11 @@
          * 导出
          */
         function exportItems(){
-            window.location.href='<%=basePath%>laborDetail/excel.do?';
+            window.location.href='<%=basePath%>laborDetail/excel.do?'
+				+ 'SelectedDepartCode='+$("#SelectedDepartCode").val()
+	            + '&SelectedCustCol7='+$("#SelectedCustCol7").val()
+                + '&ShowDataDepartCode='+ShowDataDepartCode
+                + '&ShowDataCustCol7='+ShowDataCustCol7;
         }
 
         /**
@@ -656,5 +735,36 @@
     		    return [ false, responseJSON.message ];
     	    }
         }
+	
+	    //加载单位树
+	    function initComplete(){
+			//下拉树
+			var nodes = ${zTreeNodes};
+			var defaultNodes = {"treeNodes":nodes};
+			//绑定change事件
+			$("#selectTree").bind("change",function(){
+				$("#SelectedDepartCode").val("");
+				if($(this).attr("relValue")){
+					$("#SelectedDepartCode").val($(this).attr("relValue"));
+			    }
+			});
+			//赋给data属性
+			$("#selectTree").data("data",defaultNodes);  
+			$("#selectTree").render();
+			$("#selectTree2_input").val("请选择单位");
+		}
+	
+	    //检索
+	    function tosearch() {
+			ShowDataDepartCode = $("#SelectedDepartCode").val();
+			ShowDataCustCol7 = $("#SelectedCustCol7").val();
+			
+			$(gridBase_selector).jqGrid('setGridParam',{  // 重新加载数据
+				url:'<%=basePath%>laborDetail/getPageList.do?'
+					+ 'SelectedDepartCode='+$("#SelectedDepartCode").val()
+		            + '&SelectedCustCol7='+$("#SelectedCustCol7").val(),
+				datatype : 'json'
+			}).trigger("reloadGrid");
+		}  
  	</script>
 </html>

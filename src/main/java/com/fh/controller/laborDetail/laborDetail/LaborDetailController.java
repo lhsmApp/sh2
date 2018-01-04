@@ -1,5 +1,6 @@
 package com.fh.controller.laborDetail.laborDetail;
 
+import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -21,7 +22,9 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 import com.fh.controller.base.BaseController;
 import com.fh.controller.common.Common;
+import com.fh.controller.common.DictsUtil;
 import com.fh.controller.common.Message;
+import com.fh.controller.common.QueryFeildString;
 import com.fh.controller.common.TmplUtil;
 import com.fh.entity.CommonBase;
 import com.fh.entity.CommonBaseAndList;
@@ -30,12 +33,15 @@ import com.fh.entity.Page;
 import com.fh.entity.PageResult;
 import com.fh.entity.TableColumns;
 import com.fh.entity.TmplConfigDetail;
+import com.fh.entity.system.User;
 import com.fh.exception.CustomException;
 import com.fh.util.ObjectExcelView;
 import com.fh.util.PageData;
 import com.fh.util.SqlTools;
+import com.fh.util.Const;
 import com.fh.util.Jurisdiction;
 import com.fh.util.excel.LeadingInExcelToPageData;
+import com.fh.util.excel.TransferSbcDbc;
 
 import net.sf.json.JSONArray;
 
@@ -81,6 +87,8 @@ public class LaborDetailController extends BaseController {
 
 	//页面显示数据的年月
 	String SystemDateTime = "";
+	//界面查询字段
+    List<String> QueryFeildList = Arrays.asList("BILL_OFF", "DEPT_CODE");
 	//设置字段类型是数字，但不管隐藏 或显示都必须保存的
 	List<String> IsNumFeildButMustInput = Arrays.asList("SERIAL_NO");
 	Map<String, TableColumns> map_HaveColumnsList = new LinkedHashMap<String, TableColumns>();
@@ -101,12 +109,31 @@ public class LaborDetailController extends BaseController {
 		//当前期间,取自tb_system_config的SystemDateTime字段
 		SystemDateTime = sysConfigManager.currentSection(getPd);
 		mv.addObject("SystemDateTime", SystemDateTime);
+		User user = (User) Jurisdiction.getSession().getAttribute(Const.SESSION_USERROL);
+		String DepartName = user.getDEPARTMENT_NAME();
+		mv.addObject("DepartName", DepartName);
 		mv.addObject("pd", getPd);
+
+		//BILL_OFF FMISACC 帐套字典
+		mv.addObject("FMISACC", DictsUtil.getDictsByParentCode(dictionariesService, "FMISACC"));
+		// *********************加载单位树  DEPT_CODE*******************************
+		String DepartmentSelectTreeSource=DictsUtil.getDepartmentSelectTreeSource(departmentService);
+		if(DepartmentSelectTreeSource.equals("0"))
+		{
+			getPd.put("departTreeSource", DepartmentSelectTreeSource);
+		} else {
+			getPd.put("departTreeSource", 1);
+		}
+		mv.addObject("zTreeNodes", DepartmentSelectTreeSource);
+		// ***********************************************************
 		
 		map_HaveColumnsList = Common.GetHaveColumnsListByTableName(TableNameDetail, tmplconfigService);
 		
-		map_SetColumnsList.put("SERIAL_NO", new TmplConfigDetail("SERIAL_NO", "流水号", "0"));
 		map_SetColumnsList.put("BUSI_DATE", new TmplConfigDetail("BUSI_DATE", "当前区间", "0"));
+		map_SetColumnsList.put("BILL_OFF", new TmplConfigDetail("BILL_OFF", "当前帐套", "0"));
+		map_SetColumnsList.put("DEPT_CODE", new TmplConfigDetail("DEPT_CODE", "当前单位", "0"));
+
+		map_SetColumnsList.put("SERIAL_NO", new TmplConfigDetail("SERIAL_NO", "流水号", "0"));
 		map_SetColumnsList.put("USER_CODE", new TmplConfigDetail("USER_CODE", "编码", "1"));
 		map_SetColumnsList.put("USER_NAME", new TmplConfigDetail("USER_NAME", "姓名", "1"));
 		map_SetColumnsList.put("STAFF_IDENT", new TmplConfigDetail("STAFF_IDENT", "身份证号", "1"));
@@ -126,17 +153,34 @@ public class LaborDetailController extends BaseController {
 		logBefore(logger, Jurisdiction.getUsername()+"列表laborDetail");
 
 		PageData getPd = this.getPageData();
+		//账套
+		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
+		//单位
+		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
+		int departSelf = Common.getDepartSelf(departmentService);
+		if(departSelf == 1){
+			SelectedDepartCode = Jurisdiction.getCurrentDepartmentID();
+		}
+		PageData getQueryFeildPd = new PageData();
+		getQueryFeildPd.put("DEPT_CODE", SelectedDepartCode);
+		getQueryFeildPd.put("BILL_OFF", SelectedCustCol7);
+		String QueryFeild = QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList);
+		if(!(SelectedDepartCode != null && !SelectedDepartCode.trim().equals(""))){
+			QueryFeild += " and 1 != 1 ";
+		}
+		if(!(SelectedCustCol7 != null && !SelectedCustCol7.trim().equals(""))){
+			QueryFeild += " and 1 != 1 ";
+		}
+		if(!(SystemDateTime != null && !SystemDateTime.trim().equals(""))){
+			QueryFeild += " and 1 != 1 ";
+		}
+		getPd.put("QueryFeild", QueryFeild);
+		
 		//多条件过滤条件
 		String filters = getPd.getString("filters");
 		if(null != filters && !"".equals(filters)){
 			getPd.put("filterWhereResult", SqlTools.constructWhere(filters,null));
 		}
-
-		String QueryFeild = "";
-		if(!(SystemDateTime != null && !SystemDateTime.trim().equals(""))){
-			QueryFeild += " and 1 != 1 ";
-		}
-		getPd.put("QueryFeild", QueryFeild);
 		
 		//页面显示数据的年月
 		getPd.put("SystemDateTime", SystemDateTime);
@@ -167,19 +211,41 @@ public class LaborDetailController extends BaseController {
 		//if(!Jurisdiction.buttonJurisdiction(menuUrl, "edit")){return null;} //校验权限
 
 		PageData getPd = this.getPageData();
+		//单位
+		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
+		int departSelf = Common.getDepartSelf(departmentService);
+		if(departSelf == 1){
+			SelectedDepartCode = Jurisdiction.getCurrentDepartmentID();
+		}
+		//账套
+		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
+		//
+		String ShowDataDepartCode = getPd.getString("ShowDataDepartCode");
+		String ShowDataCustCol7 = getPd.getString("ShowDataCustCol7");
 		//操作
 		String oper = getPd.getString("oper");
 
+		//判断选择为必须选择的
+		String strGetCheckMustSelected = CheckMustSelectedAndSame(SelectedCustCol7, ShowDataCustCol7, 
+				SelectedDepartCode, ShowDataDepartCode, departSelf);
+		if(strGetCheckMustSelected!=null && !strGetCheckMustSelected.trim().equals("")){
+			commonBase.setCode(2);
+			commonBase.setMessage(strGetCheckMustSelected);
+			return commonBase;
+		}
+
 		if(oper.equals("add")){
 			getPd.put("SERIAL_NO", "");
+			getPd.put("BILL_OFF", SelectedCustCol7);
+			getPd.put("DEPT_CODE", SelectedDepartCode);
 			getPd.put("BUSI_DATE", SystemDateTime);
 			List<PageData> listData = new ArrayList<PageData>();
 			listData.add(getPd);
-			commonBase = CalculationUpdateDatabase(true, commonBase, "", listData);
+			commonBase = CalculationUpdateDatabase(true, commonBase, "", SelectedCustCol7, SelectedDepartCode, listData);
 		} else {
 			List<PageData> listCheckState = new ArrayList<PageData>();
 			listCheckState.add(getPd);
-			String checkState = CheckState(listCheckState);
+			String checkState = CheckState(listCheckState, SelectedCustCol7, SelectedDepartCode);
 			if(checkState!=null && !checkState.trim().equals("")){
 				commonBase.setCode(2);
 				commonBase.setMessage(checkState);
@@ -208,11 +274,32 @@ public class LaborDetailController extends BaseController {
 		commonBase.setCode(-1);
 
 		PageData getPd = this.getPageData();
+		//单位
+		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
+		int departSelf = Common.getDepartSelf(departmentService);
+		if(departSelf == 1){
+			SelectedDepartCode = Jurisdiction.getCurrentDepartmentID();
+		}
+		//账套
+		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
+		//
+		String ShowDataDepartCode = getPd.getString("ShowDataDepartCode");
+		String ShowDataCustCol7 = getPd.getString("ShowDataCustCol7");
+
+		//判断选择为必须选择的
+		String strGetCheckMustSelected = CheckMustSelectedAndSame(SelectedCustCol7, ShowDataCustCol7, 
+				SelectedDepartCode, ShowDataDepartCode, departSelf);
+		if(strGetCheckMustSelected!=null && !strGetCheckMustSelected.trim().equals("")){
+			commonBase.setCode(2);
+			commonBase.setMessage(strGetCheckMustSelected);
+			return commonBase;
+		}
+		
 		Object DATA_ROWS = getPd.get("DataRows");
 		String json = DATA_ROWS.toString();  
         JSONArray array = JSONArray.fromObject(json);  
         List<PageData> listData = (List<PageData>) JSONArray.toCollection(array,PageData.class);
-		String checkState = CheckState(listData);
+		String checkState = CheckState(listData, SelectedCustCol7, SelectedDepartCode);
 		if(checkState!=null && !checkState.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(checkState);
@@ -241,11 +328,32 @@ public class LaborDetailController extends BaseController {
 		commonBase.setCode(-1);
 
 		PageData getPd = this.getPageData();
+		//单位
+		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
+		int departSelf = Common.getDepartSelf(departmentService);
+		if(departSelf == 1){
+			SelectedDepartCode = Jurisdiction.getCurrentDepartmentID();
+		}
+		//账套
+		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
+		//
+		String ShowDataDepartCode = getPd.getString("ShowDataDepartCode");
+		String ShowDataCustCol7 = getPd.getString("ShowDataCustCol7");
+
+		//判断选择为必须选择的
+		String strGetCheckMustSelected = CheckMustSelectedAndSame(SelectedCustCol7, ShowDataCustCol7, 
+				SelectedDepartCode, ShowDataDepartCode, departSelf);
+		if(strGetCheckMustSelected!=null && !strGetCheckMustSelected.trim().equals("")){
+			commonBase.setCode(2);
+			commonBase.setMessage(strGetCheckMustSelected);
+			return commonBase;
+		}
+		
 		Object DATA_ROWS = getPd.get("DataRows");
 		String json = DATA_ROWS.toString();  
         JSONArray array = JSONArray.fromObject(json);  
         List<PageData> listData = (List<PageData>) JSONArray.toCollection(array,PageData.class);
-		String checkState = CheckState(listData);
+		String checkState = CheckState(listData, SelectedCustCol7, SelectedDepartCode);
 		if(checkState!=null && !checkState.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(checkState);
@@ -268,19 +376,40 @@ public class LaborDetailController extends BaseController {
 		//if(!Jurisdiction.buttonJurisdiction(menuUrl, "calculation")){return null;} //校验权限	
 		CommonBase commonBase = new CommonBase();
 		commonBase.setCode(-1);
-		
+
 		PageData getPd = this.getPageData();
+		//单位
+		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
+		int departSelf = Common.getDepartSelf(departmentService);
+		if(departSelf == 1){
+			SelectedDepartCode = Jurisdiction.getCurrentDepartmentID();
+		}
+		//账套
+		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
+		//
+		String ShowDataDepartCode = getPd.getString("ShowDataDepartCode");
+		String ShowDataCustCol7 = getPd.getString("ShowDataCustCol7");
+
+		//判断选择为必须选择的
+		String strGetCheckMustSelected = CheckMustSelectedAndSame(SelectedCustCol7, ShowDataCustCol7, 
+				SelectedDepartCode, ShowDataDepartCode, departSelf);
+		if(strGetCheckMustSelected!=null && !strGetCheckMustSelected.trim().equals("")){
+			commonBase.setCode(2);
+			commonBase.setMessage(strGetCheckMustSelected);
+			return commonBase;
+		}
+		
 		Object DATA_ROWS = getPd.get("DataRows");
 		String json = DATA_ROWS.toString();  
         JSONArray array = JSONArray.fromObject(json);  
         List<PageData> listData = (List<PageData>) JSONArray.toCollection(array,PageData.class);
-		String checkState = CheckState(listData);
+		String checkState = CheckState(listData, SelectedCustCol7, SelectedDepartCode);
 		if(checkState!=null && !checkState.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(checkState);
 			return commonBase;
 		}
-		commonBase = CalculationUpdateDatabase(false, commonBase, "", listData);
+		commonBase = CalculationUpdateDatabase(false, commonBase, "", SelectedCustCol7, SelectedDepartCode, listData);
 		return commonBase;
 	}
 	
@@ -292,10 +421,35 @@ public class LaborDetailController extends BaseController {
 	public ModelAndView goUploadExcel()throws Exception{
 		CommonBase commonBase = new CommonBase();
 	    commonBase.setCode(-1);
-	    
+
+		PageData getPd = this.getPageData();
+		//单位
+		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
+		int departSelf = Common.getDepartSelf(departmentService);
+		if(departSelf == 1){
+			SelectedDepartCode = Jurisdiction.getCurrentDepartmentID();
+		}
+		//账套
+		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
+		//
+		String ShowDataDepartCode = getPd.getString("ShowDataDepartCode");
+		String ShowDataCustCol7 = getPd.getString("ShowDataCustCol7");
+
+		//判断选择为必须选择的
+		String strGetCheckMustSelected = CheckMustSelectedAndSame(SelectedCustCol7, ShowDataCustCol7, 
+				SelectedDepartCode, ShowDataDepartCode, departSelf);
+		if(strGetCheckMustSelected!=null && !strGetCheckMustSelected.trim().equals("")){
+			commonBase.setCode(2);
+			commonBase.setMessage(strGetCheckMustSelected);
+		}
+		
 		ModelAndView mv = this.getModelAndView();
 		mv.setViewName("common/uploadExcel");
 		mv.addObject("local", "laborDetail");
+		mv.addObject("SelectedDepartCode", SelectedDepartCode);
+		mv.addObject("SelectedCustCol7", SelectedCustCol7);
+		mv.addObject("ShowDataDepartCode", ShowDataDepartCode);
+		mv.addObject("ShowDataCustCol7", ShowDataCustCol7);
 		mv.addObject("commonBaseCode", commonBase.getCode());
 		mv.addObject("commonMessage", commonBase.getMessage());
 		return mv;
@@ -314,113 +468,227 @@ public class LaborDetailController extends BaseController {
 		//if(!Jurisdiction.buttonJurisdiction(menuUrl, "add")){return null;}//校验权限
 
 		String strErrorMessage = "";
-		if(!(SystemDateTime!=null && !SystemDateTime.trim().equals(""))){
+
+		PageData getPd = this.getPageData();
+		//单位
+		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
+		int departSelf = Common.getDepartSelf(departmentService);
+		if(departSelf == 1){
+			SelectedDepartCode = Jurisdiction.getCurrentDepartmentID();
+		}
+		//账套
+		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
+		//
+		String ShowDataDepartCode = getPd.getString("ShowDataDepartCode");
+		String ShowDataCustCol7 = getPd.getString("ShowDataCustCol7");
+
+		//判断选择为必须选择的
+		String strGetCheckMustSelected = CheckMustSelectedAndSame(SelectedCustCol7, ShowDataCustCol7, 
+				SelectedDepartCode, ShowDataDepartCode, departSelf);
+		if(strGetCheckMustSelected!=null && !strGetCheckMustSelected.trim().equals("")){
 			commonBase.setCode(2);
-			commonBase.setMessage("当前区间不能为空！");
+			commonBase.setMessage(strGetCheckMustSelected);
 		} else {
-			Map<String, TmplConfigDetail> map_SetColumnsList = new HashMap<String, TmplConfigDetail>();
-			Map<String, Object> DicList = new HashMap<String, Object>();
-			
-			// 局部变量
-			LeadingInExcelToPageData<PageData> testExcel = null;
-			Map<Integer, Object> uploadAndReadMap = null;
-			try {
-				// 定义需要读取的数据
-				String formart = "yyyy-MM-dd";
-				String propertiesFileName = "config";
-				String kyeName = "file_path";
-				int sheetIndex = 0;
-				Map<String, String> titleAndAttribute = null;
-				// 定义对应的标题名与对应属性名
-				titleAndAttribute = new LinkedHashMap<String, String>();
-					
-				// 调用解析工具包
-				testExcel = new LeadingInExcelToPageData<PageData>(formart);
-				// 解析excel，获取客户信息集合
+			if(!(SystemDateTime!=null && !SystemDateTime.trim().equals(""))){
+				commonBase.setCode(2);
+				commonBase.setMessage("当前区间不能为空！");
+			} else {
+				Map<String, Object> DicList = new HashMap<String, Object>();
+				
+				// 局部变量
+				LeadingInExcelToPageData<PageData> testExcel = null;
+				Map<Integer, Object> uploadAndReadMap = null;
+				try {
+					// 定义需要读取的数据
+					String formart = "yyyy-MM-dd";
+					String propertiesFileName = "config";
+					String kyeName = "file_path";
+					int sheetIndex = 0;
+					Map<String, String> titleAndAttribute = null;
+					// 定义对应的标题名与对应属性名
+					titleAndAttribute = new LinkedHashMap<String, String>();
+				    //配置表设置列
+				    if(map_SetColumnsList != null && map_SetColumnsList.size() > 0){
+					    for (TmplConfigDetail col : map_SetColumnsList.values()) {
+						    titleAndAttribute.put(TransferSbcDbc.ToDBC(col.getCOL_NAME()), col.getCOL_CODE());
+					    }
+				    }
+						
+					// 调用解析工具包
+					testExcel = new LeadingInExcelToPageData<PageData>(formart);
+					// 解析excel，获取客户信息集合
 
-				uploadAndReadMap = testExcel.uploadAndRead(file, propertiesFileName, kyeName, sheetIndex,
-						titleAndAttribute, map_HaveColumnsList, map_SetColumnsList, DicList);
-			} catch (Exception e) {
-				e.printStackTrace();
-				logger.error("读取Excel文件错误", e);
-				throw new CustomException("读取Excel文件错误:" + e.getMessage(),false);
-			}
-			boolean judgement = false;
-
-			Map<String, Object> returnError =  (Map<String, Object>) uploadAndReadMap.get(2);
-			if(returnError != null && returnError.size()>0){
-				strErrorMessage += "字典无此翻译： "; // \n
-				for (String k : returnError.keySet())  
-				{
-					strErrorMessage += k + " : " + returnError.get(k);
+					uploadAndReadMap = testExcel.uploadAndRead(file, propertiesFileName, kyeName, sheetIndex,
+							titleAndAttribute, map_HaveColumnsList, map_SetColumnsList, DicList);
+				} catch (Exception e) {
+					e.printStackTrace();
+					logger.error("读取Excel文件错误", e);
+					throw new CustomException("读取Excel文件错误:" + e.getMessage(),false);
 				}
-			}
+				boolean judgement = false;
 
-			List<PageData> listUploadAndRead = (List<PageData>) uploadAndReadMap.get(1);
-			List<PageData> listAdd = new ArrayList<PageData>();
-			if (listUploadAndRead != null && !"[]".equals(listUploadAndRead.toString()) && listUploadAndRead.size() >= 1) {
-				judgement = true;
-			}
-			if (judgement) {
-				List<String> sbRet = new ArrayList<String>();
-				int listSize = listUploadAndRead.size();
-				if(listSize > 0){
-					for(int i=0;i<listSize;i++){
-						PageData pdAdd = listUploadAndRead.get(i);
-						String getUSER_CODE = (String) pdAdd.get("USER_CODE");
-						if(getUSER_CODE!=null && !getUSER_CODE.trim().equals("")){
-							pdAdd.put("SERIAL_NO", "");
-							String getBUSI_DATE = (String) pdAdd.get("BUSI_DATE");
-							if(!(getBUSI_DATE!=null && !getBUSI_DATE.trim().equals(""))){
-								pdAdd.put("BUSI_DATE", SystemDateTime);
-								getBUSI_DATE = SystemDateTime;
+				Map<String, Object> returnError =  (Map<String, Object>) uploadAndReadMap.get(2);
+				if(returnError != null && returnError.size()>0){
+					strErrorMessage += "字典无此翻译： "; // \n
+					for (String k : returnError.keySet())  
+					{
+						strErrorMessage += k + " : " + returnError.get(k);
+					}
+				}
+
+				List<PageData> listUploadAndRead = (List<PageData>) uploadAndReadMap.get(1);
+				List<PageData> listAdd = new ArrayList<PageData>();
+				if (listUploadAndRead != null && !"[]".equals(listUploadAndRead.toString()) && listUploadAndRead.size() >= 1) {
+					judgement = true;
+				}
+				if (judgement) {
+					List<String> sbRet = new ArrayList<String>();
+					int listSize = listUploadAndRead.size();
+					if(listSize > 0){
+						for(int i=0;i<listSize;i++){
+							PageData pdAdd = listUploadAndRead.get(i);
+							String getUSER_CODE = (String) pdAdd.get("USER_CODE");
+							if(getUSER_CODE!=null && !getUSER_CODE.trim().equals("")){
+								pdAdd.put("SERIAL_NO", "");
+								String getBUSI_DATE = (String) pdAdd.get("BUSI_DATE");
+								if(!(getBUSI_DATE!=null && !getBUSI_DATE.trim().equals(""))){
+									pdAdd.put("BUSI_DATE", SystemDateTime);
+									getBUSI_DATE = SystemDateTime;
+								}
+								if(!SystemDateTime.equals(getBUSI_DATE)){
+									if(!sbRet.contains("导入区间和当前区间必须一致！")){
+										sbRet.add("导入区间和当前区间必须一致！");
+									}
+								}
+								String getBILL_OFF = (String) pdAdd.get("BILL_OFF");
+								if(!(getBILL_OFF!=null && !getBILL_OFF.trim().equals(""))){
+									pdAdd.put("BILL_OFF", SelectedCustCol7);
+									getBILL_OFF = SelectedCustCol7;
+								}
+								if(!SelectedCustCol7.equals(getBILL_OFF)){
+									if(!sbRet.contains("导入账套和当前账套必须一致！")){
+										sbRet.add("导入账套和当前账套必须一致！");
+									}
+								}
+								String getDEPT_CODE = (String) pdAdd.get("DEPT_CODE");
+								if(!(getDEPT_CODE!=null && !getDEPT_CODE.trim().equals(""))){
+									pdAdd.put("DEPT_CODE", SelectedDepartCode);
+									getDEPT_CODE = SelectedDepartCode;
+								}
+								if(!SelectedDepartCode.equals(getDEPT_CODE)){
+									if(!sbRet.contains("导入单位和当前单位必须一致！")){
+										sbRet.add("导入单位和当前单位必须一致！");
+									}
+								}
+								listAdd.add(pdAdd);
 							}
-							if(!SystemDateTime.equals(getBUSI_DATE)){
-								if(!sbRet.contains("导入区间和当前区间必须一致！")){
-									sbRet.add("导入区间和当前区间必须一致！");
+						}
+						if(sbRet.size()>0){
+							StringBuilder sbTitle = new StringBuilder();
+							for(String str : sbRet){
+								sbTitle.append(str + "  "); // \n
+							}
+							commonBase.setCode(2);
+							commonBase.setMessage(sbTitle.toString());
+						} else {
+							if(!(listAdd!=null && listAdd.size()>0)){
+								commonBase.setCode(2);
+								commonBase.setMessage("请导入符合条件的数据！");
+							} else {
+								CommonBaseAndList getCommonBaseAndList = getCalculationData(true, commonBase, SelectedCustCol7, SelectedDepartCode, listAdd);
+								for(PageData pdSet : getCommonBaseAndList.getList()){
+									String pdSetUSER_CODE = pdSet.getString("USER_CODE");
+									for(PageData pdsum : getCommonBaseAndList.getList()){
+										String pdsumUSER_CODE = pdsum.getString("USER_CODE");
+										if(pdSetUSER_CODE!=null && pdSetUSER_CODE.equals(pdsumUSER_CODE)){
+											BigDecimal douCalACCRD_TAX = (BigDecimal) pdSet.get("ACCRD_TAX");
+											BigDecimal douImpACCRD_TAX = (BigDecimal) pdSet.get("ACCRD_TAX" + TmplUtil.keyExtra);
+											BigDecimal douCalACT_SALY = (BigDecimal) pdSet.get("ACT_SALY");
+											BigDecimal douImpACT_SALY = (BigDecimal) pdSet.get("ACT_SALY" + TmplUtil.keyExtra);
+											douCalACCRD_TAX.add((BigDecimal) pdsum.get("ACCRD_TAX"));
+										    douImpACCRD_TAX.add((BigDecimal) pdsum.get("ACCRD_TAX" + TmplUtil.keyExtra));
+											douCalACT_SALY.add((BigDecimal) pdsum.get("ACT_SALY"));
+										    douImpACT_SALY.add((BigDecimal) pdsum.get("ACT_SALY" + TmplUtil.keyExtra));
+											pdSet.put("ACCRD_TAX" + TmplUtil.keyExtra + TmplUtil.keyExtra, douCalACCRD_TAX);
+											pdSet.put("ACCRD_TAX" + TmplUtil.keyExtra, douImpACCRD_TAX);
+											pdSet.put("ACT_SALY" + TmplUtil.keyExtra + TmplUtil.keyExtra, douCalACT_SALY);
+											pdSet.put("ACT_SALY" + TmplUtil.keyExtra, douImpACT_SALY);
+										}
+									}
+								}
+								List<String> listUserCode = new ArrayList<String>();
+								String strCalculationMessage = "";
+								for(PageData pdSet : getCommonBaseAndList.getList()){
+										String pdSetUSER_CODE = pdSet.getString("USER_CODE");
+										if(!listUserCode.contains(pdSetUSER_CODE)){
+											BigDecimal douCalACCRD_TAX = (BigDecimal) pdSet.get("ACCRD_TAX" + TmplUtil.keyExtra + TmplUtil.keyExtra);
+											BigDecimal douImpACCRD_TAX = (BigDecimal) pdSet.get("ACCRD_TAX" + TmplUtil.keyExtra);
+											BigDecimal douCalACT_SALY = (BigDecimal) pdSet.get("ACT_SALY" + TmplUtil.keyExtra + TmplUtil.keyExtra);
+											BigDecimal douImpACT_SALY = (BigDecimal) pdSet.get("ACT_SALY" + TmplUtil.keyExtra);
+											if(!(douCalACCRD_TAX!=null && douCalACCRD_TAX.compareTo(douImpACCRD_TAX)==0 
+													&& douCalACT_SALY!=null && douCalACT_SALY.compareTo(douImpACT_SALY)==0)){
+												strCalculationMessage += "员工编号:" + pdSetUSER_CODE 
+														+ " 员工姓名:" + pdSet.getString("USER_NAME")
+														+ " 导入的纳税额:" + douImpACCRD_TAX
+														+ " 应导入的纳税额:" + douCalACCRD_TAX
+														+ " 导入的实发评审费:" + douImpACT_SALY
+														+ " 应导入的实发评审费:" + douCalACT_SALY + "\\n";
+											}
+										}
+										listUserCode.add(pdSetUSER_CODE);
+								}
+								if(strCalculationMessage!=null && !strCalculationMessage.trim().equals("")){
+									commonBase.setCode(3);
+									commonBase.setMessage(strCalculationMessage);
+								} else {
+									commonBase = UpdateDatabase(true, commonBase, strErrorMessage, getCommonBaseAndList);
 								}
 							}
-							listAdd.add(pdAdd);
 						}
 					}
-					if(sbRet.size()>0){
-						StringBuilder sbTitle = new StringBuilder();
-						for(String str : sbRet){
-							sbTitle.append(str + "  "); // \n
-						}
-						commonBase.setCode(2);
-						commonBase.setMessage(sbTitle.toString());
-					} else {
-						commonBase = CalculationUpdateDatabase(true, commonBase, strErrorMessage, listAdd);
-						
-						
-						
-						
-					}
+				} else {
+					commonBase.setCode(-1);
+					commonBase.setMessage("TranslateUtil");
 				}
-			} else {
-				commonBase.setCode(-1);
-				commonBase.setMessage("TranslateUtil");
 			}
 		}
 		ModelAndView mv = this.getModelAndView();
 		mv.setViewName("common/uploadExcel");
 		mv.addObject("local", "laborDetail");
+		mv.addObject("SelectedDepartCode", SelectedDepartCode);
+		mv.addObject("SelectedCustCol7", SelectedCustCol7);
+		mv.addObject("ShowDataDepartCode", ShowDataDepartCode);
+		mv.addObject("ShowDataCustCol7", ShowDataCustCol7);
 		mv.addObject("commonBaseCode", commonBase.getCode());
 		mv.addObject("commonMessage", commonBase.getMessage());
 		return mv;
 	}
 	
-	private CommonBaseAndList getCalculationData(Boolean IsAdd, CommonBase commonBase, List<PageData> listData) throws Exception{
+	private CommonBaseAndList getCalculationData(Boolean IsAdd, CommonBase commonBase, 
+			String SelectedCustCol7, String SelectedDepartCode, 
+			List<PageData> listData) throws Exception{
 		CommonBaseAndList retCommonBaseAndList = new CommonBaseAndList();
 		if(listData!=null && listData.size()>0){
+			PageData getQueryFeildPd = new PageData();
+			getQueryFeildPd.put("DEPT_CODE", SelectedDepartCode);
+			getQueryFeildPd.put("BILL_OFF", SelectedCustCol7);
+			String QueryFeild = QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList);
+			QueryFeild += " and BUSI_DATE = '" + SystemDateTime + "' ";
+			if(!(SelectedDepartCode != null && !SelectedDepartCode.trim().equals(""))){
+				QueryFeild += " and 1 != 1 ";
+			}
+			if(!(SelectedCustCol7 != null && !SelectedCustCol7.trim().equals(""))){
+				QueryFeild += " and 1 != 1 ";
+			}
+			if(!(SystemDateTime!=null && !SystemDateTime.trim().equals(""))){
+				QueryFeild += " and 1 != 1 ";
+			}
+
 	        for(PageData item : listData){
           	    item.put("TableName", TableNameBackup);
 	       	    Common.setModelDefault(item, map_HaveColumnsList, map_SetColumnsList, IsNumFeildButMustInput);
 	        }
-			PageData getQueryFeildPd = new PageData();
-			String QueryFeild = " and BUSI_DATE = '" + SystemDateTime + "' ";
-			
+	        
 			String GROSS_PAY = "GROSS_PAY";
 			String ACCRD_TAX = "ACCRD_TAX";
 			String ACT_SALY = "ACT_SALY";
@@ -437,10 +705,17 @@ public class LaborDetailController extends BaseController {
 					+ " where 1=1 "
 					+ QueryFeild 
 					+ " group by USER_CODE";
-			//List<PageData> dataCalculation = laborDetailService.getDataCalculation(TableNameBackup, TmplUtil.keyExtra,
-			//		sqlRetSelect, listData,
-			//		sqlSumByUserCode);
-			//retCommonBaseAndList.setList(dataCalculation);
+
+			PageData pdInsetBackup = new PageData();
+			pdInsetBackup.put("QueryFeild", QueryFeild);
+			String strInsertFeild = QueryFeildString.tranferListValueToSelectString(map_HaveColumnsList);
+			pdInsetBackup.put("FeildList", strInsertFeild);
+			
+			List<PageData> dataCalculation = laborDetailService.getDataCalculation(TableNameBackup, TmplUtil.keyExtra,
+					pdInsetBackup, listData,
+					sqlRetSelect, 
+					sqlSumByUserCode);
+			retCommonBaseAndList.setList(dataCalculation);
 		}
 		retCommonBaseAndList.setCommonBase(commonBase);
 		return retCommonBaseAndList;
@@ -468,8 +743,10 @@ public class LaborDetailController extends BaseController {
 	}
 	
 	private CommonBase CalculationUpdateDatabase(Boolean IsAdd, CommonBase commonBase, String strErrorMessage,
+			String SelectedCustCol7, String SelectedDepartCode, 
 			List<PageData> listData) throws Exception{
-		CommonBaseAndList getCommonBaseAndList = getCalculationData(IsAdd, commonBase,     listData);
+		CommonBaseAndList getCommonBaseAndList = getCalculationData(IsAdd, commonBase,
+				SelectedCustCol7, SelectedDepartCode, listData);
 		return UpdateDatabase(IsAdd, commonBase, strErrorMessage,
 				getCommonBaseAndList);
 	}
@@ -482,10 +759,33 @@ public class LaborDetailController extends BaseController {
 	@RequestMapping(value="/downExcel")
 	//public void downExcel(HttpServletResponse response)throws Exception{
 	public ModelAndView downExcel(JqPage page) throws Exception{
+
+		PageData getPd = this.getPageData();
+		//单位
+		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
+		int departSelf = Common.getDepartSelf(departmentService);
+		if(departSelf == 1){
+			SelectedDepartCode = Jurisdiction.getCurrentDepartmentID();
+		}
+		//账套
+		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
+		//
+		String ShowDataDepartCode = getPd.getString("ShowDataDepartCode");
+		String ShowDataCustCol7 = getPd.getString("ShowDataCustCol7");
+
+		//判断选择为必须选择的
+		String strGetCheckMustSelected = CheckMustSelectedAndSame(SelectedCustCol7, ShowDataCustCol7, 
+				SelectedDepartCode, ShowDataDepartCode, departSelf);
+		if(strGetCheckMustSelected!=null && !strGetCheckMustSelected.trim().equals("")){
+			//commonBase.setCode(2);
+			//commonBase.setMessage(strGetCheckMustSelected);
+			//return commonBase;
+		}
+		
 		PageData transferPd = this.getPageData();
 		transferPd.put("SystemDateTime", SystemDateTime);
 		List<PageData> varOList = laborDetailService.exportModel(transferPd);
-		return export(varOList, "SocialIncDetail", map_SetColumnsList);
+		return export(varOList, "LaborDetail", map_SetColumnsList);
 	}
 	
 	 /**导出到excel
@@ -496,8 +796,29 @@ public class LaborDetailController extends BaseController {
 	public ModelAndView exportExcel(JqPage page) throws Exception{
 		logBefore(logger, Jurisdiction.getUsername()+"导出SocialIncDetail到excel");
 		//if(!Jurisdiction.buttonJurisdiction(menuUrl, "cha")){return null;}
-	    
+
 		PageData getPd = this.getPageData();
+		//单位
+		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
+		int departSelf = Common.getDepartSelf(departmentService);
+		if(departSelf == 1){
+			SelectedDepartCode = Jurisdiction.getCurrentDepartmentID();
+		}
+		//账套
+		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
+		//
+		String ShowDataDepartCode = getPd.getString("ShowDataDepartCode");
+		String ShowDataCustCol7 = getPd.getString("ShowDataCustCol7");
+
+		//判断选择为必须选择的
+		String strGetCheckMustSelected = CheckMustSelectedAndSame(SelectedCustCol7, ShowDataCustCol7, 
+				SelectedDepartCode, ShowDataDepartCode, departSelf);
+		if(strGetCheckMustSelected!=null && !strGetCheckMustSelected.trim().equals("")){
+			//commonBase.setCode(2);
+			//commonBase.setMessage(strGetCheckMustSelected);
+			//return commonBase;
+		}
+		
 		//页面显示数据的年月
 		getPd.put("SystemDateTime", SystemDateTime);
 		page.setPd(getPd);
@@ -505,7 +826,6 @@ public class LaborDetailController extends BaseController {
 		return export(varOList, "", map_SetColumnsList);
 	}
 	
-	@SuppressWarnings("unchecked")
 	private ModelAndView export(List<PageData> varOList, String ExcelName, 
 			Map<String, TmplConfigDetail> map_SetColumnsList) throws Exception{
 		//Map<String, Object> DicList = Common.GetDicList(TypeCodeDetail, SelectedDepartCode, SelectedCustCol7, 
@@ -551,17 +871,58 @@ public class LaborDetailController extends BaseController {
 		return mv;
 	}
 	
-	private String CheckState(List<PageData> pdSerialNo) throws Exception{
+	private String CheckState(List<PageData> pdSerialNo, String SelectedCustCol7, String SelectedDepartCode) throws Exception{
 		String strRut = "";
-		List<PageData> pdBillCode = laborDetailService.getBillCodeBySerialNo(pdSerialNo);
-		//String strCanOperate = FilterBillCode.getBillCodeNotInSumInvalidDetail(TableNameSummy) + QueryFeildString.getNotReportBillCode();
-		if(pdBillCode != null){
-			for(PageData pd : pdBillCode){
-				String BILL_CODE = pd.getString("BILL_CODE");
-				if(BILL_CODE!=null && !BILL_CODE.trim().equals("")){
-					strRut = Message.OperDataAlreadySum;
-				}
-			}
+        if(pdSerialNo!=null && pdSerialNo.size()>0){
+        	List<Integer> listStringSerialNo = QueryFeildString.getListIntegerFromListPageData(pdSerialNo, "SERIAL_NO", "");
+			String strSqlInSerialNo = QueryFeildString.tranferListIntegerToGroupbyString(listStringSerialNo);
+    		PageData transferPd = new PageData();
+    		PageData getQueryFeildPd = new PageData();
+    		getQueryFeildPd.put("DEPT_CODE", SelectedDepartCode);
+    		getQueryFeildPd.put("CUST_COL7", SelectedCustCol7);
+    		String QueryFeild = QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList);
+    		if(!(SelectedDepartCode != null && !SelectedDepartCode.trim().equals(""))){
+    			QueryFeild += " and 1 != 1 ";
+    		}
+    		if(!(SelectedCustCol7 != null && !SelectedCustCol7.trim().equals(""))){
+    			QueryFeild += " and 1 != 1 ";
+    		}
+    		QueryFeild += " and SERIAL_NO in (" + strSqlInSerialNo + ") ";
+    		transferPd.put("QueryFeild", QueryFeild);
+    		
+    		//页面显示数据的年月
+    		transferPd.put("SystemDateTime", SystemDateTime);
+    		transferPd.put("SelectFeildName", "SERIAL_NO"); 
+    		List<PageData> getSerialNo = laborDetailService.getSerialNoBySerialNo(transferPd);
+    		if(!(listStringSerialNo!=null && getSerialNo!=null && listStringSerialNo.size() == getSerialNo.size())){
+    			strRut = Message.OperDataAlreadyChange;
+    		} else {
+    			for(PageData each : getSerialNo){
+    				if(!listStringSerialNo.contains((Integer)each.get("SERIAL_NO"))){
+    					strRut = Message.OperDataAlreadyChange;
+    				}
+    			}
+    		}
+        }
+		return strRut;
+	}
+	
+	private String CheckMustSelectedAndSame(String BILL_OFF, String ShowDataCustCol7, 
+			String DEPT_CODE, String ShowDataDepartCode, int DepartTreeSource) throws Exception{
+		String strRut = "";
+		if(!(BILL_OFF != null && !BILL_OFF.trim().equals(""))){
+			strRut += "查询条件中的账套必须选择！";
+		} else {
+		    if(!BILL_OFF.equals(ShowDataCustCol7)){
+				strRut += "查询条件中所选账套与页面显示数据账套不一致，请单击查询再进行操作！";
+		    }
+		}
+		if(!(DEPT_CODE != null && !DEPT_CODE.trim().equals(""))){
+			strRut += "查询条件中的责任中心不能为空！";
+		} else {
+		    if(DepartTreeSource!=0 && !DEPT_CODE.equals(ShowDataDepartCode)){
+				strRut += "查询条件中所选责任中心与页面显示数据责任中心不一致，请单击查询再进行操作！";
+		    }
 		}
 		return strRut;
 	}

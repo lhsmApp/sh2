@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -336,6 +337,8 @@ public class LeadingInExcelToPageData<T> {
                 CellValue cellValue = evaluator.evaluate(cell);   
                 if(cellValue == null) continue;  
 
+                String COL_CODE = attribute.get(Integer.valueOf(columnIndex));
+
                 String value = ""; //cellValue == null ? "" : cellValue.formatAsString()
                 switch (cellValue.getCellType()) {  
                     case Cell.CELL_TYPE_BOOLEAN:  
@@ -343,8 +346,14 @@ public class LeadingInExcelToPageData<T> {
                     	value = bolValue.toString();
                         break;  
                     case Cell.CELL_TYPE_NUMERIC:  
-                    	Number numValue = cellValue.getNumberValue();  
-                    	value = numValue.toString();
+                    	if(COL_CODE.equals("BILL_CODE")){
+                        	value = cellValue.getStringValue();
+                        	BigDecimal db = new BigDecimal(value);
+                        	value = db.toPlainString();
+                    	} else {
+                        	Number numValue = cellValue.getNumberValue();  
+                        	value = numValue.toString();
+                    	}
                         break;  
                     case Cell.CELL_TYPE_STRING:  
                     	value = cellValue.getStringValue();  
@@ -359,12 +368,9 @@ public class LeadingInExcelToPageData<T> {
                 
                 // 3.单元格中的值等于null或等于"" 就放弃整行数据
                 if(!(value != null && !value.trim().equals(""))){
-                    //judge = false;
-                    //break;
                 	continue;
                 }
                 
-                String COL_CODE = attribute.get(Integer.valueOf(columnIndex));
     			if(map_SetColumnsList != null && map_SetColumnsList.size() > 0){
     				TmplConfigDetail itemCol = map_SetColumnsList.get(COL_CODE);
     				if(itemCol != null){
@@ -397,9 +403,7 @@ public class LeadingInExcelToPageData<T> {
                     agge = "Y".equals(value) || "1".equals(value);
                 }
                 obj.put(COL_CODE, agge);
-                
             }
-            // 4. if
             if(judge)info.add(obj);
         }
         returnMap.put(1, info);
@@ -413,7 +417,7 @@ public class LeadingInExcelToPageData<T> {
      * 功能:处理单元格中值得类型
      * @param cell
      * @return
-     */
+     
     private String getCellValue(Cell cell) {
         Object result = "";
         if (cell != null) {
@@ -438,15 +442,15 @@ public class LeadingInExcelToPageData<T> {
                 result = cell.getBooleanCellValue();
                 break;
             case Cell.CELL_TYPE_FORMULA:
-                ///*
-                // *  导入时如果为公式生成的数据则无值
-                // *  
+                //
+                //  导入时如果为公式生成的数据则无值
+                //  
                 //    if (!cell.getStringCellValue().equals("")) {
                 //        value = cell.getStringCellValue();
                 //    } else {
                 //        value = cell.getNumericCellValue() + "";
                 //    }
-                //*/
+                //
                 result = cell.getCellFormula();
                 break;
             case Cell.CELL_TYPE_ERROR:
@@ -459,5 +463,5 @@ public class LeadingInExcelToPageData<T> {
             }
         }
         return result.toString();
-    } 
+    } */
 }

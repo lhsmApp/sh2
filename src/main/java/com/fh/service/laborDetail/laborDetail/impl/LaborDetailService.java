@@ -22,15 +22,6 @@ public class LaborDetailService implements LaborDetailManager{
 	@Resource(name = "daoSupport")
 	private DaoSupport dao;
 	
-	/**获取单号下拉列表数据源 
-	 * @param pd
-	 * @throws Exception
-	 */
-	@SuppressWarnings("unchecked")
-	public List<String> getBillCodeList(PageData pd)throws Exception{
-		return (List<String>)dao.findForList("LaborDetailMapper.getBillCodeList", pd);
-	}
-	
 	/**列表
 	 * @param page
 	 * @throws Exception
@@ -54,13 +45,13 @@ public class LaborDetailService implements LaborDetailManager{
 		return (PageData)dao.findForObject("LaborDetailMapper.getFooterSummary", page);
 	}
 
-	/**通过流水号获取单号，用于判断数据是否已汇总
+	/**通过流水号获取单号，用于判断数据是否变更
 	 * @param pd
 	 * @throws Exception
 	 */
 	@SuppressWarnings("unchecked")
-	public List<PageData> getBillCodeBySerialNo(List<PageData> listCode)throws Exception{
-		return (List<PageData>)dao.findForList("LaborDetailMapper.getBillCodeBySerialNo", listCode);
+	public List<PageData> getSerialNoBySerialNo(PageData pd)throws Exception{
+		return (List<PageData>)dao.findForList("LaborDetailMapper.getSerialNoBySerialNo", pd);
 	}
 	
 	/**导出列表
@@ -92,11 +83,13 @@ public class LaborDetailService implements LaborDetailManager{
 	 * @param pd
 	 * @throws Exception
 	 */
-	public List<PageData> getDataCalculation(String tableNameBackup, 
-			String sqlRetSelect, List<PageData> listAdd)throws Exception{
-		return dao.findDataCalculation(tableNameBackup, 
-				    "LaborDetailMapper.batchDelAndIns", 
-				    sqlRetSelect, listAdd);
+	public List<PageData> getDataCalculation(String tableName, String TmplUtil_KeyExtra,
+			PageData pdInsetBackup, List<PageData> listAdd,
+			String sqlRetSelect, String sqlSumByUserCode)throws Exception{
+		return dao.findDataCalculationLaborDetail(tableName, TmplUtil_KeyExtra,
+				    "LaborDetailMapper.insetBackup", pdInsetBackup,
+				    "LaborDetailMapper.batchDelAndIns", listAdd,
+				    sqlRetSelect, sqlSumByUserCode);
 	}
 	/**更新数据库
 	 * @param pd
@@ -104,64 +97,6 @@ public class LaborDetailService implements LaborDetailManager{
 	 */
 	public void batchUpdateDatabase(List<PageData> listData)throws Exception{
 		dao.update("LaborDetailMapper.batchDelAndIns", listData);
-	}
-
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-
-	
-	/**获取汇总里的明细
-	 * @param
-	 * @throws Exception
-	 */
-	@SuppressWarnings("unchecked")
-	public List<PageData> getDetailList(PageData pd)throws Exception{
-		return (List<PageData>)dao.findForList("LaborDetailMapper.getDetailList", pd);
-	}
-	
-	/**获取汇总数据
-	 * @param
-	 * @throws Exception
-	 */
-	@SuppressWarnings("unchecked")
-	public List<PageData> getSum(Map<String, String> map)throws Exception{
-		return (List<PageData>)dao.findForList("LaborDetailMapper.getSum", map);
 	}
 }
 

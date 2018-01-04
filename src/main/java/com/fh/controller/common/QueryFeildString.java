@@ -25,7 +25,7 @@ public class QueryFeildString {
 		//责任中心oa_department:"DEPT_CODE"
 		//企业特定员工分类PARTUSERTYPE:"USER_CATG"
 		//员工组EMPLGRP:"USER_GROP"
-		//账套FMISACC:"CUST_COL7" 
+		//账套FMISACC:"CUST_COL7" "BILL_OFF" 
 		//工资范围SALARYRANGE:"SAL_RANGE"
 		//二级单位oa_department:"UNITS_CODE"
 		//组织单元文本字典ORGUNIT:"ORG_UNIT"
@@ -34,6 +34,7 @@ public class QueryFeildString {
 		String USER_CATG = "";
 		String USER_GROP = "";
 		String CUST_COL7 = "";
+		String BILL_OFF = "";
 		String SAL_RANGE = "";
 		String UNITS_CODE = "";
 		String ORG_UNIT = "";
@@ -52,6 +53,9 @@ public class QueryFeildString {
 			}
 			if(feildList.contains("CUST_COL7")){
 				CUST_COL7 = pd.getString("CUST_COL7");
+			}
+			if(feildList.contains("BILL_OFF")){
+				BILL_OFF = pd.getString("BILL_OFF");
 			}
 			if(feildList.contains("SAL_RANGE")){
 				SAL_RANGE = pd.getString("SAL_RANGE");
@@ -89,6 +93,12 @@ public class QueryFeildString {
 			String strIn = getSqlInString(CUST_COL7);
 			if(strIn!=null && !strIn.equals("")){
 				QueryFeild += " and CUST_COL7 in (" + strIn + ") ";
+			}
+		}
+		if(BILL_OFF!=null && !BILL_OFF.trim().equals("")){
+			String strIn = getSqlInString(BILL_OFF);
+			if(strIn!=null && !strIn.equals("")){
+				QueryFeild += " and BILL_OFF in (" + strIn + ") ";
 			}
 		}
 		if(SAL_RANGE!=null && !SAL_RANGE.trim().equals("")){
