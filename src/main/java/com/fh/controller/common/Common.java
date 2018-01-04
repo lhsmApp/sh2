@@ -90,11 +90,14 @@ public class Common {
 	}
 
 	public static Map<String, TableColumns> GetHaveColumnsList(String tableNo, TmplConfigManager tmplconfigService) throws Exception{
-		Map<String, TableColumns> m_HaveColumnsList = new LinkedHashMap<String, TableColumns>();
 		String tableCodeTmpl = getTableCodeTmpl(tableNo, tmplconfigService);
 		String tableCodeOri=DictsUtil.getActualTable(tableCodeTmpl);//数据库真实业务数据表
-		// 用语句查询出数据库表的所有字段及其属性；拼接成jqgrid全部列
-		List<TableColumns> tableColumns = tmplconfigService.getTableColumns(tableCodeOri);
+		return GetHaveColumnsListByTableName(tableCodeOri, tmplconfigService);
+	}
+
+	public static Map<String, TableColumns> GetHaveColumnsListByTableName(String tableName, TmplConfigManager tmplconfigService) throws Exception{
+		Map<String, TableColumns> m_HaveColumnsList = new LinkedHashMap<String, TableColumns>();
+		List<TableColumns> tableColumns = tmplconfigService.getTableColumns(tableName);
 		for (TableColumns col : tableColumns) {
 			//表结构
 			m_HaveColumnsList.put(col.getColumn_name(), col);
@@ -405,8 +408,9 @@ public class Common {
 		return SelectFeild;
 	}
 
+	//IsNumFeildButMustInput 设置字段类型是数字，但不管隐藏 或显示都必须保存的
 	public static void setModelDefault(PageData pd, Map<String, TableColumns> haveColumnsList, 
-			Map<String, TmplConfigDetail> map_SetColumnsList)
+			Map<String, TmplConfigDetail> map_SetColumnsList, List<String> IsNumFeildButMustInput)
 			throws ClassNotFoundException {
 		String InsertField = "";
 		String InsertVale = "";
@@ -418,7 +422,10 @@ public class Common {
 	    	if(configDetail != null){
 				intHide = Integer.parseInt(configDetail.getCOL_HIDE());
 	    	}
-			// intHide != 1 隐藏
+	    	if(IsNumFeildButMustInput!=null && IsNumFeildButMustInput.contains(column_name)){
+	    		intHide = 1;//显示
+	    	}
+			// 0隐藏 1显示, intHide != 1 隐藏
 			if(!(IsNumFeild(data_type) && intHide != 1)){
 				Object value = pd.get(column_name);
 				if(value != null && value.toString() != null && !value.toString().trim().equals("")){

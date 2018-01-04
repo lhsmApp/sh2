@@ -9,11 +9,18 @@ package com.fh.entity;
  */
 public class LaborDetail {
 	private int SERIAL_NO;
+	private String BUSI_DATE;
 	private String USER_CODE;
 	private String USER_NAME;
 	private double GROSS_PAY;
 	private double ACCRD_TAX;
 	private double ACT_SALY;
+	public String getBUSI_DATE() {
+		return BUSI_DATE;
+	}
+	public void setBUSI_DATE(String bUSI_DATE) {
+		BUSI_DATE = bUSI_DATE;
+	}
 	public int getSERIAL_NO() {
 		return SERIAL_NO;
 	}

@@ -163,17 +163,6 @@ public class QueryFeildString {
 		return strRet;
 	}
 	
-	public static String getReportBillCode(String BILL_TYPE, String RPT_DUR, String BILL_OFF, String SqlInRPT_DEPT) throws Exception{
-		String strInRPT_DEPT = getSqlInString(SqlInRPT_DEPT);
-		String strRet = " and BILL_CODE in (SELECT bill_code FROM tb_sys_sealed_info "
-				+ "                             WHERE state = '1' "
-				+ "                             AND RPT_DUR = '" + RPT_DUR + "' "
-				+ "                             AND RPT_DEPT in (" + strInRPT_DEPT + ") "
-				+ "                             AND BILL_TYPE = '" + BILL_TYPE + "' "
-				+ "                             AND BILL_OFF = '" + BILL_OFF + "') ";
-		return strRet;
-	}
-	
     //汇总单据状态不为0，就是没汇总或汇总但没作废
 	public static String getBillCodeNotInSumInvalidBill(){
 		String strReturn = " and BILL_STATE not in ('" + BillState.Invalid.getNameKey() + "') ";
@@ -191,29 +180,6 @@ public class QueryFeildString {
 		String strReturn = " and BILL_CODE not in (select BILL_CODE from " + tableNameSummy + ") ";
 		return strReturn;
 	}
-	
-    //
-	public static String getCheckDetailBillCode(String tableNameSummy,
-			String BILL_TYPE, String RPT_DUR, String BILL_OFF, String SqlInRPT_DEPT) throws Exception{
-		String strReturn = " and (BILL_CODE in (select BILL_CODE from " + tableNameSummy + " where BILL_STATE = '" + BillState.Invalid.getNameKey() + "') "
-				+ "               or "
-				+ "               (1=1 " + getReportBillCode(BILL_TYPE, RPT_DUR, BILL_OFF, SqlInRPT_DEPT) + ") "
-				+ "               ) ";
-		return strReturn;
-	}
-	
-    //
-	public static String getCheckSummyBillCode(String BILL_TYPE, String RPT_DUR, String BILL_OFF, String SqlInRPT_DEPT) throws Exception{
-		String strReturn = " and (BILL_STATE = '" + BillState.Invalid.getNameKey() + "' "
-				+ "               or "
-				+ "               (1=1 " + getReportBillCode(BILL_TYPE, RPT_DUR, BILL_OFF, SqlInRPT_DEPT) + ") "
-				+ "               ) ";
-		return strReturn;
-	}
-	
-	
-	
-	
 	
 	
 	
@@ -250,16 +216,12 @@ public class QueryFeildString {
 		return strIn;
 	}
 	
-	public static String getSqlInString(List<PageData> pdList, String str, String strFeild, String strFeildExtra){
-		StringBuilder ret = new StringBuilder();
-		if(str==null) str = "";
+	public static List<Integer> getListIntegerFromListPageData(List<PageData> pdList, String strFeild, String strFeildExtra){//
+		List<Integer> listString = new ArrayList<Integer>();
 		for(PageData val : pdList){
-			if(!ret.toString().trim().equals("")){
-				ret.append(",");
-			}
-			ret.append(" " + str + val.get(strFeild + strFeildExtra) + str + " ");
+			listString.add(Integer.valueOf((String) val.get(strFeild + strFeildExtra)));
 		}
-		return ret.toString();
+		return listString;
 	}
 	
 	public static String getFieldSelectKey(List<String> keyListBase, String keyExtra) throws Exception{
@@ -275,6 +237,16 @@ public class QueryFeildString {
 	public static String tranferListStringToGroupbyString(List<String> SumField){
 		StringBuilder ret = new StringBuilder();
 		for(String field : SumField){
+			if(!ret.toString().trim().equals("")){
+				ret.append(",");
+			}
+			ret.append(field);
+		}
+		return ret.toString();
+	}
+	public static String tranferListIntegerToGroupbyString(List<Integer> listValue){
+		StringBuilder ret = new StringBuilder();
+		for(Integer field : listValue){
 			if(!ret.toString().trim().equals("")){
 				ret.append(",");
 			}

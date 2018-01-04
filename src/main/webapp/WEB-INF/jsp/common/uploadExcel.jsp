@@ -55,7 +55,7 @@
 		<!-- /.main-content -->
 	</div>
 	<!-- /.main-container -->
-
+	
 	<!-- basic scripts -->
 	<!-- 页面底部js¨ -->
 	<%@ include file="../system/index/foot.jsp"%>
@@ -100,7 +100,26 @@
 		            });
 		        } else {
 		        	if($.trim(commonBaseCode) == 3){
-			        	//prompt("", commonMessage);
+		        	    /*var _html = '<html><body><div>';
+		        	    var list = commonMessage.split("\n");
+    					//遍历访问这个集合  
+    					$(list).each(function (index, mes){
+    						_html += "<p>" + mes + "</p>"
+    					});
+		        	    _html += '</div></body></html>';
+		        	    console.log(_html);
+
+		         	    var diag = new top.Dialog();
+		         	    diag.Drag=true;
+		         	    diag.Title ="填写的纳税额填写不正确，无法导入！";
+		         	    diag.Width = 300;
+		         	    diag.Height = 150;
+		         	    diag.content = _html;
+		         	    diag.CancelEvent = function(){
+		         	      diag.close();
+		                };
+		                diag.show();*/
+		        		//prompt("填写的纳税额填写不正确，无法导入！", "<html><textarea cols='' rows='' >" + commonMessage + "</textarea></html>");
 			        	alert(commonMessage);
 		        	} else if($.trim(commonBaseCode) != -1){
 					    $("#excel").tips({

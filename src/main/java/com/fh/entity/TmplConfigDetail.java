@@ -24,6 +24,14 @@ public class TmplConfigDetail implements Serializable {
 	private String NUM_DGT;
 	private String DEC_PRECISION;
 	private String BILL_OFF;
+
+	public TmplConfigDetail(){
+	}
+	public TmplConfigDetail(String cOL_CODE, String cOL_NAME, String cOL_HIDE){
+		COL_CODE = cOL_CODE;
+		COL_NAME = cOL_NAME;
+		COL_HIDE = cOL_HIDE;
+	}
 	
 	public String getBILL_OFF() {
 		return BILL_OFF;

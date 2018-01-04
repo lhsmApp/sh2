@@ -398,7 +398,8 @@
          */
         function batchSave(){
         	//获得选中行ids的方法
-            var ids = $(gridBase_selector).getDataIDs();  
+        	var ids = $(gridBase_selector).getGridParam("selarrrow");  
+            //var ids = $(gridBase_selector).getDataIDs();  
         	
         	if(!(ids!=null&&ids.length>0)){
         		bootbox.dialog({

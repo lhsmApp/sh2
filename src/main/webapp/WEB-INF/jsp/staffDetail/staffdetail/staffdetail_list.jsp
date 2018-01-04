@@ -434,7 +434,8 @@
 	 	*/
     	function batchSave(){
             //获得选中行ids的方法
-            var ids = $(gridBase_selector).getDataIDs();  
+        	var ids = $(gridBase_selector).getGridParam("selarrrow");  
+            //var ids = $(gridBase_selector).getDataIDs();  
     	
             if(!(ids!=null&&ids.length>0)){
                 bootbox.dialog({
@@ -762,6 +763,8 @@
     			reloadAfterSubmit: true, 
     			viewrecords: true, 
     			shrinkToFit: false,
+    			//rowNum: 0,
+    			//scroll:1,
     			rowNum: 100,
     			rowList: [100,200,500],
                 multiselect: true,

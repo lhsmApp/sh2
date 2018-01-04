@@ -54,13 +54,13 @@ public class SocialIncDetailService implements SocialIncDetailManager{
 		return (PageData)dao.findForObject("SocialIncDetailMapper.getFooterSummary", page);
 	}
 
-	/**通过流水号获取单号，用于判断数据是否已汇总
+	/**通过流水号获取流水号，用于判断数据是否变更 
 	 * @param pd
 	 * @throws Exception
 	 */
 	@SuppressWarnings("unchecked")
-	public List<PageData> getBillCodeBySerialNo(List<PageData> listCode)throws Exception{
-		return (List<PageData>)dao.findForList("SocialIncDetailMapper.getBillCodeBySerialNo", listCode);
+	public List<PageData> getSerialNoBySerialNo(PageData pd)throws Exception{
+		return (List<PageData>)dao.findForList("SocialIncDetailMapper.getSerialNoBySerialNo", pd);
 	}
 	
 	/**导出列表

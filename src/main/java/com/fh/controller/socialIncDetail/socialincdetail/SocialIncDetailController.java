@@ -37,6 +37,7 @@ import com.fh.util.Const;
 import com.fh.util.ObjectExcelView;
 import com.fh.util.PageData;
 import com.fh.util.SqlTools;
+import com.fh.util.enums.BillState;
 import com.fh.util.enums.TmplType;
 import com.fh.util.Jurisdiction;
 import com.fh.util.excel.LeadingInExcelToPageData;
@@ -46,6 +47,7 @@ import net.sf.json.JSONArray;
 
 import com.fh.service.fhoa.department.impl.DepartmentService;
 import com.fh.service.socialIncDetail.socialincdetail.SocialIncDetailManager;
+import com.fh.service.socialincsummy.socialincsummy.SocialIncSummyManager;
 import com.fh.service.sysConfig.sysconfig.SysConfigManager;
 import com.fh.service.sysSealedInfo.syssealedinfo.impl.SysSealedInfoService;
 import com.fh.service.system.dictionaries.impl.DictionariesService;
@@ -65,6 +67,8 @@ public class SocialIncDetailController extends BaseController {
 	String menuUrl = "socialincdetail/list.do"; //菜单地址(权限用)
 	@Resource(name="socialincdetailService")
 	private SocialIncDetailManager socialincdetailService;
+	@Resource(name="socialincsummyService")
+	private SocialIncSummyManager socialincsummyService;
 	@Resource(name="tmplconfigService")
 	private TmplConfigService tmplconfigService;
 	@Resource(name="syssealedinfoService")
@@ -261,7 +265,9 @@ public class SocialIncDetailController extends BaseController {
 			QueryFeild += " and 1 != 1 ";
 		}
 		QueryFeild += QueryFeildString.getQueryFeildBillCodeDetail(SelectedBillCode, SelectBillCodeFirstShow);
-		QueryFeild += QueryFeildString.getNotReportBillCode(TypeCodeTransfer, SystemDateTime, SelectedCustCol7, SelectedDepartCode);
+		if(!SelectedBillCode.equals(SelectBillCodeFirstShow)){
+			QueryFeild += QueryFeildString.getNotReportBillCode(TypeCodeTransfer, SystemDateTime, SelectedCustCol7, SelectedDepartCode);
+		}
 		QueryFeild += QueryFeildString.getBillCodeNotInSumInvalidDetail(TableNameSummy);
 		getPd.put("QueryFeild", QueryFeild);
 		
@@ -338,8 +344,10 @@ public class SocialIncDetailController extends BaseController {
 			return commonBase;
 		}
 
-		String strHelpful = QueryFeildString.getBillCodeNotInSumInvalidDetail(TableNameSummy) 
-				+ QueryFeildString.getNotReportBillCode(TypeCodeTransfer, SystemDateTime, SelectedCustCol7, SelectedDepartCode);
+		String strHelpful = QueryFeildString.getBillCodeNotInSumInvalidDetail(TableNameSummy);
+		if(!SelectedBillCode.equals(SelectBillCodeFirstShow)){
+			strHelpful += QueryFeildString.getNotReportBillCode(TypeCodeTransfer, SystemDateTime, SelectedCustCol7, SelectedDepartCode);
+		}
 		if(!(strHelpful != null && !strHelpful.trim().equals(""))){
 			commonBase.setCode(2);
 			commonBase.setMessage(Message.GetHelpfulDetailFalue);
@@ -365,7 +373,8 @@ public class SocialIncDetailController extends BaseController {
 			Map<String, TableColumns> map_HaveColumnsList = Common.GetHaveColumnsList(TypeCodeDetail, tmplconfigService);
 			List<PageData> listCheckState = new ArrayList<PageData>();
 			listCheckState.add(getPd);
-			String checkState = CheckState(SelectedCustCol7, SelectedDepartCode, listCheckState, "SERIAL_NO", TmplUtil.keyExtra);
+			String checkState = CheckState(SelectedBillCode,
+					SelectedCustCol7, SelectedDepartCode, listCheckState, "SERIAL_NO", TmplUtil.keyExtra);
 			if(checkState!=null && !checkState.trim().equals("")){
 				commonBase.setCode(2);
 				commonBase.setMessage(checkState);
@@ -374,7 +383,7 @@ public class SocialIncDetailController extends BaseController {
 			for(String strFeild : MustNotEditList){
 				getPd.put(strFeild, getPd.get(strFeild + TmplUtil.keyExtra));
 			}
-			Common.setModelDefault(getPd, map_HaveColumnsList, map_SetColumnsList);
+			Common.setModelDefault(getPd, map_HaveColumnsList, map_SetColumnsList, MustNotEditList);
 			getPd.put("TableName", TableNameDetail);
 			getPd.put("CanOperate", strHelpful);
 			
@@ -425,8 +434,10 @@ public class SocialIncDetailController extends BaseController {
 			return commonBase;
 		}
 
-		String strHelpful = QueryFeildString.getBillCodeNotInSumInvalidDetail(TableNameSummy)
-				+ QueryFeildString.getNotReportBillCode(TypeCodeTransfer, SystemDateTime, SelectedCustCol7, SelectedDepartCode);
+		String strHelpful = QueryFeildString.getBillCodeNotInSumInvalidDetail(TableNameSummy);
+		if(!SelectedBillCode.equals(SelectBillCodeFirstShow)){
+			strHelpful += QueryFeildString.getNotReportBillCode(TypeCodeTransfer, SystemDateTime, SelectedCustCol7, SelectedDepartCode);
+		}
 		if(!(strHelpful != null && !strHelpful.trim().equals(""))){
 			commonBase.setCode(2);
 			commonBase.setMessage(Message.GetHelpfulDetailFalue);
@@ -437,7 +448,8 @@ public class SocialIncDetailController extends BaseController {
 		String json = DATA_ROWS.toString();  
         JSONArray array = JSONArray.fromObject(json);  
         List<PageData> listData = (List<PageData>) JSONArray.toCollection(array,PageData.class);
-		String checkState = CheckState(SelectedCustCol7, SelectedDepartCode, listData, "SERIAL_NO", TmplUtil.keyExtra);
+		String checkState = CheckState(SelectedBillCode,
+				SelectedCustCol7, SelectedDepartCode, listData, "SERIAL_NO", TmplUtil.keyExtra);
 		if(checkState!=null && !checkState.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(checkState);
@@ -449,7 +461,7 @@ public class SocialIncDetailController extends BaseController {
         for(PageData item : listData){
         	item.put("CanOperate", strHelpful);
       	    item.put("TableName", TableNameDetail);
-        	Common.setModelDefault(item, map_HaveColumnsList, map_SetColumnsList);
+        	Common.setModelDefault(item, map_HaveColumnsList, map_SetColumnsList, MustNotEditList);
         }
 		if(null != listData && listData.size() > 0){
 				socialincdetailService.batchUpdateDatabase(listData);
@@ -496,8 +508,10 @@ public class SocialIncDetailController extends BaseController {
 			return commonBase;
 		}
 		
-		String strHelpful = QueryFeildString.getBillCodeNotInSumInvalidDetail(TableNameSummy) 
-				+ QueryFeildString.getNotReportBillCode(TypeCodeTransfer, SystemDateTime, SelectedCustCol7, SelectedDepartCode);
+		String strHelpful = QueryFeildString.getBillCodeNotInSumInvalidDetail(TableNameSummy);
+		if(!SelectedBillCode.equals(SelectBillCodeFirstShow)){
+			strHelpful += QueryFeildString.getNotReportBillCode(TypeCodeTransfer, SystemDateTime, SelectedCustCol7, SelectedDepartCode);
+		}
 		if(!(strHelpful != null && !strHelpful.trim().equals(""))){
 			commonBase.setCode(2);
 			commonBase.setMessage(Message.GetHelpfulDetailFalue);
@@ -507,7 +521,8 @@ public class SocialIncDetailController extends BaseController {
 		String json = DATA_ROWS.toString();  
         JSONArray array = JSONArray.fromObject(json);  
         List<PageData> listData = (List<PageData>) JSONArray.toCollection(array,PageData.class);
-		String checkState = CheckState(SelectedCustCol7, SelectedDepartCode, listData, "SERIAL_NO", TmplUtil.keyExtra);
+		String checkState = CheckState(SelectedBillCode,
+				SelectedCustCol7, SelectedDepartCode, listData, "SERIAL_NO", TmplUtil.keyExtra);
 		if(checkState!=null && !checkState.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(checkState);
@@ -561,8 +576,10 @@ public class SocialIncDetailController extends BaseController {
 			return commonBase;
 		}
 
-		String strHelpful = QueryFeildString.getBillCodeNotInSumInvalidDetail(TableNameSummy) 
-				+ QueryFeildString.getNotReportBillCode(TypeCodeTransfer, SystemDateTime, SelectedCustCol7, SelectedDepartCode);
+		String strHelpful = QueryFeildString.getBillCodeNotInSumInvalidDetail(TableNameSummy);
+		if(!SelectedBillCode.equals(SelectBillCodeFirstShow)){
+			strHelpful += QueryFeildString.getNotReportBillCode(TypeCodeTransfer, SystemDateTime, SelectedCustCol7, SelectedDepartCode);
+		}
 		if(!(strHelpful != null && !strHelpful.trim().equals(""))){
 			commonBase.setCode(2);
 			commonBase.setMessage(Message.GetHelpfulDetailFalue);
@@ -573,7 +590,8 @@ public class SocialIncDetailController extends BaseController {
 		String json = DATA_ROWS.toString();  
         JSONArray array = JSONArray.fromObject(json);  
         List<PageData> listData = (List<PageData>) JSONArray.toCollection(array,PageData.class);
-		String checkState = CheckState(SelectedCustCol7, SelectedDepartCode, listData, "SERIAL_NO", TmplUtil.keyExtra);
+		String checkState = CheckState(SelectedBillCode,
+				SelectedCustCol7, SelectedDepartCode, listData, "SERIAL_NO", TmplUtil.keyExtra);
 		if(checkState!=null && !checkState.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(checkState);
@@ -693,8 +711,10 @@ public class SocialIncDetailController extends BaseController {
 					commonBase.setCode(2);
 					commonBase.setMessage("当前区间和当前单位不能为空！");
 				} else {
-					String strHelpful = QueryFeildString.getBillCodeNotInSumInvalidDetail(TableNameSummy) 
-							+ QueryFeildString.getNotReportBillCode(TypeCodeTransfer, SystemDateTime, SelectedCustCol7, SelectedDepartCode);
+					String strHelpful = QueryFeildString.getBillCodeNotInSumInvalidDetail(TableNameSummy);
+					if(!SelectedBillCode.equals(SelectBillCodeFirstShow)){
+						strHelpful += QueryFeildString.getNotReportBillCode(TypeCodeTransfer, SystemDateTime, SelectedCustCol7, SelectedDepartCode);
+					}
 					if(!(strHelpful != null && !strHelpful.trim().equals(""))){
 						commonBase.setCode(2);
 						commonBase.setMessage(Message.GetHelpfulDetailFalue);
@@ -896,7 +916,7 @@ public class SocialIncDetailController extends BaseController {
             for(PageData item : listAdd){
           	    item.put("CanOperate", strHelpful);
           	    item.put("TableName", TableNameBackup);
-          	    Common.setModelDefault(item, map_HaveColumnsList, map_SetColumnsList);
+          	    Common.setModelDefault(item, map_HaveColumnsList, map_SetColumnsList, MustNotEditList);
             }
         	
     		String sqlRetSelect = Common.GetRetSelectColoumns(map_HaveColumnsList, 
@@ -911,7 +931,7 @@ public class SocialIncDetailController extends BaseController {
     				if(IsAdd){
     					each.put("SERIAL_NO", "");
     				}
-    				Common.setModelDefault(each, map_HaveColumnsList, map_SetColumnsList);
+    				Common.setModelDefault(each, map_HaveColumnsList, map_SetColumnsList, MustNotEditList);
     				each.put("CanOperate", strHelpful);
     				each.put("TableName", TableNameDetail);
     			}
@@ -1038,23 +1058,57 @@ public class SocialIncDetailController extends BaseController {
 	}
 	
 	
-	private String CheckState(String SelectedCustCol7, String SelectedDepartCode, 
+	private String CheckState(String SelectedBillCode,
+			String SelectedCustCol7, String SelectedDepartCode, 
 			List<PageData> pdList, String strFeild, String strFeildExtra) throws Exception{
 		String strRut = "";
-		String strSqlInSerialNo = QueryFeildString.getSqlInString(pdList, null, strFeild, strFeildExtra);
-        if(strSqlInSerialNo!=null && !strSqlInSerialNo.trim().equals("")){
-    		PageData transferPd = new PageData();
-    		transferPd.put("SelectedCustCol7", SelectedCustCol7);
-    		transferPd.put("SelectedDepartCode", SelectedDepartCode);
-    		transferPd.put("SystemDateTime", SystemDateTime);
-    		String strCanOperate = QueryFeildString.getCheckDetailBillCode(TableNameSummy, TypeCodeTransfer, SystemDateTime, SelectedCustCol7, SelectedDepartCode);
-    		strCanOperate += " and SERIAL_NO in (" + strSqlInSerialNo + ") ";
-    		transferPd.put("CanOperate", strCanOperate);
-    		List<String> getCodeList = socialincdetailService.getBillCodeList(transferPd);
-    		if(getCodeList != null && getCodeList.size()>0){
-    			strRut = Message.OperDataSumAlreadyChange;
-    		}
-        }
+		if(!SelectedBillCode.equals(SelectBillCodeFirstShow)){
+			String QueryFeild = " and BILL_CODE in ('" + SelectedBillCode + "') ";
+			QueryFeild += " and BILL_STATE = '" + BillState.Normal.getNameKey() + "' ";
+			QueryFeild += " and BILL_CODE not in (SELECT bill_code FROM tb_sys_sealed_info WHERE state = '1') ";
+			
+			PageData transferPd = new PageData();
+			transferPd.put("SystemDateTime", SystemDateTime);
+			transferPd.put("CanOperate", QueryFeild);
+			List<String> getCodeList = socialincsummyService.getBillCodeList(transferPd);
+			
+			if(!(getCodeList != null && getCodeList.size()>0)){
+				strRut = Message.OperDataSumAlreadyChange;
+			}
+		} else {
+	        if(pdList!=null && pdList.size()>0){
+	        	List<Integer> listStringSerialNo = QueryFeildString.getListIntegerFromListPageData(pdList, strFeild, strFeildExtra);
+				String strSqlInSerialNo = QueryFeildString.tranferListIntegerToGroupbyString(listStringSerialNo);
+	    		PageData transferPd = new PageData();
+	    		PageData getQueryFeildPd = new PageData();
+	    		getQueryFeildPd.put("DEPT_CODE", SelectedDepartCode);
+	    		getQueryFeildPd.put("CUST_COL7", SelectedCustCol7);
+	    		String QueryFeild = QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList);
+	    		if(!(SelectedDepartCode != null && !SelectedDepartCode.trim().equals(""))){
+	    			QueryFeild += " and 1 != 1 ";
+	    		}
+	    		if(!(SelectedCustCol7 != null && !SelectedCustCol7.trim().equals(""))){
+	    			QueryFeild += " and 1 != 1 ";
+	    		}
+	    		QueryFeild += " and BILL_CODE like ' %' ";
+	    		QueryFeild += " and SERIAL_NO in (" + strSqlInSerialNo + ") ";
+	    		transferPd.put("QueryFeild", QueryFeild);
+	    		
+	    		//页面显示数据的年月
+	    		transferPd.put("SystemDateTime", SystemDateTime);
+	    		transferPd.put("SelectFeildName", strFeild);
+	    		List<PageData> getSerialNo = socialincdetailService.getSerialNoBySerialNo(transferPd);
+	    		if(!(listStringSerialNo!=null && getSerialNo!=null && listStringSerialNo.size() == getSerialNo.size())){
+	    			strRut = Message.OperDataAlreadyChange;
+	    		} else {
+	    			for(PageData each : getSerialNo){
+	    				if(!listStringSerialNo.contains((Integer)each.get(strFeild))){
+	    					strRut = Message.OperDataAlreadyChange;
+	    				}
+	    			}
+	    		}
+	        }
+		}
 		return strRut;
 	}
 	
