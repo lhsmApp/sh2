@@ -62,6 +62,10 @@ public class LaborDetailService implements LaborDetailManager{
 	public List<PageData> exportList(JqPage page)throws Exception{
 		return (List<PageData>)dao.findForList("LaborDetailMapper.exportList", page);
 	}
+	@SuppressWarnings("unchecked")
+	public List<PageData> exportSumList(JqPage page)throws Exception{
+		return (List<PageData>)dao.findForList("LaborDetailMapper.exportSumList", page);
+	}
 	/**导出模板
 	 * @param page
 	 * @throws Exception
@@ -85,11 +89,11 @@ public class LaborDetailService implements LaborDetailManager{
 	 */
 	public List<PageData> getDataCalculation(String tableName, String TmplUtil_KeyExtra,
 			PageData pdInsetBackup, List<PageData> listAdd,
-			String sqlRetSelect, String sqlSumByUserCode)throws Exception{
+			String sqlRetSelect, String sqlSumByUserNameStaffIdent)throws Exception{
 		return dao.findDataCalculationLaborDetail(tableName, TmplUtil_KeyExtra,
 				    "LaborDetailMapper.insetBackup", pdInsetBackup,
 				    "LaborDetailMapper.batchDelAndIns", listAdd,
-				    sqlRetSelect, sqlSumByUserCode);
+				    sqlRetSelect, sqlSumByUserNameStaffIdent);
 	}
 	/**更新数据库
 	 * @param pd

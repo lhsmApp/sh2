@@ -33,6 +33,12 @@
 	<select id="getSumByUserCode" parameterType="pd" resultType="pd">
 	    select * from (${sqlSumByUserCode}) t where USER_CODE = '${USER_CODE}'
 	</select>
+	<select id="getSumByUserNameStaffIdent" parameterType="pd" resultType="pd">
+	    select * 
+	    from (${sqlSumByUserNameStaffIdent}) t 
+	    where USER_NAME = '${USER_NAME}'
+	    and STAFF_IDENT = '${STAFF_IDENT}'
+	</select>
 	
 	<update id="editSalaryFeild" parameterType="pd">
 	    ${sqlUpdateFeild} where SERIAL_NO in (${SqlInBillCode})

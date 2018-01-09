@@ -19,6 +19,9 @@ public class SysConfigKeyCode {
 	//免征税
 	public static final String ExemptionTax = "ExemptionTax";
 	
+	//有权限导出表的部门
+	public static final String CanExportTable = "CanExportTable";
+	
 	//定义核算汇总字段
 	//核算合同化工资汇总
 	public static final String ChkStaffContractGRP = "ChkStaffContractGRP";

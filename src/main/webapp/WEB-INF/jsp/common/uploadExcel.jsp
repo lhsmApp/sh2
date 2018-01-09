@@ -119,7 +119,6 @@
 		         	      diag.close();
 		                };
 		                diag.show();*/
-		        		//prompt("填写的纳税额填写不正确，无法导入！", "<html><textarea cols='' rows='' >" + commonMessage + "</textarea></html>");
 			        	alert(commonMessage);
 		        	} else if($.trim(commonBaseCode) != -1){
 					    $("#excel").tips({

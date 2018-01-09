@@ -188,6 +188,8 @@
         var pagerBase_selector = "#jqGridBasePager";  
 
         var which;
+        //有权限导出表的部门
+        var bolCanExportTable;
         //单号下拉列表
 	    var InitBillCodeOptions;
 	    //var SelectBillCodeOptions;
@@ -245,6 +247,8 @@
 			//当前期间,取自tb_system_config的SystemDateTime字段
 		    var SystemDateTime = '${SystemDateTime}';
 			$("#SelectedBusiDate").val(SystemDateTime);
+	        //有权限导出表的部门
+	        bolCanExportTable = ${pd.CanExportTable};
 			//单号下拉列表
 			InitBillCodeOptions = "${pd.InitBillCodeOptions}";
 			setSelectBillCodeOptions(InitBillCodeOptions);
@@ -280,27 +284,50 @@
 		/**
 		 * 导出
 		 */
-	    /*function exportSalaryItems(){
-	        importItems("1");
+	    function exportSalaryItems(){
+	    	exportItems("1", "工资个税");
 	    }
 	    function exportBonusItems(){
-	        importItems("2");
+	    	exportItems("2", "奖金个税");
 	    }
-	    function exportItems(SalaryOrBonus){
-	    	window.location.href='<%=basePath%>detailimportquery/excel.do?SelectedTableNo='+which
-            +'&SelectedBusiDate='+$("#SelectedBusiDate").val()
-            +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
-            +'&SelectedCustCol7='+$("#SelectedCustCol7").val()
-            +'&SelectedBillCode='+$("#SelectedBillCode").val()
-            + '&SalaryOrBonus='+SalaryOrBonus;
-	    }*/
-	    function exportItems(){
-	    	window.location.href='<%=basePath%>detailimportquery/excel.do?SelectedTableNo='+which
-            +'&SelectedBusiDate='+$("#SelectedBusiDate").val()
-            +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
-            +'&SelectedCustCol7='+$("#SelectedCustCol7").val()
-            +'&SelectedBillCode='+$("#SelectedBillCode").val();
+	    function exportItems(SalaryOrBonus, TitleType){
+	    	//有权限导出表的部门
+	    	if(bolCanExportTable){
+		     	top.jzts();
+		    	var diag = new top.Dialog();
+		    	diag.Drag=true;
+		    	diag.Title ="导出" + TitleType;
+		    	diag.URL = '<%=basePath%>detailimportquery/goDownExcel.do?SelectedTableNo='+which
+		            + '&SelectedBusiDate='+$("#SelectedBusiDate").val()
+		            + '&SelectedDepartCode='+$("#SelectedDepartCode").val()
+		            + '&SelectedCustCol7='+$("#SelectedCustCol7").val()
+		            + '&SelectedBillCode='+$("#SelectedBillCode").val()
+		            + '&SalaryOrBonus='+SalaryOrBonus;
+		    	diag.Width = 300;
+		    	diag.Height = 170;
+		    	diag.CancelEvent = function(){ //关闭事件
+		    		top.jzts();
+		    		$(top.hangge());//关闭加载状态
+		    	    diag.close();
+		        };
+		        diag.show();
+	    	} else {
+				$(top.hangge());//关闭加载状态
+				$("#subTitle").tips({
+					side:3,
+		            msg:'无此功能权限！',
+		            bg:'#cc0033',
+		            time:3
+		        });
+	    	}
 	    }
+	    //function exportItems(){
+	    //	window.location.href='<%=basePath%>detailimportquery/excel.do?SelectedTableNo='+which
+        //    +'&SelectedBusiDate='+$("#SelectedBusiDate").val()
+        //    +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
+        //    +'&SelectedCustCol7='+$("#SelectedCustCol7").val()
+        //    +'&SelectedBillCode='+$("#SelectedBillCode").val();
+	    //}
 	
 	    //加载单位树
 	    function initComplete(){
@@ -439,30 +466,32 @@
 		        			sepclass : "ui-separator",
 		        			sepcontent: ""
 		        		});
-						$(gridBase_selector).navButtonAdd(pagerBase_selector, {
+		        		/*$(gridBase_selector).navButtonAdd(pagerBase_selector, {
 				             caption : "导出",
 				             buttonicon : "ace-icon fa fa-cloud-download",
 				             onClickButton : exportItems,
 				             position : "last",
 				             title : "导出",
 				             cursor : "pointer"
-				         });
-		                /*$(gridBase_selector).navButtonAdd(pagerBase_selector, {
-				             caption : "工资个税",
-				             buttonicon : "ace-icon fa fa-cloud-download",
-				             onClickButton : exportSalaryItems,
-				             position : "last",
-				             title : "导出工资个税",
-				             cursor : "pointer"
-				         });
-		                $(gridBase_selector).navButtonAdd(pagerBase_selector, {
-				             caption : "奖金个税",
-				             buttonicon : "ace-icon fa fa-cloud-download",
-				             onClickButton : exportBonusItems,
-				             position : "last",
-				             title : "导出奖金个税",
-				             cursor : "pointer"
 				         });*/
+				     if(which=='1' || which=='2' || which=='3' || which=='4' || which=='5'){
+			                $(gridBase_selector).navButtonAdd(pagerBase_selector, {
+					             caption : "工资个税",
+					             buttonicon : "ace-icon fa fa-cloud-download",
+					             onClickButton : exportSalaryItems,
+					             position : "last",
+					             title : "导出工资个税",
+					             cursor : "pointer"
+					         });
+			                $(gridBase_selector).navButtonAdd(pagerBase_selector, {
+					             caption : "奖金个税",
+					             buttonicon : "ace-icon fa fa-cloud-download",
+					             onClickButton : exportBonusItems,
+					             position : "last",
+					             title : "导出奖金个税",
+					             cursor : "pointer"
+					         });
+				     }
         }
 </script>
 </html>

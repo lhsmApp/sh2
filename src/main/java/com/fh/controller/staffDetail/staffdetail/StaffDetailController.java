@@ -1000,28 +1000,29 @@ public class StaffDetailController extends BaseController {
 									commonBase.setCode(2);
 									commonBase.setMessage("请导入符合条件的数据！");
 								} else {
-									CommonBaseAndList getCommonBaseAndList = getCalculationData(true, true, commonBase,
-											SelectedTableNo, SelectedCustCol7, SelectedDepartCode, emplGroupType,
-											listAdd, strHelpful);
-									for(PageData pdSet : getCommonBaseAndList.getList()){
-										String pdSetUSER_CODE = pdSet.getString("USER_CODE");
-										for(PageData pdsum : getCommonBaseAndList.getList()){
-											String pdsumUSER_CODE = pdsum.getString("USER_CODE");
-											if(pdSetUSER_CODE!=null && pdSetUSER_CODE.equals(pdsumUSER_CODE)){
-												BigDecimal douCalTax = (BigDecimal) pdSet.get(TableFeildTaxCanNotHaveFormula);
-												BigDecimal douImpTax = (BigDecimal) pdSet.get(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra);
-												douCalTax.add((BigDecimal) pdsum.get(TableFeildTaxCanNotHaveFormula));
-												douImpTax.add((BigDecimal) pdsum.get(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra));
-												pdSet.put(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra + TmplUtil.keyExtra, douCalTax);
-												pdSet.put(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra, douImpTax);
+									String strCalculationMessage = "";
+									CommonBaseAndList getCommonBaseAndList = new CommonBaseAndList();
+									if(SelectedTableNo.equals(TmplType.TB_STAFF_DETAIL_CONTRACT.getNameKey()) 
+											|| SelectedTableNo.equals(TmplType.TB_STAFF_DETAIL_MARKET.getNameKey())){
+										getCommonBaseAndList = getCalculationData(true, true, commonBase,
+												SelectedTableNo, SelectedCustCol7, SelectedDepartCode, emplGroupType,
+												listAdd, strHelpful);
+										for(PageData pdSet : getCommonBaseAndList.getList()){
+											String pdSetUSER_CODE = pdSet.getString("USER_CODE");
+											for(PageData pdsum : getCommonBaseAndList.getList()){
+												String pdsumUSER_CODE = pdsum.getString("USER_CODE");
+												if(pdSetUSER_CODE!=null && pdSetUSER_CODE.equals(pdsumUSER_CODE)){
+													BigDecimal douCalTax = (BigDecimal) pdSet.get(TableFeildTaxCanNotHaveFormula);
+													BigDecimal douImpTax = (BigDecimal) pdSet.get(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra);
+													douCalTax.add((BigDecimal) pdsum.get(TableFeildTaxCanNotHaveFormula));
+													douImpTax.add((BigDecimal) pdsum.get(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra));
+													pdSet.put(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra + TmplUtil.keyExtra, douCalTax);
+													pdSet.put(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra, douImpTax);
+												}
 											}
 										}
-									}
-									List<String> listUserCode = new ArrayList<String>();
-									String strCalculationMessage = "";
-									for(PageData pdSet : getCommonBaseAndList.getList()){
-										//if(SelectedTableNo.equals(TmplType.TB_STAFF_DETAIL_CONTRACT.getNameKey()) 
-										//		|| SelectedTableNo.equals(TmplType.TB_STAFF_DETAIL_MARKET.getNameKey())){
+										List<String> listUserCode = new ArrayList<String>();
+										for(PageData pdSet : getCommonBaseAndList.getList()){
 											String pdSetUSER_CODE = pdSet.getString("USER_CODE");
 											if(!listUserCode.contains(pdSetUSER_CODE)){
 												BigDecimal douCalTax = (BigDecimal) pdSet.get(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra + TmplUtil.keyExtra);
@@ -1035,9 +1036,10 @@ public class StaffDetailController extends BaseController {
 												}
 											}
 											listUserCode.add(pdSetUSER_CODE);
-										//} else {
-										//	pdSet.put(TableFeildTaxCanNotHaveFormula, pdSet.get(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra));
-										//}
+										}
+									} else {
+										getCommonBaseAndList.setCommonBase(commonBase);
+										getCommonBaseAndList.setList(listAdd);
 									}
 									if(strCalculationMessage!=null && !strCalculationMessage.trim().equals("")){
 										commonBase.setCode(3);

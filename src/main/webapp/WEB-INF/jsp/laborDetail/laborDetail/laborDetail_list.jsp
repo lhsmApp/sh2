@@ -147,6 +147,8 @@
         var gridBase_selector = "#jqGridBase";  
         var pagerBase_selector = "#jqGridBasePager";  
 
+        //有权限导出表的部门
+        var bolCanExportTable;
 	    //页面显示的数据的责任中心和账套信息，在tosearch()里赋值
 	    var ShowDataDepartCode = "";
 	    var ShowDataCustCol7 = "";
@@ -164,14 +166,14 @@
 		            + '&SelectedCustCol7='+$("#SelectedCustCol7").val(),
 			    datatype: "json",
 			    colModel: [
-						{ label: '编号', name: 'USER_CODE', 
-							editable: true, edittype:'text', editoptions:{maxLength:'30'}, editrules:{required:true}
-						},
+						//{ label: '编号', name: 'USER_CODE', 
+						//	editable: true, edittype:'text', editoptions:{maxLength:'30'}, editrules:{required:true}
+						//},
 						{ label: '姓名', name: 'USER_NAME',
-							editable: true, edittype:'text', editoptions:{maxLength:'20'}
+							editable: true, edittype:'text', editoptions:{maxLength:'20'}, editrules:{required:true}
 						},
 						{ label: '身份证号', name: 'STAFF_IDENT',
-							editable: true, edittype:'text', editoptions:{maxLength:'20'}
+							editable: true, edittype:'text', editoptions:{maxLength:'20'}, editrules:{required:true}
 						},
 						{ label: '应发合计', name: 'GROSS_PAY', sorttype: 'number', align: 'right', summaryType:'sum', summaryTpl:'<b>sum:{0}</b>',
 							editable: true, edittype:'text', editoptions:{maxlength:'12', number: true}, editrules: {number: true}, 
@@ -185,7 +187,7 @@
 							editable: true, edittype:'text', editoptions:{maxlength:'12', number: true}, editrules: {number: true}, 
 						    searchrules: {number: true}, formatter: 'number'
 						},
-						{ name: 'SERIAL_NO', hidden: true, editable: true, editrules: {edithidden: false}},
+						{ name: 'SERIAL_NO', key: true, hidden: true, editable: true, editrules: {edithidden: false}},
 						{ name: 'BUSI_DATE', hidden: true, editable: true, editrules: {edithidden: false}},
 						{ name: 'BILL_OFF', hidden: true, editable: true, editrules: {edithidden: false}},
 						{ name: 'DEPT_CODE', hidden: true, editable: true, editrules: {edithidden: false}}],
@@ -204,7 +206,7 @@
                     + '&ShowDataCustCol7='+ShowDataCustCol7,
 
                 sortable: true,
-                sortname: 'USER_CODE',
+                sortname: 'STAFF_IDENT',
     			sortorder: 'asc',
     			
 	            pager: pagerBase_selector,
@@ -214,7 +216,7 @@
 	            
 	            /*grouping: true,
 				groupingView: {
-					groupField: ['USER_CODE'],
+					groupField: ['STAFF_IDENT'],
 					groupOrder: ['asc'],
 					groupColumnShow: [true],
 					groupText: ['<b>{0}</b>'],
@@ -335,7 +337,7 @@
 	        			sepclass : "ui-separator",
 	        			sepcontent: ""
 	        		});
-	    	$(gridBase_selector).navButtonAdd(pagerBase_selector, {
+	    	/*$(gridBase_selector).navButtonAdd(pagerBase_selector, {
 	    				id : "calculation",
 	    				caption : "计算",
 	    	            buttonicon : "ace-icon fa  fa-adjust",
@@ -343,7 +345,7 @@
 	    	            position : "last",
 	    	            title : "计算",
 	    	            cursor : "pointer"
-	    	         });
+	    	         });*/
 	        $(gridBase_selector).navButtonAdd(pagerBase_selector, {
 	                    id : "importItems",
 	        	        caption : "导入",
@@ -358,7 +360,7 @@
 			            buttonicon : "ace-icon fa fa-cloud-download",
 			            onClickButton : exportItems,
 			            position : "last",
-			            title : "导出",
+			            title : "劳务报酬所得导出",
 			            cursor : "pointer"
 			         });
         }
@@ -371,6 +373,8 @@
 			//当前登录人所在二级单位
 		    var DepartName = '${DepartName}';
 		    $("#showDur").text('当前期间：' + SystemDateTime + ' 登录人责任中心：' + DepartName);
+	        //有权限导出表的部门
+	        bolCanExportTable = ${pd.CanExportTable};
 		    
 		    SetStructure();
 	    });
@@ -453,9 +457,9 @@
 	     */
         function batchDelete(){
         	//获得选中的行ids的方法
-        	var id = $(gridBase_selector).getGridParam("selarrrow");  
-
-    		if(!(id!=null)){// && ids.length>0
+	        var ids = $(gridBase_selector).getGridParam("selarrrow");  
+     		
+     		if(!(ids!=null&&ids.length>0)){
     			bootbox.dialog({
     				message: "<span class='bigger-110'>您没有选择任何内容!</span>",
     				buttons: 			
@@ -468,10 +472,10 @@
     					var listData =new Array();
     					
     					//遍历访问这个集合  
-    					//$(ids).each(function (index, id){  
+    					$(ids).each(function (index, id){  
     			            var rowData = $(gridBase_selector).getRowData(id);
     			            listData.push(rowData);
-    					//});
+    					});
     					
     					top.jzts();
     					$.ajax({
@@ -599,9 +603,9 @@
          */
         function calculation(){
             //获得选中的行ids的方法
-	        var id = $(gridBase_selector).getGridParam("selarrrow");  
-	
-	        if(!(id!=null)){// && ids.length>0
+	        var ids = $(gridBase_selector).getGridParam("selarrrow");  
+     		
+     		if(!(ids!=null&&ids.length>0)){
 	            bootbox.dialog({
 	                message: "<span class='bigger-110'>您没有选择任何内容!</span>",
 	                buttons: 			
@@ -614,12 +618,12 @@
 	                    var listData =new Array();
 			
 	                    //遍历访问这个集合  
-			            //$(ids).each(function (index, id){  
+			            $(ids).each(function (index, id){  
 			                $(gridBase_selector).saveRow(id, false, 'clientArray');
 			                var rowData = $(gridBase_selector).getRowData(id);
 			                listData.push(rowData);
 			                $(gridBase_selector).jqGrid('editRow',id);
-			            //});
+			            });
 			
 			            top.jzts();
 			            $.ajax({
@@ -699,11 +703,37 @@
          * 导出
          */
         function exportItems(){
-            window.location.href='<%=basePath%>laborDetail/excel.do?'
-				+ 'SelectedDepartCode='+$("#SelectedDepartCode").val()
-	            + '&SelectedCustCol7='+$("#SelectedCustCol7").val()
-                + '&ShowDataDepartCode='+ShowDataDepartCode
-                + '&ShowDataCustCol7='+ShowDataCustCol7;
+	    	//有权限导出表的部门
+	    	if(bolCanExportTable){
+		     	top.jzts();
+		    	var diag = new top.Dialog();
+		    	diag.Drag=true;
+		    	diag.Title ="导出劳务报酬所得";
+		    	diag.URL = '<%=basePath%>laborDetail/goDownExcel.do?'
+		            + 'SelectedDepartCode='+$("#SelectedDepartCode").val()
+		            + '&SelectedCustCol7='+$("#SelectedCustCol7").val();
+		    	diag.Width = 300;
+		    	diag.Height = 170;
+		    	diag.CancelEvent = function(){ //关闭事件
+		    		top.jzts();
+		    		$(top.hangge());//关闭加载状态
+		    	    diag.close();
+		        };
+		        diag.show();
+	    	} else {
+				$(top.hangge());//关闭加载状态
+				$("#subTitle").tips({
+					side:3,
+		            msg:'无此功能权限！',
+		            bg:'#cc0033',
+		            time:3
+		        });
+	    	}
+            //window.location.href='<%=basePath%>laborDetail/excel.do?'
+			//	+ 'SelectedDepartCode='+$("#SelectedDepartCode").val()
+	        //    + '&SelectedCustCol7='+$("#SelectedCustCol7").val()
+            //    + '&ShowDataDepartCode='+ShowDataDepartCode
+            //    + '&ShowDataCustCol7='+ShowDataCustCol7;
         }
 
         /**

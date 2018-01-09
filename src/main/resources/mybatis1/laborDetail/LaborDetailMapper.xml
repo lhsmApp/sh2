@@ -69,7 +69,16 @@
 		select * 
 		from <include refid="tableNameDetail"></include>
 		where BUSI_DATE = '${pd.SystemDateTime}'
-		order by USER_CODE
+		order by USER_NAME, STAFF_IDENT <!-- USER_CODE -->
+	</select>
+	<select id="exportSumList" parameterType="jqPage" resultType="pd">
+		select ${pd.SelectFeild} 
+		from <include refid="tableNameDetail"></include>
+		<where>
+		    ${pd.WhereSql} 
+		</where>
+		group by ${pd.GroupByFeild} 
+		order by USER_NAME, STAFF_IDENT <!-- USER_CODE -->
 	</select>
 	<!-- 导出模板 -->
 	<select id="exportModel" parameterType="pd" resultType="pd">

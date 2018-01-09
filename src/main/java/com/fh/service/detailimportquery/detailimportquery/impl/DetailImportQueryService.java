@@ -60,5 +60,13 @@ public class DetailImportQueryService implements DetailImportQueryManager{
 	public List<PageData> datalistExport(JqPage page)throws Exception{
 		return (List<PageData>)dao.findForList("DetailImportQueryMapper.datalistExport", page);
 	}
+	@SuppressWarnings("unchecked")
+	public List<PageData> exportSumSalaryList(JqPage page)throws Exception{
+		return (List<PageData>)dao.findForList("DetailImportQueryMapper.exportSumSalaryList", page);
+	}
+	@SuppressWarnings("unchecked")
+	public List<PageData> exportSumBonusList(JqPage page)throws Exception{
+		return (List<PageData>)dao.findForList("DetailImportQueryMapper.exportSumBonusList", page);
+	}
 }
 

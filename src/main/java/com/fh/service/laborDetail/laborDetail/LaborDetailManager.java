@@ -40,6 +40,7 @@ public interface LaborDetailManager{
 	 * @throws Exception
 	 */
 	public List<PageData> exportList(JqPage page)throws Exception;
+	public List<PageData> exportSumList(JqPage page)throws Exception;
 	/**导出模板
 	 * @param page
 	 * @throws Exception
@@ -58,7 +59,7 @@ public interface LaborDetailManager{
 	 */
 	public List<PageData> getDataCalculation(String tableName, String TmplUtil_KeyExtra,
 			PageData pdInsetBackup, List<PageData> listAdd,
-			String sqlRetSelect, String sqlSumByUserCode)throws Exception;
+			String sqlRetSelect, String sqlSumByUserNameStaffIdent)throws Exception;
 	/**更新数据库
 	 * @param pd
 	 * @throws Exception

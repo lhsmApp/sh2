@@ -40,6 +40,8 @@ public interface DetailImportQueryManager{
 	 * @throws Exception
 	 */
 	public List<PageData> datalistExport(JqPage page)throws Exception;
+	public List<PageData> exportSumSalaryList(JqPage page)throws Exception;
+	public List<PageData> exportSumBonusList(JqPage page)throws Exception;
 	
 }
 
