@@ -99,6 +99,7 @@ public class LaborDetailController extends BaseController {
 	Map<String, TmplConfigDetail> map_SetColumnsList = new LinkedHashMap<String, TmplConfigDetail>();
     //有权限导出表的部门
     List<String> DepartCanExportTable = new ArrayList<String>();
+    List<Dictionaries> ListDicFMISACC = new ArrayList<Dictionaries>();
 
 	/**列表
 	 * @param page
@@ -136,7 +137,8 @@ public class LaborDetailController extends BaseController {
 		mv.addObject("pd", getPd);
 
 		//BILL_OFF FMISACC 帐套字典
-		mv.addObject("FMISACC", DictsUtil.getDictsByParentCode(dictionariesService, "FMISACC"));
+		ListDicFMISACC = DictsUtil.getDictsByParentCode(dictionariesService, "FMISACC");
+		mv.addObject("FMISACC", ListDicFMISACC);
 		// *********************加载单位树  DEPT_CODE*******************************
 		String DepartmentSelectTreeSource=DictsUtil.getDepartmentSelectTreeSource(departmentService);
 		if(DepartmentSelectTreeSource.equals("0"))
@@ -1041,9 +1043,19 @@ public class LaborDetailController extends BaseController {
 		map_SetColumnsList.put("减免税额", new TmplConfigDetail("减免税额", "减免税额", "1"));
 		map_SetColumnsList.put("备注", new TmplConfigDetail("备注", "备注", "1"));
 		
+		String strBillOffName = "";
+		if(ListDicFMISACC != null){
+			for(Dictionaries dic : ListDicFMISACC){
+				if(SelectedCustCol7.equals(dic.getDICT_CODE())){
+					strBillOffName = dic.getNAME();
+				}
+			}
+		}
+		
 		ModelAndView mv = new ModelAndView();
 		Map<String,Object> dataMap = new LinkedHashMap<String,Object>();
-		dataMap.put("filename", "");
+		String fileName = SelectedBusiDate + "_" + strBillOffName + "_" + "劳务报酬所得表";
+		dataMap.put("filename", new String(fileName.getBytes("gb2312"), "ISO-8859-1"));
 		List<String> titles = new ArrayList<String>();
 		List<PageData> varList = new ArrayList<PageData>();
 		if(map_SetColumnsList != null && map_SetColumnsList.size() > 0){
@@ -1137,6 +1149,21 @@ public class LaborDetailController extends BaseController {
 		    }
 		}
 		return strRut;
+	}
+	
+	 /**导入提示
+	 * @param
+	 * @throws Exception
+	 */
+	@RequestMapping(value="/showErrorTaxMessage")
+	public ModelAndView showErrorTaxMessage() throws Exception{
+		PageData getPd = this.getPageData();
+		String ErrorTaxMessage = getPd.getString("ErrorTaxMessage");
+		
+		ModelAndView mv = this.getModelAndView();
+		mv.setViewName("common/ErrorTax");
+		mv.addObject("commonMessage", ErrorTaxMessage);
+		return mv;
 	}
 	
 	@InitBinder

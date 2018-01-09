@@ -100,25 +100,20 @@
 		            });
 		        } else {
 		        	if($.trim(commonBaseCode) == 3){
-		        	    /*var _html = '<html><body><div>';
-		        	    var list = commonMessage.split("\n");
-    					//遍历访问这个集合  
-    					$(list).each(function (index, mes){
-    						_html += "<p>" + mes + "</p>"
-    					});
-		        	    _html += '</div></body></html>';
-		        	    console.log(_html);
+		        	    //top.jzts();
+		        	    //var diag = new top.Dialog();
+		        	    //diag.Drag=true;
+		        	    //diag.Title ="填写的数据不正确，无法导入！";
+		        	    //diag.URL = '<%=basePath%>' + local + '/showErrorTaxMessage.do?ErrorTaxMessage='+commonMessage;
+		        	    //diag.Width = 500;
+		        	    //diag.Height = 350;
+		        	    //diag.CancelEvent = function(){ //关闭事件
+		        	    //    top.jzts();
+		        	    //    $(top.hangge());//关闭加载状态
+		        	    //    diag.close();
+		                //};
+		                //diag.show();
 
-		         	    var diag = new top.Dialog();
-		         	    diag.Drag=true;
-		         	    diag.Title ="填写的纳税额填写不正确，无法导入！";
-		         	    diag.Width = 300;
-		         	    diag.Height = 150;
-		         	    diag.content = _html;
-		         	    diag.CancelEvent = function(){
-		         	      diag.close();
-		                };
-		                diag.show();*/
 			        	alert(commonMessage);
 		        	} else if($.trim(commonBaseCode) != -1){
 					    $("#excel").tips({

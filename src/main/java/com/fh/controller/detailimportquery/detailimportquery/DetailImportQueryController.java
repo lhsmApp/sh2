@@ -82,6 +82,7 @@ public class DetailImportQueryController extends BaseController {
     List<String> QueryFeildList = Arrays.asList("BUSI_DATE", "DEPT_CODE", "USER_GROP", "CUST_COL7");
     //有权限导出表的部门
     List<String> DepartCanExportTable = new ArrayList<String>();
+    List<Dictionaries> ListDicFMISACC = new ArrayList<Dictionaries>();
 
 	/**列表
 	 * @param page
@@ -124,7 +125,8 @@ public class DetailImportQueryController extends BaseController {
 		
 		//"BUSI_DATE", "DEPT_CODE", "USER_CATG", "USER_GROP", "CUST_COL7"
 		//CUST_COL7 FMISACC 帐套字典
-		mv.addObject("FMISACC", DictsUtil.getDictsByParentCode(dictionariesService, "FMISACC"));
+		ListDicFMISACC = DictsUtil.getDictsByParentCode(dictionariesService, "FMISACC");
+		mv.addObject("FMISACC", ListDicFMISACC);
 		// *********************加载单位树  DEPT_CODE*******************************
 		String DepartmentSelectTreeSource=DictsUtil.getDepartmentSelectTreeSource(departmentService);
 		if(DepartmentSelectTreeSource.equals("0"))
@@ -298,6 +300,23 @@ public class DetailImportQueryController extends BaseController {
 				tableCode = "tb_social_inc_detail";
 			} else if (which.equals(TmplType.TB_HOUSE_FUND_DETAIL.getNameKey())) {
 				tableCode = "tb_house_fund_detail";
+			}
+		}
+		return tableCode;
+	}
+	private String getSummyTableCode(String which) {
+		String tableCode = "";
+		if (which != null){
+			if(which.equals(TmplType.TB_STAFF_DETAIL_CONTRACT.getNameKey())
+					||which.equals(TmplType.TB_STAFF_DETAIL_MARKET.getNameKey())
+					||which.equals(TmplType.TB_STAFF_DETAIL_SYS_LABOR.getNameKey())
+					||which.equals(TmplType.TB_STAFF_DETAIL_OPER_LABOR.getNameKey())
+					||which.equals(TmplType.TB_STAFF_DETAIL_LABOR.getNameKey())) {
+				tableCode = "tb_staff_summy";
+			} else if (which.equals(TmplType.TB_SOCIAL_INC_DETAIL.getNameKey())) {
+				tableCode = "tb_social_inc_summy";
+			} else if (which.equals(TmplType.TB_HOUSE_FUND_DETAIL.getNameKey())) {
+				tableCode = "tb_house_fund_summy";
 			}
 		}
 		return tableCode;
@@ -546,6 +565,7 @@ public class DetailImportQueryController extends BaseController {
 		} else {
 			WhereSql += " and DEPT_CODE = '" + Jurisdiction.getCurrentDepartmentID() + "' ";
 		}
+		WhereSql += QueryFeildString.getBillCodeNotInSumInvalidDetail(getSummyTableCode(SelectedTableNo));
 		
 		if(SalaryOrBonus.equals(StaffDataType.Salary.getNameKey())){
 			WhereSql += " and DATA_TYPE = '" + StaffDataType.Salary.getNameKey() + "' ";
@@ -646,10 +666,43 @@ public class DetailImportQueryController extends BaseController {
 			map_SetColumnsList.put("已缴税额", new TmplConfigDetail("已缴税额", "已缴税额", "1"));
 		}
 		map_SetColumnsList.put("备注", new TmplConfigDetail("备注", "备注", "1"));
+
+		String strBillOffName = "";
+		if(ListDicFMISACC != null){
+			for(Dictionaries dic : ListDicFMISACC){
+				if(SelectedCustCol7.equals(dic.getDICT_CODE())){
+					strBillOffName = dic.getNAME();
+				}
+			}
+		}
+		String fileName = SelectedBusiDate + "_" + strBillOffName;
+		if(SelectedDepartCode.equals("ALL")){
+			fileName += "_全部";
+		} else if(SelectedDepartCode.equals("HOME")){
+			fileName += "_公司本部";
+		} else {
+			fileName += "_";
+			String strDeptName = "";
+			List<Department> listDepartDic = departmentService.getDepartDic(getPd);
+			if(listDepartDic!=null){
+                for(Department dicDept : listDepartDic){
+    				if(SelectedDepartCode.equals(dicDept.getDEPARTMENT_CODE())){
+						strDeptName = dicDept.getNAME();
+					}
+                }
+			}
+			fileName += strDeptName;
+		}
+		if(SalaryOrBonus.equals(StaffDataType.Salary.getNameKey())){
+			fileName += "_工资薪酬个税表";
+		}
+        if(SalaryOrBonus.equals(StaffDataType.Bonus.getNameKey())){
+			fileName += "_奖金个税表";
+        }
 		
 		ModelAndView mv = new ModelAndView();
 		Map<String,Object> dataMap = new LinkedHashMap<String,Object>();
-		dataMap.put("filename", "");
+		dataMap.put("filename", new String(fileName.getBytes("gb2312"), "ISO-8859-1"));
 		List<String> titles = new ArrayList<String>();
 		List<PageData> varList = new ArrayList<PageData>();
 		if(map_SetColumnsList != null && map_SetColumnsList.size() > 0){

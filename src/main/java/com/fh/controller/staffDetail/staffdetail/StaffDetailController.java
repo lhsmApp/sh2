@@ -35,6 +35,8 @@ import com.fh.entity.Page;
 import com.fh.entity.PageResult;
 import com.fh.entity.TableColumns;
 import com.fh.entity.TmplConfigDetail;
+import com.fh.entity.system.Department;
+import com.fh.entity.system.Dictionaries;
 import com.fh.entity.system.User;
 import com.fh.exception.CustomException;
 import com.fh.util.ObjectExcelView;
@@ -1473,6 +1475,21 @@ public class StaffDetailController extends BaseController {
 			strReturn = TmplType.TB_STAFF_TRANSFER_LABOR.getNameKey();
 		}
 		return strReturn;
+	}
+	
+	 /**导入提示
+	 * @param
+	 * @throws Exception
+	 */
+	@RequestMapping(value="/showErrorTaxMessage")
+	public ModelAndView showErrorTaxMessage() throws Exception{
+		PageData getPd = this.getPageData();
+		String ErrorTaxMessage = getPd.getString("ErrorTaxMessage");
+		
+		ModelAndView mv = this.getModelAndView();
+		mv.setViewName("common/ErrorTax");
+		mv.addObject("commonMessage", ErrorTaxMessage);
+		return mv;
 	}
 	
 	@InitBinder
