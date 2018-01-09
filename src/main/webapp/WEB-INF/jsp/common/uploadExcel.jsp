@@ -100,21 +100,21 @@
 		            });
 		        } else {
 		        	if($.trim(commonBaseCode) == 3){
-		        	    //top.jzts();
-		        	    //var diag = new top.Dialog();
-		        	    //diag.Drag=true;
-		        	    //diag.Title ="填写的数据不正确，无法导入！";
-		        	    //diag.URL = '<%=basePath%>' + local + '/showErrorTaxMessage.do?ErrorTaxMessage='+commonMessage;
-		        	    //diag.Width = 500;
-		        	    //diag.Height = 350;
-		        	    //diag.CancelEvent = function(){ //关闭事件
-		        	    //    top.jzts();
-		        	    //    $(top.hangge());//关闭加载状态
-		        	    //    diag.close();
-		                //};
-		                //diag.show();
+		        	    top.jzts();
+		        	    var diag = new top.Dialog();
+		        	    diag.Drag=true;
+		        	    diag.Title ="填写的数据不正确，无法导入！";
+		        	    diag.URL = '<%=basePath%>' + local + '/showErrorTaxMessage.do?ErrorTaxMessage='+commonMessage;
+		        	    diag.Width = 500;
+		        	    diag.Height = 350;
+		        	    diag.CancelEvent = function(){ //关闭事件
+		        	        top.jzts();
+		        	        $(top.hangge());//关闭加载状态
+		        	        diag.close();
+		                };
+		                diag.show();
 
-			        	alert(commonMessage);
+			        	//alert(commonMessage);
 		        	} else if($.trim(commonBaseCode) != -1){
 					    $("#excel").tips({
 					    	side:3,

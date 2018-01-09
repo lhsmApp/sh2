@@ -673,7 +673,7 @@ public class LaborDetailController extends BaseController {
 														+ " 导入的纳税额:" + douImpACCRD_TAX
 														+ " 应导入的纳税额:" + douCalACCRD_TAX
 														+ " 导入的实发评审费:" + douImpACT_SALY
-														+ " 应导入的实发评审费:" + douCalACT_SALY + "\\n";
+														+ " 应导入的实发评审费:" + douCalACT_SALY + "<br/>";
 											}
 										}
 										listDistinct.add(pdSetDistinctColumn);

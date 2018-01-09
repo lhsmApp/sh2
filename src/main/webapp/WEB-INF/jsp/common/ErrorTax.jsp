@@ -27,15 +27,15 @@
 						<div class="col-xs-12">
 							<form name="Form" id="Form" method="post" enctype="multipart/form-data">
 								<div id="zhongxin">
-								<table style="width:95%;height:95%" >
+								<table style="width:95%;" >
 									<tr>
-										<td style="padding-top: 20px;">
-											<span id='spanShow' class="pull-left" style="margin-right: 5px;margin-left: 5px;">
-											</span>
+										<td style="padding-top: 20px;text-align: center;">
+										    <textarea id="eduhistory" cols="57" rows="11"></textarea>
+										     <!-- style="width:200px;height:80px;" -->
 										</td>
 									</tr>
-									<tr style="text-align: right;padding-bottom: 20px;">
-										<td style="text-align: right;padding-top: 20px;">
+									<tr>
+										<td style="text-align: right;padding-top: 10px;;padding-right: 40px;">
 											<a class="btn btn-mini btn-danger" onclick="top.Dialog.close();">关闭</a>
 										</td>
 									</tr>
@@ -61,10 +61,11 @@
 	<script type="text/javascript">
 		$(document).ready(function () {
 			$(top.hangge());
-
-		    var commonMessage = "${commonMessage}";
-		    console.log(commonMessage);
-		    $("#spanShow").val(commonMessage);
+			
+			var reg=new RegExp("<br/>","g"); //创建正则RegExp对象    
+            var commonMessage = "${commonMessage}".replace(reg,'\r\n');
+            console.log(commonMessage);
+		    $("#eduhistory").html(commonMessage);
 		})
 	</script>
 </body>

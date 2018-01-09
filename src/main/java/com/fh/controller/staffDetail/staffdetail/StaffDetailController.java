@@ -1034,7 +1034,7 @@ public class StaffDetailController extends BaseController {
 															+ " 员工姓名:" + pdSet.getString("USER_NAME")
 															//+ " 应纳税额:" + pdSetUSER_CODE 
 															+ " 导入的纳税额:" + douImpTax 
-															+ " 应导入的纳税额:" + douCalTax + "\\n";
+															+ " 应导入的纳税额:" + douCalTax + "<br/>";
 												}
 											}
 											listUserCode.add(pdSetUSER_CODE);
