@@ -304,7 +304,7 @@ public class DetailImportQueryController extends BaseController {
 		}
 		return tableCode;
 	}
-	private String getSummyTableCode(String which) {
+	private String getSummyBillTableCode(String which) {
 		String tableCode = "";
 		if (which != null){
 			if(which.equals(TmplType.TB_STAFF_DETAIL_CONTRACT.getNameKey())
@@ -312,11 +312,11 @@ public class DetailImportQueryController extends BaseController {
 					||which.equals(TmplType.TB_STAFF_DETAIL_SYS_LABOR.getNameKey())
 					||which.equals(TmplType.TB_STAFF_DETAIL_OPER_LABOR.getNameKey())
 					||which.equals(TmplType.TB_STAFF_DETAIL_LABOR.getNameKey())) {
-				tableCode = "tb_staff_summy";
+				tableCode = "tb_staff_summy_bill";
 			} else if (which.equals(TmplType.TB_SOCIAL_INC_DETAIL.getNameKey())) {
-				tableCode = "tb_social_inc_summy";
+				tableCode = "tb_social_inc_summy_bill";
 			} else if (which.equals(TmplType.TB_HOUSE_FUND_DETAIL.getNameKey())) {
-				tableCode = "tb_house_fund_summy";
+				tableCode = "tb_house_fund_summy_bill";
 			}
 		}
 		return tableCode;
@@ -460,11 +460,11 @@ public class DetailImportQueryController extends BaseController {
 		//工资或奖金枚举编码
 		String SalaryOrBonus = getPd.getString("SalaryOrBonus");
 		
-		if(!(SelectedBusiDate!=null && !SelectedBusiDate.trim().equals("") && SystemDateTime!=null
-				&& SelectedBusiDate.length() == SystemDateTime.length())){
-			commonBase.setCode(2);
-			commonBase.setMessage("查询条件中的当前区间位数不正确！");
-		} 
+		//if(!(SelectedBusiDate!=null && !SelectedBusiDate.trim().equals("") && SystemDateTime!=null
+		//		&& SelectedBusiDate.length() == SystemDateTime.length())){
+		//	commonBase.setCode(2);
+		//	commonBase.setMessage("查询条件中的当前区间位数不正确！");
+		//} 
 
 		List<Dictionaries> dicList = new ArrayList<Dictionaries>();
 		String DepartTreeSource = "";
@@ -565,11 +565,11 @@ public class DetailImportQueryController extends BaseController {
 		} else {
 			WhereSql += " and DEPT_CODE = '" + Jurisdiction.getCurrentDepartmentID() + "' ";
 		}
-		WhereSql += QueryFeildString.getBillCodeNotInSumInvalidDetail(getSummyTableCode(SelectedTableNo));
+		WhereSql += QueryFeildString.getBillCodeNotInSumInvalidDetail(getSummyBillTableCode(SelectedTableNo));
 		
 		if(SalaryOrBonus.equals(StaffDataType.Salary.getNameKey())){
 			WhereSql += " and DATA_TYPE = '" + StaffDataType.Salary.getNameKey() + "' ";
-			String SelectGroupFeild = " USER_CODE, DEPT_CODE, "
+			String SelectGroupFeild = " USER_CODE, DEPT_CODE, USER_GROP, "
 					+ " sum(GROSS_PAY) GROSS_PAY, "
 					+ " sum(ENDW_INS) ENDW_INS, "
 					+ " sum(MED_INS - CASD_INS) MED_INS, "
@@ -578,45 +578,45 @@ public class DetailImportQueryController extends BaseController {
 					+ " sum(KID_ALLE) KID_ALLE, "
 					+ " sum(SUP_PESN) SUP_PESN ";
 			getPd.put("SelectGroupFeild", SelectGroupFeild);
-			getPd.put("SelectAddFeild", " IFNULL(a.USER_NAME, ' ') USER_NAME, IFNULL(a.STAFF_IDENT, ' ') STAFF_IDENT ");
-			getPd.put("GroupByFeild", " USER_CODE, DEPT_CODE ");
-			getPd.put("WhereSql", WhereSql);
-			getPd.put("TableName", TableName);
-			getPd.put("LeftJoin", " left join " + TableName + " a on a.USER_CODE = t.USER_CODE and a.DEPT_CODE = t.DEPT_CODE ");
-			page.setPd(getPd);
-			List<PageData> varOListvarOList = detailimportqueryService.exportSumSalaryList(page);
-			if(varOListvarOList!=null && varOListvarOList.size()>0){
-				List<Dictionaries> listUserCode_DeptCode = new ArrayList<Dictionaries>();
-				for(PageData each : varOListvarOList){
-					String UserCode = each.getString("USER_CODE");
-					String DeptCode = each.getString("DEPT_CODE");
-					Boolean bolHave = false;
-					if(listUserCode_DeptCode==null) listUserCode_DeptCode = new ArrayList<Dictionaries>();
-					for(Dictionaries eachHave : listUserCode_DeptCode){
-						if(eachHave.getDICT_CODE().equals(UserCode) && eachHave.getNAME().equals(DeptCode)){
-							bolHave = true;
-						}
-					}
-					if(!bolHave){
-						varOList.add(each);
-						Dictionaries addHave = new Dictionaries();
-						addHave.setDICT_CODE(UserCode);
-						addHave.setNAME(DeptCode);
-						listUserCode_DeptCode.add(addHave);
-					}
-				}
-			}
 		}
         if(SalaryOrBonus.equals(StaffDataType.Bonus.getNameKey())){
 			WhereSql += " and DATA_TYPE = '" + StaffDataType.Bonus.getNameKey() + "' ";
-			String SelectFeild = " USER_CODE, USER_NAME, STAFF_IDENT, DEPT_CODE, "
+			String SelectGroupFeild = " USER_CODE, DEPT_CODE, USER_GROP, "
 					+ " sum(CUST_COL14) CUST_COL14 ";
-			getPd.put("SelectFeild", SelectFeild);
-			getPd.put("WhereSql", WhereSql);
-			getPd.put("TableName", TableName);
-			page.setPd(getPd);
-			varOList = detailimportqueryService.exportSumBonusList(page);
+			getPd.put("SelectGroupFeild", SelectGroupFeild);
         }
+		getPd.put("SelectAddFeild", " IFNULL(a.USER_NAME, ' ') USER_NAME, IFNULL(a.STAFF_IDENT, ' ') STAFF_IDENT ");
+		getPd.put("GroupByFeild", " USER_CODE, DEPT_CODE, USER_GROP ");
+		getPd.put("WhereSql", WhereSql);
+		getPd.put("TableName", TableName);
+		getPd.put("LeftJoin", " left join " + TableName + " a on a.USER_CODE = t.USER_CODE and a.DEPT_CODE = t.DEPT_CODE and a.USER_GROP = t.USER_GROP ");
+        page.setPd(getPd);
+		List<PageData> varOListvarOList = detailimportqueryService.exportSumList(page);
+		if(varOListvarOList!=null && varOListvarOList.size()>0){
+			List<Dictionaries> listUserCode_DeptCode_UserGrop = new ArrayList<Dictionaries>();
+			for(PageData each : varOListvarOList){
+				String UserCode = each.getString("USER_CODE");
+				String DeptCode = each.getString("DEPT_CODE");
+				String UserGrop = each.getString("USER_GROP");
+				Boolean bolHave = false;
+				if(listUserCode_DeptCode_UserGrop==null) listUserCode_DeptCode_UserGrop = new ArrayList<Dictionaries>();
+				for(Dictionaries eachHave : listUserCode_DeptCode_UserGrop){
+					if(eachHave.getDICT_CODE().equals(UserCode) 
+							&& eachHave.getNAME().equals(DeptCode)
+							&& eachHave.getNAME_EN().equals(UserGrop)){
+						bolHave = true;
+					}
+				}
+				if(!bolHave){
+					varOList.add(each);
+					Dictionaries addHave = new Dictionaries();
+					addHave.setDICT_CODE(UserCode);
+					addHave.setNAME(DeptCode);
+					addHave.setNAME_EN(UserGrop);
+					listUserCode_DeptCode_UserGrop.add(addHave);
+				}
+			}
+		}
 		if(varOList!=null && varOList.size()>0){
 			for(PageData each : varOList){
 				each.put("CERT_TYPE", "居民身份证");

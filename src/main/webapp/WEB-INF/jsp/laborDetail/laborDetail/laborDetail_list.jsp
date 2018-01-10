@@ -147,8 +147,6 @@
         var gridBase_selector = "#jqGridBase";  
         var pagerBase_selector = "#jqGridBasePager";  
 
-        //有权限导出表的部门
-        var bolCanExportTable;
 	    //页面显示的数据的责任中心和账套信息，在tosearch()里赋值
 	    var ShowDataDepartCode = "";
 	    var ShowDataCustCol7 = "";
@@ -360,7 +358,7 @@
 			            buttonicon : "ace-icon fa fa-cloud-download",
 			            onClickButton : exportItems,
 			            position : "last",
-			            title : "劳务报酬所得导出",
+			            title : "导出",
 			            cursor : "pointer"
 			         });
         }
@@ -373,8 +371,6 @@
 			//当前登录人所在二级单位
 		    var DepartName = '${DepartName}';
 		    $("#showDur").text('当前期间：' + SystemDateTime + ' 登录人责任中心：' + DepartName);
-	        //有权限导出表的部门
-	        bolCanExportTable = ${pd.CanExportTable};
 		    
 		    SetStructure();
 	    });
@@ -703,37 +699,11 @@
          * 导出
          */
         function exportItems(){
-	    	//有权限导出表的部门
-	    	if(bolCanExportTable){
-		     	top.jzts();
-		    	var diag = new top.Dialog();
-		    	diag.Drag=true;
-		    	diag.Title ="导出劳务报酬所得";
-		    	diag.URL = '<%=basePath%>laborDetail/goDownExcel.do?'
-		            + 'SelectedDepartCode='+$("#SelectedDepartCode").val()
-		            + '&SelectedCustCol7='+$("#SelectedCustCol7").val();
-		    	diag.Width = 300;
-		    	diag.Height = 170;
-		    	diag.CancelEvent = function(){ //关闭事件
-		    		top.jzts();
-		    		$(top.hangge());//关闭加载状态
-		    	    diag.close();
-		        };
-		        diag.show();
-	    	} else {
-				$(top.hangge());//关闭加载状态
-				$("#subTitle").tips({
-					side:3,
-		            msg:'无此功能权限！',
-		            bg:'#cc0033',
-		            time:3
-		        });
-	    	}
-            //window.location.href='<%=basePath%>laborDetail/excel.do?'
-			//	+ 'SelectedDepartCode='+$("#SelectedDepartCode").val()
-	        //    + '&SelectedCustCol7='+$("#SelectedCustCol7").val()
-            //    + '&ShowDataDepartCode='+ShowDataDepartCode
-            //    + '&ShowDataCustCol7='+ShowDataCustCol7;
+            window.location.href='<%=basePath%>laborDetail/excel.do?'
+				+ 'SelectedDepartCode='+$("#SelectedDepartCode").val()
+	            + '&SelectedCustCol7='+$("#SelectedCustCol7").val()
+                + '&ShowDataDepartCode='+ShowDataDepartCode
+                + '&ShowDataCustCol7='+ShowDataCustCol7;
         }
 
         /**

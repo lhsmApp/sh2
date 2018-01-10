@@ -346,9 +346,9 @@ public class LeadingInExcelToPageData<T> {
                     	value = bolValue.toString();
                         break;  
                     case Cell.CELL_TYPE_NUMERIC:  
-                    	if(COL_CODE.equals("BILL_CODE")){
-                        	value = cellValue.getStringValue();
-                        	BigDecimal db = new BigDecimal(value);
+                    	if(COL_CODE.equals("USER_CODE")){
+                        	Number numValue = cellValue.getNumberValue();  
+                        	BigDecimal db = new BigDecimal(numValue.toString());
                         	value = db.toPlainString();
                     	} else {
                         	Number numValue = cellValue.getNumberValue();  

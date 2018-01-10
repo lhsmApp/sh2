@@ -74,7 +74,7 @@
 			order by ${sidx} ${sord} 
     	</if>
 	</select>
-	<select id="exportSumSalaryList" parameterType="jqPage" resultType="pd">
+	<select id="exportSumList" parameterType="jqPage" resultType="pd">
 		SELECT t.*, ${pd.SelectAddFeild} 
         FROM (select ${pd.SelectGroupFeild} 
 		      from ${pd.TableName}
@@ -84,13 +84,5 @@
 		      group by ${pd.GroupByFeild} 
 		      order by USER_CODE) t
 		${pd.LeftJoin}
-	</select>
-	<select id="exportSumBonusList" parameterType="jqPage" resultType="pd">
-	    select ${pd.SelectFeild} 
-		from ${pd.TableName}
-		<where>
-		    ${pd.WhereSql} 
-		</where>
-		order by USER_CODE
 	</select>
 </mapper>

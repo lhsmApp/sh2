@@ -112,9 +112,7 @@
 		                time:3
 		            });
 		        } else {
-		        	if($.trim(commonBaseCode) == 3){
-			        	alert(commonMessage);
-		        	} else if($.trim(commonBaseCode) != -1){
+		        	if($.trim(commonBaseCode) != -1){
 					    $("#SelectedCustCol7").tips({
 					    	side:3,
 			                msg:commonMessage,
@@ -130,16 +128,16 @@
 		function downModel(basePath){
 			var SelectedCustCol7 = $("#SelectedCustCol7").val();
 			var SelectedDepartCode = $("#SelectedDepartCode").val();
-			if(!(SelectedBusiDate!=null && $.trim(SelectedBusiDate)!="" && SystemDateTime!=null
-					&& SelectedBusiDate.length == SystemDateTime.length)){
-	            $("#SelectedCustCol7").tips({
-	                side:3,
-	                msg:'查询条件中的当前区间位数不正确！',
-	                bg:'#AE81FF',
-	                time:3
-	            });
-	            return;
-			}
+			//if(!(SelectedBusiDate!=null && $.trim(SelectedBusiDate)!="" && SystemDateTime!=null
+			//		&& SelectedBusiDate.length == SystemDateTime.length)){
+	        //    $("#SelectedCustCol7").tips({
+	        //        side:3,
+	        //        msg:'查询条件中的当前区间位数不正确！',
+	        //        bg:'#AE81FF',
+	        //        time:3
+	        //    });
+	        //    return;
+			//}
 			if(!(SelectedCustCol7!=null && $.trim(SelectedCustCol7)!="")){
 	            $("#SelectedCustCol7").tips({
 	                side:3,
