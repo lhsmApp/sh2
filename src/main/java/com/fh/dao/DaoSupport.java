@@ -260,21 +260,30 @@ public class DaoSupport implements DAO {
 							PageData getSum = sqlSession.selectOne("DataCalculation.getSumByUserCode",  getSumByUserCode);
 							//所有记录计算的税额
 							double sumNumCheck = Double.valueOf(getSum.get(TableFeildSum).toString());
-							double sumNum = 0;
+							double douTAX_RATE = 0;
+							double douQUICK_DEDUCTION = 0;
 							if(listStaffTax!=null){
 								for(int i=0; i<listStaffTax.size(); i++){
 									StaffTax eachTax = listStaffTax.get(i);
 									if(sumNumCheck/12 >= eachTax.getMIN_VALUE()){
 										if(i == listStaffTax.size() -1){
-											sumNum = sumNumCheck * (eachTax.getTAX_RATE() * 0.01) - eachTax.getQUICK_DEDUCTION();
+											douTAX_RATE = eachTax.getTAX_RATE();
+											douQUICK_DEDUCTION = eachTax.getQUICK_DEDUCTION();
 										} else {
 											if(sumNumCheck/12 <= eachTax.getMAX_VALUE()){
-												sumNum = sumNumCheck * (eachTax.getTAX_RATE() * 0.01) - eachTax.getQUICK_DEDUCTION();
+												douTAX_RATE = eachTax.getTAX_RATE();
+												douQUICK_DEDUCTION = eachTax.getQUICK_DEDUCTION();
 											}
 										}
 									}
 								}
 							}
+							PageData getTaxFormula = new PageData();
+							getTaxFormula.put("taxFormula", (sumNumCheck * douTAX_RATE * 0.01 - douQUICK_DEDUCTION) + " TaxFormulaValue ");
+							getTaxFormula.put("tableName", tableNameBackup);
+							List<PageData> getListTaxFormula = sqlSession.selectList("DataCalculation.getTaxFormula",  getTaxFormula);
+							double sumNum = Double.valueOf(getListTaxFormula.get(0).get("TaxFormulaValue").toString());
+							
 							//所有记录汇总的税额
 							double sumTax = Double.valueOf(getSum.get(TableFeildTax).toString());
 							douTableFeildTax = sumNum - sumTax + addTax;
@@ -338,21 +347,30 @@ public class DaoSupport implements DAO {
 							getSumByUserCode.put("USER_CODE", USER_CODE);
 							PageData getSum = sqlSession.selectOne("DataCalculation.getSumByUserCode",  getSumByUserCode);
 							double sumNumCheck = Double.valueOf(getSum.get(TableFeildSum).toString());
-							double sumNum = 0;
+							double douTAX_RATE = 0;
+							double douQUICK_DEDUCTION = 0;
 							if(listStaffTax!=null){
 								for(int i=0; i<listStaffTax.size(); i++){
 									StaffTax eachTax = listStaffTax.get(i);
 									if(sumNumCheck >= eachTax.getMIN_VALUE()){
 										if(i == listStaffTax.size() -1){
-											sumNum = sumNumCheck * (eachTax.getTAX_RATE() * 0.01) - eachTax.getQUICK_DEDUCTION();
+											douTAX_RATE = eachTax.getTAX_RATE();
+											douQUICK_DEDUCTION = eachTax.getQUICK_DEDUCTION();
 										} else {
 											if(sumNumCheck <= eachTax.getMAX_VALUE()){
-												sumNum = sumNumCheck * (eachTax.getTAX_RATE() * 0.01) - eachTax.getQUICK_DEDUCTION();
+												douTAX_RATE = eachTax.getTAX_RATE();
+												douQUICK_DEDUCTION = eachTax.getQUICK_DEDUCTION();
 											}
 										}
 									}
 								}
 							}
+							PageData getTaxFormula = new PageData();
+							getTaxFormula.put("taxFormula", (sumNumCheck * douTAX_RATE * 0.01 - douQUICK_DEDUCTION) + " TaxFormulaValue ");
+							getTaxFormula.put("tableName", tableNameBackup);
+							List<PageData> getListTaxFormula = sqlSession.selectList("DataCalculation.getTaxFormula",  getTaxFormula);
+							double sumNum = Double.valueOf(getListTaxFormula.get(0).get("TaxFormulaValue").toString());
+							
 							double sumTax = Double.valueOf(getSum.get(TableFeildTax).toString());
 							douTableFeildTax = sumNum - sumTax + addTax;
 							eachAdd.put(TableFeildTax, DecimalUtil.InterceptTwoDecimalDigits(douTableFeildTax));

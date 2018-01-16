@@ -36,7 +36,7 @@ public class DecimalUtil {
                     	Integer substring2 = Integer.valueOf(strtax[1].substring(2, 3));
                     	Integer substring01 = Integer.valueOf(strtax[1].substring(0, 2));
                     	Integer dd = substring2 >= 5 ? (substring01 + 1) : substring01;
-                    	String str = strtax[0] + "." + dd.toString();
+                    	String str = strtax[0] + "." + (dd >= 10 ? dd.toString() : ('0' + dd.toString()));
                     	ret = Double.valueOf(str);
                     }
                 } else {
