@@ -421,6 +421,8 @@ public class Common {
 	    	int intHide = 0;
 	    	if(configDetail != null){
 				intHide = Integer.parseInt(configDetail.getCOL_HIDE());
+	    	} else {
+	    		intHide = 1;//显示
 	    	}
 	    	if(IsNumFeildButMustInput!=null && IsNumFeildButMustInput.contains(column_name)){
 	    		intHide = 1;//显示
