@@ -1,6 +1,5 @@
 package com.fh.dao;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,6 +13,7 @@ import org.springframework.stereotype.Repository;
 
 import com.fh.entity.LaborTax;
 import com.fh.entity.StaffTax;
+import com.fh.util.DecimalUtil;
 import com.fh.util.PageData;
 /**
  *  
@@ -247,40 +247,40 @@ public class DaoSupport implements DAO {
 					List<String> userCodeList = new ArrayList<String>();
 					for(PageData eachAdd : retListBonus){
 						String USER_CODE = eachAdd.getString("USER_CODE");
-						eachAdd.put("YSZE", new BigDecimal(0));
-						eachAdd.put("YDRZE", new BigDecimal(0));
+						eachAdd.put("YSZE", 0);
+						eachAdd.put("YDRZE", 0);
 						//本条记录自己的税额
-						BigDecimal addTax = (BigDecimal) eachAdd.get(TableFeildTax + TmplUtil_KeyExtra);
+						double addTax = Double.valueOf(eachAdd.get(TableFeildTax + TmplUtil_KeyExtra).toString());
 						if(!userCodeList.contains(USER_CODE)){
 							userCodeList.add(USER_CODE);
-							BigDecimal douTableFeildTax = new BigDecimal(0);
+							double douTableFeildTax = 0;
 							PageData getSumByUserCode = new PageData();
 							getSumByUserCode.put("sqlSumByUserCode", sqlSumByUserCodeBonus);
 							getSumByUserCode.put("USER_CODE", USER_CODE);
 							PageData getSum = sqlSession.selectOne("DataCalculation.getSumByUserCode",  getSumByUserCode);
 							//所有记录计算的税额
-							BigDecimal sumNumCheck = (BigDecimal) getSum.get(TableFeildSum);
-							BigDecimal sumNum = new BigDecimal(0);
+							double sumNumCheck = Double.valueOf(getSum.get(TableFeildSum).toString());
+							double sumNum = 0;
 							if(listStaffTax!=null){
 								for(int i=0; i<listStaffTax.size(); i++){
 									StaffTax eachTax = listStaffTax.get(i);
-									if(sumNumCheck.doubleValue()/12 >= eachTax.getMIN_VALUE()){
+									if(sumNumCheck/12 >= eachTax.getMIN_VALUE()){
 										if(i == listStaffTax.size() -1){
-											sumNum = sumNumCheck.multiply(new BigDecimal(eachTax.getTAX_RATE() * 0.01)).subtract(new BigDecimal(eachTax.getQUICK_DEDUCTION()));
+											sumNum = sumNumCheck * (eachTax.getTAX_RATE() * 0.01) - eachTax.getQUICK_DEDUCTION();
 										} else {
-											if(sumNumCheck.doubleValue()/12 <= eachTax.getMAX_VALUE()){
-												sumNum = sumNumCheck.multiply(new BigDecimal(eachTax.getTAX_RATE() * 0.01)).subtract(new BigDecimal(eachTax.getQUICK_DEDUCTION()));
+											if(sumNumCheck/12 <= eachTax.getMAX_VALUE()){
+												sumNum = sumNumCheck * (eachTax.getTAX_RATE() * 0.01) - eachTax.getQUICK_DEDUCTION();
 											}
 										}
 									}
 								}
 							}
 							//所有记录汇总的税额
-							BigDecimal sumTax = (BigDecimal) getSum.get(TableFeildTax);
-							douTableFeildTax = sumNum.subtract(sumTax).add(addTax);
-							eachAdd.put(TableFeildTax, douTableFeildTax.setScale(2, BigDecimal.ROUND_HALF_UP));
-							eachAdd.put("YSZE", sumNum.setScale(2, BigDecimal.ROUND_HALF_UP));
-							eachAdd.put("YDRZE", sumTax.setScale(2, BigDecimal.ROUND_HALF_UP));
+							double sumTax = Double.valueOf(getSum.get(TableFeildTax).toString());
+							douTableFeildTax = sumNum - sumTax + addTax;
+							eachAdd.put(TableFeildTax, DecimalUtil.InterceptTwoDecimalDigits(douTableFeildTax));
+							eachAdd.put("YSZE", DecimalUtil.InterceptTwoDecimalDigits(sumNum));
+							eachAdd.put("YDRZE", DecimalUtil.InterceptTwoDecimalDigits(sumTax));
 						}
 						returnList.add(eachAdd);
 					}
@@ -327,37 +327,37 @@ public class DaoSupport implements DAO {
 					List<String> userCodeList = new ArrayList<String>();
 					for(PageData eachAdd : retListSalary){
 						String USER_CODE = eachAdd.getString("USER_CODE");
-						eachAdd.put("YSZE", new BigDecimal(0));
-						eachAdd.put("YDRZE", new BigDecimal(0));
-						BigDecimal addTax = (BigDecimal) eachAdd.get(TableFeildTax + TmplUtil_KeyExtra);
+						eachAdd.put("YSZE", 0);
+						eachAdd.put("YDRZE", 0);
+						double addTax = Double.valueOf(eachAdd.get(TableFeildTax + TmplUtil_KeyExtra).toString());
 						if(!userCodeList.contains(USER_CODE)){
 							userCodeList.add(USER_CODE);
-							BigDecimal douTableFeildTax = new BigDecimal(0);
+							double douTableFeildTax = 0;
 							PageData getSumByUserCode = new PageData();
 							getSumByUserCode.put("sqlSumByUserCode", sqlSumByUserCodeSalary);
 							getSumByUserCode.put("USER_CODE", USER_CODE);
 							PageData getSum = sqlSession.selectOne("DataCalculation.getSumByUserCode",  getSumByUserCode);
-							BigDecimal sumNumCheck = (BigDecimal) getSum.get(TableFeildSum);
-							BigDecimal sumNum = new BigDecimal(0);
+							double sumNumCheck = Double.valueOf(getSum.get(TableFeildSum).toString());
+							double sumNum = 0;
 							if(listStaffTax!=null){
 								for(int i=0; i<listStaffTax.size(); i++){
 									StaffTax eachTax = listStaffTax.get(i);
-									if(sumNumCheck.doubleValue() >= eachTax.getMIN_VALUE()){
+									if(sumNumCheck >= eachTax.getMIN_VALUE()){
 										if(i == listStaffTax.size() -1){
-											sumNum = sumNumCheck.multiply(new BigDecimal(eachTax.getTAX_RATE() * 0.01)).subtract(new BigDecimal(eachTax.getQUICK_DEDUCTION()));
+											sumNum = sumNumCheck * (eachTax.getTAX_RATE() * 0.01) - eachTax.getQUICK_DEDUCTION();
 										} else {
-											if(sumNumCheck.doubleValue() <= eachTax.getMAX_VALUE()){
-												sumNum = sumNumCheck.multiply(new BigDecimal(eachTax.getTAX_RATE() * 0.01)).subtract(new BigDecimal(eachTax.getQUICK_DEDUCTION()));
+											if(sumNumCheck <= eachTax.getMAX_VALUE()){
+												sumNum = sumNumCheck * (eachTax.getTAX_RATE() * 0.01) - eachTax.getQUICK_DEDUCTION();
 											}
 										}
 									}
 								}
 							}
-							BigDecimal sumTax = (BigDecimal) getSum.get(TableFeildTax);
-							douTableFeildTax = sumNum.subtract(sumTax).add(addTax);
-							eachAdd.put(TableFeildTax, douTableFeildTax.setScale(2, BigDecimal.ROUND_HALF_UP));
-							eachAdd.put("YSZE", sumNum.setScale(2, BigDecimal.ROUND_HALF_UP));
-							eachAdd.put("YDRZE", sumTax.setScale(2, BigDecimal.ROUND_HALF_UP));
+							double sumTax = Double.valueOf(getSum.get(TableFeildTax).toString());
+							douTableFeildTax = sumNum - sumTax + addTax;
+							eachAdd.put(TableFeildTax, DecimalUtil.InterceptTwoDecimalDigits(douTableFeildTax));
+							eachAdd.put("YSZE", DecimalUtil.InterceptTwoDecimalDigits(sumNum));
+							eachAdd.put("YDRZE", DecimalUtil.InterceptTwoDecimalDigits(sumTax));
 						}
 						returnList.add(eachAdd);
 					}
@@ -429,8 +429,8 @@ public class DaoSupport implements DAO {
 						//String USER_CODE = eachAdd.getString("USER_CODE");
 						String USER_NAME = eachAdd.getString("USER_NAME");
 						String STAFF_IDENT = eachAdd.getString("STAFF_IDENT");
-						eachAdd.put("YSZE", new BigDecimal(0));
-						eachAdd.put("YDRZE", new BigDecimal(0));
+						eachAdd.put("YSZE", 0);
+						eachAdd.put("YDRZE", 0);
 
 					    String pdSetDistinctColumn = eachAdd.getString("DistinctColumn");
 						if(!(pdSetDistinctColumn!=null && !pdSetDistinctColumn.trim().equals(""))){
@@ -443,15 +443,15 @@ public class DaoSupport implements DAO {
 								}
 							}
 						} else {
-							BigDecimal decGROSS_PAY = (BigDecimal) eachAdd.get("GROSS_PAY");
-							BigDecimal decACCRD_TAX = (BigDecimal) eachAdd.get("ACCRD_TAX");
-							eachAdd.put("ACT_SALY", decGROSS_PAY.subtract(decACCRD_TAX));
+							double decGROSS_PAY = Double.valueOf(eachAdd.get("GROSS_PAY").toString());
+							double decACCRD_TAX = Double.valueOf(eachAdd.get("ACCRD_TAX").toString());
+							eachAdd.put("ACT_SALY", DecimalUtil.InterceptTwoDecimalDigits(decGROSS_PAY - decACCRD_TAX));
 							continue;
 						}
 						
-						BigDecimal addTax = (BigDecimal) eachAdd.get("ACCRD_TAX");
+						double addTax = Double.valueOf(eachAdd.get("ACCRD_TAX").toString());
 
-						BigDecimal douTableFeildTax = new BigDecimal(0);
+						double douTableFeildTax = 0;
 						PageData getSumGroupBy = new PageData();
 						//getSumGroupBy.put("sqlSumByUserCode", sqlSumByUserCode);
 						getSumGroupBy.put("sqlSumByUserNameStaffIdent", sqlSumByUserNameStaffIdent);
@@ -461,40 +461,40 @@ public class DaoSupport implements DAO {
 						//PageData getSum = sqlSession.selectOne("DataCalculation.getSumByUserCode",  getSumGroupBy);
 						PageData getSum = sqlSession.selectOne("DataCalculation.getSumByUserNameStaffIdent",  getSumGroupBy);
 						//所有记录计算的税额
-						BigDecimal sumNumCheck = (BigDecimal) getSum.get("GROSS_PAY");
+						double sumNumCheck = Double.valueOf(getSum.get("GROSS_PAY").toString());
 						String strTAX_FORMULA = "";
 						if(listLaborTax!=null){
 							for(int i_listLaborTax=0; i_listLaborTax<listLaborTax.size(); i_listLaborTax++){
 								LaborTax eachTax = listLaborTax.get(i_listLaborTax);
-								if(sumNumCheck.doubleValue() >= eachTax.getMIN_VALUE()){
+								if(sumNumCheck >= eachTax.getMIN_VALUE()){
 									if(i_listLaborTax == listLaborTax.size() -1){
 										strTAX_FORMULA = eachTax.getTAX_FORMULA();
 									} else {
-										if(sumNumCheck.doubleValue() <= eachTax.getMAX_VALUE()){
+										if(sumNumCheck <= eachTax.getMAX_VALUE()){
 											strTAX_FORMULA = eachTax.getTAX_FORMULA();
 										}
 									}
 								}
 							}
 						}
-						BigDecimal sumNum = new BigDecimal(0);
+						double sumNum = 0;
 						if(strTAX_FORMULA!=null && !strTAX_FORMULA.trim().equals("")){
 							PageData getTaxFormula = new PageData();
-							getTaxFormula.put("taxFormula", strTAX_FORMULA.replace("累计应发评审费", sumNumCheck.toString()) + " TaxFormulaValue ");
+							getTaxFormula.put("taxFormula", strTAX_FORMULA.replace("累计应发评审费", String.valueOf(sumNumCheck)) + " TaxFormulaValue ");
 							getTaxFormula.put("tableName", tableNameBackup);
 							List<PageData> getListTaxFormula = sqlSession.selectList("DataCalculation.getTaxFormula",  getTaxFormula);
-							sumNum = new BigDecimal(getListTaxFormula.get(0).get("TaxFormulaValue").toString());
+							sumNum = Double.valueOf(getListTaxFormula.get(0).get("TaxFormulaValue").toString());
 						}
 						//所有记录汇总的税额
-						BigDecimal sumTax = (BigDecimal) getSum.get("ACCRD_TAX");
-						douTableFeildTax = sumNum.subtract(sumTax).add(addTax);
-						eachAdd.put("ACCRD_TAX", douTableFeildTax.setScale(2, BigDecimal.ROUND_HALF_UP));
+						double sumTax = Double.valueOf(getSum.get("ACCRD_TAX").toString());
+						douTableFeildTax = sumNum - sumTax + addTax;
+						eachAdd.put("ACCRD_TAX", DecimalUtil.InterceptTwoDecimalDigits(douTableFeildTax));
 
-						BigDecimal decGROSS_PAY = (BigDecimal) eachAdd.get("GROSS_PAY");
-						BigDecimal decACCRD_TAX = (BigDecimal) eachAdd.get("ACCRD_TAX");
-						eachAdd.put("ACT_SALY", decGROSS_PAY.subtract(decACCRD_TAX));
-						eachAdd.put("YSZE", sumNum.setScale(2, BigDecimal.ROUND_HALF_UP));
-						eachAdd.put("YDRZE", sumTax.setScale(2, BigDecimal.ROUND_HALF_UP));
+						double decGROSS_PAY = Double.valueOf(eachAdd.get("GROSS_PAY").toString());
+						double decACCRD_TAX = Double.valueOf(eachAdd.get("ACCRD_TAX").toString());
+						eachAdd.put("ACT_SALY", DecimalUtil.InterceptTwoDecimalDigits(decGROSS_PAY - decACCRD_TAX));
+						eachAdd.put("YSZE", DecimalUtil.InterceptTwoDecimalDigits(sumNum));
+						eachAdd.put("YDRZE", DecimalUtil.InterceptTwoDecimalDigits(sumTax));
 					}
 				}
 			}

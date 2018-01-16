@@ -1,6 +1,5 @@
 package com.fh.controller.staffDetail.staffdetail;
 
-import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -1011,19 +1010,19 @@ public class StaffDetailController extends BaseController {
 												listAdd, strHelpful);
 										for(PageData pdSet : getCommonBaseAndList.getList()){
 											String pdSetUSER_CODE = pdSet.getString("USER_CODE");
-											BigDecimal douCalTax = new BigDecimal(0);
-											BigDecimal douImpTax = new BigDecimal(0);
-											BigDecimal douYDRZE = new BigDecimal(0);
-											BigDecimal douYSZE = new BigDecimal(0);
+											double douCalTax = 0;
+											double douImpTax = 0;
+											double douYDRZE = 0;
+											double douYSZE = 0;
 											for(PageData pdsum : getCommonBaseAndList.getList()){
 												String pdsumUSER_CODE = pdsum.getString("USER_CODE");
 												if(pdSetUSER_CODE!=null && pdSetUSER_CODE.equals(pdsumUSER_CODE)){
-													douCalTax = douCalTax.add((BigDecimal) pdsum.get(TableFeildTaxCanNotHaveFormula));
-													douImpTax = douImpTax.add((BigDecimal) pdsum.get(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra));
+													douCalTax = douCalTax + Double.valueOf(pdsum.get(TableFeildTaxCanNotHaveFormula).toString());
+													douImpTax = douImpTax + Double.valueOf(pdsum.get(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra).toString());
 
-													douYDRZE = douYDRZE.add((BigDecimal) pdsum.get("YDRZE"));
+													douYDRZE = douYDRZE + Double.valueOf(pdsum.get("YDRZE").toString());
 													
-													douYSZE = douYSZE.add((BigDecimal) pdsum.get("YSZE"));
+													douYSZE = douYSZE + Double.valueOf(pdsum.get("YSZE").toString());
 												}
 											}
 											pdSet.put(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra + TmplUtil.keyExtra, douCalTax);
@@ -1035,15 +1034,15 @@ public class StaffDetailController extends BaseController {
 										for(PageData pdSet : getCommonBaseAndList.getList()){
 											String pdSetUSER_CODE = pdSet.getString("USER_CODE");
 											if(!listUserCode.contains(pdSetUSER_CODE)){
-												BigDecimal douCalTax = (BigDecimal) pdSet.get(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra + TmplUtil.keyExtra);
-												BigDecimal douImpTax = (BigDecimal) pdSet.get(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra + TmplUtil.keyExtra + TmplUtil.keyExtra);
-												BigDecimal douYSZE = (BigDecimal) pdSet.get("YSZE" + TmplUtil.keyExtra);
-												BigDecimal douYDRZE = (BigDecimal) pdSet.get("YDRZE" + TmplUtil.keyExtra);
-												if(!(douCalTax!=null && douCalTax.compareTo(douImpTax)==0)){
+												double douCalTax = Double.valueOf(pdSet.get(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra + TmplUtil.keyExtra).toString());
+												double douImpTax = Double.valueOf(pdSet.get(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra + TmplUtil.keyExtra + TmplUtil.keyExtra).toString());
+												double douYSZE = Double.valueOf(pdSet.get("YSZE" + TmplUtil.keyExtra).toString());
+												double douYDRZE = Double.valueOf(pdSet.get("YDRZE" + TmplUtil.keyExtra).toString());
+												if(!(douCalTax - douImpTax == 0)){
 													strCalculationMessage += "员工编号:" + pdSetUSER_CODE 
 															+ " 员工姓名:" + pdSet.getString("USER_NAME")
 															+ " 应税总额:" + douYSZE 
-															+ " 已导入纳税额:" + douYDRZE.subtract(douImpTax) 
+															+ " 已导入纳税额:" + (douYDRZE - douImpTax) 
 															+ " 本次导入纳税额:" + douImpTax 
 															+ " 实际应导入纳税额:" + douCalTax + "<br/>";
 												}
