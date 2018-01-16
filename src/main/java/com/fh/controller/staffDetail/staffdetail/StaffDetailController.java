@@ -1011,30 +1011,41 @@ public class StaffDetailController extends BaseController {
 												listAdd, strHelpful);
 										for(PageData pdSet : getCommonBaseAndList.getList()){
 											String pdSetUSER_CODE = pdSet.getString("USER_CODE");
+											BigDecimal douCalTax = new BigDecimal(0);
+											BigDecimal douImpTax = new BigDecimal(0);
+											BigDecimal douYDRZE = new BigDecimal(0);
+											BigDecimal douYSZE = new BigDecimal(0);
 											for(PageData pdsum : getCommonBaseAndList.getList()){
 												String pdsumUSER_CODE = pdsum.getString("USER_CODE");
 												if(pdSetUSER_CODE!=null && pdSetUSER_CODE.equals(pdsumUSER_CODE)){
-													BigDecimal douCalTax = (BigDecimal) pdSet.get(TableFeildTaxCanNotHaveFormula);
-													BigDecimal douImpTax = (BigDecimal) pdSet.get(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra);
-													douCalTax.add((BigDecimal) pdsum.get(TableFeildTaxCanNotHaveFormula));
-													douImpTax.add((BigDecimal) pdsum.get(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra));
-													pdSet.put(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra + TmplUtil.keyExtra, douCalTax);
-													pdSet.put(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra, douImpTax);
+													douCalTax = douCalTax.add((BigDecimal) pdsum.get(TableFeildTaxCanNotHaveFormula));
+													douImpTax = douImpTax.add((BigDecimal) pdsum.get(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra));
+
+													douYDRZE = douYDRZE.add((BigDecimal) pdsum.get("YDRZE"));
+													
+													douYSZE = douYSZE.add((BigDecimal) pdsum.get("YSZE"));
 												}
 											}
+											pdSet.put(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra + TmplUtil.keyExtra, douCalTax);
+											pdSet.put(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra + TmplUtil.keyExtra + TmplUtil.keyExtra, douImpTax);
+											pdSet.put("YDRZE" + TmplUtil.keyExtra, douYDRZE);
+											pdSet.put("YSZE" + TmplUtil.keyExtra, douYSZE);
 										}
 										List<String> listUserCode = new ArrayList<String>();
 										for(PageData pdSet : getCommonBaseAndList.getList()){
 											String pdSetUSER_CODE = pdSet.getString("USER_CODE");
 											if(!listUserCode.contains(pdSetUSER_CODE)){
 												BigDecimal douCalTax = (BigDecimal) pdSet.get(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra + TmplUtil.keyExtra);
-												BigDecimal douImpTax = (BigDecimal) pdSet.get(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra);
+												BigDecimal douImpTax = (BigDecimal) pdSet.get(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra + TmplUtil.keyExtra + TmplUtil.keyExtra);
+												BigDecimal douYSZE = (BigDecimal) pdSet.get("YSZE" + TmplUtil.keyExtra);
+												BigDecimal douYDRZE = (BigDecimal) pdSet.get("YDRZE" + TmplUtil.keyExtra);
 												if(!(douCalTax!=null && douCalTax.compareTo(douImpTax)==0)){
 													strCalculationMessage += "员工编号:" + pdSetUSER_CODE 
 															+ " 员工姓名:" + pdSet.getString("USER_NAME")
-															//+ " 应纳税额:" + pdSetUSER_CODE 
-															+ " 导入的纳税额:" + douImpTax 
-															+ " 应导入的纳税额:" + douCalTax + "<br/>";
+															+ " 应税总额:" + douYSZE 
+															+ " 已导入纳税额:" + douYDRZE.subtract(douImpTax) 
+															+ " 本次导入纳税额:" + douImpTax 
+															+ " 实际应导入纳税额:" + douCalTax + "<br/>";
 												}
 											}
 											listUserCode.add(pdSetUSER_CODE);

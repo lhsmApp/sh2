@@ -173,15 +173,15 @@
 						{ label: '身份证号', name: 'STAFF_IDENT',
 							editable: true, edittype:'text', editoptions:{maxLength:'20'}, editrules:{required:true}
 						},
-						{ label: '应发合计', name: 'GROSS_PAY', sorttype: 'number', align: 'right', summaryType:'sum', summaryTpl:'<b>sum:{0}</b>',
+						{ label: '应发评审费', name: 'GROSS_PAY', sorttype: 'number', align: 'right', summaryType:'sum', summaryTpl:'<b>sum:{0}</b>',
 							editable: true, edittype:'text', editoptions:{maxlength:'12', number: true}, editrules: {number: true}, 
 						    searchrules: {number: true}, formatter: 'number'
 						},
-						{ label: '应交税金', name: 'ACCRD_TAX', sorttype: 'number', align: 'right', summaryType:'sum', summaryTpl:'<b>sum:{0}</b>',
+						{ label: '个人所得税', name: 'ACCRD_TAX', sorttype: 'number', align: 'right', summaryType:'sum', summaryTpl:'<b>sum:{0}</b>',
 							editable: true, edittype:'text', editoptions:{maxlength:'12', number: true}, editrules: {number: true}, 
 						    searchrules: {number: true}, formatter: 'number'
 						},
-						{ label: '实发合计', name: 'ACT_SALY', sorttype: 'number', align: 'right', summaryType:'sum', summaryTpl:'<b>sum:{0}</b>',
+						{ label: '实发评审费', name: 'ACT_SALY', sorttype: 'number', align: 'right', summaryType:'sum', summaryTpl:'<b>sum:{0}</b>',
 							editable: true, edittype:'text', editoptions:{maxlength:'12', number: true}, editrules: {number: true}, 
 						    searchrules: {number: true}, formatter: 'number'
 						},

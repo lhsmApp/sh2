@@ -247,6 +247,8 @@ public class DaoSupport implements DAO {
 					List<String> userCodeList = new ArrayList<String>();
 					for(PageData eachAdd : retListBonus){
 						String USER_CODE = eachAdd.getString("USER_CODE");
+						eachAdd.put("YSZE", new BigDecimal(0));
+						eachAdd.put("YDRZE", new BigDecimal(0));
 						//本条记录自己的税额
 						BigDecimal addTax = (BigDecimal) eachAdd.get(TableFeildTax + TmplUtil_KeyExtra);
 						if(!userCodeList.contains(USER_CODE)){
@@ -277,6 +279,8 @@ public class DaoSupport implements DAO {
 							BigDecimal sumTax = (BigDecimal) getSum.get(TableFeildTax);
 							douTableFeildTax = sumNum.subtract(sumTax).add(addTax);
 							eachAdd.put(TableFeildTax, douTableFeildTax.setScale(2, BigDecimal.ROUND_HALF_UP));
+							eachAdd.put("YSZE", sumNum.setScale(2, BigDecimal.ROUND_HALF_UP));
+							eachAdd.put("YDRZE", sumTax.setScale(2, BigDecimal.ROUND_HALF_UP));
 						}
 						returnList.add(eachAdd);
 					}
@@ -323,6 +327,8 @@ public class DaoSupport implements DAO {
 					List<String> userCodeList = new ArrayList<String>();
 					for(PageData eachAdd : retListSalary){
 						String USER_CODE = eachAdd.getString("USER_CODE");
+						eachAdd.put("YSZE", new BigDecimal(0));
+						eachAdd.put("YDRZE", new BigDecimal(0));
 						BigDecimal addTax = (BigDecimal) eachAdd.get(TableFeildTax + TmplUtil_KeyExtra);
 						if(!userCodeList.contains(USER_CODE)){
 							userCodeList.add(USER_CODE);
@@ -350,6 +356,8 @@ public class DaoSupport implements DAO {
 							BigDecimal sumTax = (BigDecimal) getSum.get(TableFeildTax);
 							douTableFeildTax = sumNum.subtract(sumTax).add(addTax);
 							eachAdd.put(TableFeildTax, douTableFeildTax.setScale(2, BigDecimal.ROUND_HALF_UP));
+							eachAdd.put("YSZE", sumNum.setScale(2, BigDecimal.ROUND_HALF_UP));
+							eachAdd.put("YDRZE", sumTax.setScale(2, BigDecimal.ROUND_HALF_UP));
 						}
 						returnList.add(eachAdd);
 					}
@@ -417,9 +425,30 @@ public class DaoSupport implements DAO {
 				List<PageData> retList = sqlSession.selectList("DataCalculation.getListBySerialNo",  getListBySerialNo);
 				if(retList!=null){
 					for(PageData eachAdd : retList){
+						returnList.add(eachAdd);
 						//String USER_CODE = eachAdd.getString("USER_CODE");
 						String USER_NAME = eachAdd.getString("USER_NAME");
 						String STAFF_IDENT = eachAdd.getString("STAFF_IDENT");
+						eachAdd.put("YSZE", new BigDecimal(0));
+						eachAdd.put("YDRZE", new BigDecimal(0));
+
+					    String pdSetDistinctColumn = eachAdd.getString("DistinctColumn");
+						if(!(pdSetDistinctColumn!=null && !pdSetDistinctColumn.trim().equals(""))){
+							eachAdd.put("DistinctColumn", "DistinctColumn");
+							for(PageData eachSetDistinctColumn : retList){
+								String eachUSER_NAME = eachSetDistinctColumn.getString("USER_NAME");
+								String eachSTAFF_IDENT = eachSetDistinctColumn.getString("STAFF_IDENT");
+								if(USER_NAME.equals(eachUSER_NAME) && STAFF_IDENT.equals(eachSTAFF_IDENT)){
+									eachSetDistinctColumn.put("DistinctColumn", "DistinctColumn");
+								}
+							}
+						} else {
+							BigDecimal decGROSS_PAY = (BigDecimal) eachAdd.get("GROSS_PAY");
+							BigDecimal decACCRD_TAX = (BigDecimal) eachAdd.get("ACCRD_TAX");
+							eachAdd.put("ACT_SALY", decGROSS_PAY.subtract(decACCRD_TAX));
+							continue;
+						}
+						
 						BigDecimal addTax = (BigDecimal) eachAdd.get("ACCRD_TAX");
 
 						BigDecimal douTableFeildTax = new BigDecimal(0);
@@ -435,10 +464,10 @@ public class DaoSupport implements DAO {
 						BigDecimal sumNumCheck = (BigDecimal) getSum.get("GROSS_PAY");
 						String strTAX_FORMULA = "";
 						if(listLaborTax!=null){
-							for(int i=0; i<listLaborTax.size(); i++){
-								LaborTax eachTax = listLaborTax.get(i);
+							for(int i_listLaborTax=0; i_listLaborTax<listLaborTax.size(); i_listLaborTax++){
+								LaborTax eachTax = listLaborTax.get(i_listLaborTax);
 								if(sumNumCheck.doubleValue() >= eachTax.getMIN_VALUE()){
-									if(i == listLaborTax.size() -1){
+									if(i_listLaborTax == listLaborTax.size() -1){
 										strTAX_FORMULA = eachTax.getTAX_FORMULA();
 									} else {
 										if(sumNumCheck.doubleValue() <= eachTax.getMAX_VALUE()){
@@ -464,7 +493,8 @@ public class DaoSupport implements DAO {
 						BigDecimal decGROSS_PAY = (BigDecimal) eachAdd.get("GROSS_PAY");
 						BigDecimal decACCRD_TAX = (BigDecimal) eachAdd.get("ACCRD_TAX");
 						eachAdd.put("ACT_SALY", decGROSS_PAY.subtract(decACCRD_TAX));
-						returnList.add(eachAdd);
+						eachAdd.put("YSZE", sumNum.setScale(2, BigDecimal.ROUND_HALF_UP));
+						eachAdd.put("YDRZE", sumTax.setScale(2, BigDecimal.ROUND_HALF_UP));
 					}
 				}
 			}

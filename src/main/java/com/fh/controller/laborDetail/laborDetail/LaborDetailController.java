@@ -133,9 +133,9 @@ public class LaborDetailController extends BaseController {
 		//Map_SetColumnsList.put("USER_CODE", new TmplConfigDetail("USER_CODE", "编码", "1"));
 		Map_SetColumnsList.put("USER_NAME", new TmplConfigDetail("USER_NAME", "姓名", "1"));
 		Map_SetColumnsList.put("STAFF_IDENT", new TmplConfigDetail("STAFF_IDENT", "身份证号", "1"));
-		Map_SetColumnsList.put("GROSS_PAY", new TmplConfigDetail("GROSS_PAY", "应发合计", "1"));
-		Map_SetColumnsList.put("ACCRD_TAX", new TmplConfigDetail("ACCRD_TAX", "应交税金", "1"));
-		Map_SetColumnsList.put("ACT_SALY", new TmplConfigDetail("ACT_SALY", "实发合计", "1"));
+		Map_SetColumnsList.put("GROSS_PAY", new TmplConfigDetail("GROSS_PAY", "应发评审费", "1"));
+		Map_SetColumnsList.put("ACCRD_TAX", new TmplConfigDetail("ACCRD_TAX", "个人所得税", "1"));
+		Map_SetColumnsList.put("ACT_SALY", new TmplConfigDetail("ACT_SALY", "实发评审费", "1"));
 		
 		return mv;
 	}
@@ -580,6 +580,15 @@ public class LaborDetailController extends BaseController {
 										sbRet.add("导入单位和当前单位必须一致！");
 									}
 								}
+								BigDecimal douGROSS_PAY = new BigDecimal(pdAdd.get("GROSS_PAY").toString());
+								BigDecimal douACCRD_TAX = new BigDecimal(pdAdd.get("ACCRD_TAX").toString());
+								BigDecimal douACT_SALY = new BigDecimal(pdAdd.get("ACT_SALY").toString());
+								if(!(douACT_SALY!=null && douACT_SALY.compareTo(douGROSS_PAY.subtract(douACCRD_TAX))==0)){
+									sbRet.add(//"员工编号:" + pdSetUSER_CODE + 
+											  " 姓名:" + pdAdd.getString("USER_NAME")
+											+ " 身份证号:" + pdAdd.getString("STAFF_IDENT")
+											+ " 实发评审费 应等于 应发评审费 -个人所得税");
+								}
 								listAdd.add(pdAdd);
 							}
 						}
@@ -604,28 +613,35 @@ public class LaborDetailController extends BaseController {
 									String pdSetUSER_NAME = pdSet.getString("USER_NAME");
 									String pdSetSTAFF_IDENT = pdSet.getString("STAFF_IDENT");
 									pdSet.put("DistinctColumn", strDistinct);
+									BigDecimal douCalACCRD_TAX = new BigDecimal(0);
+									BigDecimal douImpACCRD_TAX = new BigDecimal(0);
+									BigDecimal douCalACT_SALY = new BigDecimal(0);
+									BigDecimal douImpACT_SALY = new BigDecimal(0);
+									BigDecimal douYDRZE = new BigDecimal(0);
+									BigDecimal douYSZE = new BigDecimal(0);
 									for(PageData pdsum : getCommonBaseAndList.getList()){
 										//String pdsumUSER_CODE = pdsum.getString("USER_CODE");
 										//if(pdSetUSER_CODE!=null && pdSetUSER_CODE.equals(pdsumUSER_CODE)){
 										String pdsumUSER_NAME = pdsum.getString("USER_NAME");
 										String pdsumSTAFF_IDENT = pdsum.getString("STAFF_IDENT");
-										if(pdSetUSER_NAME!=null && pdSetUSER_NAME.equals(pdsumUSER_NAME)
-												&& pdSetSTAFF_IDENT!=null && pdSetSTAFF_IDENT.equals(pdsumSTAFF_IDENT)){
-											BigDecimal douCalACCRD_TAX = (BigDecimal) pdSet.get("ACCRD_TAX");
-											BigDecimal douImpACCRD_TAX = (BigDecimal) pdSet.get("ACCRD_TAX" + TmplUtil.keyExtra);
-											BigDecimal douCalACT_SALY = (BigDecimal) pdSet.get("ACT_SALY");
-											BigDecimal douImpACT_SALY = (BigDecimal) pdSet.get("ACT_SALY" + TmplUtil.keyExtra);
-											douCalACCRD_TAX.add((BigDecimal) pdsum.get("ACCRD_TAX"));
-										    douImpACCRD_TAX.add((BigDecimal) pdsum.get("ACCRD_TAX" + TmplUtil.keyExtra));
-											douCalACT_SALY.add((BigDecimal) pdsum.get("ACT_SALY"));
-										    douImpACT_SALY.add((BigDecimal) pdsum.get("ACT_SALY" + TmplUtil.keyExtra));
-											pdSet.put("ACCRD_TAX" + TmplUtil.keyExtra + TmplUtil.keyExtra, douCalACCRD_TAX);
-											pdSet.put("ACCRD_TAX" + TmplUtil.keyExtra, douImpACCRD_TAX);
-											pdSet.put("ACT_SALY" + TmplUtil.keyExtra + TmplUtil.keyExtra, douCalACT_SALY);
-											pdSet.put("ACT_SALY" + TmplUtil.keyExtra, douImpACT_SALY);
+										if(pdSetUSER_NAME.equals(pdsumUSER_NAME) && pdSetSTAFF_IDENT.equals(pdsumSTAFF_IDENT)){
 											pdsum.put("DistinctColumn", strDistinct);
+											douCalACCRD_TAX = douCalACCRD_TAX.add((BigDecimal) pdsum.get("ACCRD_TAX"));
+											douImpACCRD_TAX = douImpACCRD_TAX.add((BigDecimal) pdsum.get("ACCRD_TAX" + TmplUtil.keyExtra));
+											douCalACT_SALY = douCalACT_SALY.add((BigDecimal) pdsum.get("ACT_SALY"));
+											douImpACT_SALY = douImpACT_SALY.add((BigDecimal) pdsum.get("ACT_SALY" + TmplUtil.keyExtra));
+
+											douYDRZE = douYDRZE.add((BigDecimal) pdsum.get("YDRZE"));
+											
+											douYSZE = douYSZE.add((BigDecimal) pdsum.get("YSZE"));
 										}
 									}
+									pdSet.put("ACCRD_TAX" + TmplUtil.keyExtra + TmplUtil.keyExtra, douCalACCRD_TAX);
+									pdSet.put("ACCRD_TAX" + TmplUtil.keyExtra + TmplUtil.keyExtra + TmplUtil.keyExtra, douImpACCRD_TAX);
+									pdSet.put("ACT_SALY" + TmplUtil.keyExtra + TmplUtil.keyExtra, douCalACT_SALY);
+									pdSet.put("ACT_SALY" + TmplUtil.keyExtra + TmplUtil.keyExtra + TmplUtil.keyExtra, douImpACT_SALY);
+									pdSet.put("YDRZE" + TmplUtil.keyExtra, douYDRZE);
+									pdSet.put("YSZE" + TmplUtil.keyExtra, douYSZE);
 								}
 								List<String> listDistinct = new ArrayList<String>();
 								String strCalculationMessage = "";
@@ -635,18 +651,22 @@ public class LaborDetailController extends BaseController {
 									    String pdSetDistinctColumn = pdSet.getString("DistinctColumn");
 									    if(!listDistinct.contains(pdSetDistinctColumn)){
 											BigDecimal douCalACCRD_TAX = (BigDecimal) pdSet.get("ACCRD_TAX" + TmplUtil.keyExtra + TmplUtil.keyExtra);
-											BigDecimal douImpACCRD_TAX = (BigDecimal) pdSet.get("ACCRD_TAX" + TmplUtil.keyExtra);
+											BigDecimal douImpACCRD_TAX = (BigDecimal) pdSet.get("ACCRD_TAX" + TmplUtil.keyExtra + TmplUtil.keyExtra + TmplUtil.keyExtra);
 											BigDecimal douCalACT_SALY = (BigDecimal) pdSet.get("ACT_SALY" + TmplUtil.keyExtra + TmplUtil.keyExtra);
-											BigDecimal douImpACT_SALY = (BigDecimal) pdSet.get("ACT_SALY" + TmplUtil.keyExtra);
+											BigDecimal douImpACT_SALY = (BigDecimal) pdSet.get("ACT_SALY" + TmplUtil.keyExtra + TmplUtil.keyExtra + TmplUtil.keyExtra);
+											BigDecimal douYSZE = (BigDecimal) pdSet.get("YSZE" + TmplUtil.keyExtra);
+											BigDecimal douYDRZE = (BigDecimal) pdSet.get("YDRZE" + TmplUtil.keyExtra);
 											if(!(douCalACCRD_TAX!=null && douCalACCRD_TAX.compareTo(douImpACCRD_TAX)==0 
 													&& douCalACT_SALY!=null && douCalACT_SALY.compareTo(douImpACT_SALY)==0)){
 												strCalculationMessage += //"员工编号:" + pdSetUSER_CODE + 
 														  " 姓名:" + pdSet.getString("USER_NAME")
 														+ " 身份证号:" + pdSet.getString("STAFF_IDENT")
-														+ " 导入的纳税额:" + douImpACCRD_TAX
-														+ " 应导入的纳税额:" + douCalACCRD_TAX
-														+ " 导入的实发评审费:" + douImpACT_SALY
-														+ " 应导入的实发评审费:" + douCalACT_SALY + "<br/>";
+														+ " 应税总额:" + douYSZE 
+														+ " 已导入纳税额:" + douYDRZE.subtract(douImpACCRD_TAX) 
+														+ " 本次导入纳税额:" + douImpACCRD_TAX
+														+ " 实际应导入纳税额:" + douCalACCRD_TAX
+														+ " 本次导入实发评审费:" + douImpACT_SALY
+														+ " 实际应导入实发评审费:" + douCalACT_SALY + "<br/>";
 											}
 										}
 										listDistinct.add(pdSetDistinctColumn);
