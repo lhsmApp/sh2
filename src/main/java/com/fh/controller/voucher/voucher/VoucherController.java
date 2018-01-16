@@ -795,6 +795,60 @@ public class VoucherController extends BaseController {
 		tableColumnsMerge.add(tableColumnLineNo);
 		return tableColumnsMerge;
 	}
+	
+	/**
+	 * 根据表编号和真实表名称获取用于传输的字段列配置信息
+	 * 
+	 * @param which
+	 * @param tableCode
+	 * @return
+	 * @throws Exception
+	 */
+	private List<TableColumns> getTableColumnsForTransferDel(String which, String tableCode, String billOff)
+			throws Exception {
+		// 用语句查询出数据库表的所有字段及其属性；拼接成jqgrid全部列
+		List<TableColumns> tableColumns = tmplconfigService.getTableColumns(tableCode);
+		// TmplUtil tmplUtil = new TmplUtil(tmplconfigService,
+		// tmplConfigDictService, dictionariesService,
+		// departmentService, userService);
+		PageData pdTableCodeTmpl = new PageData();
+		pdTableCodeTmpl.put("TABLE_NO", which);
+		PageData pdTableCodeTmplResult = tmplconfigService.findTableCodeByTableNo(pdTableCodeTmpl);
+		String tableCodeTmpl = pdTableCodeTmplResult.getString("TABLE_CODE");
+		// List<TmplConfigDetail> tmplColumns =
+		// tmplUtil.getShowColumnList(tableCodeTmpl,
+		// Jurisdiction.getCurrentDepartmentID());
+		List<TmplConfigDetail> tmplColumns = Common.getShowColumnList(tableCodeTmpl,
+				Jurisdiction.getCurrentDepartmentID(), billOff, tmplconfigService);
+		List<TableColumns> tableColumnsMerge = new ArrayList<TableColumns>();
+		for (TmplConfigDetail tmplConfigDetail : tmplColumns) {
+			if (tmplConfigDetail.getCOL_TRANSFER().equals("1")) {
+				TableColumns tableColumnMergeItem = new TableColumns();
+				boolean mergeNeed = false;
+				for (TableColumns tableColumn : tableColumns) {
+					if (tmplConfigDetail.getCOL_CODE().equals(tableColumn.getColumn_name())) {
+						if(tableColumn.getColumn_name().equals("SERIAL_NO")){
+							tableColumnMergeItem.setColumn_key("");
+						}else{
+							tableColumnMergeItem.setColumn_key(tableColumn.getColumn_key());
+						}
+						tableColumnMergeItem.setColumn_name(tableColumn.getColumn_name());
+						tableColumnMergeItem.setColumn_type(tableColumn.getColumn_type());
+						mergeNeed = true;
+						break;
+					}
+				}
+				if (mergeNeed)
+					tableColumnsMerge.add(tableColumnMergeItem);
+			}
+		}
+		// 增加F_LINE_NO 分线编号 字符型
+		TableColumns tableColumnLineNo = new TableColumns();
+		tableColumnLineNo.setColumn_name("LINE_NO");
+		tableColumnLineNo.setColumn_type("VARCHAR");
+		tableColumnsMerge.add(tableColumnLineNo);
+		return tableColumnsMerge;
+	}
 
 	/**
 	 * 根据表编号和真实表名称获取用于传输的字段列配置信息
@@ -867,7 +921,7 @@ public class VoucherController extends BaseController {
 			PageData pdFirst = listTransferData.get(0);
 			String orgCode = pdFirst.getString("CUST_COL7");
 
-			List<TableColumns> tableColumnsForTransfer = getTableColumnsForTransfer(which, tableCode, orgCode);
+			List<TableColumns> tableColumnsForTransfer = getTableColumnsForTransferDel(which, tableCode, orgCode);
 			GenerateTransferData generateTransferData = new GenerateTransferData();
 			Map<String, List<PageData>> mapTransferData = new HashMap<String, List<PageData>>();
 			mapTransferData.put(tableCodeOnFmis, listTransferData);
