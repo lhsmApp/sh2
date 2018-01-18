@@ -709,8 +709,8 @@
 			top.jzts();
 			$.ajax({
 				type: "POST",
-				url: '<%=basePath%>staffdetail/getShowColModel.do?'
-                    +'SelectedDepartCode='+$("#SelectedDepartCode").val()
+				url: '<%=basePath%>staffdetail/getShowColModel.do?SelectedTableNo='+which
+                    +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
                     +'&SelectedCustCol7='+$("#SelectedCustCol7").val(),
 				dataType:'json',
 				cache: false,
