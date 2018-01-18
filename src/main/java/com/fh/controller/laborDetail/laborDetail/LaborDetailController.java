@@ -1,5 +1,6 @@
 package com.fh.controller.laborDetail.laborDetail;
 
+import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -609,12 +610,12 @@ public class LaborDetailController extends BaseController {
 									String pdSetUSER_NAME = pdSet.getString("USER_NAME");
 									String pdSetSTAFF_IDENT = pdSet.getString("STAFF_IDENT");
 									pdSet.put("DistinctColumn", strDistinct);
-									double douCalACCRD_TAX = 0;
-									double douImpACCRD_TAX = 0;
-									double douCalACT_SALY = 0;
-									double douImpACT_SALY = 0;
-									double douYDRZE = 0;
-									double douYSZE = 0;
+									BigDecimal douCalACCRD_TAX = new BigDecimal(0);
+									BigDecimal douImpACCRD_TAX = new BigDecimal(0);
+									BigDecimal douCalACT_SALY = new BigDecimal(0);
+									BigDecimal douImpACT_SALY = new BigDecimal(0);
+									BigDecimal douYDRZE = new BigDecimal(0);
+									BigDecimal douYSZE = new BigDecimal(0);
 									for(PageData pdsum : getCommonBaseAndList.getList()){
 										//String pdsumUSER_CODE = pdsum.getString("USER_CODE");
 										//if(pdSetUSER_CODE!=null && pdSetUSER_CODE.equals(pdsumUSER_CODE)){
@@ -622,14 +623,14 @@ public class LaborDetailController extends BaseController {
 										String pdsumSTAFF_IDENT = pdsum.getString("STAFF_IDENT");
 										if(pdSetUSER_NAME.equals(pdsumUSER_NAME) && pdSetSTAFF_IDENT.equals(pdsumSTAFF_IDENT)){
 											pdsum.put("DistinctColumn", strDistinct);
-											douCalACCRD_TAX = douCalACCRD_TAX + Double.valueOf(pdsum.get("ACCRD_TAX").toString());
-											douImpACCRD_TAX = douImpACCRD_TAX + Double.valueOf(pdsum.get("ACCRD_TAX" + TmplUtil.keyExtra).toString());
-											douCalACT_SALY = douCalACT_SALY + Double.valueOf(pdsum.get("ACT_SALY").toString());
-											douImpACT_SALY = douImpACT_SALY + Double.valueOf(pdsum.get("ACT_SALY" + TmplUtil.keyExtra).toString());
+											douCalACCRD_TAX = douCalACCRD_TAX.add(new BigDecimal(pdsum.get("ACCRD_TAX").toString()));
+											douImpACCRD_TAX = douImpACCRD_TAX.add(new BigDecimal(pdsum.get("ACCRD_TAX" + TmplUtil.keyExtra).toString()));
+											douCalACT_SALY = douCalACT_SALY.add(new BigDecimal(pdsum.get("ACT_SALY").toString()));
+											douImpACT_SALY = douImpACT_SALY.add(new BigDecimal(pdsum.get("ACT_SALY" + TmplUtil.keyExtra).toString()));
 
-											douYDRZE = douYDRZE + Double.valueOf(pdsum.get("YDRZE").toString());
+											douYDRZE = douYDRZE.add(new BigDecimal(pdsum.get("YDRZE").toString()));
 											
-											douYSZE = douYSZE + Double.valueOf(pdsum.get("YSZE").toString());
+											douYSZE = douYSZE.add(new BigDecimal(pdsum.get("YSZE").toString()));
 										}
 									}
 									pdSet.put("ACCRD_TAX" + TmplUtil.keyExtra + TmplUtil.keyExtra, douCalACCRD_TAX);
@@ -646,19 +647,19 @@ public class LaborDetailController extends BaseController {
 										//if(!listDistinct.contains(pdSetUSER_CODE)){
 									    String pdSetDistinctColumn = pdSet.getString("DistinctColumn");
 									    if(!listDistinct.contains(pdSetDistinctColumn)){
-									    	double douCalACCRD_TAX = Double.valueOf(pdSet.get("ACCRD_TAX" + TmplUtil.keyExtra + TmplUtil.keyExtra).toString());
-									    	double douImpACCRD_TAX = Double.valueOf(pdSet.get("ACCRD_TAX" + TmplUtil.keyExtra + TmplUtil.keyExtra + TmplUtil.keyExtra).toString());
-									    	double douCalACT_SALY = Double.valueOf(pdSet.get("ACT_SALY" + TmplUtil.keyExtra + TmplUtil.keyExtra).toString());
-									    	double douImpACT_SALY = Double.valueOf(pdSet.get("ACT_SALY" + TmplUtil.keyExtra + TmplUtil.keyExtra + TmplUtil.keyExtra).toString());
-									    	double douYSZE = Double.valueOf(pdSet.get("YSZE" + TmplUtil.keyExtra).toString());
-									    	double douYDRZE = Double.valueOf(pdSet.get("YDRZE" + TmplUtil.keyExtra).toString());
-											if(!(douCalACCRD_TAX - douImpACCRD_TAX == 0 
-													&& douCalACT_SALY - douImpACT_SALY == 0)){
+									    	BigDecimal douCalACCRD_TAX = new BigDecimal(pdSet.get("ACCRD_TAX" + TmplUtil.keyExtra + TmplUtil.keyExtra).toString());
+									    	BigDecimal douImpACCRD_TAX = new BigDecimal(pdSet.get("ACCRD_TAX" + TmplUtil.keyExtra + TmplUtil.keyExtra + TmplUtil.keyExtra).toString());
+									    	BigDecimal douCalACT_SALY = new BigDecimal(pdSet.get("ACT_SALY" + TmplUtil.keyExtra + TmplUtil.keyExtra).toString());
+									    	BigDecimal douImpACT_SALY = new BigDecimal(pdSet.get("ACT_SALY" + TmplUtil.keyExtra + TmplUtil.keyExtra + TmplUtil.keyExtra).toString());
+									    	BigDecimal douYSZE = new BigDecimal(pdSet.get("YSZE" + TmplUtil.keyExtra).toString());
+									    	BigDecimal douYDRZE = new BigDecimal(pdSet.get("YDRZE" + TmplUtil.keyExtra).toString());
+											if(!(douCalACCRD_TAX.compareTo(douImpACCRD_TAX) == 0 
+													&& douCalACT_SALY.compareTo(douImpACT_SALY) == 0)){
 												strCalculationMessage += //"员工编号:" + pdSetUSER_CODE + 
 														  " 姓名:" + pdSet.getString("USER_NAME")
 														+ " 身份证号:" + pdSet.getString("STAFF_IDENT")
 														+ " 应税总额:" + douYSZE 
-														+ " 已导入纳税额:" + (douYDRZE - douImpACCRD_TAX)
+														+ " 已导入纳税额:" + (douYDRZE.subtract(douImpACCRD_TAX))
 														+ " 本次导入纳税额:" + douImpACCRD_TAX
 														+ " 实际应导入纳税额:" + douCalACCRD_TAX
 														+ " 本次导入实发评审费:" + douImpACT_SALY
