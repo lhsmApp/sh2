@@ -906,24 +906,36 @@
         	             title : "计算",
         	             cursor : "pointer"
         	         });
-            $(gridBase_selector).navButtonAdd(pagerBase_selector, {
-            				id : "importSalaryItems",
-            				caption : "工资",
-            	             buttonicon : "ace-icon fa fa-cloud-upload",
-            	             onClickButton : importSalaryItems,
-            	             position : "last",
-            	             title : "导入工资",
-            	             cursor : "pointer"
-            	         });
-            $(gridBase_selector).navButtonAdd(pagerBase_selector, {
-            				id : "importBonusItems",
-            				caption : "奖金",
-            	             buttonicon : "ace-icon fa fa-cloud-upload",
-            	             onClickButton : importBonusItems,
-            	             position : "last",
-            	             title : "导入奖金",
-            	             cursor : "pointer"
-            	         });
+        	if(which == '1' || which == '2'){
+                $(gridBase_selector).navButtonAdd(pagerBase_selector, {
+    				id : "importSalaryItems",
+    				caption : "工资",
+    	             buttonicon : "ace-icon fa fa-cloud-upload",
+    	             onClickButton : importSalaryItems,
+    	             position : "last",
+    	             title : "导入工资",
+    	             cursor : "pointer"
+    	         });
+                 $(gridBase_selector).navButtonAdd(pagerBase_selector, {
+    				id : "importBonusItems",
+    				caption : "奖金",
+    	             buttonicon : "ace-icon fa fa-cloud-upload",
+    	             onClickButton : importBonusItems,
+    	             position : "last",
+    	             title : "导入奖金",
+    	             cursor : "pointer"
+    	         });
+        	} else {
+                $(gridBase_selector).navButtonAdd(pagerBase_selector, {
+    				id : "importSalaryItems",
+    				caption : "导入",
+    	             buttonicon : "ace-icon fa fa-cloud-upload",
+    	             onClickButton : importSalaryItems,
+    	             position : "last",
+    	             title : "导入",
+    	             cursor : "pointer"
+    	         });
+        	}
             $(gridBase_selector).navButtonAdd(pagerBase_selector, {
     		             caption : "导出",
     		             buttonicon : "ace-icon fa fa-cloud-download",
