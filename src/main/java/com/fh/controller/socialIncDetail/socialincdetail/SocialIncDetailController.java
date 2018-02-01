@@ -654,6 +654,14 @@ public class SocialIncDetailController extends BaseController {
 			commonBase.setCode(2);
 			commonBase.setMessage(strGetCheckMustSelected);
 		}
+		if(!SelectedBillCode.equals(SelectBillCodeFirstShow) && commonBase.getCode() != 2){
+			String checkState = CheckState(SelectedBillCode,
+					SelectedCustCol7, SelectedDepartCode, null, "SERIAL_NO", TmplUtil.keyExtra);
+			if(checkState!=null && !checkState.trim().equals("")){
+				commonBase.setCode(2);
+				commonBase.setMessage(checkState);
+			}
+		}
 		
 		ModelAndView mv = this.getModelAndView();
 		mv.setViewName("common/uploadExcel");
@@ -710,6 +718,15 @@ public class SocialIncDetailController extends BaseController {
 			commonBase.setCode(2);
 			commonBase.setMessage(strGetCheckMustSelected);
 		} else {
+			if(!SelectedBillCode.equals(SelectBillCodeFirstShow)){
+				String checkState = CheckState(SelectedBillCode,
+						SelectedCustCol7, SelectedDepartCode, null, "SERIAL_NO", TmplUtil.keyExtra);
+				if(checkState!=null && !checkState.trim().equals("")){
+					commonBase.setCode(2);
+					commonBase.setMessage(checkState);
+				}
+			}
+			if(commonBase.getCode() != 2){
 				if(!(SystemDateTime!=null && !SystemDateTime.trim().equals("")
 						&& SelectedDepartCode!=null && !SelectedDepartCode.trim().equals(""))){
 					commonBase.setCode(2);
@@ -893,8 +910,8 @@ public class SocialIncDetailController extends BaseController {
 								commonBase.setMessage("TranslateUtil");
 							}
 						}
-					
 				}
+			}
 		}
 		ModelAndView mv = this.getModelAndView();
 		mv.setViewName("common/uploadExcel");
