@@ -147,6 +147,8 @@
         var gridBase_selector = "#jqGridBase";  
         var pagerBase_selector = "#jqGridBasePager";  
 
+    	//部门是否是最末层节点，是否显示
+    	var DepartTreeSource;
 	    //页面显示的数据的责任中心和账套信息，在tosearch()里赋值
 	    var ShowDataDepartCode = "";
 	    var ShowDataCustCol7 = "";
@@ -200,6 +202,7 @@
                 editurl: '<%=basePath%>laborDetail/edit.do?'
 					+ 'SelectedDepartCode='+$("#SelectedDepartCode").val()
 		            + '&SelectedCustCol7='+$("#SelectedCustCol7").val()
+                    + '&DepartTreeSource='+DepartTreeSource
                     + '&ShowDataDepartCode='+ShowDataDepartCode
                     + '&ShowDataCustCol7='+ShowDataCustCol7,
 
@@ -371,6 +374,8 @@
 			//当前登录人所在二级单位
 		    var DepartName = '${DepartName}';
 		    $("#showDur").text('当前期间：' + SystemDateTime + ' 登录人责任中心：' + DepartName);
+			//部门是否是最末层节点，是否显示
+			DepartTreeSource = '${pd.departTreeSource}';
 		    
 		    SetStructure();
 	    });
@@ -479,6 +484,7 @@
     						url: '<%=basePath%>laborDetail/deleteAll.do?'
     							+ 'SelectedDepartCode='+$("#SelectedDepartCode").val()
     				            + '&SelectedCustCol7='+$("#SelectedCustCol7").val()
+    		                    + '&DepartTreeSource='+DepartTreeSource
     		                    + '&ShowDataDepartCode='+ShowDataDepartCode
     		                    + '&ShowDataCustCol7='+ShowDataCustCol7,
     				    	data: {DataRows:JSON.stringify(listData)},
@@ -552,6 +558,7 @@
      						url: '<%=basePath%>laborDetail/updateAll.do?'
      							+ 'SelectedDepartCode='+$("#SelectedDepartCode").val()
      				            + '&SelectedCustCol7='+$("#SelectedCustCol7").val()
+     		                    + '&DepartTreeSource='+DepartTreeSource
      		                    + '&ShowDataDepartCode='+ShowDataDepartCode
      		                    + '&ShowDataCustCol7='+ShowDataCustCol7,
      				    	data: {DataRows:JSON.stringify(listData)},
@@ -627,6 +634,7 @@
 			                url: '<%=basePath%>laborDetail/calculation.do?'
 								+ 'SelectedDepartCode='+$("#SelectedDepartCode").val()
 					            + '&SelectedCustCol7='+$("#SelectedCustCol7").val()
+			                    + '&DepartTreeSource='+DepartTreeSource
 			                    + '&ShowDataDepartCode='+ShowDataDepartCode
 			                    + '&ShowDataCustCol7='+ShowDataCustCol7,
                             data: {DataRows:JSON.stringify(listData)},
@@ -682,6 +690,7 @@
             diag.URL = '<%=basePath%>laborDetail/goUploadExcel.do?'
 				+ 'SelectedDepartCode='+$("#SelectedDepartCode").val()
 	            + '&SelectedCustCol7='+$("#SelectedCustCol7").val()
+                + '&DepartTreeSource='+DepartTreeSource
                 + '&ShowDataDepartCode='+ShowDataDepartCode
                 + '&ShowDataCustCol7='+ShowDataCustCol7;
             diag.Width = 300;
@@ -702,6 +711,7 @@
             window.location.href='<%=basePath%>laborDetail/excel.do?'
 				+ 'SelectedDepartCode='+$("#SelectedDepartCode").val()
 	            + '&SelectedCustCol7='+$("#SelectedCustCol7").val()
+                + '&DepartTreeSource='+DepartTreeSource
                 + '&ShowDataDepartCode='+ShowDataDepartCode
                 + '&ShowDataCustCol7='+ShowDataCustCol7;
         }
@@ -767,6 +777,7 @@
                 editurl: '<%=basePath%>laborDetail/edit.do?'
 					+ 'SelectedDepartCode='+$("#SelectedDepartCode").val()
 		            + '&SelectedCustCol7='+$("#SelectedCustCol7").val()
+                    + '&DepartTreeSource='+DepartTreeSource
                     + '&ShowDataDepartCode='+ShowDataDepartCode
                     + '&ShowDataCustCol7='+ShowDataCustCol7
 			}).trigger("reloadGrid");

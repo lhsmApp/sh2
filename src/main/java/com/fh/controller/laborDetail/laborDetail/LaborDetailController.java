@@ -949,7 +949,7 @@ public class LaborDetailController extends BaseController {
 		if(!(DEPT_CODE != null && !DEPT_CODE.trim().equals(""))){
 			strRut += "查询条件中的责任中心不能为空！";
 		} else {
-		    if(DepartTreeSource!=0 && !DEPT_CODE.equals(ShowDataDepartCode)){
+		    if(DepartTreeSource!=1 && !DEPT_CODE.equals(ShowDataDepartCode)){
 				strRut += "查询条件中所选责任中心与页面显示数据责任中心不一致，请单击查询再进行操作！";
 		    }
 		}
