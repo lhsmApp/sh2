@@ -1063,7 +1063,7 @@ public class StaffDetailController extends BaseController {
 																+ " 应税总额:" + douYSZE 
 																+ " 已导入纳税额:" + (douYDRZE.subtract(douImpTax)) 
 																+ " 本次导入纳税额:" + douImpTax 
-																+ " 实际应导入纳税额:" + douCalTax + "<br/>";
+																+ " 实际应导入纳税额:" + douCalTax + "     ";//"<br/>";
 													}
 												}
 												listUserCode.add(pdSetUSER_CODE);

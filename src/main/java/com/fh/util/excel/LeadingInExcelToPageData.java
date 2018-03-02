@@ -343,20 +343,20 @@ public class LeadingInExcelToPageData<T> {
                 switch (cellValue.getCellType()) {  
                     case Cell.CELL_TYPE_BOOLEAN:  
                     	Boolean bolValue = cellValue.getBooleanValue();  
-                    	value = bolValue.toString();
+                    	value = bolValue.toString().trim();
                         break;  
                     case Cell.CELL_TYPE_NUMERIC:  
                     	if(COL_CODE.equals("USER_CODE")){
                         	Number numValue = cellValue.getNumberValue();  
                         	BigDecimal db = new BigDecimal(numValue.toString());
-                        	value = db.toPlainString();
+                        	value = db.toPlainString().trim();
                     	} else {
                         	Number numValue = cellValue.getNumberValue();  
-                        	value = numValue.toString();
+                        	value = numValue.toString().trim();
                     	}
                         break;  
                     case Cell.CELL_TYPE_STRING:  
-                    	value = cellValue.getStringValue();  
+                    	value = cellValue.getStringValue().trim();  
                         break;  
                     case Cell.CELL_TYPE_BLANK:  
                         break;  
