@@ -21,6 +21,8 @@ public class SysConfigKeyCode {
 	
 	//有权限导出表的部门
 	public static final String CanExportTable = "CanExportTable";
+    //不导出数据的部门
+	public static final String NotExportData = "NotExportData";
 	
 	//定义核算汇总字段
 	//核算合同化工资汇总

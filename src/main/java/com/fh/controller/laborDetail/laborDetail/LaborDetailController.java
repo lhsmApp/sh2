@@ -122,17 +122,17 @@ public class LaborDetailController extends BaseController {
 		
 		Map_HaveColumnsList = Common.GetHaveColumnsListByTableName(TableNameDetail, tmplconfigService);
 		
-		Map_SetColumnsList.put("BUSI_DATE", new TmplConfigDetail("BUSI_DATE", "当前区间", "0"));
-		Map_SetColumnsList.put("BILL_OFF", new TmplConfigDetail("BILL_OFF", "当前帐套", "0"));
-		Map_SetColumnsList.put("DEPT_CODE", new TmplConfigDetail("DEPT_CODE", "当前单位", "0"));
+		Map_SetColumnsList.put("BUSI_DATE", new TmplConfigDetail("BUSI_DATE", "当前区间", "0", false));
+		Map_SetColumnsList.put("BILL_OFF", new TmplConfigDetail("BILL_OFF", "当前帐套", "0", false));
+		Map_SetColumnsList.put("DEPT_CODE", new TmplConfigDetail("DEPT_CODE", "当前单位", "0", false));
 
-		Map_SetColumnsList.put("SERIAL_NO", new TmplConfigDetail("SERIAL_NO", "流水号", "0"));
+		Map_SetColumnsList.put("SERIAL_NO", new TmplConfigDetail("SERIAL_NO", "流水号", "0", false));
 		//Map_SetColumnsList.put("USER_CODE", new TmplConfigDetail("USER_CODE", "编码", "1"));
-		Map_SetColumnsList.put("USER_NAME", new TmplConfigDetail("USER_NAME", "姓名", "1"));
-		Map_SetColumnsList.put("STAFF_IDENT", new TmplConfigDetail("STAFF_IDENT", "身份证号", "1"));
-		Map_SetColumnsList.put("GROSS_PAY", new TmplConfigDetail("GROSS_PAY", "应发评审费", "1"));
-		Map_SetColumnsList.put("ACCRD_TAX", new TmplConfigDetail("ACCRD_TAX", "个人所得税", "1"));
-		Map_SetColumnsList.put("ACT_SALY", new TmplConfigDetail("ACT_SALY", "实发评审费", "1"));
+		Map_SetColumnsList.put("USER_NAME", new TmplConfigDetail("USER_NAME", "姓名", "1", false));
+		Map_SetColumnsList.put("STAFF_IDENT", new TmplConfigDetail("STAFF_IDENT", "身份证号", "1", false));
+		Map_SetColumnsList.put("GROSS_PAY", new TmplConfigDetail("GROSS_PAY", "应发评审费", "1", true));
+		Map_SetColumnsList.put("ACCRD_TAX", new TmplConfigDetail("ACCRD_TAX", "个人所得税", "1", true));
+		Map_SetColumnsList.put("ACT_SALY", new TmplConfigDetail("ACT_SALY", "实发评审费", "1", true));
 		
 		return mv;
 	}

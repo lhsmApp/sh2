@@ -24,13 +24,21 @@ public class TmplConfigDetail implements Serializable {
 	private String NUM_DGT;
 	private String DEC_PRECISION;
 	private String BILL_OFF;
+	private Boolean IsNum;
 
+	public Boolean getIsNum() {
+		return IsNum;
+	}
+	public void setIsNum(Boolean isNum) {
+		IsNum = isNum;
+	}
 	public TmplConfigDetail(){
 	}
-	public TmplConfigDetail(String cOL_CODE, String cOL_NAME, String cOL_HIDE){
+	public TmplConfigDetail(String cOL_CODE, String cOL_NAME, String cOL_HIDE, Boolean isNum){
 		COL_CODE = cOL_CODE;
 		COL_NAME = cOL_NAME;
 		COL_HIDE = cOL_HIDE;
+		IsNum = isNum;
 	}
 	
 	public String getBILL_OFF() {

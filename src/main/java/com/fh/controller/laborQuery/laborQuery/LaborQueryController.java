@@ -299,25 +299,25 @@ public class LaborQueryController extends BaseController {
 		}
 		
 		Map<String, TmplConfigDetail> map_SetColumnsList = new LinkedHashMap<String, TmplConfigDetail>();
-		map_SetColumnsList.put("工号", new TmplConfigDetail("工号", "工号", "1"));
-		map_SetColumnsList.put("USER_NAME", new TmplConfigDetail("USER_NAME", "姓名", "1"));
-		map_SetColumnsList.put("CERT_TYPE", new TmplConfigDetail("CERT_TYPE", "证件类型", "1"));
-		map_SetColumnsList.put("STAFF_IDENT", new TmplConfigDetail("STAFF_IDENT", "证件号码", "1"));
-		map_SetColumnsList.put("TAX_BURDENS", new TmplConfigDetail("TAX_BURDENS", "税款负担方式", "1"));
-		map_SetColumnsList.put("ACT_SALY", new TmplConfigDetail("ACT_SALY", "收入额", "1"));
-		map_SetColumnsList.put("免税所得", new TmplConfigDetail("免税所得", "免税所得", "1"));
-		map_SetColumnsList.put("基本养老保险费", new TmplConfigDetail("基本养老保险费", "基本养老保险费", "1"));
-		map_SetColumnsList.put("基本医疗保险费", new TmplConfigDetail("基本医疗保险费", "基本医疗保险费", "1"));
-		map_SetColumnsList.put("失业保险费", new TmplConfigDetail("失业保险费", "失业保险费", "1"));
-		map_SetColumnsList.put("住房公积金", new TmplConfigDetail("住房公积金", "住房公积金", "1"));
-		map_SetColumnsList.put("允许扣除的税费", new TmplConfigDetail("允许扣除的税费", "允许扣除的税费", "1"));
-		map_SetColumnsList.put("商业健康保险费", new TmplConfigDetail("商业健康保险费", "商业健康保险费", "1"));
-		map_SetColumnsList.put("其他扣除", new TmplConfigDetail("其他扣除", "其他扣除", "1"));
-		map_SetColumnsList.put("实际捐赠额", new TmplConfigDetail("实际捐赠额", "实际捐赠额", "1"));
-		map_SetColumnsList.put("允许列支的捐赠比例", new TmplConfigDetail("允许列支的捐赠比例", "允许列支的捐赠比例", "1"));
-		map_SetColumnsList.put("准予扣除的捐赠额", new TmplConfigDetail("准予扣除的捐赠额", "准予扣除的捐赠额", "1"));
-		map_SetColumnsList.put("减免税额", new TmplConfigDetail("减免税额", "减免税额", "1"));
-		map_SetColumnsList.put("备注", new TmplConfigDetail("备注", "备注", "1"));
+		map_SetColumnsList.put("工号", new TmplConfigDetail("工号", "工号", "1", false));
+		map_SetColumnsList.put("USER_NAME", new TmplConfigDetail("USER_NAME", "姓名", "1", false));
+		map_SetColumnsList.put("CERT_TYPE", new TmplConfigDetail("CERT_TYPE", "证件类型", "1", false));
+		map_SetColumnsList.put("STAFF_IDENT", new TmplConfigDetail("STAFF_IDENT", "证件号码", "1", false));
+		map_SetColumnsList.put("TAX_BURDENS", new TmplConfigDetail("TAX_BURDENS", "税款负担方式", "1", false));
+		map_SetColumnsList.put("ACT_SALY", new TmplConfigDetail("ACT_SALY", "收入额", "1", true));
+		map_SetColumnsList.put("免税所得", new TmplConfigDetail("免税所得", "免税所得", "1", true));
+		map_SetColumnsList.put("基本养老保险费", new TmplConfigDetail("基本养老保险费", "基本养老保险费", "1", true));
+		map_SetColumnsList.put("基本医疗保险费", new TmplConfigDetail("基本医疗保险费", "基本医疗保险费", "1", true));
+		map_SetColumnsList.put("失业保险费", new TmplConfigDetail("失业保险费", "失业保险费", "1", true));
+		map_SetColumnsList.put("住房公积金", new TmplConfigDetail("住房公积金", "住房公积金", "1", true));
+		map_SetColumnsList.put("允许扣除的税费", new TmplConfigDetail("允许扣除的税费", "允许扣除的税费", "1", true));
+		map_SetColumnsList.put("商业健康保险费", new TmplConfigDetail("商业健康保险费", "商业健康保险费", "1", true));
+		map_SetColumnsList.put("其他扣除", new TmplConfigDetail("其他扣除", "其他扣除", "1", true));
+		map_SetColumnsList.put("实际捐赠额", new TmplConfigDetail("实际捐赠额", "实际捐赠额", "1", true));
+		map_SetColumnsList.put("允许列支的捐赠比例", new TmplConfigDetail("允许列支的捐赠比例", "允许列支的捐赠比例", "1", false));
+		map_SetColumnsList.put("准予扣除的捐赠额", new TmplConfigDetail("准予扣除的捐赠额", "准予扣除的捐赠额", "1", true));
+		map_SetColumnsList.put("减免税额", new TmplConfigDetail("减免税额", "减免税额", "1", true));
+		map_SetColumnsList.put("备注", new TmplConfigDetail("备注", "备注", "1", false));
 		
 		String strBillOffName = "";
 		if(ListDicFMISACC != null){

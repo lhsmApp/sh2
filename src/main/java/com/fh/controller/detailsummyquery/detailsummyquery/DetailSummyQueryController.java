@@ -439,17 +439,21 @@ public class DetailSummyQueryController extends BaseController {
 					int j = 1;
 					for (TmplConfigDetail col : map_SetColumnsList.values()) {
 						if(col.getCOL_HIDE().equals("1")){
-						String trans = col.getDICT_TRANS();
-						Object getCellValue = varOList.get(i).get(col.getCOL_CODE().toUpperCase());
-						if(trans != null && !trans.trim().equals("")){
-							String value = "";
-							Map<String, String> dicAdd = (Map<String, String>) DicList.getOrDefault(trans, new LinkedHashMap<String, String>());
-							value = dicAdd.getOrDefault(getCellValue, "");
-							vpd.put("var" + j, value);
-						} else {
-							vpd.put("var" + j, getCellValue.toString());
-						}
-						j++;
+						    String trans = col.getDICT_TRANS();
+						    Object getCellValue = varOList.get(i).get(col.getCOL_CODE().toUpperCase());
+						    if(trans != null && !trans.trim().equals("")){
+							    String value = "";
+							    Map<String, String> dicAdd = (Map<String, String>) DicList.getOrDefault(trans, new LinkedHashMap<String, String>());
+							    value = dicAdd.getOrDefault(getCellValue, "");
+							    vpd.put("var" + j, value);
+						    } else {
+						    	if(getCellValue != null){
+							    	vpd.put("var" + j, getCellValue.toString());
+						    	} else {
+							    	vpd.put("var" + j, "");
+						    	}
+						    }
+						    j++;
 						}
 					}
 					varList.add(vpd);

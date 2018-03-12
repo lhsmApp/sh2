@@ -82,6 +82,8 @@ public class DetailImportQueryController extends BaseController {
     List<String> QueryFeildList = Arrays.asList("BUSI_DATE", "DEPT_CODE", "USER_GROP", "CUST_COL7");
     //有权限导出表的部门
     List<String> DepartCanExportTable = new ArrayList<String>();
+    //不导出数据的部门
+    List<String> DepartNotExportData = new ArrayList<String>();
     List<Dictionaries> ListDicFMISACC = new ArrayList<Dictionaries>();
 
 	/**列表
@@ -104,6 +106,17 @@ public class DetailImportQueryController extends BaseController {
 		mv.addObject("SystemDateTime", SystemDateTime);
 		//while
 		getPd.put("which", SelectedTableNo);
+	    //不导出数据的部门
+	    DepartNotExportData = new ArrayList<String>();
+		PageData pdNotExportData = new PageData();
+		pdNotExportData.put("KEY_CODE", SysConfigKeyCode.NotExportData);
+		String strNotExportData = sysConfigManager.getSysConfigByKey(pdNotExportData);
+		if(strNotExportData == null) strNotExportData = "";
+		strNotExportData = "0100106,0100107,0100108,0100109";
+		String[] listNotExportData = strNotExportData.replace(" ", "").split(",");
+		if(listNotExportData!=null && listNotExportData.length>0){
+			DepartNotExportData = Arrays.asList(listNotExportData);
+		}
 		//有权限导出表的部门
 		DepartCanExportTable = new ArrayList<String>();
 		Boolean bolCanExportTable = false;
@@ -111,9 +124,9 @@ public class DetailImportQueryController extends BaseController {
 		pdCanExportTable.put("KEY_CODE", SysConfigKeyCode.CanExportTable);
 		String strCanExportTable = sysConfigManager.getSysConfigByKey(pdCanExportTable);
 		if(strCanExportTable == null) strCanExportTable = "";
-		String[] list = strCanExportTable.replace(" ", "").split(",");
-		if(list!=null && list.length>0){
-			DepartCanExportTable = Arrays.asList(list);
+		String[] listCanExportTable = strCanExportTable.replace(" ", "").split(",");
+		if(listCanExportTable!=null && listCanExportTable.length>0){
+			DepartCanExportTable = Arrays.asList(listCanExportTable);
 			if(DepartCanExportTable.contains(Jurisdiction.getCurrentDepartmentID())){
 				bolCanExportTable = true;
 			}
@@ -520,7 +533,7 @@ public class DetailImportQueryController extends BaseController {
 	 * @param response
 	 * @throws Exception
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "unused" })
 	@RequestMapping(value="/excel")
 	public ModelAndView exportExcel(JqPage page) throws Exception{
 		PageData getPd = this.getPageData();
@@ -564,6 +577,20 @@ public class DetailImportQueryController extends BaseController {
 			}
 		} else {
 			WhereSql += " and DEPT_CODE = '" + Jurisdiction.getCurrentDepartmentID() + "' ";
+		}
+	    //不导出数据的部门
+	    //DepartNotExportData = new ArrayList<String>();
+		if(DepartNotExportData != null){
+			List<String> listNotExportData = new ArrayList<String>();
+			for(String strDeptCode : DepartNotExportData){
+				if(strDeptCode!=null && !strDeptCode.trim().equals("")){
+					listNotExportData.add(strDeptCode);
+				}
+			}
+			if(listNotExportData!=null && listNotExportData.size()>0){
+				String strNotExportData = QueryFeildString.tranferListValueToSqlInString(listNotExportData);
+				WhereSql += " and DEPT_CODE not in (" + strNotExportData + ") ";
+			}
 		}
 		WhereSql += QueryFeildString.getBillCodeNotInSumInvalidDetail(getSummyBillTableCode(SelectedTableNo));
 		
@@ -630,42 +657,42 @@ public class DetailImportQueryController extends BaseController {
 
 		Map<String, TmplConfigDetail> map_SetColumnsList = new LinkedHashMap<String, TmplConfigDetail>();
 				//Common.GetSetColumnsList(SelectedTableNo, SelectedDepartCode, SelectedCustCol7, tmplconfigService);
-		map_SetColumnsList.put("USER_CODE", new TmplConfigDetail("USER_CODE", "工号", "1"));
-		map_SetColumnsList.put("USER_NAME", new TmplConfigDetail("USER_NAME", "姓名", "1"));
-		map_SetColumnsList.put("CERT_TYPE", new TmplConfigDetail("CERT_TYPE", "证件类型", "1"));
-		map_SetColumnsList.put("STAFF_IDENT", new TmplConfigDetail("STAFF_IDENT", "证件号码", "1"));
-		map_SetColumnsList.put("TAX_BURDENS", new TmplConfigDetail("TAX_BURDENS", "税款负担方式", "1"));
+		map_SetColumnsList.put("USER_CODE", new TmplConfigDetail("USER_CODE", "工号", "1", false));
+		map_SetColumnsList.put("USER_NAME", new TmplConfigDetail("USER_NAME", "姓名", "1", false));
+		map_SetColumnsList.put("CERT_TYPE", new TmplConfigDetail("CERT_TYPE", "证件类型", "1", false));
+		map_SetColumnsList.put("STAFF_IDENT", new TmplConfigDetail("STAFF_IDENT", "证件号码", "1", false));
+		map_SetColumnsList.put("TAX_BURDENS", new TmplConfigDetail("TAX_BURDENS", "税款负担方式", "1", false));
 		if(SalaryOrBonus.equals(StaffDataType.Salary.getNameKey())){
-			map_SetColumnsList.put("GROSS_PAY", new TmplConfigDetail("GROSS_PAY", "收入额", "1"));
-			map_SetColumnsList.put("免税所得", new TmplConfigDetail("免税所得", "免税所得", "1"));
-			map_SetColumnsList.put("ENDW_INS", new TmplConfigDetail("ENDW_INS", "基本养老保险费", "1"));
-			map_SetColumnsList.put("MED_INS", new TmplConfigDetail("MED_INS", "基本医疗保险费", "1"));
-			map_SetColumnsList.put("UNEMPL_INS", new TmplConfigDetail("UNEMPL_INS", "失业保险费", "1"));
-			map_SetColumnsList.put("HOUSE_FUND", new TmplConfigDetail("HOUSE_FUND", "住房公积金", "1"));
-			map_SetColumnsList.put("KID_ALLE", new TmplConfigDetail("KID_ALLE", "允许扣除的税费", "1"));
-			map_SetColumnsList.put("SUP_PESN", new TmplConfigDetail("SUP_PESN", "年金", "1"));
-			map_SetColumnsList.put("商业健康保险费", new TmplConfigDetail("商业健康保险费", "商业健康保险费", "1"));
-			map_SetColumnsList.put("其他扣除", new TmplConfigDetail("其他扣除", "其他扣除", "1"));
-			map_SetColumnsList.put("减除费用", new TmplConfigDetail("减除费用", "减除费用", "1"));
-			map_SetColumnsList.put("实际捐赠额", new TmplConfigDetail("实际捐赠额", "实际捐赠额", "1"));
-			map_SetColumnsList.put("允许列支的捐赠比例", new TmplConfigDetail("允许列支的捐赠比例", "允许列支的捐赠比例", "1"));
-			map_SetColumnsList.put("准予扣除的捐赠额", new TmplConfigDetail("准予扣除的捐赠额", "准予扣除的捐赠额", "1"));
-			map_SetColumnsList.put("减免税额", new TmplConfigDetail("减免税额", "减免税额", "1"));
-			map_SetColumnsList.put("已扣缴税额", new TmplConfigDetail("已扣缴税额", "已扣缴税额", "1"));
+			map_SetColumnsList.put("GROSS_PAY", new TmplConfigDetail("GROSS_PAY", "收入额", "1", true));
+			map_SetColumnsList.put("免税所得", new TmplConfigDetail("免税所得", "免税所得", "1", true));
+			map_SetColumnsList.put("ENDW_INS", new TmplConfigDetail("ENDW_INS", "基本养老保险费", "1", true));
+			map_SetColumnsList.put("MED_INS", new TmplConfigDetail("MED_INS", "基本医疗保险费", "1", true));
+			map_SetColumnsList.put("UNEMPL_INS", new TmplConfigDetail("UNEMPL_INS", "失业保险费", "1", true));
+			map_SetColumnsList.put("HOUSE_FUND", new TmplConfigDetail("HOUSE_FUND", "住房公积金", "1", true));
+			map_SetColumnsList.put("KID_ALLE", new TmplConfigDetail("KID_ALLE", "允许扣除的税费", "1", true));
+			map_SetColumnsList.put("SUP_PESN", new TmplConfigDetail("SUP_PESN", "年金", "1", true));
+			map_SetColumnsList.put("商业健康保险费", new TmplConfigDetail("商业健康保险费", "商业健康保险费", "1", true));
+			map_SetColumnsList.put("其他扣除", new TmplConfigDetail("其他扣除", "其他扣除", "1", true));
+			map_SetColumnsList.put("减除费用", new TmplConfigDetail("减除费用", "减除费用", "1", true));
+			map_SetColumnsList.put("实际捐赠额", new TmplConfigDetail("实际捐赠额", "实际捐赠额", "1", true));
+			map_SetColumnsList.put("允许列支的捐赠比例", new TmplConfigDetail("允许列支的捐赠比例", "允许列支的捐赠比例", "1", false));
+			map_SetColumnsList.put("准予扣除的捐赠额", new TmplConfigDetail("准予扣除的捐赠额", "准予扣除的捐赠额", "1", true));
+			map_SetColumnsList.put("减免税额", new TmplConfigDetail("减免税额", "减免税额", "1", true));
+			map_SetColumnsList.put("已扣缴税额", new TmplConfigDetail("已扣缴税额", "已扣缴税额", "1", true));
 		}
         if(SalaryOrBonus.equals(StaffDataType.Bonus.getNameKey())){
-			map_SetColumnsList.put("CUST_COL14", new TmplConfigDetail("CUST_COL14", "全年一次性奖金额", "1"));
-			map_SetColumnsList.put("免税所得", new TmplConfigDetail("免税所得", "免税所得", "1"));
-			map_SetColumnsList.put("允许扣除的税费", new TmplConfigDetail("允许扣除的税费", "允许扣除的税费", "1"));
-			map_SetColumnsList.put("商业健康保险费", new TmplConfigDetail("商业健康保险费", "商业健康保险费", "1"));
-			map_SetColumnsList.put("其他费用", new TmplConfigDetail("其他费用", "其他费用", "1"));
-			map_SetColumnsList.put("实际捐赠额", new TmplConfigDetail("实际捐赠额", "实际捐赠额", "1"));
-			map_SetColumnsList.put("允许列支的捐赠比例", new TmplConfigDetail("允许列支的捐赠比例", "允许列支的捐赠比例", "1"));
-			map_SetColumnsList.put("准予扣除的捐赠额", new TmplConfigDetail("准予扣除的捐赠额", "准予扣除的捐赠额", "1"));
-			map_SetColumnsList.put("减免税额", new TmplConfigDetail("减免税额", "减免税额", "1"));
-			map_SetColumnsList.put("已缴税额", new TmplConfigDetail("已缴税额", "已缴税额", "1"));
+			map_SetColumnsList.put("CUST_COL14", new TmplConfigDetail("CUST_COL14", "全年一次性奖金额", "1", true));
+			map_SetColumnsList.put("免税所得", new TmplConfigDetail("免税所得", "免税所得", "1", true));
+			map_SetColumnsList.put("允许扣除的税费", new TmplConfigDetail("允许扣除的税费", "允许扣除的税费", "1", true));
+			map_SetColumnsList.put("商业健康保险费", new TmplConfigDetail("商业健康保险费", "商业健康保险费", "1", true));
+			map_SetColumnsList.put("其他费用", new TmplConfigDetail("其他费用", "其他费用", "1", true));
+			map_SetColumnsList.put("实际捐赠额", new TmplConfigDetail("实际捐赠额", "实际捐赠额", "1", true));
+			map_SetColumnsList.put("允许列支的捐赠比例", new TmplConfigDetail("允许列支的捐赠比例", "允许列支的捐赠比例", "1", false));
+			map_SetColumnsList.put("准予扣除的捐赠额", new TmplConfigDetail("准予扣除的捐赠额", "准予扣除的捐赠额", "1", true));
+			map_SetColumnsList.put("减免税额", new TmplConfigDetail("减免税额", "减免税额", "1", true));
+			map_SetColumnsList.put("已缴税额", new TmplConfigDetail("已缴税额", "已缴税额", "1", true));
 		}
-		map_SetColumnsList.put("备注", new TmplConfigDetail("备注", "备注", "1"));
+		map_SetColumnsList.put("备注", new TmplConfigDetail("备注", "备注", "1", false));
 
 		String strBillOffName = "";
 		if(ListDicFMISACC != null){
@@ -726,7 +753,19 @@ public class DetailImportQueryController extends BaseController {
 							    value = dicAdd.getOrDefault(getCellValue, "");
 							    vpd.put("var" + j, value);
 						    } else {
-							    vpd.put("var" + j, getCellValue.toString());
+						    	if(getCellValue != null && !getCellValue.toString().trim().equals("")){
+						    		if(col.getIsNum()){
+								    	vpd.put("var" + j, getCellValue.toString());
+						    		} else {
+								    	vpd.put("var" + j, getCellValue.toString());
+						    		}
+						    	} else {
+						    		if(col.getIsNum()){
+								    	vpd.put("var" + j, "0.00");
+						    		} else {
+								    	vpd.put("var" + j, " ");
+						    		}
+						    	}
 						    }
 						    j++;
 						}
