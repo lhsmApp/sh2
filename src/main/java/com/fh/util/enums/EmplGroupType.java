@@ -3,9 +3,9 @@ package com.fh.util.enums;
 public enum EmplGroupType {
 	SCH("50210001","市场化"),
 	HTH("50210002","合同化"),
+	XTNLW("50210005","系统内劳务"),
 	YXRY("50210003","运行人员"),
-	LWPQ("50210004","劳务派遣"),
-	XTNLW("50210005","系统内劳务");
+	LWPQ("50210004","劳务派遣");
 	
 	private String nameKey;
 

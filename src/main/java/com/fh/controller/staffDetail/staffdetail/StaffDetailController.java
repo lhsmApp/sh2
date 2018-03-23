@@ -35,14 +35,13 @@ import com.fh.entity.Page;
 import com.fh.entity.PageResult;
 import com.fh.entity.TableColumns;
 import com.fh.entity.TmplConfigDetail;
-import com.fh.entity.system.Department;
-import com.fh.entity.system.Dictionaries;
 import com.fh.entity.system.User;
 import com.fh.exception.CustomException;
 import com.fh.util.ObjectExcelView;
 import com.fh.util.PageData;
 import com.fh.util.SqlTools;
 import com.fh.util.enums.BillState;
+import com.fh.util.enums.EmplGroupType;
 import com.fh.util.enums.StaffDataType;
 import com.fh.util.enums.SysConfigKeyCode;
 import com.fh.util.enums.TmplType;
@@ -774,6 +773,21 @@ public class StaffDetailController extends BaseController {
 		
 		String strErrorMessage = "";
 		//String strImportDataType = "";
+	    String CurrentDepartCode = Jurisdiction.getCurrentDepartmentID();
+
+		String YXRY = EmplGroupType.YXRY.getNameKey();
+		String LWPQ = EmplGroupType.LWPQ.getNameKey();
+		//责任中心-华北石油管理局-0100107
+		String DEPT_CODE_0100107 = "0100107";
+		//责任中心-中国石油天然气管道局-0100108
+		String DEPT_CODE_0100108 = "0100108";
+
+		//工资范围编码-东零
+		String SAL_RANGE_dong_0 = "S12";
+		//企业特定员工分类-管道局劳务-PUT05
+		String USER_CATG_GDJLW = "PUT05";
+		//企业特定员工分类-华北油田公司劳务-PUT06
+		String USER_CATG_hbytgslw = "PUT06";
 
 		PageData getPd = this.getPageData();
 		//员工组
@@ -855,9 +869,22 @@ public class StaffDetailController extends BaseController {
 							// 调用解析工具包
 							testExcel = new LeadingInExcelToPageData<PageData>(formart);
 							// 解析excel，获取客户信息集合
-
+							
+							Boolean bolIsDicSetSAL_RANGE = false;
+							Boolean bolIsDicSetUSER_CATG = false;
+						    if((CurrentDepartCode!=null && CurrentDepartCode.equals(DictsUtil.DepartShowAll))
+						    		&& (emplGroupType.equals(YXRY))
+									&& (SelectedDepartCode!=null && SelectedDepartCode.equals(DictsUtil.DepartShowAll))){
+						    	bolIsDicSetSAL_RANGE = true;
+						    }
+						    if((CurrentDepartCode!=null && CurrentDepartCode.equals(DictsUtil.DepartShowAll))
+						    		&& (emplGroupType.equals(YXRY))
+									&& (SelectedDepartCode.equals(DEPT_CODE_0100107) || SelectedDepartCode.equals(DEPT_CODE_0100108))){
+						    	//LWPQ.equals(getUSER_GROP) && (USER_CATG_GDJLW.equals(getUSER_CATG) || USER_CATG_hbytgslw.equals(getUSER_CATG))
+						    	bolIsDicSetUSER_CATG = true;
+						    }
 							uploadAndReadMap = testExcel.uploadAndRead(file, propertiesFileName, kyeName, sheetIndex,
-									titleAndAttribute, map_HaveColumnsList, map_SetColumnsList, DicList);
+									titleAndAttribute, map_HaveColumnsList, map_SetColumnsList, DicList, bolIsDicSetSAL_RANGE, bolIsDicSetUSER_CATG);
 						} catch (Exception e) {
 							e.printStackTrace();
 							logger.error("读取Excel文件错误", e);
@@ -889,6 +916,91 @@ public class StaffDetailController extends BaseController {
 									PageData pdAdd = listUploadAndRead.get(i);
 									String getUSER_CODE = (String) pdAdd.get("USER_CODE");
 									if(getUSER_CODE!=null && !getUSER_CODE.trim().equals("")){
+									    String getCUST_COL7 = (String) pdAdd.get("CUST_COL7");
+									    String getUSER_GROP = (String) pdAdd.get("USER_GROP");
+										
+										if(!(getCUST_COL7!=null && !getCUST_COL7.trim().equals(""))){
+										    pdAdd.put("CUST_COL7", SelectedCustCol7);
+										    getCUST_COL7 = SelectedCustCol7;
+									    }
+									    /*if(!SelectedCustCol7.equals(getCUST_COL7)){
+									    	continue;
+									    }*/
+									    /*if(!(getUSER_GROP!=null && !getUSER_GROP.trim().equals(""))){
+									        pdAdd.put("USER_GROP", emplGroupType);
+									        getUSER_GROP = emplGroupType;
+								        }*/
+
+									    //工资范围编码
+										String getSAL_RANGE = (String) pdAdd.get("SAL_RANGE");
+										//企业特定员工分类
+										String getUSER_CATG = (String) pdAdd.get("USER_CATG");
+									    if((CurrentDepartCode!=null && CurrentDepartCode.equals(DictsUtil.DepartShowAll))
+									    		&& (emplGroupType.equals(YXRY))
+												&& (SelectedDepartCode!=null && SelectedDepartCode.equals(DictsUtil.DepartShowAll))){
+									    	if(LWPQ.equals(getUSER_GROP) && SAL_RANGE_dong_0.equals(getSAL_RANGE)){
+											    pdAdd.put("USER_GROP", YXRY);
+											    getUSER_GROP = YXRY;
+									    	}
+									    }
+									    if((CurrentDepartCode!=null && CurrentDepartCode.equals(DictsUtil.DepartShowAll))
+									    		&& (emplGroupType.equals(YXRY))
+												&& (SelectedDepartCode.equals(DEPT_CODE_0100107) || SelectedDepartCode.equals(DEPT_CODE_0100108))){
+									    	if(LWPQ.equals(getUSER_GROP) && (USER_CATG_GDJLW.equals(getUSER_CATG) || USER_CATG_hbytgslw.equals(getUSER_CATG))){
+											    pdAdd.put("USER_GROP", YXRY);
+											    getUSER_GROP = YXRY;
+									    	}
+									    }
+									    
+									    if(!emplGroupType.equals(getUSER_GROP)){
+								    	    continue;
+								        }
+										String SCH = EmplGroupType.SCH.getNameKey();
+										String HTH = EmplGroupType.HTH.getNameKey();
+										String XTNLW = EmplGroupType.XTNLW.getNameKey();
+										if((CurrentDepartCode!=null && CurrentDepartCode.equals(DictsUtil.DepartShowAll))
+												&& (SelectedDepartCode!=null && SelectedDepartCode.equals(DictsUtil.DepartShowAll))
+												&& (emplGroupType.equals(SCH) || emplGroupType.equals(HTH) || emplGroupType.equals(XTNLW))){
+											//账套-新西气东输公司-9870
+											String CUST_COL7_xxqdsgs = "9870";
+											//企业特定员工分类-东部管道机关-PUT02
+											String USER_CATG_DBGDJG = "PUT02";
+											//账套-西气东输管道-9100
+											String CUST_COL7_xqdsgd = "9100";
+											//企业特定员工分类-西气东输管道机关-PUT04
+											String USER_CATG_XQDSGDJG = "PUT04";
+											
+											//工资范围编码-东零    String SAL_RANGE_dong_0 = "S12";
+											if(!(getSAL_RANGE!=null && getSAL_RANGE.equals(SAL_RANGE_dong_0))){
+									    	    continue;
+											}
+											//账套-新西气东输公司-9870 String CUST_COL7_xxqdsgs = "9870";
+											//企业特定员工分类-东部管道机关-PUT02 String USER_CATG_DBGDJG = "PUT02";
+											if(getCUST_COL7.equals(CUST_COL7_xxqdsgs)){
+												if(!(getUSER_CATG!=null && getUSER_CATG.equals(USER_CATG_DBGDJG))){
+										    	    continue;
+												}
+											}
+											//账套-西气东输管道-9100 String CUST_COL7_xqdsgd = "9100";
+											//企业特定员工分类-西气东输管道机关-9870 String USER_CATG_XQDSGDJG = "PUT04";
+											if(getCUST_COL7.equals(CUST_COL7_xqdsgd)){
+												if(!(getUSER_CATG!=null && getUSER_CATG.equals(USER_CATG_XQDSGDJG))){
+										    	    continue;
+												}
+											}
+										}
+										
+									    if(!SelectedCustCol7.equals(getCUST_COL7)){
+									    	if(!sbRet.contains("导入账套和当前账套必须一致！")){
+											    sbRet.add("导入账套和当前账套必须一致！");
+										    }
+									    }
+									    /*if(!emplGroupType.equals(getUSER_GROP)){
+										    if(!sbRet.contains("导入员工组和当前员工组必须一致！")){
+											    sbRet.add("导入员工组和当前员工组必须一致！");
+										    }
+									    }*/
+
 										pdAdd.put("SERIAL_NO", "");
 										String getBILL_CODE = (String) pdAdd.get("BILL_CODE");
 										if(!(getBILL_CODE!=null && !getBILL_CODE.trim().equals(""))){
@@ -913,32 +1025,6 @@ public class StaffDetailController extends BaseController {
 												}
 											}
 										}
-									    String getCUST_COL7 = (String) pdAdd.get("CUST_COL7");
-									    /*if(!SelectedCustCol7.equals(getCUST_COL7)){
-									    	continue;
-									    }*/
-										if(!(getCUST_COL7!=null && !getCUST_COL7.trim().equals(""))){
-										    pdAdd.put("CUST_COL7", SelectedCustCol7);
-										    getCUST_COL7 = SelectedCustCol7;
-									    }
-									    if(!SelectedCustCol7.equals(getCUST_COL7)){
-									    	if(!sbRet.contains("导入账套和当前账套必须一致！")){
-											    sbRet.add("导入账套和当前账套必须一致！");
-										    }
-									    }
-									    String getUSER_GROP = (String) pdAdd.get("USER_GROP");
-									    if(!emplGroupType.equals(getUSER_GROP)){
-								    	    continue;
-								        }
-									    /*if(!(getUSER_GROP!=null && !getUSER_GROP.trim().equals(""))){
-										    pdAdd.put("USER_GROP", emplGroupType);
-										    getUSER_GROP = emplGroupType;
-									    }
-									    if(!emplGroupType.equals(getUSER_GROP)){
-										    if(!sbRet.contains("导入员工组和当前员工组必须一致！")){
-											    sbRet.add("导入员工组和当前员工组必须一致！");
-										    }
-									    }*/
 										String getBUSI_DATE = (String) pdAdd.get("BUSI_DATE");
 										String getDEPT_CODE = (String) pdAdd.get("DEPT_CODE");
 										/*String getDATA_TYPE = (String) pdAdd.get("DATA_TYPE");*/

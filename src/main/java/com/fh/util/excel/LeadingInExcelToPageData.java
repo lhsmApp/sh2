@@ -36,6 +36,7 @@ import com.fh.entity.TableColumns;
 import com.fh.entity.TmplConfigDetail;
 import com.fh.util.PageData;
 import com.fh.util.base.StochasticUtil;
+import com.fh.util.enums.EmplGroupType;
 
 
 /**
@@ -91,7 +92,8 @@ public class LeadingInExcelToPageData<T> {
     public Map<Integer, Object> uploadAndRead(MultipartFile multipart,String propertiesFileName, String kyeName,int sheetIndex,
             Map<String, String> titleAndAttribute,
             Map<String, TableColumns> map_HaveColumnsList,
-    		Map<String, TmplConfigDetail> map_SetColumnsList, Map<String, Object> DicList) throws Exception{
+    		Map<String, TmplConfigDetail> map_SetColumnsList, Map<String, Object> DicList,
+			Boolean bolIsDicSetSAL_RANGE, Boolean bolIsDicSetUSER_CATG) throws Exception{
         
             String originalFilename=null;
             int i = 0;
@@ -106,7 +108,7 @@ public class LeadingInExcelToPageData<T> {
             
             String filePath = readPropertiesFilePathMethod( propertiesFileName, kyeName);
             File filePathname = this.upload(multipart, filePath, isExcel2003);
-            Map<Integer, Object> judgementVersion = judgementVersion(filePathname, sheetIndex, titleAndAttribute, map_HaveColumnsList, isExcel2003, map_SetColumnsList, DicList);
+            Map<Integer, Object> judgementVersion = judgementVersion(filePathname, sheetIndex, titleAndAttribute, map_HaveColumnsList, isExcel2003, map_SetColumnsList, DicList, bolIsDicSetSAL_RANGE, bolIsDicSetUSER_CATG);
         
         return judgementVersion;
     }
@@ -216,7 +218,8 @@ public class LeadingInExcelToPageData<T> {
      */
     public Map<Integer, Object> judgementVersion(File filePathname,int sheetIndex,Map<String, String> titleAndAttribute,
     		Map<String, TableColumns> map_HaveColumnsList,boolean isExcel2003,
-    		Map<String, TmplConfigDetail> map_SetColumnsList, Map<String, Object> DicList) throws Exception{
+    		Map<String, TmplConfigDetail> map_SetColumnsList, Map<String, Object> DicList,
+			Boolean bolIsDicSetSAL_RANGE, Boolean bolIsDicSetUSER_CATG) throws Exception{
         
         FileInputStream is=null;
         POIFSFileSystem fs=null;
@@ -246,7 +249,7 @@ public class LeadingInExcelToPageData<T> {
                 }
             }
         
-        return readExcelTitle(workbook,sheetIndex,titleAndAttribute,map_HaveColumnsList, map_SetColumnsList, DicList);
+        return readExcelTitle(workbook,sheetIndex,titleAndAttribute,map_HaveColumnsList, map_SetColumnsList, DicList, bolIsDicSetSAL_RANGE, bolIsDicSetUSER_CATG);
     }
 
     /**
@@ -260,7 +263,8 @@ public class LeadingInExcelToPageData<T> {
      */
     private Map<Integer, Object> readExcelTitle(Workbook workbook,int sheetIndex,Map<String, String> titleAndAttribute,
     		Map<String, TableColumns> map_HaveColumnsList,
-    		Map<String, TmplConfigDetail> map_SetColumnsList, Map<String, Object> DicList) throws Exception{
+    		Map<String, TmplConfigDetail> map_SetColumnsList, Map<String, Object> DicList,
+			Boolean bolIsDicSetSAL_RANGE, Boolean bolIsDicSetUSER_CATG) throws Exception{
 
         //得到第一个shell  
         Sheet sheet = workbook.getSheetAt(sheetIndex);
@@ -290,7 +294,7 @@ public class LeadingInExcelToPageData<T> {
             }
         }
 
-        return readExcelValue(workbook,sheet,attribute,map_HaveColumnsList, map_SetColumnsList, DicList);
+        return readExcelValue(workbook,sheet,attribute,map_HaveColumnsList, map_SetColumnsList, DicList, bolIsDicSetSAL_RANGE, bolIsDicSetUSER_CATG);
         
     }
     
@@ -306,7 +310,8 @@ public class LeadingInExcelToPageData<T> {
     @SuppressWarnings("unchecked")
 	private Map<Integer, Object> readExcelValue(Workbook workbook,Sheet sheet,Map<Integer, String> attribute,
 			Map<String, TableColumns> map_HaveColumnsList,
-			Map<String, TmplConfigDetail> map_SetColumnsList, Map<String, Object> DicList) throws Exception{
+			Map<String, TmplConfigDetail> map_SetColumnsList, Map<String, Object> DicList,
+			Boolean bolIsDicSetSAL_RANGE, Boolean bolIsDicSetUSER_CATG) throws Exception{
     	Map<Integer, Object> returnMap = new HashMap<Integer, Object>();
     	Map<String, Object> returnError = new HashMap<String, Object>();
         List<PageData> info=new ArrayList<PageData>();
@@ -378,11 +383,44 @@ public class LeadingInExcelToPageData<T> {
             			if(trans != null && !trans.trim().equals("")){
             				Map<String, String> dicAdd = (Map<String, String>) DicList.getOrDefault(trans, new HashMap<String, String>());
                             String getKey = "";
+                            String getExtraKayUSER_CATG = "";
+                            String gsjs = "公司结算";
+							//企业特定员工分类-管道局劳务-PUT05
+							String USER_CATG_GDJLW = "管道局劳务";
+							//企业特定员工分类-华北油田公司劳务-PUT06
+							String USER_CATG_hbytlw = "华北油田劳务";
+							String USER_CATG_hbytgslw = "华北油田公司劳务";
+
+                            String getExtraKayUSER_GROP = "";
+							String USER_GROP_LWYG = "劳务用工";
+							
+							String transValue = value.replace(" ", "").replace("(", "").replace(")", "").replace("（", "").replace("）", "");
+                            
             				for (Map.Entry<String, String> dic :dicAdd.entrySet())  {
             					if(value.equals(dic.getValue().toString())){
             						getKey = dic.getKey();
                                 }
+            					if((transValue.equals(USER_CATG_GDJLW + gsjs) && USER_CATG_GDJLW.equals(dic.getValue().toString()))
+            							|| (transValue.equals(USER_CATG_hbytlw + gsjs) && USER_CATG_hbytgslw.equals(dic.getValue().toString()))){
+            						getExtraKayUSER_CATG = dic.getKey();
+            					}
             			    }  
+            				if(!(getKey != null && !getKey.trim().equals(""))){
+                				if((bolIsDicSetUSER_CATG || bolIsDicSetSAL_RANGE)){
+                					if(USER_GROP_LWYG.equals(value)){
+                						getExtraKayUSER_GROP = EmplGroupType.LWPQ.getNameKey();
+                					}
+                					if(COL_CODE.equals("USER_GROP")){
+                    					getKey = getExtraKayUSER_GROP;
+                					}
+                				}
+                				if((bolIsDicSetUSER_CATG)){// && LWPQ.equals(getUSER_GROP)
+                					if(COL_CODE.equals("USER_CATG")){
+        								//企业特定员工分类       管道局劳务（公司结算）      华北油田劳务（公司结算）
+                    					getKey = getExtraKayUSER_CATG;
+                					}
+                				}
+            				}
             				if(!(getKey != null && !getKey.trim().equals(""))){
             					returnError.put(itemCol.getCOL_NAME(), value);
             				}

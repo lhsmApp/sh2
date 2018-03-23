@@ -32,6 +32,7 @@ import com.fh.util.ObjectExcelView;
 import com.fh.util.PageData;
 import com.fh.util.SqlTools;
 import com.fh.util.Jurisdiction;
+import com.fh.util.enums.BillState;
 import com.fh.util.enums.SysConfigKeyCode;
 import com.fh.util.enums.TmplType;
 
@@ -156,6 +157,7 @@ public class DetailSummyQueryController extends BaseController {
 		getQueryFeildPd.put("CUST_COL7", SelectedCustCol7);
 		getQueryFeildPd.put("BUSI_DATE", SelectedBusiDate);
 		String QueryFeild = QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList);
+		QueryFeild += " and BILL_STATE = '" + BillState.Normal.getNameKey() + "' ";
 		QueryFeild += " and DEPT_CODE in (" + QueryFeildString.tranferListValueToSqlInString(AllDeptCode) + ") ";//工资无账套无数据
 		if(!(SelectedCustCol7!=null && !SelectedCustCol7.trim().equals(""))){
 			QueryFeild += " and 1 != 1 ";
@@ -557,6 +559,7 @@ public class DetailSummyQueryController extends BaseController {
 		getQueryFeildPd.put("BUSI_DATE", SelectedBusiDate);
 		String QueryFeild = QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList);
 		QueryFeild += QueryFeildString.getQueryFeildBillCodeSummy(SelectedBillCode, SelectBillCodeFirstShow, SelectBillCodeLastShow);
+		QueryFeild += " and BILL_STATE = '" + BillState.Normal.getNameKey() + "' ";
 		QueryFeild += " and DEPT_CODE in (" + QueryFeildString.tranferListValueToSqlInString(AllDeptCode) + ") ";
 		if(!(SelectedCustCol7!=null && !SelectedCustCol7.trim().equals(""))){
 			QueryFeild += " and 1 != 1 ";

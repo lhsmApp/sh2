@@ -32,6 +32,7 @@ import com.fh.entity.system.Dictionaries;
 import com.fh.util.ObjectExcelView;
 import com.fh.util.PageData;
 import com.fh.util.SqlTools;
+import com.fh.util.enums.EmplGroupType;
 import com.fh.util.enums.StaffDataType;
 import com.fh.util.enums.SysConfigKeyCode;
 import com.fh.util.enums.TmplType;
@@ -82,8 +83,12 @@ public class DetailImportQueryController extends BaseController {
     List<String> QueryFeildList = Arrays.asList("BUSI_DATE", "DEPT_CODE", "USER_GROP", "CUST_COL7");
     //有权限导出表的部门
     List<String> DepartCanExportTable = new ArrayList<String>();
+    //不导出数据的二级单位UNITS_CODE
+    List<String> UnitsNotExportData = new ArrayList<String>();
     //不导出数据的部门
     List<String> DepartNotExportData = new ArrayList<String>();
+    //导出数据的员工组
+    List<String> GroupIsExportData = new ArrayList<String>();
     List<Dictionaries> ListDicFMISACC = new ArrayList<Dictionaries>();
 
 	/**列表
@@ -106,16 +111,41 @@ public class DetailImportQueryController extends BaseController {
 		mv.addObject("SystemDateTime", SystemDateTime);
 		//while
 		getPd.put("which", SelectedTableNo);
+	    //导出数据的员工组
+	    GroupIsExportData = new ArrayList<String>();
+		PageData pdGroupIsExportData = new PageData();
+		pdGroupIsExportData.put("KEY_CODE", SysConfigKeyCode.GroupIsExportData);
+		String strGroupIsExportData = sysConfigManager.getSysConfigByKey(pdGroupIsExportData);
+		if(strGroupIsExportData == null) strGroupIsExportData = "";
+		String SCH = EmplGroupType.SCH.getNameKey();
+		String HTH = EmplGroupType.HTH.getNameKey();
+		String YXRY = EmplGroupType.YXRY.getNameKey();
+		strGroupIsExportData = SCH + "," + HTH + "," + YXRY;
+		String[] listGroupIsExportData = strGroupIsExportData.replace(" ", "").split(",");
+		if(listGroupIsExportData!=null && listGroupIsExportData.length>0){
+			GroupIsExportData = Arrays.asList(listGroupIsExportData);
+		}
 	    //不导出数据的部门
 	    DepartNotExportData = new ArrayList<String>();
-		PageData pdNotExportData = new PageData();
-		pdNotExportData.put("KEY_CODE", SysConfigKeyCode.NotExportData);
-		String strNotExportData = sysConfigManager.getSysConfigByKey(pdNotExportData);
-		if(strNotExportData == null) strNotExportData = "";
-		strNotExportData = "0100106,0100107,0100108,0100109";
-		String[] listNotExportData = strNotExportData.replace(" ", "").split(",");
-		if(listNotExportData!=null && listNotExportData.length>0){
-			DepartNotExportData = Arrays.asList(listNotExportData);
+		PageData pdDepartNotExportData = new PageData();
+		pdDepartNotExportData.put("KEY_CODE", SysConfigKeyCode.DepartNotExportData);
+		String strDepartNotExportData = sysConfigManager.getSysConfigByKey(pdDepartNotExportData);
+		if(strDepartNotExportData == null) strDepartNotExportData = "";
+		strDepartNotExportData = "01009,01017";
+		String[] listDepartNotExportData = strDepartNotExportData.replace(" ", "").split(",");
+		if(listDepartNotExportData!=null && listDepartNotExportData.length>0){
+			DepartNotExportData = Arrays.asList(listDepartNotExportData);
+		}
+	    //不导出数据的部门
+		UnitsNotExportData = new ArrayList<String>();
+		PageData pdUnitsNotExportData = new PageData();
+		pdUnitsNotExportData.put("KEY_CODE", SysConfigKeyCode.UnitsNotExportData);
+		String strUnitsNotExportData = sysConfigManager.getSysConfigByKey(pdUnitsNotExportData);
+		if(strUnitsNotExportData == null) strUnitsNotExportData = "";
+		strUnitsNotExportData = "0100106,0100107,0100108,0100109";
+		String[] listUnitsNotExportData = strUnitsNotExportData.replace(" ", "").split(",");
+		if(listUnitsNotExportData!=null && listUnitsNotExportData.length>0){
+			UnitsNotExportData = Arrays.asList(listUnitsNotExportData);
 		}
 		//有权限导出表的部门
 		DepartCanExportTable = new ArrayList<String>();
@@ -181,6 +211,7 @@ public class DetailImportQueryController extends BaseController {
 		List<String> AllDeptCode = Common.getAllDeptCode(departmentService, Jurisdiction.getCurrentDepartmentID());
 		
 		String tableNameDetail = getDetailTableCode(SelectedTableNo);
+		String TableNameSummy = getSummyBillTableCode(SelectedTableNo);
 		
 		PageData getQueryFeildPd = new PageData();
 		getQueryFeildPd.put("USER_GROP", emplGroupType);
@@ -188,6 +219,7 @@ public class DetailImportQueryController extends BaseController {
 		getQueryFeildPd.put("CUST_COL7", SelectedCustCol7);
 		getQueryFeildPd.put("BUSI_DATE", SelectedBusiDate);
 		String QueryFeild = QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList);
+		QueryFeild += QueryFeildString.getBillCodeNotInSumInvalidDetail(TableNameSummy);
 		QueryFeild += " and DEPT_CODE in (" + QueryFeildString.tranferListValueToSqlInString(AllDeptCode) + ") ";
 		if(!(SelectedCustCol7!=null && !SelectedCustCol7.trim().equals(""))){
 			QueryFeild += " and 1 != 1 ";
@@ -354,6 +386,7 @@ public class DetailImportQueryController extends BaseController {
 		List<String> AllDeptCode = Common.getAllDeptCode(departmentService, Jurisdiction.getCurrentDepartmentID());
 		
 		String tableNameDetail = getDetailTableCode(SelectedTableNo);
+		String TableNameSummy = getSummyBillTableCode(SelectedTableNo);
 		
 		PageData getQueryFeildPd = new PageData();
 		getQueryFeildPd.put("USER_GROP", emplGroupType);
@@ -361,6 +394,7 @@ public class DetailImportQueryController extends BaseController {
 		getQueryFeildPd.put("CUST_COL7", SelectedCustCol7);
 		getQueryFeildPd.put("BUSI_DATE", SelectedBusiDate);
 		String QueryFeild = QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList);
+		QueryFeild += QueryFeildString.getBillCodeNotInSumInvalidDetail(TableNameSummy);
 		QueryFeild += QueryFeildString.getQueryFeildBillCodeDetail(SelectedBillCode, SelectBillCodeFirstShow);
 		QueryFeild += " and DEPT_CODE in (" + QueryFeildString.tranferListValueToSqlInString(AllDeptCode) + ") ";
 		if(!(SelectedCustCol7!=null && !SelectedCustCol7.trim().equals(""))){
@@ -533,13 +567,12 @@ public class DetailImportQueryController extends BaseController {
 	 * @param response
 	 * @throws Exception
 	 */
-	@SuppressWarnings({ "unchecked", "unused" })
 	@RequestMapping(value="/excel")
 	public ModelAndView exportExcel(JqPage page) throws Exception{
 		PageData getPd = this.getPageData();
 		//员工组
 		String SelectedTableNo = getWhileValue(getPd.getString("DownSelectedTableNo"));
-		String emplGroupType = DictsUtil.getEmplGroupType(SelectedTableNo);
+		//String emplGroupType = DictsUtil.getEmplGroupType(SelectedTableNo);
 		String TableName = getDetailTableCode(SelectedTableNo);
 		//日期
 		String SelectedBusiDate = getPd.getString("DownSelectedBusiDate");
@@ -554,7 +587,20 @@ public class DetailImportQueryController extends BaseController {
 		
 		String WhereSql = " and BUSI_DATE = '" + SelectedBusiDate + "' ";
 		WhereSql += " and CUST_COL7 = '" + SelectedCustCol7 + "' ";
-		WhereSql += " and USER_GROP = '" + emplGroupType + "' ";
+		//WhereSql += " and USER_GROP = '" + emplGroupType + "' ";
+	    //导出数据的员工组
+		if(GroupIsExportData != null){
+			List<String> listGroupIsExportData = new ArrayList<String>();
+			for(String strDeptCode : GroupIsExportData){
+				if(strDeptCode!=null && !strDeptCode.trim().equals("")){
+					listGroupIsExportData.add(strDeptCode);
+				}
+			}
+			if(listGroupIsExportData!=null && listGroupIsExportData.size()>0){
+				String strGroupIsExportData = QueryFeildString.tranferListValueToSqlInString(listGroupIsExportData);
+				WhereSql += " and USER_GROP in (" + strGroupIsExportData + ") ";
+			}
+		}
 		if(DictsUtil.DepartShowAll.equals(Jurisdiction.getCurrentDepartmentID())){
 			if(!(SelectedDepartCode!=null && !SelectedDepartCode.equals(""))){
 				WhereSql += " and 1 != 1 ";
@@ -579,24 +625,38 @@ public class DetailImportQueryController extends BaseController {
 			WhereSql += " and DEPT_CODE = '" + Jurisdiction.getCurrentDepartmentID() + "' ";
 		}
 	    //不导出数据的部门
-	    //DepartNotExportData = new ArrayList<String>();
-		if(DepartNotExportData != null){
-			List<String> listNotExportData = new ArrayList<String>();
-			for(String strDeptCode : DepartNotExportData){
-				if(strDeptCode!=null && !strDeptCode.trim().equals("")){
-					listNotExportData.add(strDeptCode);
+		/*if(DictsUtil.DepartShowAll.equals(Jurisdiction.getCurrentDepartmentID())){
+			if(SelectedDepartCode.equals("ALL") || SelectedDepartCode.equals("HOME")){
+				List<String> listDepartNotExportData = new ArrayList<String>();
+				for(String strDepartCode : DepartNotExportData){
+					if(strDepartCode!=null && !strDepartCode.trim().equals("")){
+						listDepartNotExportData.add(strDepartCode);
+					}
+				}
+				if(listDepartNotExportData!=null && listDepartNotExportData.size()>0){
+					String strDepartNotExportData = QueryFeildString.tranferListValueToSqlInString(listDepartNotExportData);
+					WhereSql += " and DEPT_CODE not in (" + strDepartNotExportData + ") ";
 				}
 			}
-			if(listNotExportData!=null && listNotExportData.size()>0){
-				String strNotExportData = QueryFeildString.tranferListValueToSqlInString(listNotExportData);
-				WhereSql += " and DEPT_CODE not in (" + strNotExportData + ") ";
+		}*/
+	    //不导出数据的二级单位
+		if(UnitsNotExportData != null){
+			List<String> listUnitsNotExportData = new ArrayList<String>();
+			for(String strUnitsCode : UnitsNotExportData){
+				if(strUnitsCode!=null && !strUnitsCode.trim().equals("")){
+					listUnitsNotExportData.add(strUnitsCode);
+				}
+			}
+			if(listUnitsNotExportData!=null && listUnitsNotExportData.size()>0){
+				String strUnitsNotExportData = QueryFeildString.tranferListValueToSqlInString(listUnitsNotExportData);
+				WhereSql += " and UNITS_CODE not in (" + strUnitsNotExportData + ") ";
 			}
 		}
 		WhereSql += QueryFeildString.getBillCodeNotInSumInvalidDetail(getSummyBillTableCode(SelectedTableNo));
 		
 		if(SalaryOrBonus.equals(StaffDataType.Salary.getNameKey())){
 			WhereSql += " and DATA_TYPE = '" + StaffDataType.Salary.getNameKey() + "' ";
-			String SelectGroupFeild = " USER_CODE, DEPT_CODE, USER_GROP, "
+			String SelectGroupFeild = " USER_CODE, USER_NAME, STAFF_IDENT, DEPT_CODE, "//USER_GROP, 
 					+ " sum(GROSS_PAY) GROSS_PAY, "
 					+ " sum(ENDW_INS) ENDW_INS, "
 					+ " sum(MED_INS - CASD_INS) MED_INS, "
@@ -608,39 +668,40 @@ public class DetailImportQueryController extends BaseController {
 		}
         if(SalaryOrBonus.equals(StaffDataType.Bonus.getNameKey())){
 			WhereSql += " and DATA_TYPE = '" + StaffDataType.Bonus.getNameKey() + "' ";
-			String SelectGroupFeild = " USER_CODE, DEPT_CODE, USER_GROP, "
+			String SelectGroupFeild = " USER_CODE, USER_NAME, STAFF_IDENT, DEPT_CODE, "//USER_GROP, 
 					+ " sum(CUST_COL14) CUST_COL14 ";
 			getPd.put("SelectGroupFeild", SelectGroupFeild);
         }
-		getPd.put("SelectAddFeild", " IFNULL(a.USER_NAME, ' ') USER_NAME, IFNULL(a.STAFF_IDENT, ' ') STAFF_IDENT ");
-		getPd.put("GroupByFeild", " USER_CODE, DEPT_CODE, USER_GROP ");
+		//getPd.put("SelectAddFeild", " IFNULL(a.USER_NAME, ' ') USER_NAME, IFNULL(a.STAFF_IDENT, ' ') STAFF_IDENT ");
+		getPd.put("GroupByFeild", " USER_CODE, USER_NAME, STAFF_IDENT, DEPT_CODE ");//, USER_GROP
 		getPd.put("WhereSql", WhereSql);
 		getPd.put("TableName", TableName);
-		getPd.put("LeftJoin", " left join " + TableName + " a on a.USER_CODE = t.USER_CODE and a.DEPT_CODE = t.DEPT_CODE and a.USER_GROP = t.USER_GROP ");
+		//getPd.put("LeftJoin", " left join " + TableName + " a on a.USER_CODE = t.USER_CODE and a.DEPT_CODE = t.DEPT_CODE ");// and a.USER_GROP = t.USER_GROP
+		//(SELECT DISTINCT USER_CODE, DEPT_CODE, USER_NAME, STAFF_IDENT FROM tb_staff_detail)
         page.setPd(getPd);
 		List<PageData> varOListvarOList = detailimportqueryService.exportSumList(page);
 		if(varOListvarOList!=null && varOListvarOList.size()>0){
-			List<Dictionaries> listUserCode_DeptCode_UserGrop = new ArrayList<Dictionaries>();
+			//List<Dictionaries> listUserCode_DeptCode_UserGrop = new ArrayList<Dictionaries>();
 			for(PageData each : varOListvarOList){
-				String UserCode = each.getString("USER_CODE");
-				String DeptCode = each.getString("DEPT_CODE");
-				String UserGrop = each.getString("USER_GROP");
+			//	String UserCode = each.getString("USER_CODE");
+			//	String DeptCode = each.getString("DEPT_CODE");
+			//	//String UserGrop = each.getString("USER_GROP");
 				Boolean bolHave = false;
-				if(listUserCode_DeptCode_UserGrop==null) listUserCode_DeptCode_UserGrop = new ArrayList<Dictionaries>();
-				for(Dictionaries eachHave : listUserCode_DeptCode_UserGrop){
-					if(eachHave.getDICT_CODE().equals(UserCode) 
-							&& eachHave.getNAME().equals(DeptCode)
-							&& eachHave.getNAME_EN().equals(UserGrop)){
-						bolHave = true;
-					}
-				}
+			//	if(listUserCode_DeptCode_UserGrop==null) listUserCode_DeptCode_UserGrop = new ArrayList<Dictionaries>();
+			//	for(Dictionaries eachHave : listUserCode_DeptCode_UserGrop){
+			//		if(eachHave.getDICT_CODE().equals(UserCode) 
+			//				&& eachHave.getNAME().equals(DeptCode)){
+			//				//&& eachHave.getNAME_EN().equals(UserGrop)
+			//			bolHave = true;
+			//		}
+			//	}
 				if(!bolHave){
 					varOList.add(each);
-					Dictionaries addHave = new Dictionaries();
-					addHave.setDICT_CODE(UserCode);
-					addHave.setNAME(DeptCode);
-					addHave.setNAME_EN(UserGrop);
-					listUserCode_DeptCode_UserGrop.add(addHave);
+					//Dictionaries addHave = new Dictionaries();
+					//addHave.setDICT_CODE(UserCode);
+					//addHave.setNAME(DeptCode);
+					////addHave.setNAME_EN(UserGrop);
+					//listUserCode_DeptCode_UserGrop.add(addHave);
 				}
 			}
 		}

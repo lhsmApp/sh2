@@ -247,12 +247,6 @@ public class DictsUtil {
 				|| tmplCode.equals(TmplType.TB_STAFF_AUDIT_MARKET.getNameKey())
 				|| tmplCode.equals(TmplType.TB_STAFF_TRANSFER_MARKET.getNameKey())) {
 			emplGroupType = EmplGroupType.SCH.getNameKey();
-		} else if (tmplCode.equals(TmplType.TB_STAFF_DETAIL_LABOR.getNameKey())
-				//|| tmplCode.equals(TmplType.TB_STAFF_SUMMY_BILL_LABOR.getNameKey())
-				|| tmplCode.equals(TmplType.TB_STAFF_SUMMY_LABOR.getNameKey())
-				|| tmplCode.equals(TmplType.TB_STAFF_AUDIT_LABOR.getNameKey())
-				|| tmplCode.equals(TmplType.TB_STAFF_TRANSFER_LABOR.getNameKey())) {
-			emplGroupType = EmplGroupType.LWPQ.getNameKey();
 		} else if (tmplCode.equals(TmplType.TB_STAFF_DETAIL_SYS_LABOR.getNameKey())
 				//|| tmplCode.equals(TmplType.TB_STAFF_SUMMY_BILL_SYS_LABOR.getNameKey())
 				|| tmplCode.equals(TmplType.TB_STAFF_SUMMY_SYS_LABOR.getNameKey())
@@ -265,6 +259,12 @@ public class DictsUtil {
 				|| tmplCode.equals(TmplType.TB_STAFF_AUDIT_OPER_LABOR.getNameKey())
 				|| tmplCode.equals(TmplType.TB_STAFF_TRANSFER_OPER_LABOR.getNameKey())) {
 			emplGroupType = EmplGroupType.YXRY.getNameKey();
+		} else if (tmplCode.equals(TmplType.TB_STAFF_DETAIL_LABOR.getNameKey())
+				//|| tmplCode.equals(TmplType.TB_STAFF_SUMMY_BILL_LABOR.getNameKey())
+				|| tmplCode.equals(TmplType.TB_STAFF_SUMMY_LABOR.getNameKey())
+				|| tmplCode.equals(TmplType.TB_STAFF_AUDIT_LABOR.getNameKey())
+				|| tmplCode.equals(TmplType.TB_STAFF_TRANSFER_LABOR.getNameKey())) {
+			emplGroupType = EmplGroupType.LWPQ.getNameKey();
 		}
 		return emplGroupType;
 	}
