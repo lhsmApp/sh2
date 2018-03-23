@@ -938,6 +938,9 @@ public class StaffDetailController extends BaseController {
 									    if((CurrentDepartCode!=null && CurrentDepartCode.equals(DictsUtil.DepartShowAll))
 									    		&& (emplGroupType.equals(YXRY))
 												&& (SelectedDepartCode!=null && SelectedDepartCode.equals(DictsUtil.DepartShowAll))){
+									    	if(YXRY.equals(getUSER_GROP)){
+									    	    continue;
+									    	}
 									    	if(LWPQ.equals(getUSER_GROP) && SAL_RANGE_dong_0.equals(getSAL_RANGE)){
 											    pdAdd.put("USER_GROP", YXRY);
 											    getUSER_GROP = YXRY;
@@ -946,9 +949,16 @@ public class StaffDetailController extends BaseController {
 									    if((CurrentDepartCode!=null && CurrentDepartCode.equals(DictsUtil.DepartShowAll))
 									    		&& (emplGroupType.equals(YXRY))
 												&& (SelectedDepartCode.equals(DEPT_CODE_0100107) || SelectedDepartCode.equals(DEPT_CODE_0100108))){
+									    	if(YXRY.equals(getUSER_GROP)){
+									    	    continue;
+									    	}
 									    	if(LWPQ.equals(getUSER_GROP) && (USER_CATG_GDJLW.equals(getUSER_CATG) || USER_CATG_hbytgslw.equals(getUSER_CATG))){
 											    pdAdd.put("USER_GROP", YXRY);
 											    getUSER_GROP = YXRY;
+											    if(!((SelectedDepartCode.equals(DEPT_CODE_0100107) && USER_CATG_hbytgslw.equals(getUSER_CATG))
+											    		|| (SelectedDepartCode.equals(DEPT_CODE_0100108) && USER_CATG_GDJLW.equals(getUSER_CATG)))){
+										    	    continue;
+											    }
 									    	}
 									    }
 									    
