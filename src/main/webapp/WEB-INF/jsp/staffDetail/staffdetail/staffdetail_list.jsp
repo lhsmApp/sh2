@@ -77,7 +77,7 @@
 									    	        class="bigger-110">运行人员</span> <input type="radio" value="4" />
 									            </label>
 									            <label class="btn btn-sm btn-primary"> <span
-										            class="bigger-110">劳务派遣</span> <input type="radio" value="5" />
+										            class="bigger-110">劳务用工</span> <input type="radio" value="5" />
 									            </label>
 								            </div>
 							            </div>      

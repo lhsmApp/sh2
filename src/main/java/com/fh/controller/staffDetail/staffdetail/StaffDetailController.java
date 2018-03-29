@@ -777,10 +777,14 @@ public class StaffDetailController extends BaseController {
 
 		String YXRY = EmplGroupType.YXRY.getNameKey();
 		String LWPQ = EmplGroupType.LWPQ.getNameKey();
+		//责任中心-管道分公司廊坊油气储运公司-0100106
+		String DEPT_CODE_0100106 = "0100106";
 		//责任中心-华北石油管理局-0100107
 		String DEPT_CODE_0100107 = "0100107";
 		//责任中心-中国石油天然气管道局-0100108
 		String DEPT_CODE_0100108 = "0100108";
+		//责任中心-华北采油二厂-0100109
+		String DEPT_CODE_0100109 = "0100109";
 
 		//工资范围编码-东零
 		String SAL_RANGE_dong_0 = "S12";
@@ -788,6 +792,10 @@ public class StaffDetailController extends BaseController {
 		String USER_CATG_GDJLW = "PUT05";
 		//企业特定员工分类-华北油田公司劳务-PUT06
 		String USER_CATG_hbytgslw = "PUT06";
+		//企业特定员工分类-华北采油二厂劳务-PUT07
+		String USER_CATG_HBCYECLW = "PUT07";
+		//企业特定员工分类-管道公司劳务-PUT08
+		String USER_CATG_GDGSLW = "PUT08";
 
 		PageData getPd = this.getPageData();
 		//员工组
@@ -879,7 +887,7 @@ public class StaffDetailController extends BaseController {
 						    }
 						    if((CurrentDepartCode!=null && CurrentDepartCode.equals(DictsUtil.DepartShowAll))
 						    		&& (emplGroupType.equals(YXRY))
-									&& (SelectedDepartCode.equals(DEPT_CODE_0100107) || SelectedDepartCode.equals(DEPT_CODE_0100108))){
+									&& (SelectedDepartCode.equals(DEPT_CODE_0100107) || SelectedDepartCode.equals(DEPT_CODE_0100108) || SelectedDepartCode.equals(DEPT_CODE_0100106) || SelectedDepartCode.equals(DEPT_CODE_0100109))){
 						    	//LWPQ.equals(getUSER_GROP) && (USER_CATG_GDJLW.equals(getUSER_CATG) || USER_CATG_hbytgslw.equals(getUSER_CATG))
 						    	bolIsDicSetUSER_CATG = true;
 						    }
@@ -948,17 +956,19 @@ public class StaffDetailController extends BaseController {
 									    }
 									    if((CurrentDepartCode!=null && CurrentDepartCode.equals(DictsUtil.DepartShowAll))
 									    		&& (emplGroupType.equals(YXRY))
-												&& (SelectedDepartCode.equals(DEPT_CODE_0100107) || SelectedDepartCode.equals(DEPT_CODE_0100108))){
+												&& (SelectedDepartCode.equals(DEPT_CODE_0100107) || SelectedDepartCode.equals(DEPT_CODE_0100108) || SelectedDepartCode.equals(DEPT_CODE_0100106) || SelectedDepartCode.equals(DEPT_CODE_0100109))){
 									    	if(YXRY.equals(getUSER_GROP)){
 									    	    continue;
 									    	}
-									    	if(LWPQ.equals(getUSER_GROP) && (USER_CATG_GDJLW.equals(getUSER_CATG) || USER_CATG_hbytgslw.equals(getUSER_CATG))){
-											    pdAdd.put("USER_GROP", YXRY);
-											    getUSER_GROP = YXRY;
+									    	if(LWPQ.equals(getUSER_GROP)){
 											    if(!((SelectedDepartCode.equals(DEPT_CODE_0100107) && USER_CATG_hbytgslw.equals(getUSER_CATG))
-											    		|| (SelectedDepartCode.equals(DEPT_CODE_0100108) && USER_CATG_GDJLW.equals(getUSER_CATG)))){
+											    		|| (SelectedDepartCode.equals(DEPT_CODE_0100108) && USER_CATG_GDJLW.equals(getUSER_CATG))
+											    		|| (SelectedDepartCode.equals(DEPT_CODE_0100106) && USER_CATG_GDGSLW.equals(getUSER_CATG))
+											    		|| (SelectedDepartCode.equals(DEPT_CODE_0100109) && USER_CATG_HBCYECLW.equals(getUSER_CATG)))){
 										    	    continue;
 											    }
+											    pdAdd.put("USER_GROP", YXRY);
+											    getUSER_GROP = YXRY;
 									    	}
 									    }
 									    
