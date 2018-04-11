@@ -627,6 +627,15 @@ public class DetailImportQueryController extends BaseController {
 		} else {
 			WhereSql += " and DEPT_CODE = '" + Jurisdiction.getCurrentDepartmentID() + "' ";
 		}
+		//责任中心-管道分公司廊坊油气储运公司-0100106
+		String DEPT_CODE_0100106 = "0100106";
+		//责任中心-华北石油管理局-0100107
+		String DEPT_CODE_0100107 = "0100107";
+		//责任中心-中国石油天然气管道局-0100108
+		String DEPT_CODE_0100108 = "0100108";
+		//责任中心-华北采油二厂-0100109
+		String DEPT_CODE_0100109 = "0100109";
+		WhereSql += " and DEPT_CODE not in ('" + DEPT_CODE_0100106 + "', '" + DEPT_CODE_0100107 + "', '" + DEPT_CODE_0100108 + "', '" + DEPT_CODE_0100109 + "') ";
 	    //不导出数据的部门
 		/*if(DictsUtil.DepartShowAll.equals(Jurisdiction.getCurrentDepartmentID())){
 			if(SelectedDepartCode.equals("ALL") || SelectedDepartCode.equals("HOME")){
@@ -667,25 +676,25 @@ public class DetailImportQueryController extends BaseController {
 					+ " sum(HOUSE_FUND) HOUSE_FUND, "
 					+ " sum(KID_ALLE) KID_ALLE, "
 					+ " sum(SUP_PESN) SUP_PESN ";
-			if(SelectedDepartCode.equals("HOME")){
+			//if(SelectedDepartCode.equals("HOME")){
 				SelectGroupFeild += ", UNITS_CODE ";
-			}
+			//}
 			getPd.put("SelectGroupFeild", SelectGroupFeild);
 		}
         if(SalaryOrBonus.equals(StaffDataType.Bonus.getNameKey())){
 			WhereSql += " and DATA_TYPE = '" + StaffDataType.Bonus.getNameKey() + "' ";
 			String SelectGroupFeild = " USER_CODE, USER_NAME, STAFF_IDENT, DEPT_CODE, "//USER_GROP, 
 					+ " sum(CUST_COL14) CUST_COL14 ";
-			if(SelectedDepartCode.equals("HOME")){
+			//if(SelectedDepartCode.equals("HOME")){
 				SelectGroupFeild += ", UNITS_CODE ";
-			}
+			//}
 			getPd.put("SelectGroupFeild", SelectGroupFeild);
         }
 		//getPd.put("SelectAddFeild", " IFNULL(a.USER_NAME, ' ') USER_NAME, IFNULL(a.STAFF_IDENT, ' ') STAFF_IDENT ");
 		String strGroupByFeild = " USER_CODE, USER_NAME, STAFF_IDENT, DEPT_CODE ";
-		if(SelectedDepartCode.equals("HOME")){
+		//if(SelectedDepartCode.equals("HOME")){
 			strGroupByFeild += ", UNITS_CODE ";
-		}
+		//}
 		getPd.put("GroupByFeild", strGroupByFeild);//, USER_GROP
 		getPd.put("WhereSql", WhereSql);
 		getPd.put("TableName", TableName);
@@ -741,13 +750,13 @@ public class DetailImportQueryController extends BaseController {
 		map_SetColumnsList.put("CERT_TYPE", new TmplConfigDetail("CERT_TYPE", "证件类型", "1", false));
 		map_SetColumnsList.put("STAFF_IDENT", new TmplConfigDetail("STAFF_IDENT", "证件号码", "1", false));
 		map_SetColumnsList.put("TAX_BURDENS", new TmplConfigDetail("TAX_BURDENS", "税款负担方式", "1", false));
-		if(SelectedDepartCode.equals("HOME")){
+		//if(SelectedDepartCode.equals("HOME")){
 			String strUNITS_CODE = "UNITS_CODE";
 			TmplConfigDetail tmplGetDic = map_GetDicSetColumnsList.get(strUNITS_CODE);
 			TmplConfigDetail tmplPut = new TmplConfigDetail(strUNITS_CODE, "所属二级单位", "1", false);
 			tmplPut.setDICT_TRANS(tmplGetDic.getDICT_TRANS());
 			map_SetColumnsList.put(strUNITS_CODE, tmplPut);
-		}
+		//}
 		if(SalaryOrBonus.equals(StaffDataType.Salary.getNameKey())){
 			map_SetColumnsList.put("GROSS_PAY", new TmplConfigDetail("GROSS_PAY", "收入额", "1", true));
 			map_SetColumnsList.put("免税所得", new TmplConfigDetail("免税所得", "免税所得", "1", true));

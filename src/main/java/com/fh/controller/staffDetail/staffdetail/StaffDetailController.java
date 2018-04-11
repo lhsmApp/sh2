@@ -108,7 +108,7 @@ public class StaffDetailController extends BaseController {
     //
 	String AdditionalReportColumns = "";
 	//
-	private List<String> MustInputList = Arrays.asList("USER_CODE", "DATA_TYPE");
+	private List<String> MustInputList = Arrays.asList("USER_CODE", "DATA_TYPE", "UNITS_CODE");
 	//界面查询字段
     List<String> QueryFeildList = Arrays.asList("DEPT_CODE", "CUST_COL7", "USER_GROP");
     //设置必定不用编辑的列            SERIAL_NO 设置字段类型是数字，但不管隐藏 或显示都必须保存的
@@ -1047,6 +1047,7 @@ public class StaffDetailController extends BaseController {
 										}
 										String getBUSI_DATE = (String) pdAdd.get("BUSI_DATE");
 										String getDEPT_CODE = (String) pdAdd.get("DEPT_CODE");
+										String getUNITS_CODE = (String) pdAdd.get("UNITS_CODE");
 										/*String getDATA_TYPE = (String) pdAdd.get("DATA_TYPE");*/
 										/*if(!(getDATA_TYPE!=null && !getDATA_TYPE.trim().equals(""))){
 											if(!sbRet.contains("导入数据类型列不能为空！")){
@@ -1102,6 +1103,11 @@ public class StaffDetailController extends BaseController {
 										if(!(getUSER_CODE!=null && !getUSER_CODE.trim().equals(""))){
 											if(!sbRet.contains("人员编码不能为空！")){
 												sbRet.add("人员编码不能为空！");
+											}
+										}
+										if(!(getUNITS_CODE!=null && !getUNITS_CODE.trim().equals(""))){
+											if(!sbRet.contains("所属二级单位不能为空！")){
+												sbRet.add("所属二级单位不能为空！");
 											}
 										}
 										String getESTB_DEPT = (String) pdAdd.get("ESTB_DEPT");

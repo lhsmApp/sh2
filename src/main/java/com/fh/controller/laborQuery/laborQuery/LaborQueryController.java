@@ -256,7 +256,7 @@ public class LaborQueryController extends BaseController {
 		String SelectedCustCol7 = getPd.getString("DownSelectedCustCol7");
 		//单位
 		String SelectedDepartCode = getPd.getString("DownSelectedDepartCode");
-		
+
 		String WhereSql = " and BUSI_DATE = '" + SelectedBusiDate + "' ";
 		WhereSql += " and BILL_OFF = '" + SelectedCustCol7 + "' ";
 
@@ -284,7 +284,7 @@ public class LaborQueryController extends BaseController {
 			WhereSql += " and DEPT_CODE = '" + Jurisdiction.getCurrentDepartmentID() + "' ";
 		}
 
-		String strSelectFeild = " USER_NAME, STAFF_IDENT, DEPT_CODE, "
+		String strSelectFeild = " USER_NAME, STAFF_IDENT, IFNULL((SELECT d.NAME FROM oa_department d WHERE DEPT_CODE = d.DEPARTMENT_CODE), ' ') DEPT_CODE, "
 				+ " sum(ACT_SALY) ACT_SALY ";
 		getPd.put("SelectFeild", strSelectFeild);
 		getPd.put("GroupByFeild", " USER_NAME, STAFF_IDENT, DEPT_CODE ");
@@ -304,6 +304,7 @@ public class LaborQueryController extends BaseController {
 		map_SetColumnsList.put("CERT_TYPE", new TmplConfigDetail("CERT_TYPE", "证件类型", "1", false));
 		map_SetColumnsList.put("STAFF_IDENT", new TmplConfigDetail("STAFF_IDENT", "证件号码", "1", false));
 		map_SetColumnsList.put("TAX_BURDENS", new TmplConfigDetail("TAX_BURDENS", "税款负担方式", "1", false));
+		map_SetColumnsList.put("DEPT_CODE", new TmplConfigDetail("DEPT_CODE", "责任中心", "1", false));
 		map_SetColumnsList.put("ACT_SALY", new TmplConfigDetail("ACT_SALY", "收入额", "1", true));
 		map_SetColumnsList.put("免税所得", new TmplConfigDetail("免税所得", "免税所得", "1", true));
 		map_SetColumnsList.put("基本养老保险费", new TmplConfigDetail("基本养老保险费", "基本养老保险费", "1", true));
@@ -346,7 +347,7 @@ public class LaborQueryController extends BaseController {
 					int j = 1;
 					for (TmplConfigDetail col : map_SetColumnsList.values()) {
 						if(col.getCOL_HIDE().equals("1")){
-						    //String trans = col.getDICT_TRANS();
+						    String trans = col.getDICT_TRANS();
 						    Object getCellValue = varOList.get(i).get(col.getCOL_CODE().toUpperCase());
 						    if(getCellValue==null) getCellValue = "";
 						    //if(trans != null && !trans.trim().equals("")){
