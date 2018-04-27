@@ -671,7 +671,7 @@ public class DetailImportQueryController extends BaseController {
 			String SelectGroupFeild = " USER_CODE, USER_NAME, STAFF_IDENT, DEPT_CODE, "//USER_GROP, 
 					+ " sum(GROSS_PAY) GROSS_PAY, "
 					+ " sum(ENDW_INS) ENDW_INS, "
-					+ " sum(MED_INS - CASD_INS) MED_INS, "
+					+ " sum(MED_INS + CASD_INS) MED_INS, "
 					+ " sum(UNEMPL_INS) UNEMPL_INS, "
 					+ " sum(HOUSE_FUND) HOUSE_FUND, "
 					+ " sum(KID_ALLE) KID_ALLE, "

@@ -52,6 +52,12 @@ public interface DictionariesManager{
 	 * @throws Exception
 	 */
 	public PageData findByBianma(PageData pd)throws Exception;
+
+	/**通过条件获取数据
+	 * @param pd
+	 * @throws Exception
+	 */
+	public List<Dictionaries> findByCondition(String strCondition)throws Exception;
 	
 	/**
 	 * 通过ID获取其子级列表

@@ -77,6 +77,15 @@ public class DepartmentService implements DepartmentManager{
 		return (PageData)dao.findForObject("DepartmentMapper.findByBianma", pd);
 	}
 	
+	/**通过条件获取数据
+	 * @param pd
+	 * @throws Exception
+	 */
+	@SuppressWarnings("unchecked")
+	public List<Department> findByCondition(String strCondition)throws Exception{
+		return (List<Department>)dao.findForList("DepartmentMapper.findByCondition", strCondition);
+	}
+	
 	/**是否有相同编码 
 	 * @param pd
 	 * @throws Exception

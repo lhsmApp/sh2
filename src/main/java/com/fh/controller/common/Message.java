@@ -17,6 +17,9 @@ public class Message {
 	public static String RowDataTypeInputError = "记录数据类型选择有误！";
 	public static String SelectCanSumOption = "请选择具体单号或临时数据!";
 	public static String OperDataAlreadyChange = "操作的数据已改变，请刷新！";
+	public static String Error = "出错！";
+	public static String NotGetBillTypeFromVoucher = "单据编号类型获取失败，请联系管理员！";
+	public static String NotHaveOperateData = "没有可操作的数据";
 	
 	public static String GetHelpfulDetailFalue = "获取可操作的数据的条件失败，请联系管理员！";
 	public static String ReportTypeIsNull = "上报类型为空！，请联系管理员！";

@@ -76,6 +76,15 @@ public class DictionariesService implements DictionariesManager{
 		return (PageData)dao.findForObject("DictionariesMapper.findByBianma", pd);
 	}
 	
+	/**通过条件获取数据
+	 * @param pd
+	 * @throws Exception
+	 */
+	@SuppressWarnings("unchecked")
+	public List<Dictionaries> findByCondition(String strCondition)throws Exception{
+		return (List<Dictionaries>)dao.findForList("DictionariesMapper.findByCondition", strCondition);
+	}
+	
 	/**
 	 * 通过ID获取其子级列表
 	 * @param parentId

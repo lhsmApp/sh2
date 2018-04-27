@@ -38,6 +38,10 @@ public class QueryFeildString {
 		String SAL_RANGE = "";
 		String UNITS_CODE = "";
 		String ORG_UNIT = "";
+		
+		String TYPE_CODE = "";
+		String BILL_CODE = "";
+		String BILL_STATE = "";
 		if(feildList!=null && feildList.size()>0){
 			if(feildList.contains("BUSI_DATE")){
 				BUSI_DATE = pd.getString("BUSI_DATE");
@@ -65,6 +69,15 @@ public class QueryFeildString {
 			}
 			if(feildList.contains("ORG_UNIT")){
 				ORG_UNIT = pd.getString("ORG_UNIT");
+			}
+			if(feildList.contains("TYPE_CODE")){
+				TYPE_CODE = pd.getString("TYPE_CODE");
+			}
+			if(feildList.contains("BILL_CODE")){
+				BILL_CODE = pd.getString("BILL_CODE");
+			}
+			if(feildList.contains("BILL_STATE")){
+				BILL_STATE = pd.getString("BILL_STATE");
 			}
 		}
 		String QueryFeild = "";
@@ -117,6 +130,24 @@ public class QueryFeildString {
 			String strIn = getSqlInString(ORG_UNIT);
 			if(strIn!=null && !strIn.equals("")){
 				QueryFeild += " and ORG_UNIT in (" + strIn + ") ";
+			}
+		}
+		if(TYPE_CODE!=null && !TYPE_CODE.trim().equals("")){
+			String strIn = getSqlInString(TYPE_CODE);
+			if(strIn!=null && !strIn.equals("")){
+				QueryFeild += " and TYPE_CODE in (" + strIn + ") ";
+			}
+		}
+		if(BILL_CODE!=null && !BILL_CODE.trim().equals("")){
+			String strIn = getSqlInString(BILL_CODE);
+			if(strIn!=null && !strIn.equals("")){
+				QueryFeild += " and BILL_CODE in (" + strIn + ") ";
+			}
+		}
+		if(BILL_STATE!=null && !BILL_STATE.trim().equals("")){
+			String strIn = getSqlInString(BILL_STATE);
+			if(strIn!=null && !strIn.equals("")){
+				QueryFeild += " and BILL_STATE in (" + strIn + ") ";
 			}
 		}
 		return QueryFeild;
@@ -290,7 +321,7 @@ public class QueryFeildString {
         List<String> list = new ArrayList<String>();
         if(strFeild != null && !strFeild.trim().equals("")){
             for(String t : strFeild.replace(" ", "").toUpperCase().split(",")){  
-            	list.add(t);  
+            	list.add(t.toUpperCase());  
             } 
         }
         return list;
