@@ -73,7 +73,6 @@
 		<where>
 	        ${QueryFeild}
 		</where>
-		order by USER_GROP, USER_CODE
 	</select>
 	
     <!-- 通过单号判断数据是否变更 -->

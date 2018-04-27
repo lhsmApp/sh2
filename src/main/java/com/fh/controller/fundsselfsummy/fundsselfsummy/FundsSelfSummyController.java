@@ -105,7 +105,7 @@ public class FundsSelfSummyController extends BaseController {
 	String SystemDateTime = "";
 	// 查询表的主键字段，作为标准列，jqgrid添加带__列，mybaits获取带__列
 	private List<String> keyListBase = Arrays.asList("BILL_CODE", "BUSI_DATE", "TYPE_CODE", "DEPT_CODE", "BILL_OFF");
-	List<String> SumFieldBill = Arrays.asList("BILL_CODE", "BUSI_DATE", "DEPT_CODE", "BILL_OFF");
+	List<String> SumFieldBill = Arrays.asList("BILL_CODE", "BUSI_DATE", "TYPE_CODE", "DEPT_CODE", "BILL_OFF");
 	//临时数据
 	String SelectedTypeCodeFirstShow = "请选择凭证类型";
 	String SelectedDepartCodeFirstShow = "请选择责任中心";
@@ -434,6 +434,7 @@ public class FundsSelfSummyController extends BaseController {
 		//凭证字典
 		String TYPE_CODE = pdGet.getString("TYPE_CODE" + TmplUtil.keyExtra);
 		List<String> SumFieldDetail = getGroupDetailField(TYPE_CODE, CUST_COL7, DeptCodeSumGroupField);
+		List<String> listTransferSumFieldDetail = new ArrayList<String>();
 
 		PageData pdFieldDetail = new PageData();
 		// 前端数据表格界面字段,动态取自SysStruMapping，根据当前单位编码及表名获取字段配置信息
@@ -442,14 +443,15 @@ public class FundsSelfSummyController extends BaseController {
 			for(SysStruMapping mapping : getSysStruMappingList){
 				String COL_CODE = mapping.getCOL_CODE().toUpperCase();
 				String COL_MAPPING_CODE = mapping.getCOL_MAPPING_CODE().toUpperCase();
-				if(SumFieldDetail.contains(COL_CODE)){
+				if(SumFieldDetail.contains(COL_CODE.toUpperCase())){
 					pdFieldDetail.put(COL_CODE + TmplUtil.keyExtra, pdGet.getString(COL_MAPPING_CODE + TmplUtil.keyExtra));
 					SumFieldDetail.remove(COL_CODE);
+					listTransferSumFieldDetail.add(COL_CODE);
 				}
 			}
 		}
 		PageData pdCode = new PageData();
-		String QueryFeild = QueryFeildString.getDetailQueryFeild(pdFieldDetail, SumFieldDetail, TmplUtil.keyExtra);
+		String QueryFeild = QueryFeildString.getDetailQueryFeild(pdFieldDetail, listTransferSumFieldDetail, TmplUtil.keyExtra);
 	    if(!(QueryFeild!=null && !QueryFeild.trim().equals(""))){
 	    	QueryFeild += " and 1 != 1 ";
 	    }
@@ -675,31 +677,43 @@ public class FundsSelfSummyController extends BaseController {
 	//判断单据状态
 	private String CheckState(String typeCode, String billOff, String deptCode, String strSqlInBillCode) throws Exception{
 		String strRut = "";
-		
-		/*String QueryFeild = " and BILL_CODE in (" + strSqlInBillCode + ") ";
-		
-		if(SelectedTabType!=null && !SelectedTabType.trim().equals("1")){
-			//未确认，要确认，判断是否已确认
-			QueryFeild += " and state = '1' AND RPT_DUR = '" + SystemDateTime + "' ";
-		} else if(SelectedTabType!=null && !SelectedTabType.trim().equals("2")){
-			//已确认，要取消，判断是否已汇总
-			QueryFeild += " and state = '1' AND RPT_DUR = '" + SystemDateTime + "' ";
-			QueryFeild += " and  BILL_CODE not in (select CUST_COL13 from tb_gen_bus_detail)";
-		} else{
-			strRut = Message.Error;
+
+		String QueryFeild = " and BILL_STATE = '" + BillState.Normal.getNameKey() + "' AND BUSI_DATE = '" + SystemDateTime + "' ";
+		if(strSqlInBillCode!=null && !strSqlInBillCode.trim().equals("")){
+			//有单号判断取消汇总，判断是否没传输上报，如已传输上报不能取消
+			QueryFeild += " and BILL_CODE in (" + strSqlInBillCode + ") ";
+			QueryFeild += QueryFeildString.getReportBillCode("", SystemDateTime, "", "");
+		} else {
+			//没有单号判断汇总，判断是否已汇总，如已汇总不能再次汇总
+			PageData getQueryFeildPd = new PageData();
+			getQueryFeildPd.put("DEPT_CODE", deptCode);
+			getQueryFeildPd.put("BILL_OFF", billOff);
+			getQueryFeildPd.put("TYPE_CODE", typeCode);
+			QueryFeild += QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList);
+			if(!(deptCode!=null && !deptCode.trim().equals(""))){
+				QueryFeild += " and 1 = 1 ";
+			}
+			if(!(billOff!=null && !billOff.trim().equals(""))){
+				QueryFeild += " and 1 = 1 ";
+			}
+			if(!(typeCode!=null && !typeCode.trim().equals(""))){
+				QueryFeild += " and 1 = 1 ";
+			}
+			
 		}
-		
 		PageData transferPd = new PageData();
 		transferPd.put("SystemDateTime", SystemDateTime);
 		transferPd.put("CanOperate", QueryFeild);
-		//transferPd.put("TableName", tb_sys_confirm_info);
+		transferPd.put("TableName", TB_GEN_BUS_SUMMY_BILL);
 		List<PageData> getCodeList = fundsselfsummyService.getCheckStateList(transferPd);
 		
-		if(!(getCodeList != null && getCodeList.size()>0)){
-			strRut = Message.OperDataSumAlreadyChange;
-		}*/
-		//QueryFeild += QueryFeildString.getNotReportBillCode(TypeCodeTransfer, SystemDateTime, SelectedCustCol7, AllDeptCode + "," + SelectedDepartCode);
-		
+		if(getCodeList != null && getCodeList.size()>0){
+			if(strSqlInBillCode!=null && !strSqlInBillCode.trim().equals("")){
+			    strRut = Message.OperDataSumAlreadyChange;
+			} else {
+			    strRut = Message.OperDataAlreadySum;
+			}
+		}
 		return strRut;
 	}
 	
@@ -733,7 +747,7 @@ public class FundsSelfSummyController extends BaseController {
 		if(!(SelectedTypeCode!=null && !SelectedTypeCode.trim().equals(""))){
 			QueryFeild += " and 1 != 1 ";
 		}
-		//QueryFeild += QueryFeildString.getNotReportBillCode(TypeCodeTransfer, SystemDateTime, SelectedCustCol7, AllDeptCode + "," + SelectedDepartCode);
+		QueryFeild += QueryFeildString.getNotReportBillCode("", SystemDateTime, "", "");
 		getPd.put("QueryFeild", QueryFeild);
 		
 		//多条件过滤条件

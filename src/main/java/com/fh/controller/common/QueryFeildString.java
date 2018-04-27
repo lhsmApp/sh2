@@ -185,22 +185,59 @@ public class QueryFeildString {
 	public static String getNotLockBillCode(String BILL_TYPE, String RPT_DUR, String BILL_OFF, String SqlInRPT_DEPT) throws Exception{
 		String strInRPT_DEPT = getSqlInString(SqlInRPT_DEPT);
 		String strRet = " and BILL_CODE not in (SELECT bill_code FROM tb_sys_unlock_info "
-				+ "                             WHERE DEL_STATE = '0' "
-				+ "                             AND UNLK_DUR = '" + RPT_DUR + "' "
-				+ "                             AND UNLK_DEPT in (" + strInRPT_DEPT + ") "
-				+ "                             AND BILL_TYPE = '" + BILL_TYPE + "' "
-				+ "                             AND BILL_OFF = '" + BILL_OFF + "') ";
+				+ "                             WHERE DEL_STATE = '0' ";
+		if(RPT_DUR!=null && !RPT_DUR.equals("")){
+			strRet += "                             AND UNLK_DUR = '" + RPT_DUR + "' ";
+		}
+		if(strInRPT_DEPT!=null && !strInRPT_DEPT.equals("")){
+			strRet += "                             AND UNLK_DEPT in (" + strInRPT_DEPT + ") ";
+		}
+		if(BILL_TYPE!=null && !BILL_TYPE.equals("")){
+			strRet += "                             AND BILL_TYPE = '" + BILL_TYPE + "' ";
+		}
+		if(BILL_OFF!=null && !BILL_OFF.equals("")){
+			strRet += "                             AND BILL_OFF = '" + BILL_OFF + "' ";
+		}
+		strRet += "                             ) ";
 		return strRet;
 	}
 	
 	public static String getNotReportBillCode(String BILL_TYPE, String RPT_DUR, String BILL_OFF, String SqlInRPT_DEPT) throws Exception{
 		String strInRPT_DEPT = getSqlInString(SqlInRPT_DEPT);
 		String strRet = " and BILL_CODE not in (SELECT bill_code FROM tb_sys_sealed_info "
-				+ "                             WHERE state = '1' "
-				+ "                             AND RPT_DUR = '" + RPT_DUR + "' "
-				+ "                             AND RPT_DEPT in (" + strInRPT_DEPT + ") "
-				+ "                             AND BILL_TYPE = '" + BILL_TYPE + "' "
-				+ "                             AND BILL_OFF = '" + BILL_OFF + "') ";
+				+ "                             WHERE state = '1' ";
+		if(RPT_DUR!=null && !RPT_DUR.equals("")){
+			strRet += "                             AND RPT_DUR = '" + RPT_DUR + "' ";
+		}
+		if(strInRPT_DEPT!=null && !strInRPT_DEPT.equals("")){
+			strRet += "                             AND RPT_DEPT in (" + strInRPT_DEPT + ") ";
+		}
+		if(BILL_TYPE!=null && !BILL_TYPE.equals("")){
+			strRet += "                         AND BILL_TYPE = '" + BILL_TYPE + "' ";
+		}
+		if(BILL_OFF!=null && !BILL_OFF.equals("")){
+			strRet += "                         AND BILL_OFF = '" + BILL_OFF + "' ";
+		}
+		strRet += "                             ) ";
+		return strRet;
+	}
+	public static String getReportBillCode(String BILL_TYPE, String RPT_DUR, String BILL_OFF, String SqlInRPT_DEPT) throws Exception{
+		String strInRPT_DEPT = getSqlInString(SqlInRPT_DEPT);
+		String strRet = " and BILL_CODE in (SELECT bill_code FROM tb_sys_sealed_info "
+				+ "                             WHERE state = '1' ";
+		if(RPT_DUR!=null && !RPT_DUR.equals("")){
+			strRet += "                             AND RPT_DUR = '" + RPT_DUR + "' ";
+		}
+		if(strInRPT_DEPT!=null && !strInRPT_DEPT.equals("")){
+			strRet += "                             AND RPT_DEPT in (" + strInRPT_DEPT + ") ";
+		}
+		if(BILL_TYPE!=null && !BILL_TYPE.equals("")){
+			strRet += "                         AND BILL_TYPE = '" + BILL_TYPE + "' ";
+		}
+		if(BILL_OFF!=null && !BILL_OFF.equals("")){
+			strRet += "                         AND BILL_OFF = '" + BILL_OFF + "' ";
+		}
+		strRet += "                             ) ";
 		return strRet;
 	}
 	
