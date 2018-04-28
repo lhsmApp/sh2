@@ -42,15 +42,25 @@ public class SysStruMappingList {
 		return getSysStruMappingList;
 	}
 
-	public static List<SysStruMapping> getDetailBillCodeSysStruMapping(String pzType, String tableName, 
-			String busiDate, String billOff, SysStruMappingService sysStruMappingService) throws Exception{
+
+	/*public static List<SysTableMapping> getDetailBillCodeSysTableMapping(String busiDate, String tableName, SysTableMappingService sysTableMappingService) throws Exception{
+		// 动态取自SysTableMapping
+		SysTableMapping sysTableMapping = new SysTableMapping();
+		sysTableMapping.setBUSI_DATE(busiDate);
+		sysTableMapping.setTABLE_NAME(tableName);
+		List<SysTableMapping> getSysTableMappingList =sysTableMappingService.getDetailBillCodeSysTableMapping(sysTableMapping);
+		return getSysTableMappingList;
+	}*/
+	
+	public static List<SysStruMapping> getDetailBillCodeSysStruMapping(String busiDate, String tableName, String tableNameMapping, String colCode,
+			SysStruMappingService sysStruMappingService) throws Exception{
 		// 前端数据表格界面字段,动态取自SysStruMapping，根据当前单位编码及表名获取字段配置信息
 		SysStruMapping sysStruMapping = new SysStruMapping();
-		sysStruMapping.setBILL_OFF(billOff);
 		sysStruMapping.setBUSI_DATE(busiDate);
-		sysStruMapping.setTYPE_CODE(pzType);
-		sysStruMapping.setTABLE_NAME_MAPPING(tableName);
-		List<SysStruMapping> getSysStruMappingList = sysStruMappingService.getShowStruList(sysStruMapping);
+		sysStruMapping.setTABLE_NAME(tableName);
+		sysStruMapping.setTABLE_NAME_MAPPING(tableNameMapping);
+		sysStruMapping.setCOL_CODE(colCode);
+		List<SysStruMapping> getSysStruMappingList = sysStruMappingService.getDetailBillCodeSysStruMapping(sysStruMapping);
 		return getSysStruMappingList;
 	}
 }

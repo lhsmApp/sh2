@@ -155,4 +155,14 @@
 		and STATE = #{STATE}
 		and BILL_OFF = #{BILL_OFF}
 	</select>
+
+	<!-- 张晓柳 -->
+	<!-- <select id="getDetailBillCodeSysTableMapping" parameterType="com.fh.entity.SysTableMapping" resultType="com.fh.entity.SysTableMapping">
+		select 
+		<include refid="Field"></include>
+		from
+		<include refid="tableName"></include>
+		where BUSI_DATE = #{BUSI_DATE}
+        and UPPER(TABLE_NAME) = UPPER(#{TABLE_NAME})
+	</select> -->
 </mapper>

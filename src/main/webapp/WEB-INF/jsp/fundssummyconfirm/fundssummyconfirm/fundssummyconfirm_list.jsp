@@ -271,7 +271,7 @@
 		                datatype: "json",
 		                colModel: detailColModel,
 		                page: 1,
-		                width: '100%',
+		                //width: '100%',
 		                //height: '100%',
 		                rowNum: 0,	
 		                pager: "#" + childGridPagerID,
@@ -370,7 +370,7 @@
 		                datatype: "json",
 		                colModel: detailColModel,
 		                page: 1,
-		                width: '100%',
+		                //width: '100%',
 		                //height: '100%',
 		                rowNum: 0,	
 		                pager: "#" + childGridPagerID,
@@ -478,7 +478,8 @@
 		//resize to fit page size
 		$(window).on('resize.jqGrid', function () {
 			$(gridBase_selector).jqGrid( 'setGridWidth', $(".page-content").width());
-			resizeGridHeight($(gridBase_selector),gridHeight,true);
+			gridHeight=236;
+			resizeGridHeight($(gridBase_selector),gridHeight);
 	    });
 
 		$(gridBase_selector).jqGrid({
@@ -490,7 +491,7 @@
 			colModel: jqGridColModel,
 			viewrecords: true, 
 			shrinkToFit: false,
-			width:'100%',
+			//width:'100%',
 			reloadAfterSubmit: true, 
 			rowNum: 0,
             multiselect: true,

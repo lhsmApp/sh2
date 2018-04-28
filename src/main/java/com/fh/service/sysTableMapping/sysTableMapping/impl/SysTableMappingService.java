@@ -91,5 +91,15 @@ public class SysTableMappingService implements SysTableMappingManager{
 	public List<SysTableMapping> getUseTableMapping(SysTableMapping mapping)throws Exception{
 		return (List<SysTableMapping>)dao.findForList("SysTableMappingMapper.getUseTableMapping", mapping);
 	}
+
+	
+	/**
+	 * @param pd
+	 * @throws Exception
+	 */
+	//@SuppressWarnings("unchecked")
+	//public List<SysTableMapping> getDetailBillCodeSysTableMapping(SysTableMapping mapping)throws Exception{
+	//	return (List<SysTableMapping>)dao.findForList("SysTableMappingMapper.getDetailBillCodeSysTableMapping", mapping);
+	//}
 }
 

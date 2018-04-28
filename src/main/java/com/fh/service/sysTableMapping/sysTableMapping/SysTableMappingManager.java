@@ -63,6 +63,13 @@ public interface SysTableMappingManager{
 	 * @throws Exception
 	 */
 	public List<SysTableMapping> getUseTableMapping(SysTableMapping mapping)throws Exception;
+
+	
+	/**
+	 * @param pd
+	 * @throws Exception
+	 */
+	//public List<SysTableMapping> getDetailBillCodeSysTableMapping(SysTableMapping mapping)throws Exception;
 	
 	
 	

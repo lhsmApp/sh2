@@ -161,4 +161,18 @@
         order by COL_HIDE desc, DISP_ORDER
 		<!-- COL_HIDE必修倒序排列，关系添加或修改弹出框的显示 -->
 	</select>
+
+	<!-- 张晓柳 -->
+	<select id="getDetailBillCodeSysStruMapping" parameterType="com.fh.entity.SysStruMapping" resultType="com.fh.entity.SysStruMapping">
+		select
+		<include refid="Field"></include>
+		from
+		<include refid="tableName"></include>
+		where BUSI_DATE = #{BUSI_DATE}
+        and UPPER(TABLE_NAME) = UPPER(#{TABLE_NAME})
+        and UPPER(COL_CODE) = UPPER(#{COL_CODE})
+		<if test="TABLE_NAME_MAPPING != null and TABLE_NAME_MAPPING != ''" >  
+            and UPPER(TABLE_NAME_MAPPING) = UPPER(#{TABLE_NAME_MAPPING})
+        </if>
+	</select>
 </mapper>

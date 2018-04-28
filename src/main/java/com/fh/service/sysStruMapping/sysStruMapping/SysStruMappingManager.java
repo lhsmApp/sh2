@@ -63,6 +63,13 @@ public interface SysStruMappingManager{
 	 * @throws Exception
 	 */
 	public List<SysStruMapping> getShowStruList(SysStruMapping mapping)throws Exception;
+
+	
+	/**
+	 * @param pd
+	 * @throws Exception
+	 */
+	public List<SysStruMapping> getDetailBillCodeSysStruMapping(SysStruMapping mapping)throws Exception;
 	
 	
 	

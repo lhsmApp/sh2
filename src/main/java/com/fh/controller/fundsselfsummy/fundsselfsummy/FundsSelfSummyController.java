@@ -699,7 +699,6 @@ public class FundsSelfSummyController extends BaseController {
 			if(!(typeCode!=null && !typeCode.trim().equals(""))){
 				QueryFeild += " and 1 = 1 ";
 			}
-			
 		}
 		PageData transferPd = new PageData();
 		transferPd.put("SystemDateTime", SystemDateTime);

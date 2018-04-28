@@ -91,5 +91,15 @@ public class SysStruMappingService implements SysStruMappingManager{
 	public List<SysStruMapping> getShowStruList(SysStruMapping mapping)throws Exception{
 		return (List<SysStruMapping>)dao.findForList("SysStruMappingMapper.getShowStruList", mapping);
 	}
+
+	
+	/**
+	 * @param pd
+	 * @throws Exception
+	 */
+	@SuppressWarnings("unchecked")
+	public List<SysStruMapping> getDetailBillCodeSysStruMapping(SysStruMapping mapping)throws Exception{
+		return (List<SysStruMapping>)dao.findForList("SysStruMappingMapper.getDetailBillCodeSysStruMapping", mapping);
+	}
 }
 

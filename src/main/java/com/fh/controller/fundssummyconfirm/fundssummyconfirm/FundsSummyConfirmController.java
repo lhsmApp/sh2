@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+
 import javax.annotation.Resource;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.stereotype.Controller;
@@ -19,12 +20,14 @@ import com.fh.controller.common.Common;
 import com.fh.controller.common.DictsUtil;
 import com.fh.controller.common.Message;
 import com.fh.controller.common.QueryFeildString;
+import com.fh.controller.common.SysStruMappingList;
 import com.fh.controller.common.TmplUtil;
 import com.fh.entity.CommonBase;
 import com.fh.entity.JqPage;
 import com.fh.entity.Page;
 import com.fh.entity.PageResult;
 import com.fh.entity.SysConfirmInfo;
+import com.fh.entity.SysStruMapping;
 import com.fh.entity.TmplTypeInfo;
 import com.fh.util.PageData;
 import com.fh.util.SqlTools;
@@ -41,6 +44,8 @@ import com.fh.service.fundssummyconfirm.fundssummyconfirm.FundsSummyConfirmManag
 import com.fh.service.fhoa.department.impl.DepartmentService;
 import com.fh.service.sysConfig.sysconfig.SysConfigManager;
 import com.fh.service.sysConfirmInfo.sysConfirmInfo.impl.SysConfirmInfoService;
+import com.fh.service.sysStruMapping.sysStruMapping.impl.SysStruMappingService;
+import com.fh.service.sysTableMapping.sysTableMapping.impl.SysTableMappingService;
 import com.fh.service.system.dictionaries.impl.DictionariesService;
 import com.fh.service.system.user.UserManager;
 import com.fh.service.tmplConfigDict.tmplconfigdict.impl.TmplConfigDictService;
@@ -73,8 +78,17 @@ public class FundsSummyConfirmController extends BaseController {
 	private UserManager userService;
 	@Resource(name="sysconfigService")
 	private SysConfigManager sysConfigManager;
-	
+
+	@Resource(name="sysTableMappingService")
+	private SysTableMappingService sysTableMappingService;
+	@Resource(name="sysStruMappingService")
+	private SysStruMappingService sysStruMappingService;
+
+	//表名
 	String tb_sys_confirm_info = "tb_sys_confirm_info";
+	String tb_staff_detail = "tb_staff_detail";
+	String tb_social_inc_detail = "tb_social_inc_detail";
+	String tb_house_fund_detail = "tb_house_fund_detail";
 
 	//当前期间,取自tb_system_config的SystemDateTime字段
 	String SystemDateTime = "";
@@ -87,6 +101,7 @@ public class FundsSummyConfirmController extends BaseController {
 
 	//界面查询字段
     List<String> QueryFeildList = Arrays.asList("USER_GROP", "CUST_COL7", "DEPT_CODE", "BUSI_DATE");
+    
 
 	/**列表
 	 * @param page
@@ -374,7 +389,7 @@ public class FundsSummyConfirmController extends BaseController {
         	itemAdd.setSTATE(BillState.Normal.getNameKey());
         	listTransfer.add(itemAdd);
         }
-		String checkState = CheckState(SelectedTabType, QueryFeildString.tranferListValueToSqlInString(listBillCode));
+		String checkState = CheckState(SelectedTableNo, SelectedTabType, QueryFeildString.tranferListValueToSqlInString(listBillCode));
 		if(checkState!=null && !checkState.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(checkState);
@@ -400,7 +415,7 @@ public class FundsSummyConfirmController extends BaseController {
 		commonBase.setCode(-1);
 		
 		PageData getPd = this.getPageData();
-		//String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
 		//tab
 		String SelectedTabType = getPd.getString("SelectedTabType");
 		
@@ -421,7 +436,7 @@ public class FundsSummyConfirmController extends BaseController {
         	itemAdd.setSTATE(BillState.Invalid.getNameKey());
         	listTransfer.add(itemAdd);
         }
-		String checkState = CheckState(SelectedTabType, QueryFeildString.tranferListValueToSqlInString(listBillCode));
+		String checkState = CheckState(SelectedTableNo, SelectedTabType, QueryFeildString.tranferListValueToSqlInString(listBillCode));
 		if(checkState!=null && !checkState.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(checkState);
@@ -436,7 +451,7 @@ public class FundsSummyConfirmController extends BaseController {
 	}
 	
 	//判断单据状态
-	private String CheckState(String SelectedTabType, String strSqlInBillCode) throws Exception{
+	private String CheckState(String SelectedTableNo, String SelectedTabType, String strSqlInBillCode) throws Exception{
 		String strRut = "";
 		
 		String QueryFeild = " and BILL_CODE in (" + strSqlInBillCode + ") ";
@@ -445,13 +460,40 @@ public class FundsSummyConfirmController extends BaseController {
 			//未确认，要确认，判断是否已确认
 			QueryFeild += " and state = '1' AND RPT_DUR = '" + SystemDateTime + "' ";
 		} else if(SelectedTabType!=null && SelectedTabType.trim().equals("2")){
-			//String strGenBusDetail_BillCode = "";
-			// 前端数据表格界面字段,动态取自SysStruMapping，根据当前单位编码及表名获取字段配置信息
-			//List<SysStruMapping> getSysStruMappingList = SysStruMappingList.getDetailBillCodeSysStruMapping(pzType, tableName, busiDate, billOff, sysStruMappingService);
-			
 			//已确认，要取消，判断是否已汇总
 			QueryFeild += " and state = '1' AND RPT_DUR = '" + SystemDateTime + "' ";
-			QueryFeild += " and BILL_CODE in (select CUST_COL13 from tb_gen_bus_detail where bill_code in (select bill_code from tb_gen_bus_summy_bill where BILL_STATE = '" + BillState.Normal.getNameKey() + "'))";
+			
+			String strSqlBillCodeIn = "";
+			String strImportDetailTableCode = getImportDetailTableCode(SelectedTableNo);
+			//List<SysTableMapping> getSysTableMappingList = SysStruMappingList.getDetailBillCodeSysTableMapping(SystemDateTime, strImportDetailTableCode, sysTableMappingService);
+			//if(getSysTableMappingList != null && getSysTableMappingList.size()>0){
+				//for(SysTableMapping tableMap : getSysTableMappingList){
+					//String tableName = tableMap.getTABLE_NAME();
+					//String tableNameMapping = tableMap.getTABLE_NAME_MAPPING();
+					// 前端数据表格界面字段,动态取自SysStruMapping，根据当前单位编码及表名获取字段配置信息
+					//List<SysStruMapping> getSysStruMappingList = SysStruMappingList.getDetailBillCodeSysStruMapping(SystemDateTime, tableName, tableNameMapping, ("bill_code").toUpperCase(), sysStruMappingService);
+			        List<SysStruMapping> getSysStruMappingList = SysStruMappingList.getDetailBillCodeSysStruMapping(SystemDateTime, strImportDetailTableCode, "", ("bill_code").toUpperCase(), sysStruMappingService);
+					// 添加配置表设置列，字典（未设置就使用表默认，text或number）、隐藏、表头显示
+					if (getSysStruMappingList != null && getSysStruMappingList.size() > 0) {
+						for(SysStruMapping struMap : getSysStruMappingList){
+							if(struMap.getCOL_CODE().toUpperCase().equals(("bill_code").toUpperCase())){
+								if(strSqlBillCodeIn!=null && !strSqlBillCodeIn.trim().equals("")){
+									strSqlBillCodeIn += " UNION ALL ";
+								}
+								String TABLE_NAME_MAPPING = struMap.getTABLE_NAME_MAPPING();
+								String COL_MAPPING_CODE = struMap.getCOL_MAPPING_CODE();
+								strSqlBillCodeIn += " select " + COL_MAPPING_CODE + " from " + TABLE_NAME_MAPPING + " where bill_code in (select bill_code from tb_gen_bus_summy_bill where BILL_STATE = '" + BillState.Normal.getNameKey() + "') ";
+							}
+						}
+					} else {
+						//strRut = Message.BillCodeNotHaveGenFeild;
+						//return strRut;
+					}
+				//}
+			//}
+			if(strSqlBillCodeIn!=null && !strSqlBillCodeIn.trim().equals("")){
+				QueryFeild += " and BILL_CODE in (" + strSqlBillCodeIn + ")";
+			}
 		} else{
 			strRut = Message.Error;
 			return strRut;
@@ -551,11 +593,11 @@ public class FundsSummyConfirmController extends BaseController {
 					||which.equals(TmplType.TB_STAFF_SUMMY_SYS_LABOR.getNameKey())
 					||which.equals(TmplType.TB_STAFF_SUMMY_OPER_LABOR.getNameKey())
 					||which.equals(TmplType.TB_STAFF_SUMMY_LABOR.getNameKey())) {
-				tableCode = "tb_staff_detail";
+				tableCode = tb_staff_detail;
 			} else if (which.equals(TmplType.TB_SOCIAL_INC_SUMMY.getNameKey())) {
-				tableCode = "tb_social_inc_detail";
+				tableCode = tb_social_inc_detail;
 			} else if (which.equals(TmplType.TB_HOUSE_FUND_SUMMY.getNameKey())) {
-				tableCode = "tb_house_fund_detail";
+				tableCode = tb_house_fund_detail;
 			}
 		}
 		return tableCode;
