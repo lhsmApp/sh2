@@ -175,12 +175,68 @@
     	            + '&SelectedCustCol7='+$("#SelectedCustCol7").val()
                     +'&SelectedTypeCode='+$("#SelectedTypeCode").val(),
     			datatype: "json",
-    			colModel: jqGridColModel,
+    			colModel: [
+    						/*{label: ' ',name:'myac',index:'', width:70, fixed:true, sortable:false, resize:false,
+    							formatter:'actions', 
+    							formatoptions:{ 
+    							 onEdit:function(rowid){
+    									 //var curRow= $("tr[id="+rowid+"]");
+    									 //var curCol=curRow.find("td[aria-describedby='jqGrid_STATE']");
+    									 //if(curCol.attr('title')=='停用'){
+    									 //	 var cur=$("#jSaveButton_"+rowid);
+    									 //	 cur.find("span").css('display','none');
+    									 //}
+    								},
+    		                        onSuccess: function(response) {
+    		                        	var code=JSON.parse(response.responseText);
+    									if(code.code==0){
+    										return [true];
+    									}else{
+    										$("#subTitle").tips({
+    											side : 3,
+    											msg : '保存失败,' + code.message,
+    											bg : '#cc0033',
+    											time : 3
+    										});
+    										return [false, code.message];
+    									}                
+    		                        },
+    		                        onError :function(rowid, res, stat, err) {
+    		                        	if(err!=null)
+    		                        		console.log(err);
+    		                        },
+    		                        afterSave:function(rowid, res){
+    		                        	$(".tooltip").remove();
+    		                        	//$("#jqGrid").trigger("reloadGrid"); 
+    		                        	
+    		                        },
+    								keys:true,
+    							    delbutton: false,//disable delete button
+    							}
+    						},*/
+    						{ label: '凭证类型', name: 'TYPE_CODE__', width: 60,hidden : true,editable: true,},
+    						{ label: '账套', name: 'BILL_OFF__', width: 60,hidden : true,editable: true,},
+    						{ label: '业务期间', name: 'BUSI_DATE__', width: 60,hidden : true,editable: true,},
+    						{ label: '责任中心', name: 'DEPT_CODE__', width: 60,hidden : true,editable: true,},
+    						{ label: '变动列', name: 'CHANGE_COL__', width: 60,hidden : true,editable: true,},
+
+    						{ label: '业务期间', name: 'BUSI_DATE', hidden : true,editable: true,},
+    						{ label: '凭证类型', name: 'TYPE_CODE', editable: true,edittype: 'select',formatter:'select',formatoptions:{value:"${typeCodeStrAll}"},editoptions:{value:"${typeCodeStrSelect}"},stype: 'select',searchoptions:{value:"${typeCodeStrAll}"}},
+    						{ label: '账套', name: 'BILL_OFF', editable: true,edittype: 'select',formatter:'select',formatoptions:{value:"${billOffStrAll}"},editoptions:{value:"${billOffStrSelect}"},stype: 'select',searchoptions:{value:"${billOffStrAll}"}},
+    						{ label: '责任中心', name: 'DEPT_CODE', editable: true,edittype: 'select',formatter:'select',formatoptions:{value:"${departmentStrAll}"},editoptions:{value:"${departmentStrSelect}"},stype: 'select',searchoptions:{value:"${departmentStrAll}"}},
+    						{ label: '变动列', name: 'CHANGE_COL', editable: true,edittype: 'select',formatter:'select',formatoptions:{value:"${changeColStrAll}"},editoptions:{value:"${changeColStrSelect}"},stype: 'select',searchoptions:{value:"${changeColStrAll}"}},
+    						
+    						{ label: '数值值', name: 'DATA_VALUE', editable: true, edittype:'text',search:false, sorttype: 'number',align:'right', searchrules: {number: true},
+    							formatter: "number", formatoptions: {thousandsSeparator:",", decimalSeparator:".", defaulValue:"0.00",decimalPlaces:2}, editoptions: {maxlength:'10', number: true}
+    					    }
+    					],
     			reloadAfterSubmit: true, 
     			viewrecords: true, 
-    			shrinkToFit: false,
-    			rowNum: 100,
-    			rowList: [100,200,500],
+    			shrinkToFit: true,
+    			width: "100%",
+    			rowNum: 0,
+    			//rowNum: 100,
+    			//rowList: [100,200,500],
                 multiselect: true,
                 multiboxonly: true,
                 sortable: true,
@@ -191,6 +247,8 @@
     	            + '&SelectedTypeCode='+$("#SelectedTypeCode").val(),
     			
     			pager: pagerBase_selector,
+				pgbuttons: false, // 分页按钮是否显示 
+				pginput: false, // 是否允许输入分页页数 
     			footerrow: false,
     			ondblClickRow: doubleClickRow,
     			
@@ -226,7 +284,6 @@
     		        {
     					//edit record form
     				    id: "edit",
-    				    width: 900,
     					closeAfterEdit: true,
     					recreateForm: true,
     					beforeShowForm :beforeEditOrAddCallback,
@@ -235,11 +292,9 @@
     		        {
     					//new record form
     				    id: "add",
-    				    width: 900,
     					closeAfterAdd: true,
     					recreateForm: true,
     					viewPagerButtons: false,
-    					//width: 700,
     					//reloadAfterSubmit: true,
     					beforeShowForm : beforeEditOrAddCallback,
     				    onclickSubmit: function(params, posdata) {
@@ -584,8 +639,13 @@
 	
 	    //检索
 	    function tosearch() {
-			$(gridBase_selector).trigger("reloadGrid");  
-			$(top.hangge());//关闭加载状态
+			$(gridBase_selector).jqGrid('setGridParam',{  // 重新加载数据
+				url:'<%=basePath%>dataInput/getPageList.do?'
+    				+ 'SelectedDepartCode='+$("#SelectedDepartCode").val()
+    	            + '&SelectedCustCol7='+$("#SelectedCustCol7").val()
+                    +'&SelectedTypeCode='+$("#SelectedTypeCode").val(),
+								datatype : 'json'
+							}).trigger("reloadGrid");
 		}  
 
  	</script>

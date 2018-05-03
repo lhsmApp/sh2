@@ -124,6 +124,30 @@ public class DataInputController extends BaseController {
 		mv.addObject("zTreeNodes", DepartmentSelectTreeSource);
 		// ***********************************************************
 
+		String billOffValus = DictsUtil.getDicValue(dictionariesService, "FMISACC");
+		String billOffStringAll = ":[All];" + billOffValus;
+		String billOffStringSelect = ":;" + billOffValus;
+		mv.addObject("billOffStrAll", billOffStringAll);
+		mv.addObject("billOffStrSelect", billOffStringSelect);
+		
+		String departmentValus = DictsUtil.getDepartmentValue(departmentService);
+		String departmentStringAll = ":[All];" + departmentValus;
+		String departmentStringSelect = ":;" + departmentValus;
+		mv.addObject("departmentStrAll", departmentStringAll);
+		mv.addObject("departmentStrSelect", departmentStringSelect);
+
+		String typeCodeValus = DictsUtil.getDicValue(dictionariesService, "PZTYPE");
+		String typeCodeStringAll = ":[All];" + typeCodeValus;
+		String typeCodeStringSelect = ":;" + typeCodeValus;
+		mv.addObject("typeCodeStrAll", typeCodeStringAll);
+		mv.addObject("typeCodeStrSelect", typeCodeStringSelect);
+
+		String changeColValus = DictsUtil.getDicValue(dictionariesService, "CHANGEVALUE");
+		String changeColStringAll = ":[All];" + changeColValus;
+		String changeColStringSelect = ":;" + changeColValus;
+		mv.addObject("changeColStrAll", changeColStringAll);
+		mv.addObject("changeColStrSelect", changeColStringSelect);
+
 		mv.addObject("pd", getPd);
 		return mv;
 	}
@@ -168,25 +192,31 @@ public class DataInputController extends BaseController {
 		PageData getPd = this.getPageData();
 		//操作
 		String oper = getPd.getString("oper");
-
-		/*String checkState = CheckState(SelectedBillCode,
-				SelectedCustCol7, SelectedDepartCode, listData, "SERIAL_NO", TmplUtil.keyExtra);
-		if(checkState!=null && !checkState.trim().equals("")){
-			commonBase.setCode(2);
-			commonBase.setMessage(checkState);
-			return commonBase;
-		}*/
+		
 		//必定不用编辑的列  MustNotEditList Arrays.asList("BUSI_DATE");
+		List<PageData> listData = new ArrayList<PageData>();
 		if(oper.equals("add")){
 			getPd.put("BUSI_DATE", SystemDateTime);
-			dataInputService.save(getPd);
-			commonBase.setCode(0);
+			listData.add(getPd);
 		} else {
 			for(String strFeild : MustNotEditList){
 				getPd.put(strFeild, getPd.get(strFeild + TmplUtil.keyExtra));
 			}
-			List<PageData> listData = new ArrayList<PageData>();
 			listData.add(getPd);
+		}
+
+		String checkState = CheckState(SystemDateTime, listData);
+		if(checkState!=null && !checkState.trim().equals("")){
+			commonBase.setCode(2);
+			commonBase.setMessage(checkState);
+			return commonBase;
+		}
+		
+		//必定不用编辑的列  MustNotEditList Arrays.asList("BUSI_DATE");
+		if(oper.equals("add")){
+			dataInputService.save(getPd);
+			commonBase.setCode(0);
+		} else {
 			dataInputService.batchUpdateDatabase(listData);
 			commonBase.setCode(0);
 		}
@@ -209,16 +239,15 @@ public class DataInputController extends BaseController {
 		String json = DATA_ROWS.toString();  
         JSONArray array = JSONArray.fromObject(json);  
         List<PageData> listData = (List<PageData>) JSONArray.toCollection(array,PageData.class);
-		/*String checkState = CheckState(SelectedBillCode,
-				SelectedCustCol7, SelectedDepartCode, listData, "SERIAL_NO", TmplUtil.keyExtra);
+		String checkState = CheckState(SystemDateTime, listData);
 		if(checkState!=null && !checkState.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(checkState);
 			return commonBase;
-		}*/
+		}
 		if(null != listData && listData.size() > 0){
-				dataInputService.batchUpdateDatabase(listData);
-				commonBase.setCode(0);
+			dataInputService.batchUpdateDatabase(listData);
+			commonBase.setCode(0);
 		}
 		return commonBase;
 	}
@@ -240,13 +269,6 @@ public class DataInputController extends BaseController {
 		String json = DATA_ROWS.toString();  
         JSONArray array = JSONArray.fromObject(json);  
         List<PageData> listData = (List<PageData>) JSONArray.toCollection(array,PageData.class);
-		/*String checkState = CheckState(SelectedBillCode,
-				SelectedCustCol7, SelectedDepartCode, listData, "SERIAL_NO", TmplUtil.keyExtra);
-		if(checkState!=null && !checkState.trim().equals("")){
-			commonBase.setCode(2);
-			commonBase.setMessage(checkState);
-			return commonBase;
-		}*/
         if(null != listData && listData.size() > 0){
 			dataInputService.deleteAll(listData);
 			commonBase.setCode(0);
@@ -254,57 +276,19 @@ public class DataInputController extends BaseController {
 		return commonBase;
 	}
 	
-	private String CheckState(String SelectedBillCode,
-			String SelectedCustCol7, String SelectedDepartCode, 
-			List<PageData> pdList, String strFeild, String strFeildExtra) throws Exception{
+	private String CheckState(String SystemDateTime, List<PageData> listData) throws Exception{
 		String strRut = "";
-		/*if(!SelectedBillCode.equals(SelectBillCodeFirstShow)){
-			String QueryFeild = " and BILL_CODE in ('" + SelectedBillCode + "') ";
-			QueryFeild += " and BILL_STATE = '" + BillState.Normal.getNameKey() + "' ";
-			QueryFeild += " and BILL_CODE not in (SELECT bill_code FROM tb_sys_sealed_info WHERE state = '1') ";
-			
-			PageData transferPd = new PageData();
-			transferPd.put("SystemDateTime", SystemDateTime);
-			transferPd.put("CanOperate", QueryFeild);
-			List<String> getCodeList = housefundsummyService.getBillCodeList(transferPd);
-			
-			if(!(getCodeList != null && getCodeList.size()>0)){
-				strRut = Message.OperDataSumAlreadyChange;
-			}
+		if(!(SystemDateTime!=null && !SystemDateTime.trim().equals(""))){
+			strRut = Message.SystemDateTimeMustNotKong;
+		}
+		if(listData!=null && listData.size()>0){
+    		List<PageData> getRepeatRecord = dataInputService.getRepeatRecord(listData);
+    		if(getRepeatRecord!=null && getRepeatRecord.size()>0){
+    			strRut = Message.HaveRepeatRecord;
+    		}
 		} else {
-	        if(pdList!=null && pdList.size()>0){
-	        	List<Integer> listStringSerialNo = QueryFeildString.getListIntegerFromListPageData(pdList, strFeild, strFeildExtra);
-				String strSqlInSerialNo = QueryFeildString.tranferListIntegerToGroupbyString(listStringSerialNo);
-	    		PageData transferPd = new PageData();
-	    		PageData getQueryFeildPd = new PageData();
-	    		getQueryFeildPd.put("DEPT_CODE", SelectedDepartCode);
-	    		getQueryFeildPd.put("CUST_COL7", SelectedCustCol7);
-	    		String QueryFeild = QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList);
-	    		if(!(SelectedDepartCode != null && !SelectedDepartCode.trim().equals(""))){
-	    			QueryFeild += " and 1 != 1 ";
-	    		}
-	    		if(!(SelectedCustCol7 != null && !SelectedCustCol7.trim().equals(""))){
-	    			QueryFeild += " and 1 != 1 ";
-	    		}
-	    		QueryFeild += " and BILL_CODE like ' %' ";
-	    		QueryFeild += " and SERIAL_NO in (" + strSqlInSerialNo + ") ";
-	    		transferPd.put("QueryFeild", QueryFeild);
-	    		
-	    		//页面显示数据的年月
-	    		transferPd.put("SystemDateTime", SystemDateTime);
-	    		transferPd.put("SelectFeildName", strFeild);
-	    		List<PageData> getSerialNo = housefunddetailService.getSerialNoBySerialNo(transferPd);
-	    		if(!(listStringSerialNo!=null && getSerialNo!=null && listStringSerialNo.size() == getSerialNo.size())){
-	    			strRut = Message.OperDataAlreadyChange;
-	    		} else {
-	    			for(PageData each : getSerialNo){
-	    				if(!listStringSerialNo.contains((Integer)each.get(strFeild))){
-	    					strRut = Message.OperDataAlreadyChange;
-	    				}
-	    			}
-	    		}
-	        }
-		}*/
+			strRut = Message.NotTransferOperateData;
+		}
 		return strRut;
 	}
 	

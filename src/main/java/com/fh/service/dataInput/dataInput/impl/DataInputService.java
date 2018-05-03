@@ -44,7 +44,7 @@ public class DataInputService implements DataInputManager{
 	 */
 	@SuppressWarnings("unchecked")
 	public List<PageData> getRepeatRecord(List<PageData> listData)throws Exception{
-		return (List<PageData>)dao.findForList("HouseFundDetailMapper.getRepeatRecord", listData);
+		return (List<PageData>)dao.findForList("DataInputMapper.getRepeatRecord", listData);
 	}
 
 	/**更新数据库
@@ -52,21 +52,21 @@ public class DataInputService implements DataInputManager{
 	 * @throws Exception
 	 */
 	public void save(PageData pd)throws Exception{
-		dao.update("HouseFundDetailMapper.save", pd);
+		dao.update("DataInputMapper.save", pd);
 	}
 	/**批量删除
 	 * @param 
 	 * @throws Exception
 	 */
 	public void deleteAll(List<PageData> listData)throws Exception{
-		dao.delete("HouseFundDetailMapper.deleteAll", listData);
+		dao.delete("DataInputMapper.deleteAll", listData);
 	}
 	/**更新数据库
 	 * @param pd
 	 * @throws Exception
 	 */
 	public void batchUpdateDatabase(List<PageData> listData)throws Exception{
-		dao.update("HouseFundDetailMapper.batchDelAndIns", listData);
+		dao.update("DataInputMapper.batchDelAndIns", listData);
 	}
 
 }
