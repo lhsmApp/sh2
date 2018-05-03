@@ -4,13 +4,14 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
+import com.fh.entity.SysStruMapping;
 import com.fh.entity.TableColumns;
 import com.fh.entity.TmplConfigDetail;
 import com.fh.entity.system.Department;
 import com.fh.entity.system.Dictionaries;
 import com.fh.service.fhoa.department.DepartmentManager;
+import com.fh.service.sysStruMapping.sysStruMapping.impl.SysStruMappingService;
 import com.fh.service.system.dictionaries.DictionariesManager;
 import com.fh.service.system.user.UserManager;
 import com.fh.service.tmplConfigDict.tmplconfigdict.TmplConfigDictManager;
@@ -91,6 +92,36 @@ public class Common {
 					}
 					m_sqlUserdata.append(" round(avg(" + m_columnsList.get(i).getString("COL_MAPPING_CODE") + "), 2) "
 							+ m_columnsList.get(i).getString("COL_MAPPING_CODE"));
+				}
+			}
+		}
+		return m_sqlUserdata;
+	}
+
+	//String pzType, String tableName, String busiDate, String billOff
+	public static StringBuilder GetSqlUserdata(String pzType, String tableName, String busiDate, String billOff, 
+			SysStruMappingService sysStruMappingService, Boolean bol) throws Exception{
+		//底行显示的求和与平均值字段
+		StringBuilder m_sqlUserdata = new StringBuilder();
+		List<SysStruMapping> getSysStruMappingList = SysStruMappingList.getSysStruMappingList(pzType, tableName, busiDate, billOff, sysStruMappingService, bol);
+		if (getSysStruMappingList != null && getSysStruMappingList.size() > 0) {
+			for (int i = 0; i < getSysStruMappingList.size(); i++) {
+				// 底行显示的求和与平均值字段
+				// 1汇总 0不汇总,默认0
+				if (Integer.parseInt(getSysStruMappingList.get(i).getCOL_SUM()) == 1) {
+					if (m_sqlUserdata != null && !m_sqlUserdata.toString().trim().equals("")) {
+						m_sqlUserdata.append(", ");
+					}
+					m_sqlUserdata.append(" sum(" + getSysStruMappingList.get(i).getCOL_MAPPING_CODE() + ") "
+							+ getSysStruMappingList.get(i).getCOL_MAPPING_CODE());
+				}
+				// 0不计算 1计算 默认0
+				else if (Integer.parseInt(getSysStruMappingList.get(i).getCOL_AVE()) == 1) {
+					if (m_sqlUserdata != null && !m_sqlUserdata.toString().trim().equals("")) {
+						m_sqlUserdata.append(", ");
+					}
+					m_sqlUserdata.append(" round(avg(" + getSysStruMappingList.get(i).getCOL_MAPPING_CODE() + "), 2) "
+							+ getSysStruMappingList.get(i).getCOL_MAPPING_CODE());
 				}
 			}
 		}
@@ -485,6 +516,44 @@ public class Common {
 						InsertVale += ",";
 					}
 					InsertField += col.getColumn_name();
+					InsertVale += "'" + value.toString() + "'";
+				}
+			}
+		}
+		pd.put("InsertField", InsertField);
+		pd.put("InsertVale", InsertVale);
+	}
+	//IsNumFeildButMustInput 设置字段类型是数字，但不管隐藏 或显示都必须保存的
+	public static void setModelDefault(PageData pd, List<TableColumns> tableColumns, 
+			List<SysStruMapping> getSysStruMappingList)
+			throws ClassNotFoundException {
+		String InsertField = "";
+		String InsertVale = "";
+	    for (TableColumns column : tableColumns) {
+	    	String column_name = column.getColumn_name().toUpperCase();
+	    	String data_type = column.getData_type().toUpperCase();
+	    	SysStruMapping struMapping = new SysStruMapping();
+	    	for(SysStruMapping str : getSysStruMappingList){
+	    		if(column_name.equals(str.getCOL_MAPPING_CODE().toUpperCase())){
+	    			struMapping = str;
+	    		}
+	    	}
+	    	int intHide = 0;
+	    	if(struMapping != null && struMapping.getCOL_MAPPING_CODE()!=null 
+	    			&& !struMapping.getCOL_MAPPING_CODE().trim().equals("")){
+				intHide = Integer.parseInt(struMapping.getCOL_HIDE());
+	    	} else {
+	    		intHide = 1;//显示
+	    	}
+			// 0隐藏 1显示, intHide != 1 隐藏
+			if(!(IsNumFeild(data_type) && intHide != 1)){
+				Object value = pd.get(column_name);
+				if(value != null && value.toString() != null && !value.toString().trim().equals("")){
+					if(InsertField!=null && !InsertField.trim().equals("")){
+						InsertField += ",";
+						InsertVale += ",";
+					}
+					InsertField += column_name;
 					InsertVale += "'" + value.toString() + "'";
 				}
 			}

@@ -20,6 +20,7 @@ import com.fh.util.StringUtil;
 import com.fh.util.Tools;
 import com.fh.util.enums.BillState;
 import com.fh.util.enums.EmplGroupType;
+import com.fh.util.enums.PZTYPE;
 import com.fh.util.enums.TmplType;
 
 import net.sf.json.JSONArray;
@@ -305,4 +306,39 @@ public class DictsUtil {
 		}
 		return tableCodeOri;
 	}
+
+	/**
+	 * 凭证字典获取业务类型1工会经费、教育经费凭证2党费凭证3社保互推凭证4公积金互推凭证5个缴凭证6应付劳务费凭证7企业年金提取凭证8补充医疗提取凭证9企业年金发放凭证10评估调整凭证
+	 * 
+	 * @param
+	 * @return
+	 * @throws Exception
+	 */
+	/*public static String getVocherType(String pzTYPE) throws Exception {
+		String vocherType = "";// 数据库真实业务数据表
+		if(pzTYPE != null){
+			if (pzTYPE.equals(PZTYPE.GFZYJF.getNameKey())) {
+				vocherType = VoucherType.GFZYJF.getNameKey();
+			} else if (pzTYPE.equals(PZTYPE.DF.getNameKey())) {
+				vocherType = VoucherType.DF.getNameKey();
+			} else if (pzTYPE.equals(PZTYPE.SB.getNameKey())) {
+				vocherType = VoucherType.SB.getNameKey();
+			} else if (pzTYPE.equals(PZTYPE.GJJ.getNameKey())) {
+				vocherType = VoucherType.GJJ.getNameKey();
+			} else if (pzTYPE.equals(PZTYPE.GJ.getNameKey())) {
+				vocherType = VoucherType.GJ.getNameKey();
+			} else if (pzTYPE.equals(PZTYPE.YFLWF.getNameKey())) {
+				vocherType = VoucherType.YFLWF.getNameKey();
+			} else if (pzTYPE.equals(PZTYPE.QYNJTQ.getNameKey())) {
+				vocherType = VoucherType.QYNJTQ.getNameKey();
+			} else if (pzTYPE.equals(PZTYPE.BCYLTQ.getNameKey())) {
+				vocherType = VoucherType.BCYLTQ.getNameKey();
+			} else if (pzTYPE.equals(PZTYPE.QYNJFF.getNameKey())) {
+				vocherType = VoucherType.QYNJFF.getNameKey();
+			} else if (pzTYPE.equals(PZTYPE.PGTZ.getNameKey())) {
+				vocherType = VoucherType.PGTZ.getNameKey();
+			}
+		}
+		return vocherType;
+	}*/
 }

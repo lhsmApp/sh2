@@ -115,6 +115,18 @@
 		DICT_CODE = #{DICT_CODE}
 	</select>
 
+	<!-- 通过条件获取数据 -->
+	<select id="findByCondition" parameterType="String" resultType="com.fh.entity.system.Dictionaries">
+		select
+		<include refid="Field"></include>
+		from
+		<include refid="tableName"></include>
+		<where>
+		    ${value}
+		</where>
+		order by ORDER_BY
+	</select>
+
 	<!-- 是否有相同编码 -->
 	<select id="hasSameDictCode" parameterType="pd" resultType="pd">
 		select

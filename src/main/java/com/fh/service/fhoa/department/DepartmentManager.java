@@ -51,6 +51,12 @@ public interface DepartmentManager{
 	 * @throws Exception
 	 */
 	public PageData findByBianma(PageData pd)throws Exception;
+
+	/**通过条件获取数据
+	 * @param pd
+	 * @throws Exception
+	 */
+	public List<Department> findByCondition(String strCondition)throws Exception;
 	
 	/**是否有相同编码 
 	 * @param pd
