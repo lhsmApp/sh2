@@ -431,4 +431,64 @@
 		table_name =
 		#{value}
 	</select>
+	
+	<!-- 根据帐套、凭证类型、业务期间、表名称获取tb_sys_stru_mapping的结构信息 -->
+	<!-- jiachao -->
+	<select id="listNeedSpecial" parameterType="pd"
+		resultType="pd">
+		select
+		TYPE_CODE,TABLE_NAME_MAPPING,BILL_OFF,BUSI_DATE,COL_MAPPING_CODE,COL_MAPPING_NAME,DISP_ORDER,COL_DGT,DEC_PRECISION,DICT_TRANS,COL_HIDE,COL_SUM,COL_AVE,COL_TRANSFER
+		from tb_sys_stru_mapping
+		where TYPE_CODE = #{TYPE_CODE}
+		and UPPER(TABLE_NAME_MAPPING) = UPPER(#{TABLE_CODE})
+		and BUSI_DATE = #{BUSI_DATE}
+		and BILL_OFF = #{FMISACC}
+		order
+		by COL_HIDE desc, DISP_ORDER
+		<!-- COL_HIDE必修倒序排列，关系添加或修改弹出框的显示 -->
+	</select>
+	
+	<!-- 通过期间获取数据，判断是否已经生成过特殊模板配置信息 -->
+	<select id="findStruMappingByRptDurSpecial" parameterType="String" resultType="String">
+		select 1
+		from
+		tb_sys_stru_mapping
+		where
+		BUSI_DATE = #{RPT_DUR} LIMIT 1
+	</select>
+	
+	<!-- 通过期间获取数据，判断是否已经生成过特殊模板配置信息 -->
+	<select id="findTableMappingByRptDurSpecial" parameterType="String" resultType="String">
+		select 1
+		from
+		tb_sys_table_mapping
+		where
+		BUSI_DATE = #{RPT_DUR} LIMIT 1
+	</select>
+	
+	<!-- 根据区间批量生成配置信息 -->
+	<insert id="insertStruMappingBatchNextRptDur" parameterType="pd">
+		<!-- 插入保存 -->
+		insert into
+		tb_sys_stru_mapping
+		(
+			TYPE_CODE,TABLE_NAME,TABLE_NAME_MAPPING,COL_CODE,COL_MAPPING_CODE,COL_MAPPING_NAME,COL_VALUE,COL_MAPPING_VALUE,BILL_OFF,BUSI_DATE,DISP_ORDER,COL_DGT,DEC_PRECISION,DICT_TRANS,COL_HIDE,COL_SUM,COL_AVE,COL_TRANSFER
+		)
+		SELECT 
+		TYPE_CODE,TABLE_NAME,TABLE_NAME_MAPPING,COL_CODE,COL_MAPPING_CODE,COL_MAPPING_NAME,COL_VALUE,COL_MAPPING_VALUE,BILL_OFF,#{NEXT_RPT_DUR} as BUSI_DATE,DISP_ORDER,COL_DGT,DEC_PRECISION,DICT_TRANS,COL_HIDE,COL_SUM,COL_AVE,COL_TRANSFER
+		FROM tb_sys_stru_mapping WHERE BUSI_DATE=#{CUR_RPT_DUR}
+	</insert>
+	
+	<!-- 根据区间批量生成配置信息 -->
+	<insert id="insertTableMappingBatchNextRptDur" parameterType="pd">
+		<!-- 插入保存 -->
+		insert into
+		tb_sys_table_mapping
+		(
+			TYPE_CODE,BUSI_DATE,TABLE_NAME,TABLE_NAME_MAPPING,STATE,BILL_OFF
+		)
+		SELECT 
+		TYPE_CODE,#{NEXT_RPT_DUR} as BUSI_DATE,TABLE_NAME,TABLE_NAME_MAPPING,STATE,BILL_OFF
+		FROM tb_sys_table_mapping WHERE BUSI_DATE=#{CUR_RPT_DUR}
+	</insert>
 </mapper>

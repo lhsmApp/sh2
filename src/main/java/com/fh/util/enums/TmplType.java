@@ -33,7 +33,7 @@ public enum TmplType {
 	TB_HOUSE_FUND_DETAIL("25","公积金明细导入表"),
 	TB_HOUSE_FUND_SUMMY("26","公积金汇总表"),
 	TB_HOUSE_FUND_AUDIT("27","公积金核算表"),
-	TB_HOUSE_FUND_TRANSFER("28","公积金传输表");
+	TB_HOUSE_FUND_TRANSFER("28","公积金传输表"),
 
 	//TB_SOCIAL_INC_SUMMY_BILL("29","社保汇总主表"),
 
@@ -44,6 +44,17 @@ public enum TmplType {
 	//TB_STAFF_SUMMY_BILL_SYS_LABOR("33","系统内劳务工资汇总主表"),
 	//TB_STAFF_SUMMY_BILL_OPER_LABOR("34","运行人员工资汇总主表"),
 	//TB_STAFF_SUMMY_BILL_LABOR("35","劳务派遣工资汇总主表");
+	
+	TB_GHJYJF_TRANSFER("PZ01","工会教育经费"),
+	TB_DF_TRANSFER("PZ02","党费"),
+	TB_SB_TRANSFER("PZ03","社保"),
+	TB_GJJ_TRANSFER("PZ04","公积金"),
+	TB_GJ_TRANSFER("PZ05","个缴"),
+	TB_YFLWF_TRANSFER("PZ06","应付劳务费"),
+	TB_QYNJTQ_TRANSFER("PZ07","企业年金提取"),
+	TB_BCYLTQ_TRANSFER("PZ08","补充医疗提取"),
+	TB_QYNJFF_TRANSFER("PZ09","企业年金发放"),
+	TB_PGTZ_TRANSFER("PZ10","评估调整");
 	
 	private String nameKey;
 

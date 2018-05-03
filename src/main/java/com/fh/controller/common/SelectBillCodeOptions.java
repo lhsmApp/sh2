@@ -2,6 +2,8 @@ package com.fh.controller.common;
 
 import java.util.List;
 
+import com.fh.util.PageData;
+
 /**
  * 下拉列表单号数据源
 * @ClassName: SelectBillCodeOptions
@@ -26,6 +28,24 @@ public class SelectBillCodeOptions {
 		}
 		if(strSelectBillCodeLastShow!=null && !strSelectBillCodeLastShow.trim().equals("")){
 			strReturn += "<option value='" + strSelectBillCodeLastShow + "'>" + strSelectBillCodeLastShow + "</option>";
+		}
+		return strReturn;
+	}
+	
+	public static String getSelectCodeAndNameOptions(List<PageData> listPageData, PageData selectCodeAndNameFirstShow,  PageData selectCodeAndNameLastShow){
+		String strReturn = "";
+		if(selectCodeAndNameFirstShow!=null && !selectCodeAndNameFirstShow.getString("NAME").equals("")){
+			strReturn += "<option value='" + selectCodeAndNameFirstShow.getString("CODE") + "' selected='selected'>" + selectCodeAndNameFirstShow.getString("NAME") + "</option>";
+		}
+		if(listPageData!=null){
+			for(PageData pageData : listPageData){
+				if(pageData.getString("CODE")!=null && !pageData.getString("CODE").trim().equals("")){
+					strReturn += "<option value='" + pageData.getString("CODE") + "'>" + pageData.getString("NAME") + "</option>";
+				}
+		    }
+		}
+		if(selectCodeAndNameFirstShow!=null &&!selectCodeAndNameFirstShow.getString("NAME").equals("")){
+			strReturn += "<option value='" + selectCodeAndNameFirstShow.getString("CODE") + "'>" + selectCodeAndNameFirstShow.getString("NAME") + "</option>";
 		}
 		return strReturn;
 	}

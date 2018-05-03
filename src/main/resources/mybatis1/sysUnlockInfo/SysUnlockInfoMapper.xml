@@ -37,7 +37,7 @@
 
 	<!-- 获取当前接口类型， 当前二级单位当前期间当前封存状态为封存的的传输列表 -->
 	<select id="listSyncDelUnlock" parameterType="pd" resultType="pd">
-		SELECT A.BILL_CODE,C.CERT_CODE,C.REVCERT_CODE,B.RPT_DEPT AS
+		<!-- SELECT A.BILL_CODE,C.CERT_CODE,C.REVCERT_CODE,B.RPT_DEPT AS
 		UNLK_DEPT,B.RPT_DUR AS UNLK_DUR,B.BILL_TYPE,${USER} AS UNLK_USER,
 		NOW() AS UNLK_DATE,B.BILL_OFF
 		FROM ${TABLE_CODE} A
@@ -56,7 +56,18 @@
 		A.BUSI_DATE=#{RPT_DUR} AND B.BILL_OFF=#{BILL_OFF}
 		<if test="USER_GROP!= null and USER_GROP != ''">
 			and A.USER_GROP = #{USER_GROP}
-		</if>
+		</if> -->
+		
+		SELECT B.BILL_CODE,C.CERT_CODE,C.REVCERT_CODE,B.RPT_DEPT AS
+		UNLK_DEPT,B.RPT_DUR AS UNLK_DUR,B.BILL_TYPE,${USER} AS UNLK_USER,
+		NOW() AS UNLK_DATE,B.BILL_OFF
+		FROM tb_sys_sealed_info B
+		
+		LEFT JOIN tb_gl_cert C
+		ON B.BILL_CODE=C.BILL_CODE
+		WHERE B.STATE='1' and B.BILL_CODE=#{BILL_CODE}
+		and B.BILL_TYPE=#{BILL_TYPE} AND B.RPT_DEPT=#{RPT_DEPT} AND
+		B.RPT_DUR=#{RPT_DUR} AND B.BILL_OFF=#{BILL_OFF}
 	</select>
 
 	<!-- 新增 -->

@@ -116,6 +116,20 @@ public class BusidateController extends BaseController {
 			pd.put("CUR_RPT_DUR", busiDate);
 			tmplconfigService.insertBatchNextRptDur(pd);// 根据区间批量生成配置信息
 		}
+		
+		String hasTmplStruMapping = tmplconfigService.findStruMappingByRptDurSpecial(nextBusidate);
+		if (StringUtil.isEmpty(hasTmplStruMapping)) {
+			pd.put("NEXT_RPT_DUR", nextBusidate);
+			pd.put("CUR_RPT_DUR", busiDate);
+			tmplconfigService.insertStruMappingBatchNextRptDur(pd);// 根据区间批量生成配置信息
+		}
+		
+		String hasTmplTableMapping = tmplconfigService.findTableMappingByRptDurSpecial(nextBusidate);
+		if (StringUtil.isEmpty(hasTmplTableMapping)) {
+			pd.put("NEXT_RPT_DUR", nextBusidate);
+			pd.put("CUR_RPT_DUR", busiDate);
+			tmplconfigService.insertTableMappingBatchNextRptDur(pd);// 根据区间批量生成配置信息
+		}
 		commonBase.setCode(0);
 		commonBase.setMessage(nextBusidate);
 
