@@ -2,12 +2,9 @@
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import javax.annotation.Resource;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.stereotype.Controller;
@@ -20,15 +17,12 @@ import com.fh.controller.base.BaseController;
 import com.fh.controller.common.Common;
 import com.fh.controller.common.DictsUtil;
 import com.fh.controller.common.QueryFeildString;
-import com.fh.controller.common.SelectBillCodeOptions;
 import com.fh.controller.common.TmplUtil;
 import com.fh.entity.CommonBase;
 import com.fh.entity.JqPage;
 import com.fh.entity.Page;
 import com.fh.entity.PageResult;
-import com.fh.entity.TmplConfigDetail;
 import com.fh.entity.TmplTypeInfo;
-import com.fh.util.ObjectExcelView;
 import com.fh.util.PageData;
 import com.fh.util.SqlTools;
 import com.fh.util.Jurisdiction;
@@ -36,9 +30,14 @@ import com.fh.util.enums.BillState;
 import com.fh.util.enums.SysConfigKeyCode;
 import com.fh.util.enums.TmplType;
 
-import com.fh.service.fundsconfirmquery.fundsconfirmquery.FundsConfirmQueryManager;
+import net.sf.json.JSONArray;
+
+import com.fh.service.fundssummyconfirm.fundssummyconfirm.FundsSummyConfirmManager;
 import com.fh.service.fhoa.department.impl.DepartmentService;
 import com.fh.service.sysConfig.sysconfig.SysConfigManager;
+import com.fh.service.sysConfirmInfo.sysConfirmInfo.impl.SysConfirmInfoService;
+import com.fh.service.sysStruMapping.sysStruMapping.impl.SysStruMappingService;
+import com.fh.service.sysTableMapping.sysTableMapping.impl.SysTableMappingService;
 import com.fh.service.system.dictionaries.impl.DictionariesService;
 import com.fh.service.system.user.UserManager;
 import com.fh.service.tmplConfigDict.tmplconfigdict.impl.TmplConfigDictService;
@@ -55,8 +54,10 @@ import com.fh.service.tmplconfig.tmplconfig.impl.TmplConfigService;
 public class FundsConfirmQueryController extends BaseController {
 	
 	String menuUrl = "fundsconfirmquery/list.do"; //菜单地址(权限用)
-	@Resource(name="fundsconfirmqueryService")
-	private FundsConfirmQueryManager fundsconfirmqueryService;
+	@Resource(name="fundssummyconfirmService")
+	private FundsSummyConfirmManager fundssummyconfirmService;
+	@Resource(name="sysConfirmInfoService")
+	private SysConfirmInfoService sysConfirmInfoService;
 	@Resource(name="tmplconfigService")
 	private TmplConfigService tmplconfigService;
 	@Resource(name="tmplconfigdictService")
@@ -70,16 +71,26 @@ public class FundsConfirmQueryController extends BaseController {
 	@Resource(name="sysconfigService")
 	private SysConfigManager sysConfigManager;
 
-	//全部凭证单据
-	String SelectBillCodeFirstShow = "全部单据";
-	String SelectBillCodeLastShow = "";
+	@Resource(name="sysTableMappingService")
+	private SysTableMappingService sysTableMappingService;
+	@Resource(name="sysStruMappingService")
+	private SysStruMappingService sysStruMappingService;
+
+	//表名
+	String tb_sys_confirm_info = "tb_sys_confirm_info";
+	String tb_staff_detail = "tb_staff_detail";
+	String tb_social_inc_detail = "tb_social_inc_detail";
+	String tb_house_fund_detail = "tb_house_fund_detail";
+
 	//默认的which值
 	String DefaultWhile = TmplType.TB_STAFF_SUMMY_CONTRACT.getNameKey();
+	////单位
+	//String ShowSummyBillColModelDepartCode = DictsUtil.DepartShowAll;
 	// 查询表的主键字段，作为标准列，jqgrid添加带__列，mybaits获取带__列
-	private List<String> keyListBase = Arrays.asList("BILL_CODE", "DEPT_CODE", "CUST_COL7");
+	private List<String> keyListBase = Arrays.asList("BILL_CODE", "DEPT_CODE", "CUST_COL7", "BUSI_DATE");
 
 	//界面查询字段
-    List<String> QueryFeildList = Arrays.asList("BUSI_DATE", "DEPT_CODE", "USER_GROP", "CUST_COL7");
+    List<String> QueryFeildList = Arrays.asList("USER_GROP", "CUST_COL7", "DEPT_CODE", "BUSI_DATE");
 
 	/**列表
 	 * @param page
@@ -101,11 +112,8 @@ public class FundsConfirmQueryController extends BaseController {
 		mv.addObject("SystemDateTime", SystemDateTime);
 		//while
 		getPd.put("which", SelectedTableNo);
-		//单号下拉列表
-		getPd.put("SelectNoBillCodeShow", SelectBillCodeFirstShow);
-		getPd.put("InitBillCodeOptions", SelectBillCodeOptions.getSelectBillCodeOptions(null, SelectBillCodeFirstShow, SelectBillCodeLastShow));
-		
-		//"BUSI_DATE", "DEPT_CODE", "USER_GROP", "CUST_COL7"
+
+		//"USER_GROP", "CUST_COL7"
 		//CUST_COL7 FMISACC 帐套字典
 		mv.addObject("FMISACC", DictsUtil.getDictsByParentCode(dictionariesService, "FMISACC"));
 		// *********************加载单位树  DEPT_CODE*******************************
@@ -122,66 +130,6 @@ public class FundsConfirmQueryController extends BaseController {
 		return mv;
 	}
 
-	/**单号下拉列表
-	 * @param
-	 * @throws Exception
-	 */
-	@RequestMapping(value="/getBillCodeList")
-	public @ResponseBody CommonBase getBillCodeList() throws Exception{
-		CommonBase commonBase = new CommonBase();
-		commonBase.setCode(-1);
-		
-		PageData getPd = this.getPageData();
-		//员工组
-		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
-		String emplGroupType = DictsUtil.getEmplGroupType(SelectedTableNo);
-		//单位
-		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
-		int departSelf = Common.getDepartSelf(departmentService);
-		if(departSelf == 1){
-			SelectedDepartCode = Jurisdiction.getCurrentDepartmentID();
-		}
-		//账套
-		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
-		//日期
-		String SelectedBusiDate = getPd.getString("SelectedBusiDate");
-		List<String> AllDeptCode = Common.getAllDeptCode(departmentService, Jurisdiction.getCurrentDepartmentID());
-
-		String tableNameSummy = getSummyBaseTableCode(SelectedTableNo);
-		
-		PageData getQueryFeildPd = new PageData();
-		getQueryFeildPd.put("USER_GROP", emplGroupType);
-		getQueryFeildPd.put("DEPT_CODE", SelectedDepartCode);
-		getQueryFeildPd.put("CUST_COL7", SelectedCustCol7);
-		getQueryFeildPd.put("BUSI_DATE", SelectedBusiDate);
-		String QueryFeild = QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList);
-		QueryFeild += " and BILL_STATE = '" + BillState.Normal.getNameKey() + "' ";
-		QueryFeild += " and DEPT_CODE in (" + QueryFeildString.tranferListValueToSqlInString(AllDeptCode) + ") ";//工资无账套无数据
-		if(!(SelectedCustCol7!=null && !SelectedCustCol7.trim().equals(""))){
-			QueryFeild += " and 1 != 1 ";
-		}
-		if(!(SelectedDepartCode!=null && !SelectedDepartCode.trim().equals(""))){
-			QueryFeild += " and 1 != 1 ";
-		}
-		if(!(SelectedBusiDate!=null && !SelectedBusiDate.trim().equals(""))){
-			QueryFeild += " and 1 != 1 ";
-		}
-		getPd.put("QueryFeild", QueryFeild);
-		
-		//表名
-		getPd.put("TableName", tableNameSummy);
-		
-		List<String> getCodeList = fundsconfirmqueryService.getBillCodeList(getPd);
-		String returnString = SelectBillCodeOptions.getSelectBillCodeOptions(getCodeList, SelectBillCodeFirstShow, SelectBillCodeLastShow);
-		commonBase.setMessage(returnString);
-		commonBase.setCode(0);
-
-		commonBase.setMessage(returnString);
-		commonBase.setCode(0);
-		
-		return commonBase;
-	}
-
 	/**显示结构
 	 * @param
 	 * @throws Exception
@@ -195,10 +143,10 @@ public class FundsConfirmQueryController extends BaseController {
 		PageData getPd = this.getPageData();
 		//员工组
 		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
-		//单位
-		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
 		//账套
 		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
+		//单位
+		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
 
 		String strShowCalModelDepaet = Jurisdiction.getCurrentDepartmentID();
 		if(SelectedDepartCode!=null && !SelectedDepartCode.trim().equals("") && !SelectedDepartCode.contains(",")){
@@ -225,10 +173,10 @@ public class FundsConfirmQueryController extends BaseController {
 		PageData getPd = this.getPageData();
 		//员工组
 		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
-		//单位
-		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
 		//账套
 		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
+		//单位
+		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
 		
 		PageData pdTransfer = setTransferPd(getPd);
 		//表名
@@ -236,8 +184,8 @@ public class FundsConfirmQueryController extends BaseController {
 		pdTransfer.put("TableName", tableNameSummy);
 		page.setPd(pdTransfer);
 		
-		List<PageData> varList = fundsconfirmqueryService.JqPage(page);	//列出Betting列表
-		int records = fundsconfirmqueryService.countJqGridExtend(page);
+		List<PageData> varList = fundssummyconfirmService.JqPage(page);	//列出Betting列表
+		int records = fundssummyconfirmService.countJqGridExtend(page);
 		PageData userdata = null;
 		String strShowCalModelDepaet = Jurisdiction.getCurrentDepartmentID();
 		if(SelectedDepartCode!=null && !SelectedDepartCode.trim().equals("") && !SelectedDepartCode.contains(",")){
@@ -248,7 +196,7 @@ public class FundsConfirmQueryController extends BaseController {
 		if(SqlUserdata!=null && !SqlUserdata.toString().trim().equals("")){
 			//底行显示的求和与平均值字段
 			getPd.put("Userdata", SqlUserdata.toString());
-		    userdata = fundsconfirmqueryService.getFooterSummary(page);
+		    userdata = fundssummyconfirmService.getFooterSummary(page);
 		}
 		
 		PageResult<PageData> result = new PageResult<PageData>();
@@ -314,7 +262,74 @@ public class FundsConfirmQueryController extends BaseController {
 		if(null != strFieldSelectKey && !"".equals(strFieldSelectKey.trim())){
 			pdCode.put("FieldSelectKey", strFieldSelectKey);
 		}
-		List<PageData> varList = fundsconfirmqueryService.getFirstDetailList(pdCode);	//列出Betting列表
+		List<PageData> varList = fundssummyconfirmService.getFirstDetailList(pdCode);	//列出Betting列表
+		PageResult<PageData> result = new PageResult<PageData>();
+		result.setRows(varList);
+		
+		return result;
+	}
+
+	/**明细显示结构
+	 * @param
+	 * @throws Exception
+	 */
+	@RequestMapping(value="/getSecondDetailColModel")
+	public @ResponseBody CommonBase getSecondDetailColModel() throws Exception{
+		logBefore(logger, Jurisdiction.getUsername()+"getSecondDetailColModel");
+		CommonBase commonBase = new CommonBase();
+		commonBase.setCode(-1);
+
+		PageData getPd = this.getPageData();
+		//员工组 必须执行，用来设置汇总和传输上报类型
+		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		TmplTypeInfo implTypeCode = getWhileValueToTypeCode(SelectedTableNo);
+		String TypeCodeDetail = implTypeCode.getTypeCodeDetail();
+		
+		String DEPT_CODE = (String) getPd.get("DataDeptCode");
+		String CUST_COL7 = (String) getPd.get("DataCustCol7");
+
+		TmplUtil tmpl = new TmplUtil(tmplconfigService, tmplconfigdictService, dictionariesService, 
+				departmentService,userService);
+		String detailColModel = tmpl.generateStructureNoEdit(TypeCodeDetail, DEPT_CODE, CUST_COL7);
+		
+		commonBase.setCode(0);
+		commonBase.setMessage(detailColModel);
+		
+		return commonBase;
+	}
+
+	/**明细数据
+	 * @param
+	 * @throws Exception
+	 */
+	@SuppressWarnings("unchecked")
+	@RequestMapping(value="/getSecondDetailList")
+	public @ResponseBody PageResult<PageData> getSecondDetailList() throws Exception{
+		logBefore(logger, Jurisdiction.getUsername()+"getSecondDetailList");
+
+		PageData getPd = this.getPageData();
+		//员工组 必须执行，用来设置汇总和传输上报类型
+		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		TmplTypeInfo implTypeCode = getWhileValueToTypeCode(SelectedTableNo);
+		List<String> SumFieldDetail = implTypeCode.getSumFieldDetail();
+		
+		Object DATA_ROWS = getPd.get("DataRows");
+		String json = DATA_ROWS.toString();  
+        JSONArray array = JSONArray.fromObject(json);  
+        List<PageData> listData = (List<PageData>) JSONArray.toCollection(array,PageData.class);
+        PageData pdGet = listData.get(0);
+
+		String detailTableName = getImportDetailTableCode(SelectedTableNo);
+
+		PageData pdCode = new PageData();
+		String QueryFeild = QueryFeildString.getDetailQueryFeild(pdGet, SumFieldDetail, TmplUtil.keyExtra);
+	    if(!(QueryFeild!=null && !QueryFeild.trim().equals(""))){
+	    	QueryFeild += " and 1 != 1 ";
+	    }
+	    pdCode.put("QueryFeild", QueryFeild);
+		
+	    pdCode.put("TableName", detailTableName);
+		List<PageData> varList = fundssummyconfirmService.getSecondDetailList(pdCode);	//列出Betting列表
 		PageResult<PageData> result = new PageResult<PageData>();
 		result.setRows(varList);
 		
@@ -325,13 +340,12 @@ public class FundsConfirmQueryController extends BaseController {
 	 * @param
 	 * @throws Exception
 	 */
-	@SuppressWarnings("unchecked")
 	@RequestMapping(value="/excel")
 	public ModelAndView exportExcel(JqPage page) throws Exception{
 		//logBefore(logger, Jurisdiction.getUsername()+"导出HouseFundDetail到excel");
 		//if(!Jurisdiction.buttonJurisdiction(menuUrl, "cha")){return null;}
 
-		PageData getPd = this.getPageData();
+		/*PageData getPd = this.getPageData();
 		//员工组
 		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
 		//单位
@@ -396,7 +410,8 @@ public class FundsConfirmQueryController extends BaseController {
 		dataMap.put("titles", titles);
 		dataMap.put("varList", varList);
 		ObjectExcelView erv = new ObjectExcelView();
-		mv = new ModelAndView(erv,dataMap); 
+		mv = new ModelAndView(erv,dataMap); */
+		ModelAndView mv = new ModelAndView();
 		return mv;
 	}
 	
@@ -455,11 +470,11 @@ public class FundsConfirmQueryController extends BaseController {
 					||which.equals(TmplType.TB_STAFF_SUMMY_SYS_LABOR.getNameKey())
 					||which.equals(TmplType.TB_STAFF_SUMMY_OPER_LABOR.getNameKey())
 					||which.equals(TmplType.TB_STAFF_SUMMY_LABOR.getNameKey())) {
-				tableCode = "tb_staff_detail";
+				tableCode = tb_staff_detail;
 			} else if (which.equals(TmplType.TB_SOCIAL_INC_SUMMY.getNameKey())) {
-				tableCode = "tb_social_inc_detail";
+				tableCode = tb_social_inc_detail;
 			} else if (which.equals(TmplType.TB_HOUSE_FUND_SUMMY.getNameKey())) {
-				tableCode = "tb_house_fund_detail";
+				tableCode = tb_house_fund_detail;
 			}
 		}
 		return tableCode;
@@ -469,18 +484,18 @@ public class FundsConfirmQueryController extends BaseController {
 		//员工组
 		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
 		String emplGroupType = DictsUtil.getEmplGroupType(SelectedTableNo);
+		//tab
+		String SelectedTabType = getPd.getString("SelectedTabType");
+		//业务区间
+		String SelectedBusiDate = getPd.getString("SelectedBusiDate");
+		//账套
+		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
 		//单位
 		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
 		int departSelf = Common.getDepartSelf(departmentService);
 		if(departSelf == 1){
 			SelectedDepartCode = Jurisdiction.getCurrentDepartmentID();
 		}
-		//账套
-		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
-		//日期
-		String SelectedBusiDate = getPd.getString("SelectedBusiDate");
-		//单号
-		String SelectedBillCode = getPd.getString("SelectedBillCode");
 		List<String> AllDeptCode = Common.getAllDeptCode(departmentService, Jurisdiction.getCurrentDepartmentID());
 		
 		PageData getQueryFeildPd = new PageData();
@@ -489,16 +504,21 @@ public class FundsConfirmQueryController extends BaseController {
 		getQueryFeildPd.put("CUST_COL7", SelectedCustCol7);
 		getQueryFeildPd.put("BUSI_DATE", SelectedBusiDate);
 		String QueryFeild = QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList);
-		QueryFeild += QueryFeildString.getQueryFeildBillCodeSummy(SelectedBillCode, SelectBillCodeFirstShow, SelectBillCodeLastShow);
-		QueryFeild += " and BILL_STATE = '" + BillState.Normal.getNameKey() + "' ";
 		QueryFeild += " and DEPT_CODE in (" + QueryFeildString.tranferListValueToSqlInString(AllDeptCode) + ") ";
-		if(!(SelectedCustCol7!=null && !SelectedCustCol7.trim().equals(""))){
-			QueryFeild += " and 1 != 1 ";
-		}
-		if(!(SelectedDepartCode!=null && !SelectedDepartCode.trim().equals(""))){
-			QueryFeild += " and 1 != 1 ";
-		}
 		if(!(SelectedBusiDate!=null && !SelectedBusiDate.trim().equals(""))){
+			QueryFeild += " and 1 != 1 ";
+		}
+		if(!(emplGroupType!=null && !emplGroupType.trim().equals(""))){
+			QueryFeild += " and 1 != 1 ";
+		}
+		
+		if(SelectedTabType!=null && SelectedTabType.trim().equals("1")){
+			QueryFeild += " and BILL_STATE = '" + BillState.Normal.getNameKey() + "' ";
+			QueryFeild += " and BILL_CODE in (select bill_code FROM tb_sys_sealed_info WHERE state = '1' AND RPT_DUR = '" + SelectedBusiDate + "') ";
+			QueryFeild += " and BILL_CODE not in (select bill_code FROM TB_SYS_CONFIRM_INFO WHERE state = '1' AND RPT_DUR = '" + SelectedBusiDate + "') ";
+		} else if(SelectedTabType!=null && SelectedTabType.trim().equals("2")){
+			QueryFeild += " and BILL_CODE     in (select bill_code FROM TB_SYS_CONFIRM_INFO WHERE state = '1' AND RPT_DUR = '" + SelectedBusiDate + "') ";
+		} else{
 			QueryFeild += " and 1 != 1 ";
 		}
 		getPd.put("QueryFeild", QueryFeild);
