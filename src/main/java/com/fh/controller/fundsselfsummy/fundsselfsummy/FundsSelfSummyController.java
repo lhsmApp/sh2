@@ -787,7 +787,7 @@ public class FundsSelfSummyController extends BaseController {
 			strSumFieldDetail = getCertParmConfigList.get(0).getGROUP_COND();
 		}
 		List<String> listSumFieldDetail = QueryFeildString.tranferStringToList(strSumFieldDetail);
-		listSumFieldDetail = QueryFeildString.extraSumField(listSumFieldDetail, SumFieldBill);
+		listSumFieldDetail = QueryFeildString.extraSumField(listSumFieldDetail, SumFieldBill);//SumFieldBill
 		
 		return listSumFieldDetail;
 	}

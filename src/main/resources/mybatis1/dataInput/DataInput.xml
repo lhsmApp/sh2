@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="DataInput">
+	
+<!-- 
+ * 说明： 社保明细
+ * 创建人：zhangxiaoliu
+ * 创建时间：2017-06-19
+ * @version
+ -->
+	<!--表名 -->
+	<sql id="tableName">
+		tb_data_input
+	</sql>
+	
+	<!-- 字段 -->
+	<sql id="Field">
+	    TYPE_CODE,
+		BILL_OFF,	
+		BUSI_DATE,
+		DEPT_CODE,	
+		CHANGE_COL,	
+		DATA_VALUE
+	</sql>
+	<sql id="FieldSelected">
+	    ,	
+		TYPE_CODE TYPE_CODE__,	
+		BILL_OFF BILL_OFF__,	
+		BUSI_DATE BUSI_DATE__,
+		DEPT_CODE DEPT_CODE__,
+		CHANGE_COL CHANGE_COL__
+	</sql>
+	
+	<!-- 字段值 -->
+	<sql id="FieldValue">
+	    #{TYPE_CODE},
+		#{BILL_OFF},
+		#{BUSI_DATE},
+		#{DEPT_CODE},	
+		#{CHANGE_COL},	
+		#{DATA_VALUE}
+	</sql>
+	<sql id="FieldValueItem">
+	    #{item.TYPE_CODE},
+		#{item.BILL_OFF},
+		#{item.BUSI_DATE},
+		#{item.DEPT_CODE},	
+		#{item.CHANGE_COL},	
+		#{item.DATA_VALUE}
+	</sql>
+
+	<!-- 列表 -->
+	<select id="datalistJqPage" parameterType="jqPage" resultType="pd">
+		select 
+        <include refid="Field"></include>
+		<include refid="FieldSelected"></include>
+		from 
+		<include refid="tableName"></include>
+		where BUSI_DATE = '${pd.SystemDateTime}'
+		<if test="pd.filterWhereResult!= null and pd.filterWhereResult != ''"><!-- 关键词检索 -->
+			${pd.filterWhereResult}
+		</if>
+		    <if test="pd.QueryFeild!= null and pd.QueryFeild != ''">
+		        ${pd.QueryFeild}
+		    </if>
+		<if test="sidx != null and sidx.trim() != ''" >
+			order by ${sidx} ${sord} 
+    	</if>
+		<if test="currentResult != null and rowNum != null" >           
+              limit #{currentResult}, #{rowNum} 
+        </if>
+	</select>
+	<select id="countJqGridExtend" parameterType="jqPage" resultType="int">
+		select count(*) from <include refid="tableName"></include> 
+		where BUSI_DATE = '${pd.SystemDateTime}'
+		<if test="pd.filterWhereResult!= null and pd.filterWhereResult != ''"><!-- 关键词检索 -->
+			${pd.filterWhereResult}
+		</if>
+		    <if test="pd.QueryFeild!= null and pd.QueryFeild != ''">
+		        ${pd.QueryFeild}
+		    </if>
+	</select>
+	
+	<!-- 获取重复数据 -->
+	<select id="getRepeatRecord" parameterType="pd" resultType="pd">
+		select 
+		<include refid="Field"></include>
+		from 
+		<include refid="tableName"></include>
+        <where>
+		<foreach item="item" index="index" collection="list" open=" " separator=" or " close=" ">
+            ((TYPE_CODE = #{item.TYPE_CODE} and BILL_OFF = #{item.BILL_OFF} and BUSI_DATE = #{item.BUSI_DATE} and DEPT_CODE = #{item.DEPT_CODE} and CHANGE_COL = #{item.CHANGE_COL})
+             and (TYPE_CODE != #{item.TYPE_CODE__} or BILL_OFF != #{item.BILL_OFF__} or BUSI_DATE != #{item.BUSI_DATE__} or DEPT_CODE != #{item.DEPT_CODE__} or CHANGE_COL != #{item.CHANGE_COL__}))
+		</foreach>
+		</where>
+	</select>
+	
+	<!-- 新增-->
+	<insert id="save" parameterType="pd">
+		insert into 
+	<include refid="tableName"></include>
+		(
+	<include refid="Field"></include>
+		) values (
+	<include refid="FieldValue"></include>
+		)
+	</insert>
+	
+	<!-- 批量删除 -->
+	<delete id="deleteAll" parameterType="pd">
+		delete from
+		<include refid="tableName"></include>
+		where
+		<foreach item="item" index="index" collection="list" open=" (" separator=" or " close=") ">
+		    TYPE_CODE = #{item.TYPE_CODE__} and BILL_OFF = #{item.BILL_OFF__} and BUSI_DATE = #{item.BUSI_DATE__} and DEPT_CODE = #{item.DEPT_CODE__} and CHANGE_COL = #{item.CHANGE_COL__}
+		</foreach>
+	</delete>
+	
+	<!-- 批量修改 -->
+	<update id="batchDelAndIns" parameterType="pd">
+		<foreach item="item" index="index" collection="list" open=" " separator=" " close=" ">
+		    delete from <include refid="tableName"></include>
+		    where TYPE_CODE = #{item.TYPE_CODE__}
+		    and BILL_OFF = #{item.BILL_OFF__}
+		    and BUSI_DATE = #{item.BUSI_DATE__}
+		    and DEPT_CODE = #{item.DEPT_CODE__}
+		    and CHANGE_COL = #{item.CHANGE_COL__};
+	        
+		    insert into <include refid="tableName"></include>
+		    (
+		    <include refid="Field"></include>
+		    ) values (
+	        <include refid="FieldValueItem"></include>
+		    );
+		</foreach>
+	</update>
+</mapper>

@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.fh.entity.ClsTwoFeild;
 import com.fh.entity.SysStruMapping;
+import com.fh.util.DateUtil;
 import com.fh.util.Jurisdiction;
 import com.fh.util.enums.BillState;
 
@@ -68,6 +69,8 @@ public class SqlFeildToSave {
 							strSelectFeild += " '" + SelectedTypeCode + "' " + COL_MAPPING_CODE;
 						} else if(COL_MAPPING_VALUE.equals("@STATE@")){
 							strSelectFeild += " '" + BillState.Normal.getNameKey() + "' " + COL_MAPPING_CODE;
+						} else if(COL_MAPPING_VALUE.equals("@LONGDATE@")){
+							strSelectFeild += " '" + DateUtil.getTime() + "' " + COL_MAPPING_CODE;
 						}
 					}
 				}
@@ -92,13 +95,14 @@ public class SqlFeildToSave {
 							strWhere += COL_CODE + " in ('" + SystemDateTime +"') ";
 						} else if(COL_VALUE.equals("@DEPARTMAP@")){
 							strWhere += COL_CODE + " in (SELECT mapping_code FROM tb_sys_dept_mapping WHERE TYPE_CODE = '" + SelectedTypeCode + "'  AND BILL_OFF = '" + SelectedCustCol7 + "' AND DEPT_CODE = '" + SelectedDepartCode + "') ";
+						} else if(COL_VALUE.equals("@CERTTYPE@")){
+							strWhere += COL_CODE + " in ('" + SelectedTypeCode + "') ";
+						} else if(COL_VALUE.equals("@BILLOFF@")){
+							strWhere += COL_CODE + " in ('" + SelectedCustCol7 + "') ";
 						} 
-						
-						
-						
-						else if(COL_VALUE.equals("@DEPART@")){
-							strWhere +=  COL_CODE + " in ('" + SelectedDepartCode +"') ";
-						}
+						//@BILLNO@
+						//
+						//
 					} else {
 						strWhere += COL_CODE + " in (" + COL_VALUE +") ";
 					}
