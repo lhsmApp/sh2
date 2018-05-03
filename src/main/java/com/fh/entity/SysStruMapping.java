@@ -21,6 +21,7 @@ public class SysStruMapping  {
 //列汇总	COL_SUM	"列汇总1汇总 0不汇总,默认0"	'0'	CHAR(1)	1		FALSE	FALSE	TRUE
 //列平均值	COL_AVE	"列平均值0不计算 1计算 默认0"	'0'	CHAR(1)	1		FALSE	FALSE	TRUE
 //列传输	COL_TRANSFER			VARCHAR(1)	1		FALSE	FALSE	TRUE -->
+	//列启用 COL_ENABLE 列启用 1启用0停用	'1'	CHAR(1)	1		FALSE	FALSE	TRUE
 	
 	private String TYPE_CODE; 
 	private String TABLE_NAME; 
@@ -40,6 +41,13 @@ public class SysStruMapping  {
     private String COL_SUM; 
     private String COL_AVE; 
     private String COL_TRANSFER;
+    private String COL_ENABLE;
+	public String getCOL_ENABLE() {
+		return COL_ENABLE;
+	}
+	public void setCOL_ENABLE(String cOL_ENABLE) {
+		COL_ENABLE = cOL_ENABLE;
+	}
 	public String getTYPE_CODE() {
 		return TYPE_CODE;
 	}

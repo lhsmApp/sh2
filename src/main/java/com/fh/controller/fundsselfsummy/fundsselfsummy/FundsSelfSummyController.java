@@ -276,7 +276,7 @@ public class FundsSelfSummyController extends BaseController {
 
 		TmplVoucherUtil tmplVoucherUtil = new TmplVoucherUtil(sysTableMappingService, sysStruMappingService, tmplconfigService, 
 				tmplconfigdictService, dictionariesService, departmentService, userService, keyListBase);
-			String jqGridColModel = tmplVoucherUtil.generateStructureNoEdit(SelectedTypeCode, TB_GEN_BUS_SUMMY_BILL, SystemDateTime, SelectedCustCol7);
+			String jqGridColModel = tmplVoucherUtil.generateStructureNoEdit(SelectedTypeCode, TB_GEN_BUS_SUMMY_BILL, SystemDateTime, SelectedCustCol7, true);
 
 		commonBase.setCode(0);
 		commonBase.setMessage(jqGridColModel);
@@ -306,7 +306,7 @@ public class FundsSelfSummyController extends BaseController {
 		int records = fundsselfsummyService.countJqGridExtend(page);
 		PageData userdata = null;
 		//底行显示的求和与平均值字段
-		StringBuilder SqlUserdata = Common.GetSqlUserdata(SelectedTypeCode, TB_GEN_BUS_SUMMY_BILL, SystemDateTime, SelectedCustCol7, sysStruMappingService);
+		StringBuilder SqlUserdata = Common.GetSqlUserdata(SelectedTypeCode, TB_GEN_BUS_SUMMY_BILL, SystemDateTime, SelectedCustCol7, sysStruMappingService, true);
 		if(SqlUserdata!=null && !SqlUserdata.toString().trim().equals("")){
 			//底行显示的求和与平均值字段
 			getPd.put("Userdata", SqlUserdata.toString());
@@ -345,7 +345,7 @@ public class FundsSelfSummyController extends BaseController {
 
 		TmplVoucherUtil tmplVoucherUtil = new TmplVoucherUtil(sysTableMappingService, sysStruMappingService, tmplconfigService, 
 				tmplconfigdictService, dictionariesService, departmentService, userService, SumFieldDetail);
-	    String detailColModel = tmplVoucherUtil.generateStructureNoEdit(DataTypeCode, TB_GEN_SUMMY, SystemDateTime, DataCustCol7);
+	    String detailColModel = tmplVoucherUtil.generateStructureNoEdit(DataTypeCode, TB_GEN_SUMMY, SystemDateTime, DataCustCol7, true);
 
 		commonBase.setCode(0);
 		commonBase.setMessage(detailColModel);
@@ -406,7 +406,7 @@ public class FundsSelfSummyController extends BaseController {
 
 		TmplVoucherUtil tmplVoucherUtil = new TmplVoucherUtil(sysTableMappingService, sysStruMappingService, tmplconfigService, 
 				tmplconfigdictService, dictionariesService, departmentService, userService, null);
-	    String detailColModel = tmplVoucherUtil.generateStructureNoEdit(DataTypeCode, TB_GEN_BUS_DETAIL, SystemDateTime, DataCustCol7);
+	    String detailColModel = tmplVoucherUtil.generateStructureNoEdit(DataTypeCode, TB_GEN_BUS_DETAIL, SystemDateTime, DataCustCol7, true);
 
 		commonBase.setCode(0);
 		commonBase.setMessage(detailColModel);
@@ -438,7 +438,7 @@ public class FundsSelfSummyController extends BaseController {
 
 		PageData pdFieldDetail = new PageData();
 		// 前端数据表格界面字段,动态取自SysStruMapping，根据当前单位编码及表名获取字段配置信息
-		List<SysStruMapping> getSysStruMappingList = SysStruMappingList.getSysStruMappingList(TYPE_CODE, TB_GEN_SUMMY, SystemDateTime, CUST_COL7, sysStruMappingService);
+		List<SysStruMapping> getSysStruMappingList = SysStruMappingList.getSysStruMappingList(TYPE_CODE, TB_GEN_SUMMY, SystemDateTime, CUST_COL7, sysStruMappingService, true);
 		if(getSysStruMappingList!=null && SumFieldDetail!=null){
 			for(SysStruMapping mapping : getSysStruMappingList){
 				String COL_CODE = mapping.getCOL_CODE().toUpperCase();
@@ -534,9 +534,9 @@ public class FundsSelfSummyController extends BaseController {
 			List<TableColumns> tableColumnsSummy = tmplconfigService.getTableColumns(TB_GEN_SUMMY);
 			List<TableColumns> tableColumnsDetail = tmplconfigService.getTableColumns(TB_GEN_BUS_DETAIL);
 			// 前端数据表格界面字段,动态取自SysStruMapping，根据当前单位编码及表名获取字段配置信息
-			List<SysStruMapping> getSysStruMappingBillList = SysStruMappingList.getSysStruMappingList(SelectedTypeCode, TB_GEN_BUS_SUMMY_BILL, SystemDateTime, SelectedCustCol7, sysStruMappingService);
-			List<SysStruMapping> getSysStruMappingSummyList = SysStruMappingList.getSysStruMappingList(SelectedTypeCode, TB_GEN_SUMMY, SystemDateTime, SelectedCustCol7, sysStruMappingService);
-			List<SysStruMapping> getSysStruMappingDetailList = SysStruMappingList.getSysStruMappingList(SelectedTypeCode, TB_GEN_BUS_DETAIL, SystemDateTime, SelectedCustCol7, sysStruMappingService);
+			List<SysStruMapping> getSysStruMappingBillList = SysStruMappingList.getSysStruMappingList(SelectedTypeCode, TB_GEN_BUS_SUMMY_BILL, SystemDateTime, SelectedCustCol7, sysStruMappingService, true);
+			List<SysStruMapping> getSysStruMappingSummyList = SysStruMappingList.getSysStruMappingList(SelectedTypeCode, TB_GEN_SUMMY, SystemDateTime, SelectedCustCol7, sysStruMappingService, true);
+			List<SysStruMapping> getSysStruMappingDetailList = SysStruMappingList.getSysStruMappingList(SelectedTypeCode, TB_GEN_BUS_DETAIL, SystemDateTime, SelectedCustCol7, sysStruMappingService, true);
 
 			String strSqlBillGroupBy = "";
 			List<CertParmConfig> getCertParmConfigList = getSelfCertParmConfig(SelectedTypeCode, SelectedCustCol7, DeptCodeSumGroupField);
@@ -766,7 +766,7 @@ public class FundsSelfSummyController extends BaseController {
 		List<String> SumFieldDetail = getGroupDetailField(typeCode, billOff, deptCode);
 
 		// 前端数据表格界面字段,动态取自SysStruMapping，根据当前单位编码及表名获取字段配置信息
-		List<SysStruMapping> getSysStruMappingList = SysStruMappingList.getSysStruMappingList(typeCode, TB_GEN_SUMMY, SystemDateTime, billOff, sysStruMappingService);
+		List<SysStruMapping> getSysStruMappingList = SysStruMappingList.getSysStruMappingList(typeCode, TB_GEN_SUMMY, SystemDateTime, billOff, sysStruMappingService, true);
 		
 		if(getSysStruMappingList!=null && getSysStruMappingList.size()>0 
 				&& SumFieldDetail!=null && SumFieldDetail.size()>0){

@@ -31,13 +31,16 @@ public class SysStruMappingList {
 	}
 
 	public static List<SysStruMapping> getSysStruMappingList(String pzType, String tableName, 
-			String busiDate, String billOff, SysStruMappingService sysStruMappingService) throws Exception{
+			String busiDate, String billOff, SysStruMappingService sysStruMappingService, Boolean bol) throws Exception{
 		// 前端数据表格界面字段,动态取自SysStruMapping，根据当前单位编码及表名获取字段配置信息
 		SysStruMapping sysStruMapping = new SysStruMapping();
 		sysStruMapping.setBILL_OFF(billOff);
 		sysStruMapping.setBUSI_DATE(busiDate);
 		sysStruMapping.setTYPE_CODE(pzType);
 		sysStruMapping.setTABLE_NAME_MAPPING(tableName);
+		if(bol){
+			sysStruMapping.setCOL_ENABLE(BillState.Normal.getNameKey());
+		}
 		List<SysStruMapping> getSysStruMappingList = sysStruMappingService.getShowStruList(sysStruMapping);
 		return getSysStruMappingList;
 	}
@@ -52,6 +55,7 @@ public class SysStruMappingList {
 		return getSysTableMappingList;
 	}*/
 	
+	//汇总单据确认，获取bill_code对应的字段，判断能否取消确认
 	public static List<SysStruMapping> getDetailBillCodeSysStruMapping(String busiDate, String tableName, String tableNameMapping, String colCode,
 			SysStruMappingService sysStruMappingService) throws Exception{
 		// 前端数据表格界面字段,动态取自SysStruMapping，根据当前单位编码及表名获取字段配置信息

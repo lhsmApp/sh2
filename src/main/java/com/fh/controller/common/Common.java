@@ -68,16 +68,10 @@ public class Common {
 	}
 	//String pzType, String tableName, String busiDate, String billOff
 	public static StringBuilder GetSqlUserdata(String pzType, String tableName, String busiDate, String billOff, 
-			SysStruMappingService sysStruMappingService) throws Exception{
+			SysStruMappingService sysStruMappingService, Boolean bol) throws Exception{
 		//底行显示的求和与平均值字段
 		StringBuilder m_sqlUserdata = new StringBuilder();
-		// 前端数据表格界面字段,动态取自SysStruMapping，根据当前单位编码及表名获取字段配置信息
-		SysStruMapping sysStruMapping = new SysStruMapping();
-		sysStruMapping.setBILL_OFF(billOff);
-		sysStruMapping.setBUSI_DATE(busiDate);
-		sysStruMapping.setTYPE_CODE(pzType);
-		sysStruMapping.setTABLE_NAME_MAPPING(tableName);
-		List<SysStruMapping> getSysStruMappingList = sysStruMappingService.getShowStruList(sysStruMapping);
+		List<SysStruMapping> getSysStruMappingList = SysStruMappingList.getSysStruMappingList(pzType, tableName, busiDate, billOff, sysStruMappingService, bol);
 		if (getSysStruMappingList != null && getSysStruMappingList.size() > 0) {
 			for (int i = 0; i < getSysStruMappingList.size(); i++) {
 				// 底行显示的求和与平均值字段
