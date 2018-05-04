@@ -35,6 +35,7 @@ import com.fh.entity.CommonBase;
 import com.fh.entity.JqPage;
 import com.fh.entity.Page;
 import com.fh.entity.PageResult;
+import com.fh.entity.SysDeptMapping;
 import com.fh.entity.SysStruMapping;
 import com.fh.entity.SysTableMapping;
 import com.fh.entity.TableColumns;
@@ -53,6 +54,7 @@ import com.fh.service.sysBillnum.sysbillnum.SysBillnumManager;
 import com.fh.service.certParmConfig.certParmConfig.impl.CertParmConfigService;
 import com.fh.service.fhoa.department.impl.DepartmentService;
 import com.fh.service.sysConfig.sysconfig.SysConfigManager;
+import com.fh.service.sysDeptMapping.sysDeptMapping.impl.SysDeptMappingService;
 import com.fh.service.sysStruMapping.sysStruMapping.impl.SysStruMappingService;
 import com.fh.service.sysTableMapping.sysTableMapping.impl.SysTableMappingService;
 import com.fh.service.system.dictionaries.impl.DictionariesService;
@@ -95,6 +97,8 @@ public class FundsSelfSummyController extends BaseController {
 	private CertParmConfigService certParmConfigService;
 	@Resource(name="sysbillnumService")
 	private SysBillnumManager sysbillnumService;
+	@Resource(name="sysDeptMappingService")
+	private SysDeptMappingService sysDeptMappingService;
 	
 	//表名
 	String TB_GEN_BUS_SUMMY_BILL = "TB_GEN_BUS_SUMMY_BILL";
@@ -497,6 +501,21 @@ public class FundsSelfSummyController extends BaseController {
 		if(checkState!=null && !checkState.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(checkState);
+			return commonBase;
+		}
+		//是否存在未确认责任中心
+		SysDeptMapping mapping = new SysDeptMapping();
+		mapping.setBILL_OFF(SelectedCustCol7);
+		mapping.setDEPT_CODE(SelectedDepartCode);
+		mapping.setTYPE_CODE(SelectedTypeCode);
+		List<PageData> listSysDeptMapping = sysDeptMappingService.getNotConfirmMappingList(mapping);
+		if(listSysDeptMapping!=null && listSysDeptMapping.size()>0){
+			String strMessage = "";
+            for(PageData dept : listSysDeptMapping){
+            	strMessage += dept.getString("MAPPING_CODE") + "(" + dept.getString("MAPPING_NAME") + ")  ";
+            }
+			commonBase.setCode(2);
+			commonBase.setMessage(strMessage + Message.NotHaveConfirmData);
 			return commonBase;
 		}
 

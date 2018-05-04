@@ -227,7 +227,7 @@
     						{ label: '变动列', name: 'CHANGE_COL', editable: true,edittype: 'select',formatter:'select',formatoptions:{value:"${changeColStrAll}"},editoptions:{value:"${changeColStrSelect}"},stype: 'select',searchoptions:{value:"${changeColStrAll}"}},
     						
     						{ label: '数值值', name: 'DATA_VALUE', editable: true, edittype:'text',search:false, sorttype: 'number',align:'right', searchrules: {number: true},
-    							formatter: "number", formatoptions: {thousandsSeparator:",", decimalSeparator:".", defaulValue:"0.00",decimalPlaces:2}, editoptions: {maxlength:'10', number: true}
+    							formatter: "number", formatoptions: {thousandsSeparator:",", decimalSeparator:".", defaulValue:"0.00",decimalPlaces:2}, editoptions: {maxlength:'15', number: true}
     					    }
     					],
     			reloadAfterSubmit: true, 

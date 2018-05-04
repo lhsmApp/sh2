@@ -85,9 +85,9 @@ public class SysDeptMappingService implements SysDeptMappingManager{
 	 * @param pd
 	 * @throws Exception
 	 */
-	//@SuppressWarnings("unchecked")
-	//public List<SysDeptMapping> getMappingListByTypeOffDept(SysDeptMapping mapping)throws Exception{
-	//	return (List<SysDeptMapping>)dao.findForList("SysDeptMappingMapper.getMappingListByTypeOffDept", mapping);
-	//}
+	@SuppressWarnings("unchecked")
+	public List<PageData> getNotConfirmMappingList(SysDeptMapping mapping)throws Exception{
+		return (List<PageData>)dao.findForList("SysDeptMappingMapper.getNotConfirmMappingList", mapping);
+	}
 }
 

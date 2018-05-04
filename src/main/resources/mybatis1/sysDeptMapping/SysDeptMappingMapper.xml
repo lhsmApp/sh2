@@ -136,15 +136,15 @@
 		</foreach>
 	</delete>
 
-	<!--
-	<select id="getMappingListByTypeOffDept" parameterType="com.fh.entity.SysDeptMapping" resultType="com.fh.entity.SysDeptMapping">
-		select
-		<include refid="Field"></include>
-		from
-		<include refid="tableName"></include>
-		where TYPE_CODE = #{TYPE_CODE}
-		and BILL_OFF = #{BILL_OFF}
-		and DEPT_CODE = #{DEPT_CODE}
-		order by MAPPING_CODE
-	</select> -->
+	<!-- 张晓柳 -->
+	<select id="getNotConfirmMappingList" parameterType="com.fh.entity.SysDeptMapping" resultType="pd">
+		select t.MAPPING_CODE, ifnull(d.NAME, ' ') MAPPING_NAME
+		from <include refid="tableName"></include> t
+		left join oa_department d on t.MAPPING_CODE = d.DEPARTMENT_CODE
+		where t.TYPE_CODE = #{TYPE_CODE}
+		and t.BILL_OFF = #{BILL_OFF}
+		and t.DEPT_CODE = #{DEPT_CODE}
+		and t.MAPPING_CODE not in (select RPT_DEPT from tb_sys_confirm_info where STATE = '1')
+		order by t.MAPPING_CODE
+	</select>
 </mapper>
