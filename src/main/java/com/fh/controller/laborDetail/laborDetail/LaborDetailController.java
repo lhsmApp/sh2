@@ -577,9 +577,21 @@ public class LaborDetailController extends BaseController {
 										sbRet.add("导入单位和当前单位必须一致！");
 									}
 								}
-								double douGROSS_PAY = Double.valueOf(pdAdd.get("GROSS_PAY").toString());
-								double douACCRD_TAX = Double.valueOf(pdAdd.get("ACCRD_TAX").toString());
-								double douACT_SALY = Double.valueOf(pdAdd.get("ACT_SALY").toString());
+								String strGROSS_PAY = "0";
+								if(pdAdd.get("GROSS_PAY")!=null && !pdAdd.get("GROSS_PAY").toString().trim().equals("")){
+									strGROSS_PAY = pdAdd.get("GROSS_PAY").toString().trim();
+								}
+								String strACCRD_TAX = "0";
+								if(pdAdd.get("ACCRD_TAX")!=null && !pdAdd.get("ACCRD_TAX").toString().trim().equals("")){
+									strACCRD_TAX = pdAdd.get("ACCRD_TAX").toString().trim();
+								}
+								String strACT_SALY = "0";
+								if(pdAdd.get("ACT_SALY")!=null && !pdAdd.get("ACT_SALY").toString().trim().equals("")){
+									strACT_SALY = pdAdd.get("ACT_SALY").toString().trim();
+								}
+								double douGROSS_PAY = Double.valueOf(strGROSS_PAY);
+								double douACCRD_TAX = Double.valueOf(strACCRD_TAX);
+								double douACT_SALY = Double.valueOf(strACT_SALY);
 								if(douACT_SALY != douGROSS_PAY - douACCRD_TAX){
 									sbRet.add(//"员工编号:" + pdSetUSER_CODE + 
 											  " 姓名:" + pdAdd.getString("USER_NAME")
