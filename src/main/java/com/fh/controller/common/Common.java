@@ -66,6 +66,38 @@ public class Common {
 		}
 		return m_sqlUserdata;
 	}
+	
+	public static StringBuilder GetSqlUserdataSpecial(String tableCode, String billOff, String busiDate,String typeCode,
+			TmplConfigManager tmplconfigService) throws Exception{
+		//底行显示的求和与平均值字段
+		StringBuilder m_sqlUserdata = new StringBuilder();
+		
+		// 前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
+		List<PageData> m_columnsList = Common.getShowColumnListSpecial(tableCode, busiDate, billOff, typeCode, tmplconfigService);
+		if (m_columnsList != null && m_columnsList.size() > 0) {
+			for (int i = 0; i < m_columnsList.size(); i++) {
+				// 底行显示的求和与平均值字段
+				// 1汇总 0不汇总,默认0
+				if (Integer.parseInt(m_columnsList.get(i).getString("COL_SUM")) == 1) {
+					if (m_sqlUserdata != null && !m_sqlUserdata.toString().trim().equals("")) {
+						m_sqlUserdata.append(", ");
+					}
+					m_sqlUserdata.append(" sum(" + m_columnsList.get(i).getString("COL_MAPPING_CODE") + ") "
+							+ m_columnsList.get(i).getString("COL_MAPPING_CODE"));
+				}
+				// 0不计算 1计算 默认0
+				else if (Integer.parseInt(m_columnsList.get(i).getString("COL_AVE")) == 1) {
+					if (m_sqlUserdata != null && !m_sqlUserdata.toString().trim().equals("")) {
+						m_sqlUserdata.append(", ");
+					}
+					m_sqlUserdata.append(" round(avg(" + m_columnsList.get(i).getString("COL_MAPPING_CODE") + "), 2) "
+							+ m_columnsList.get(i).getString("COL_MAPPING_CODE"));
+				}
+			}
+		}
+		return m_sqlUserdata;
+	}
+
 	//String pzType, String tableName, String busiDate, String billOff
 	public static StringBuilder GetSqlUserdata(String pzType, String tableName, String busiDate, String billOff, 
 			SysStruMappingService sysStruMappingService, Boolean bol) throws Exception{
@@ -315,6 +347,24 @@ public class Common {
 		return m_columnsList;
 	}
 
+	/**
+	 * 根据帐套、凭证类型、业务期间、表名称获取tb_sys_stru_mapping的结构信息
+	 * 
+	 * @param 
+	 * @return
+	 * @throws Exception
+	 */
+	public static List<PageData> getShowColumnListSpecial(String tableCode, String busiDate, String billOff,String typeCode,
+			TmplConfigManager tmplconfigService) throws Exception{
+		// 前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
+		PageData pageData = new PageData();
+		pageData.put("FMISACC", billOff);
+		pageData.put("TYPE_CODE",typeCode);
+		pageData.put("BUSI_DATE",busiDate);
+		pageData.put("TABLE_CODE",tableCode);
+		List<PageData> m_columnsList = tmplconfigService.listNeedSpecial(pageData);
+		return m_columnsList;
+	}
 
 
 	public static String getDicValue(Map<String, Object> m_dicList, String dicName,

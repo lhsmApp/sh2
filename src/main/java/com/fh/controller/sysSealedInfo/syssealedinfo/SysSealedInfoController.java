@@ -85,9 +85,7 @@ public class SysSealedInfoController extends BaseController {
 		PageData pd = new PageData();
 		pd = this.getPageData();
 		if (pd.getString("oper").equals("edit")) {
-			// if (pd.getString("STATE").equals("0")) {
-
-			// 针对解封传输类型的封存信息需要判断是否已经生成了凭证号
+			/*// 针对解封传输类型的封存信息需要判断是否已经生成了凭证号
 			String tableCode = "";
 			String userGrop = "";
 			if (pd.getString("BILL_TYPE").equals(TmplType.TB_STAFF_TRANSFER_CONTRACT.getNameKey())
@@ -123,8 +121,26 @@ public class SysSealedInfoController extends BaseController {
 				}
 			}
 			syssealedinfoService.edit(pd);
+			commonBase.setCode(0);*/
+			
+			User user = (User) Jurisdiction.getSession().getAttribute(Const.SESSION_USERROL);
+			String userId = user.getUSER_ID();
+			pd.put("USER", userId);
+
+			List<PageData> listSysUnlockInfo = sysUnlockInfoService.listSyncDelUnlock(pd); // 获取当前传输类型，当前二级单位当前期间当前封存状态为封存的的传输列表
+			if (listSysUnlockInfo != null && listSysUnlockInfo.size() > 0) {
+				PageData pdItem0 = listSysUnlockInfo.get(0);// 如果包含其中一条带有凭证号的记录，就可以证明此二级单位所有记录已经生成凭证号，不能再进行解封操作。
+				if (StringUtil.isNotEmpty(pdItem0.getString("CERT_CODE"))) {
+					commonBase.setCode(3);
+					commonBase.setMessage("当前封存记录已经生成凭证,不能再进行解封.");
+					return commonBase;
+				}
+				if (StringUtil.isEmpty(pdItem0.getString("REVCERT_CODE"))) {// 如果已生成冲销凭证号，则历史记录不允许删除，即不再往tb_sys_unlock_info插入记录
+					sysUnlockInfoService.save(listSysUnlockInfo);
+				}
+			}
+			syssealedinfoService.edit(pd);
 			commonBase.setCode(0);
-			// }
 		}
 		/**
 		 * 此处为业务错误返回值，例如返回当前删除的信息含有业务关联字段，不能删除，自行设定setCode(返回码，客户端按码抓取并返回提示信息)和setMessage("自定义提示信息，提示给用户的")信息，并由界面进行展示。

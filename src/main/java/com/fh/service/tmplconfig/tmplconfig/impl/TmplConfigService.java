@@ -173,5 +173,46 @@ public class TmplConfigService implements TmplConfigManager{
 	public String findByRptDur(String nextRptDur)throws Exception{
 		return (String)dao.findForObject("TmplConfigMapper.findByRptDur", nextRptDur);
 	}
+
+	/**********************************特殊表********************************************/
+	/**根据帐套、凭证类型、业务期间、表名称获取tb_sys_stru_mapping的结构信息
+	 * jiachao
+	 * @param pd
+	 * @throws Exception
+	 */
+	public List<PageData> listNeedSpecial(PageData item)throws Exception{
+		return (List<PageData>)dao.findForList("TmplConfigMapper.listNeedSpecial", item);
+	}
+	
+	/**通过期间获取数据，判断是否已经生成过模板配置信息 
+	 * @param pd
+	 * @throws Exception
+	 */
+	public String findStruMappingByRptDurSpecial(String nextRptDur)throws Exception{
+		return (String)dao.findForObject("TmplConfigMapper.findStruMappingByRptDurSpecial", nextRptDur);
+	}
+	
+	/**通过期间获取数据，判断是否已经生成过模板配置信息 
+	 * @param pd
+	 * @throws Exception
+	 */
+	public String findTableMappingByRptDurSpecial(String nextRptDur)throws Exception{
+		return (String)dao.findForObject("TmplConfigMapper.findTableMappingByRptDurSpecial", nextRptDur);
+	}
+	
+	/**
+	 * 根据区间批量生成配置信息
+	 */
+	public void insertStruMappingBatchNextRptDur(PageData pd) throws Exception {
+		dao.update("TmplConfigMapper.insertStruMappingBatchNextRptDur", pd);
+	}
+	
+	/**
+	 * 根据区间批量生成配置信息
+	 */
+	public void insertTableMappingBatchNextRptDur(PageData pd) throws Exception {
+		dao.update("TmplConfigMapper.insertTableMappingBatchNextRptDur", pd);
+	}
+	/**********************************************************************************/
 }
 

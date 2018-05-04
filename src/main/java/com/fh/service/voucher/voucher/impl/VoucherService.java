@@ -168,5 +168,95 @@ public class VoucherService implements VoucherManager{
 	public void updateRevCertCode(List<PageData> pd)throws Exception{
 		dao.update("VoucherMapper.updateRevCertCode", pd);
 	}
+	
+	
+	
+	
+	/*******************特殊凭证相关服务*******************************/
+	/**根据帐套获取凭证类型列表数据源 
+	 * @param pd
+	 * @throws Exception
+	 */
+	@SuppressWarnings("unchecked")
+	public List<PageData> getTypeCodeList(PageData pd)throws Exception{
+		return (List<PageData>)dao.findForList("VoucherMapper.getTypeCodeList", pd);
+	}
+	
+	/**根据帐套和凭证类型获取单位列表数据源 
+	 * @param pd
+	 * @throws Exception
+	 */
+	@SuppressWarnings("unchecked")
+	public List<PageData> getDepartCodeList(PageData pd)throws Exception{
+		return (List<PageData>)dao.findForList("VoucherMapper.getDepartCodeList", pd);
+	}
+	
+	/**根据帐套和凭证类型、期间、单位、状态获取单号列表数据源 
+	 * @param pd
+	 * @throws Exception
+	 */
+	@SuppressWarnings("unchecked")
+	public List<String> getSpecialBillCodeList(PageData pd)throws Exception{
+		return (List<String>)dao.findForList("VoucherMapper.getSpecialBillCodeList", pd);
+	}
+	
+	/**列表(全部)特殊表
+	 * @param pd
+	 * @throws Exception
+	 */
+	@SuppressWarnings("unchecked")
+	public List<PageData> listAllSpecial(PageData pd)throws Exception{
+		return (List<PageData>)dao.findForList("VoucherMapper.listAllSpecial", pd);
+	}
+	
+	/**获取记录总合计
+	 * @param pd
+	 * @throws Exception
+	 */
+	public PageData getFooterSummarySpecial(JqPage page)throws Exception{
+		return (PageData)dao.findForObject("VoucherMapper.getFooterSummarySpecial", page);
+	}
+	
+	/**列表(同步删除)特殊表
+	 * @param pd
+	 * @throws Exception
+	 */
+	@SuppressWarnings("unchecked")
+	public List<PageData> listSyncDelListSpecial(PageData pd)throws Exception{
+		return (List<PageData>)dao.findForList("VoucherMapper.listSyncDelListSpecial", pd);
+	}
+	
+	/**获取汇总表信息 特殊表
+	 * @param page
+	 * @throws Exception
+	 */
+	public List<PageData> findSummyDetailListSpecial(PageData page)throws Exception{
+		return (List<PageData>)dao.findForList("VoucherMapper.findSummyDetailListSpecial", page);
+	}
+	
+	/**获取明细表信息 特殊表
+	 * @param page
+	 * @throws Exception
+	 */
+	public List<PageData> listDetailSpecial(PageData pd)throws Exception{
+		return (List<PageData>)dao.findForList("VoucherMapper.listDetailSpecial", pd);
+	}
+	
+	/**获取汇总表信息 特殊表
+	 * @param page
+	 * @throws Exception
+	 */
+	public List<PageData> findSummyDetailListByBillCodesSpecial(PageData page)throws Exception{
+		return (List<PageData>)dao.findForList("VoucherMapper.findSummyDetailListByBillCodesSpecial", page);
+	}
+	
+	/**根据凭证类型、账套获取tb_sys_bill_off_mapping帐套映射
+	 * @param page
+	 * @throws Exception
+	 */
+	public List<PageData> findBilloffMapping(PageData page)throws Exception{
+		return (List<PageData>)dao.findForList("VoucherMapper.findBilloffMapping", page);
+	}
+	/*************************************************************/
 }
 
