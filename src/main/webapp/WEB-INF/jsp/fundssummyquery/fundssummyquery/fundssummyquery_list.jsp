@@ -45,15 +45,15 @@
 						<span class="label label-xlg label-success arrowed-right">人工成本</span>
 						<!-- arrowed-in-right --> 
 						<span class="label label-xlg label-yellow arrowed-in arrowed-right"
-							id="subTitle" style="margin-left: 2px;">汇总确认查询</span> 
+							id="subTitle" style="margin-left: 2px;">单据汇总查询</span> 
                         <span style="border-left: 1px solid #e2e2e2; margin: 0px 10px;">&nbsp;</span>
 								
 						<button id="btnQuery" class="btn btn-white btn-info btn-sm"
-							onclick="showQueryCondi($('#jqGridBase'),gridHeight)">
+							onclick="showQueryCondi($('#jqGridBase'),null,true)">
 							<i class="ace-icon fa fa-chevron-down bigger-120 blue"></i> <span>隐藏查询</span>
 						</button>
 						
-						<div class="pull-right">
+						<!-- <div class="pull-right">
 							<span class="green middle bolder">类型: &nbsp;</span>
 
 							<div class="btn-toolbar inline middle no-margin">
@@ -81,7 +81,7 @@
 									            </label>
 								</div>
 							</div>
-						</div>
+						 </div>-->
 					</div><!-- /.page-header -->
 			
 					<div class="row">
@@ -89,31 +89,50 @@
 							<div class="widget-box">
 								<div class="widget-body">
 									<div class="widget-main">
-											<form class="form-inline">
+										<form class="form-inline">
 											<span class="input-icon pull-left" style="margin-right: 5px;">
 												<input id="SelectedBusiDate" class="input-mask-date" type="text"
+													onchange="getSelectBillCodeOptions()"
 												    placeholder="请输入业务区间"> 
 												<i class="ace-icon fa fa-calendar blue"></i>
 											</span>
 											<span class="pull-left" style="margin-right: 5px;">
 												<select class="chosen-select form-control"
 													name="SelectedCustCol7" id="SelectedCustCol7"
+													data-placeholder="请选择帐套" 
+													onchange="ChangeSelectedCustCol7()"
 													style="vertical-align: top; height:32px;width: 150px;">
-													<option value="">请选择帐套</option>
-													<c:forEach items="${FMISACC}" var="each">
-														<option value="${each.DICT_CODE}">${each.NAME}</option>
-													</c:forEach>
+													    <option value="">请选择帐套</option>
+													    <c:forEach items="${FMISACC}" var="each">
+													    	<option value="${each.DICT_CODE}" 
+														        <c:if test="${pd.SelectedCustCol7==each.DICT_CODE}">selected</c:if>>${each.NAME}</option>
+													    </c:forEach>
 												</select>
 											</span>
-											<span class="pull-left" style="margin-right: 5px;" <c:if test="${pd.departTreeSource=='0'}">hidden</c:if>>
-												<div class="selectTree" id="selectTree" multiMode="true"
-												    allSelectable="false" noGroup="false"></div>
-											    <input id="SelectedDepartCode" type="hidden"></input>
+											<span class="pull-left" style="margin-right: 5px;">
+												<select class="chosen-select form-control"
+													name="SelectedTypeCode" id="SelectedTypeCode"
+													onchange="ChangeSelectedTypeCode()"
+													style="vertical-align: top; height:32px;width: 150px;">
+												</select>
+											</span>
+											<span class="pull-left" style="margin-right: 5px;">
+												<select class="chosen-select form-control"
+													name="SelectedDepartCode" id="SelectedDepartCode"
+													onchange="getSelectBillCodeOptions()"
+													style="vertical-align: top; height:32px;width: 150px;">
+												</select>
+											</span>
+											<span class="pull-left" style="margin-right: 5px;">
+												<select class="chosen-select form-control"
+													name="SelectedBillCode" id="SelectedBillCode"
+													style="vertical-align: top; height:32px;width: 160px;">
+												</select>
 											</span>
 											<button type="button" class="btn btn-info btn-sm" onclick="tosearch();">
 												<i class="ace-icon fa fa-search bigger-110"></i>
 											</button>
-											</form>
+										</form>
 									</div>
 								</div>
 							</div>
@@ -122,24 +141,8 @@
 
 					<div class="row">
 						<div class="col-xs-12">
-							<div class="tabbable">
-								<ul class="nav nav-tabs padding-18">
-									<li class="active">
-									    <a data-toggle="tab" href="#voucherTransfer"> 
-										    <i class="green ace-icon fa fa-user bigger-120"></i> 未确认
-									    </a>
-									</li>
-									<li>
-									    <a data-toggle="tab" href="#voucherMgr"> 
-									        <i class="orange ace-icon fa fa-rss bigger-120"></i> 已确认
-									    </a>
-									</li>
-								</ul>
-								<div class="tab-content no-border ">
-						            <table id="jqGridBase"></table>
-						            <div id="jqGridBasePager"></div>
-								</div>
-							</div>
+							<table id="jqGridBase"></table>
+							<div id="jqGridBasePager"></div>
 						</div>
 					</div>
 				</div>
@@ -152,7 +155,6 @@
 		</a>
 	</div>
 </body>
-	
 
 	<!-- basic scripts -->
 	<!-- 页面底部js¨ -->
@@ -190,12 +192,23 @@
     var _table = "_table";
     var _pager = "_pager";
 
-	var gridHeight;
-	var which;
-	var TabType = 1;
 	//前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
 	var jqGridColModel;
-    
+	
+	//页面显示的数据的查询信息，在tosearch()里赋值
+	var ShowDataTypeCode = "";
+	var ShowDataCustCol7 = "";
+	var ShowDataDepartCode = "";
+	var ShowDataBillCode = "";
+	var ShowDataBusiDate = "";
+	//单号下拉列表
+    var SelectedTypeCodeFirstShow;
+	var InitSelectedTypeCodeOptions;
+	var SelectedDepartCodeFirstShow;
+    var InitSelectedDepartCodeOptions;
+	var SelectedBillCodeFirstShow;
+	var InitSelectedBillCodeOptions;
+	
 	$(document).ready(function () {
 		$(top.hangge());//关闭加载状态
 		$('.input-mask-date').mask('999999');
@@ -203,62 +216,187 @@
 		//当前期间,取自tb_system_config的SystemDateTime字段
 	    var SystemDateTime = '${SystemDateTime}';
 		$("#SelectedBusiDate").val(SystemDateTime);
+	    
 		//前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
 	    jqGridColModel = "[]";//此处记得用eval()行数将string转为array
-
-		//初始化当前选择凭证类型
-		if('${pd.which}'!=""){
-			$('[data-toggle="buttons"] .btn').each(function(index, data){
-				var target = $(this).find('input[type=radio]');
-				$(this).removeClass('active');
-				var whichCur = parseInt(target.val());
-				console.log(which);
-				if(whichCur=='${pd.which}'){
-					$(this).addClass('active');
-					which=whichCur;
-				}
-			});
-		} 
 	    
-		//凭证类型变化
-		$('[data-toggle="buttons"] .btn').on('click', function(e){
-			var target = $(this).find('input[type=radio]');
-			which = parseInt(target.val());
-			window.location.href='<%=basePath%>fundsconfirmquery/list.do?SelectedTableNo='+which;
-		});
-		
-		//tab页切换
-		$('.nav-tabs li').on('click', function(e){
-			if($(this).hasClass('active')) return;
-			var target = $(this).find('a');
-			
-			if(target.attr('href')=='#voucherTransfer'){
-				TabType=1;
-			}else if(target.attr('href')=='#voucherMgr'){
-				TabType=2;
-			}
-			$(gridBase_selector).jqGrid('GridUnload'); 
-			SetStructure();
-		});
+		//选择下拉列表
+	    SelectedTypeCodeFirstShow =  "${pd.SelectedTypeCodeFirstShow}";
+	    InitSelectedTypeCodeOptions =  "${pd.InitSelectedTypeCodeOptions}";
+	    SelectedDepartCodeFirstShow =  "${pd.SelectedDepartCodeFirstShow}";
+	    InitSelectedDepartCodeOptions =  "${pd.InitSelectedDepartCodeOptions}";
+	    SelectedBillCodeFirstShow =  "${pd.SelectedBillCodeFirstShow}";
+	    InitSelectedBillCodeOptions =  "${pd.InitSelectedBillCodeOptions}";
+		setSelectTypeCodeOptions(InitSelectedTypeCodeOptions);
+		setSelectDepartCodeOptions(InitSelectedDepartCodeOptions);
+		setSelectBillCodeOptions(InitSelectedBillCodeOptions);
 	});  
-
+	
+    function setSelectTypeCodeOptions(selectOptions){
+        $("#SelectedTypeCode").empty();   //先清空
+        $("#SelectedTypeCode").append(selectOptions);  //再赋值
+    }
+    function setSelectDepartCodeOptions(selectOptions){
+        $("#SelectedDepartCode").empty();   //先清空
+        $("#SelectedDepartCode").append(selectOptions);  //再赋值
+    }
+    function setSelectBillCodeOptions(selectOptions){
+        $("#SelectedBillCode").empty();   //先清空
+        $("#SelectedBillCode").append(selectOptions);  //再赋值
+    }
+	
+	function ChangeSelectedCustCol7(){
+		setSelectTypeCodeOptions(InitSelectedTypeCodeOptions);
+		setSelectDepartCodeOptions(InitSelectedDepartCodeOptions);
+		setSelectBillCodeOptions(InitSelectedBillCodeOptions);
+		
+		var CustCol7 = $("#SelectedCustCol7").val();
+		if(CustCol7!=null && $.trim(CustCol7)!=""){
+			getSelectTypeCodeOptions();
+			getSelectDepartCodeOptions();
+		}
+	}
+	
+	function ChangeSelectedTypeCode(){
+		setSelectDepartCodeOptions(InitSelectedDepartCodeOptions);
+		setSelectBillCodeOptions(InitSelectedBillCodeOptions);
+		
+		var TypeCode = $("#SelectedTypeCode").val();
+		if(TypeCode!=null && $.trim(TypeCode)!=""){
+			getSelectDepartCodeOptions();
+		}
+	}
+    
+    function getSelectTypeCodeOptions(){
+		setSelectTypeCodeOptions(InitSelectedTypeCodeOptions);
+		setSelectDepartCodeOptions(InitSelectedDepartCodeOptions);
+		setSelectBillCodeOptions(InitSelectedBillCodeOptions);
+		top.jzts();
+		$.ajax({
+		    type: "POST",
+			url: '<%=basePath%>fundssummyquery/getTypeCodeList.do?SelectedCustCol7='+$("#SelectedCustCol7").val(),
+		    dataType:'json',
+			cache: false,
+			success: function(response){
+				if(response.code==0){
+					$(top.hangge());//关闭加载状态
+					setSelectTypeCodeOptions(response.message);
+				}else{
+					$(top.hangge());//关闭加载状态
+					$("#subTitle").tips({
+						side:3,
+			            msg:'获取账套列表失败,'+response.message,
+			            bg:'#cc0033',
+			            time:3
+			        });
+				}
+			},
+	    	error: function(response) {
+				$(top.hangge());//关闭加载状态
+				$("#subTitle").tips({
+					side:3,
+		            msg:'获取账套列表出错:'+response.responseJSON.message,
+		            bg:'#cc0033',
+		            time:3
+		        });
+	    	}
+	    });
+    }
+    
+    function getSelectDepartCodeOptions(){
+		setSelectDepartCodeOptions(InitSelectedDepartCodeOptions);
+		setSelectBillCodeOptions(InitSelectedBillCodeOptions);
+		top.jzts();
+		$.ajax({
+		    type: "POST",
+			url: '<%=basePath%>fundssummyquery/getDepartCodeList.do?SelectedCustCol7='+$("#SelectedCustCol7").val()
+					+'&SelectedTypeCode='+$("#SelectedTypeCode").val(),
+		    dataType:'json',
+			cache: false,
+			success: function(response){
+				if(response.code==0){
+					$(top.hangge());//关闭加载状态
+					setSelectDepartCodeOptions(response.message);
+				}else{
+					$(top.hangge());//关闭加载状态
+					$("#subTitle").tips({
+						side:3,
+			            msg:'获取责任中心列表失败,'+response.message,
+			            bg:'#cc0033',
+			            time:3
+			        });
+				}
+			},
+	    	error: function(response) {
+				$(top.hangge());//关闭加载状态
+				$("#subTitle").tips({
+					side:3,
+		            msg:'获取责任中心出错:'+response.responseJSON.message,
+		            bg:'#cc0033',
+		            time:3
+		        });
+	    	}
+	    });
+    }
+    
+    function getSelectBillCodeOptions(){
+		setSelectBillCodeOptions(InitSelectedBillCodeOptions);
+		top.jzts();
+		$.ajax({
+		    type: "POST",
+			url: '<%=basePath%>fundssummyquery/getBillCodeList.do?SelectedCustCol7='+$("#SelectedCustCol7").val()
+			    +'&SelectedTypeCode='+$("#SelectedTypeCode").val()
+                +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
+                +'&SelectedBusiDate='+$("#SelectedBusiDate").val(),
+		    dataType:'json',
+			cache: false,
+			success: function(response){
+				if(response.code==0){
+					$(top.hangge());//关闭加载状态
+					setSelectBillCodeOptions(response.message);
+				}else{
+					$(top.hangge());//关闭加载状态
+					$("#subTitle").tips({
+						side:3,
+			            msg:'获取单号列表失败,'+response.message,
+			            bg:'#cc0033',
+			            time:3
+			        });
+				}
+			},
+	    	error: function(response) {
+				$(top.hangge());//关闭加载状态
+				$("#subTitle").tips({
+					side:3,
+		            msg:'获取单号列表出错:'+response.responseJSON.message,
+		            bg:'#cc0033',
+		            time:3
+		        });
+	    	}
+	    });
+    }
+    
     // the event handler on expanding parent row receives two parameters
     // the ID of the grid tow  and the primary key of the row
     function showFirstChildGrid(parentRowID, parentRowKey) {
     	console.log(parentRowID+"  "+parentRowKey);
 		var rowData = $(gridBase_selector).getRowData(parentRowKey);
-    	var BILL_CODE = rowData.BILL_CODE__;
-    	console.log(BILL_CODE);
+    	var BILL_OFF = rowData.BILL_OFF__;
+    	console.log(BILL_OFF);
+    	var TYPE_CODE = rowData.TYPE_CODE__;
+    	console.log(TYPE_CODE);
     	var DEPT_CODE = rowData.DEPT_CODE__;
     	console.log(DEPT_CODE);
-    	var CUST_COL7 = rowData.CUST_COL7__;
-    	console.log(CUST_COL7);
+    	var BUSI_DATE = rowData.BUSI_DATE__;
+    	console.log(BUSI_DATE);
+    	var BILL_CODE = rowData.BILL_CODE__;
+    	console.log(BILL_CODE);
     	
         var detailColModel = "[]";
 		$.ajax({
 			type: "GET",
-			url: '<%=basePath%>fundsconfirmquery/getFirstDetailColModel.do?SelectedTableNo='+which,
-	    	data: {DataDeptCode:DEPT_CODE,DataCustCol7:CUST_COL7},
+			url: '<%=basePath%>fundssummyquery/getFirstDetailColModel.do?',
+	    	data: {DataCustCol7:BILL_OFF,DataTypeCode:TYPE_CODE,DataDeptCode:DEPT_CODE,DataBusiDate:BUSI_DATE},
 			dataType:'json',
 			cache: false,
 			success: function(response){
@@ -270,13 +408,14 @@
 		            var childGridID = parentRowID + _table;
 		            var childGridPagerID = parentRowID + _pager;
 		            // send the parent row primary key to the server so that we know which grid to show
-		            var childGridURL = '<%=basePath%>fundsconfirmquery/getFirstDetailList.do?SelectedTableNo='+which+'&DetailListBillCode='+BILL_CODE;
+		            var childGridURL = '<%=basePath%>fundssummyquery/getFirstDetailList.do?DetailListBillCode='+BILL_CODE;
 
 		            // add a table and pager HTML elements to the parent grid row - we will render the child grid here
 		            $('#' + parentRowID).append('<table id=' + childGridID + '></table><div id=' + childGridPagerID + ' class=scroll></div>');
 
 		            $("#" + childGridID).jqGrid({
 		                url: childGridURL,
+		    	    	postData: {DataCustCol7:BILL_OFF,DataTypeCode:TYPE_CODE,DataDeptCode:DEPT_CODE,DataBusiDate:BUSI_DATE},
 		                mtype: "GET",
 		                datatype: "json",
 		                colModel: detailColModel,
@@ -344,16 +483,20 @@
     	var gridSelect = parentRowID.toString().substring(0, parentRowID.toString().length - parentRowKey.toString().length - 1);
     	console.log("gridSelect  "+gridSelect);
 		var rowData = $("#" + gridSelect).getRowData(parentRowKey);
+    	var BILL_OFF = rowData.BILL_OFF__;
+    	console.log(BILL_OFF);
+    	var TYPE_CODE = rowData.TYPE_CODE__;
+    	console.log(TYPE_CODE);
     	var DEPT_CODE = rowData.DEPT_CODE__;
     	console.log(DEPT_CODE);
-    	var CUST_COL7 = rowData.CUST_COL7__;
-    	console.log(CUST_COL7);
+    	var BUSI_DATE = rowData.BUSI_DATE__;
+    	console.log(BUSI_DATE);
     	
         var detailColModel = "[]";
 		$.ajax({
 			type: "GET",
-			url: '<%=basePath%>fundsconfirmquery/getSecondDetailColModel.do?SelectedTableNo='+which,
-	    	data: {DataDeptCode:DEPT_CODE,DataCustCol7:CUST_COL7},
+			url: '<%=basePath%>fundssummyquery/getSecondDetailColModel.do?',
+	    	data: {DataCustCol7:BILL_OFF,DataTypeCode:TYPE_CODE,DataDeptCode:DEPT_CODE,DataBusiDate:BUSI_DATE},
 			dataType:'json',
 			cache: false,
 			success: function(response){
@@ -365,7 +508,7 @@
 		            var childGridID = parentRowID + _table;
 		            var childGridPagerID = parentRowID + _pager;
 		            // send the parent row primary key to the server so that we know which grid to show
-		            var childGridURL = '<%=basePath%>fundsconfirmquery/getSecondDetailList.do?SelectedTableNo='+which;
+		            var childGridURL = '<%=basePath%>fundssummyquery/getSecondDetailList.do?';
 		            //childGridURL = childGridURL + "&parentRowID=" + encodeURIComponent(parentRowKey)
                     var listData =new Array();
 				    listData.push(rowData);
@@ -420,26 +563,15 @@
 	    	}
 		});
     };
-    
-	//加载单位树
-	function initComplete(){
-		//下拉树
-		var defaultNodes = {"treeNodes":${zTreeNodes}};
-		//绑定change事件
-		$("#selectTree").bind("change",function(){
-			$("#SelectedDepartCode").val("");
-			if($(this).attr("relValue")){
-				$("#SelectedDepartCode").val($(this).attr("relValue"));
-		    } 
-		});
-		//赋给data属性
-		$("#selectTree").data("data",defaultNodes);  
-		$("#selectTree").render();
-		$("#selectTree2_input").val("请选择单位");
-	}
 	
 	//检索
 	function tosearch() {
+		ShowDataTypeCode = $("#SelectedTypeCode").val();
+		ShowDataCustCol7 = $("#SelectedCustCol7").val();
+		ShowDataDepartCode = $("#SelectedDepartCode").val();
+		ShowDataBillCode = $("#SelectedBillCode").val();
+		ShowDataBusiDate = $("#SelectedBusiDate").val(); 
+		
 		$(gridBase_selector).jqGrid('GridUnload'); 
 		//前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
 	    jqGridColModel = "[]";
@@ -447,10 +579,11 @@
 		top.jzts();
 		$.ajax({
 			type: "POST",
-			url: '<%=basePath%>fundsconfirmquery/getShowColModel.do?SelectedTableNo='+which
-                +'&SelectedBusiDate='+$("#SelectedBusiDate").val()
-                +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
-                +'&SelectedCustCol7='+$("#SelectedCustCol7").val(),
+			url: '<%=basePath%>fundssummyquery/getShowColModel.do?SelectedCustCol7='+ShowDataCustCol7
+                +'&SelectedTypeCode='+ShowDataTypeCode
+                +'&SelectedDepartCode='+ShowDataDepartCode
+                +'&SelectedBillCode='+ShowDataBillCode
+                +'&SelectedBusiDate='+ShowDataBusiDate,
 			dataType:'json',
 			cache: false,
 			success: function(response){
@@ -489,21 +622,20 @@
 		//resize to fit page size
 		$(window).on('resize.jqGrid', function () {
 			$(gridBase_selector).jqGrid( 'setGridWidth', $(".page-content").width());
-			gridHeight=236;
-			resizeGridHeight($(gridBase_selector),gridHeight);
+			//$(gridBase_selector).jqGrid( 'setGridHeight', $(window).height() - 240);
+			resizeGridHeight($(gridBase_selector),null,true);
 	    });
 
 		$(gridBase_selector).jqGrid({
-			url: '<%=basePath%>fundsconfirmquery/getPageList.do?SelectedTableNo='+which
-                +'&SelectedTabType='+TabType
-                +'&SelectedBusiDate='+$("#SelectedBusiDate").val()
-                +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
-                +'&SelectedCustCol7='+$("#SelectedCustCol7").val(),
+			url: '<%=basePath%>fundssummyquery/getPageList.do?SelectedCustCol7='+ShowDataCustCol7
+                +'&SelectedTypeCode='+ShowDataTypeCode
+                +'&SelectedDepartCode='+ShowDataDepartCode
+                +'&SelectedBillCode='+ShowDataBillCode
+                +'&SelectedBusiDate='+ShowDataBusiDate,
 			datatype: "json",
 			colModel: jqGridColModel,
 			viewrecords: true, 
 			shrinkToFit: false,
-			//width:'100%',
 			reloadAfterSubmit: true, 
 			rowNum: 0,
 			altRows: true, //斑马条纹
@@ -570,30 +702,6 @@
 					showQuery: false
 		        },
 		        {},{});
-	        		$(gridBase_selector).navSeparatorAdd(pagerBase_selector, {
-	        			sepclass : "ui-separator",
-	        			sepcontent: ""
-	        		});
-				//$(gridBase_selector).navButtonAdd(pagerBase_selector, {
-		        //     caption : "导出",
-		        //     buttonicon : "ace-icon fa fa-cloud-download",
-		        //     onClickButton : exportItems,
-		        //     position : "last",
-		        //     title : "导出",
-		        //     cursor : "pointer"
-		        // });
 	}
-	
-	/**
-	 * 导出
-	 */
-    function exportItems(){
-		console.log("excel");
-    	window.location.href='<%=basePath%>fundsconfirmquery/excel.do?SelectedTableNo='+which
-        +'&SelectedTabType='+TabType
-        +'&SelectedBusiDate='+$("#SelectedBusiDate").val()
-        +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
-        +'&SelectedCustCol7='+$("#SelectedCustCol7").val();
-    }
 </script>
 </html>
