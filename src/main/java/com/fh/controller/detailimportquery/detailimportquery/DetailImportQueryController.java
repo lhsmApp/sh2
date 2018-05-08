@@ -620,6 +620,11 @@ public class DetailImportQueryController extends BaseController {
 					}
 					String strDeptSqlNotIn = QueryFeildString.tranferListValueToSqlInString(listDeptSqlNotIn);
 					WhereSql += " and DEPT_CODE not in (" + strDeptSqlNotIn + ") ";
+					if(SelectedCustCol7.equals("9100")){
+						String strSALARYRANGE_dongxiang = "S17";
+						WhereSql += " and SAL_RANGE not in ('" + strSALARYRANGE_dongxiang + "') ";
+						
+					}
 				} else {
 					WhereSql += " and DEPT_CODE = '" + SelectedDepartCode + "' ";
 				}
