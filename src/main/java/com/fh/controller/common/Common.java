@@ -99,11 +99,11 @@ public class Common {
 	}
 
 	//String pzType, String tableName, String busiDate, String billOff
-	public static StringBuilder GetSqlUserdata(String pzType, String tableName, String busiDate, String billOff, 
+	public static StringBuilder GetSqlUserdata(String pzType, String struTableName, String struMappingName, String busiDate, String billOff, 
 			SysStruMappingService sysStruMappingService, Boolean bol) throws Exception{
 		//底行显示的求和与平均值字段
 		StringBuilder m_sqlUserdata = new StringBuilder();
-		List<SysStruMapping> getSysStruMappingList = SysStruMappingList.getSysStruMappingList(pzType, tableName, busiDate, billOff, sysStruMappingService, bol);
+		List<SysStruMapping> getSysStruMappingList = SysStruMappingList.getSysStruMappingList(pzType, struTableName, struMappingName, busiDate, billOff, sysStruMappingService, bol);
 		if (getSysStruMappingList != null && getSysStruMappingList.size() > 0) {
 			for (int i = 0; i < getSysStruMappingList.size(); i++) {
 				// 底行显示的求和与平均值字段
@@ -494,6 +494,7 @@ public class Common {
 			throws ClassNotFoundException {
 		String InsertField = "";
 		String InsertVale = "";
+		String InsertLogVale = "";
 	    for (TableColumns col : haveColumnsList.values()) {
 	    	String column_name = col.getColumn_name().toUpperCase();
 	    	String data_type = col.getData_type().toUpperCase();
@@ -514,14 +515,17 @@ public class Common {
 					if(InsertField!=null && !InsertField.trim().equals("")){
 						InsertField += ",";
 						InsertVale += ",";
+						InsertLogVale += ",";
 					}
 					InsertField += col.getColumn_name();
 					InsertVale += "'" + value.toString() + "'";
+					InsertLogVale += "''" + value.toString() + "''";
 				}
 			}
 		}
 		pd.put("InsertField", InsertField);
 		pd.put("InsertVale", InsertVale);
+		pd.put("InsertLogVale", InsertLogVale);
 	}
 	//IsNumFeildButMustInput 设置字段类型是数字，但不管隐藏 或显示都必须保存的
 	public static void setModelDefault(PageData pd, List<TableColumns> tableColumns, 
@@ -529,6 +533,7 @@ public class Common {
 			throws ClassNotFoundException {
 		String InsertField = "";
 		String InsertVale = "";
+		String InsertLogVale = "";
 	    for (TableColumns column : tableColumns) {
 	    	String column_name = column.getColumn_name().toUpperCase();
 	    	String data_type = column.getData_type().toUpperCase();
@@ -552,14 +557,17 @@ public class Common {
 					if(InsertField!=null && !InsertField.trim().equals("")){
 						InsertField += ",";
 						InsertVale += ",";
+						InsertLogVale += ",";
 					}
 					InsertField += column_name;
 					InsertVale += "'" + value.toString() + "'";
+					InsertLogVale += "''" + value.toString() + "''";
 				}
 			}
 		}
 		pd.put("InsertField", InsertField);
 		pd.put("InsertVale", InsertVale);
+		pd.put("InsertLogVale", InsertLogVale);
 	}
 	
 	public static int getDepartSelf(DepartmentManager departmentService) throws Exception{

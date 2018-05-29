@@ -1,7 +1,6 @@
 package com.fh.service.sysStruMapping.sysStruMapping.impl;
 
 import java.util.List;
-import java.util.Map;
 
 import javax.annotation.Resource;
 import org.springframework.stereotype.Service;
@@ -24,64 +23,37 @@ public class SysStruMappingService implements SysStruMappingManager{
 	@Resource(name = "daoSupport")
 	private DaoSupport dao;
 	
-	/**新增
-	 * @param pd
-	 * @throws Exception
-	 */
-	public void save(PageData pd)throws Exception{
-		dao.save("SysStruMappingMapper.save", pd);
-	}
-	
-	/**删除
-	 * @param pd
-	 * @throws Exception
-	 */
-	public void delete(PageData pd)throws Exception{
-		dao.delete("SysStruMappingMapper.delete", pd);
-	}
-	
-	/**修改
-	 * @param pd
-	 * @throws Exception
-	 */
-	public void edit(PageData pd)throws Exception{
-		dao.update("SysStruMappingMapper.edit", pd);
-	}
-	
 	/**列表
 	 * @param page
 	 * @throws Exception
 	 */
 	@SuppressWarnings("unchecked")
-	public List<PageData> list(JqPage page)throws Exception{
+	public List<PageData> JqPage(JqPage page)throws Exception{
 		return (List<PageData>)dao.findForList("SysStruMappingMapper.datalistJqPage", page);
 	}
-	
-	/**列表(全部)
+	/**获取记录数量
 	 * @param pd
 	 * @throws Exception
 	 */
-	@SuppressWarnings("unchecked")
-	public List<PageData> listAll(PageData pd)throws Exception{
-		return (List<PageData>)dao.findForList("SysStruMappingMapper.listAll", pd);
+	public int countJqGridExtend(JqPage page)throws Exception{
+		return (int)dao.findForObject("SysStruMappingMapper.countJqGridExtend", page);
 	}
 	
-	/**通过id获取数据
+	/**更新数据库
 	 * @param pd
 	 * @throws Exception
 	 */
-	public PageData findById(PageData pd)throws Exception{
-		return (PageData)dao.findForObject("SysStruMappingMapper.findById", pd);
+	public void batchAllUpdateDatabase(List<PageData> listData)throws Exception{
+		dao.update("SysStruMappingMapper.batchAllDelAndIns", listData);
 	}
 	
-	/**批量删除
-	 * @param ArrayDATA_IDS
+	/**更新数据库
+	 * @param pd
 	 * @throws Exception
 	 */
-	public void deleteAll(String[] ArrayDATA_IDS)throws Exception{
-		dao.delete("SysStruMappingMapper.deleteAll", ArrayDATA_IDS);
+	public void batchPartDelAndIns(List<PageData> listData)throws Exception{
+		dao.update("SysStruMappingMapper.batchPartDelAndIns", listData);
 	}
-
 	
 	/**
 	 * @param pd

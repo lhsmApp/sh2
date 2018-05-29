@@ -98,23 +98,52 @@
 		
 		    insert into TB_SYS_BILLNUM
 		    (BILL_CODE,	BILL_DATE, BILL_NUMBER) values (#{UpdateBillNum.BILL_CODE}, #{UpdateBillNum.BILL_DATE}, #{UpdateBillNum.BILL_NUMBER});
+		    
+		    insert into tb_sys_log_rec
+		    (USER_CODE,DEPT_CODE,REC_DATE,TYPE_CODE,BILL_CODE,SQL_STR) 
+		    values (#{UpdateBillNum.sys_log_rec_USER_CODE}, #{UpdateBillNum.sys_log_rec_DEPT_CODE}, #{UpdateBillNum.sys_log_rec_REC_DATE}, 
+		            #{UpdateBillNum.sys_log_rec_TYPE_CODE}, #{UpdateBillNum.sys_log_rec_BILL_CODE}, 
+		            'delete from TB_SYS_BILLNUM where BILL_CODE = ''${UpdateBillNum.BILL_CODE}'' and BILL_DATE= ''${UpdateBillNum.BILL_DATE}'';');
+		    insert into tb_sys_log_rec
+		    (USER_CODE,DEPT_CODE,REC_DATE,TYPE_CODE,BILL_CODE,SQL_STR) 
+		    values (#{UpdateBillNum.sys_log_rec_USER_CODE}, #{UpdateBillNum.sys_log_rec_DEPT_CODE}, #{UpdateBillNum.sys_log_rec_REC_DATE}, 
+		            #{UpdateBillNum.sys_log_rec_TYPE_CODE}, #{UpdateBillNum.sys_log_rec_BILL_CODE}, 
+		            'insert into TB_SYS_BILLNUM (BILL_CODE,	BILL_DATE, BILL_NUMBER) values (''${UpdateBillNum.BILL_CODE}'', ''${UpdateBillNum.BILL_DATE}'', ''${UpdateBillNum.BILL_NUMBER}'');');
 		</if>
 		<if test="SaveBillList != null">
 		    <foreach item="item" index="index" collection="SaveBillList" open=" " separator=" " close=" ">
 		        insert into ${item.TableName}
 		        (${item.InsertField}) values (${item.InsertVale});
+		        
+		        insert into tb_sys_log_rec
+		        (USER_CODE,DEPT_CODE,REC_DATE,TYPE_CODE,BILL_CODE,SQL_STR) 
+		        values (#{item.sys_log_rec_USER_CODE}, #{item.sys_log_rec_DEPT_CODE}, #{item.sys_log_rec_REC_DATE}, 
+		                #{item.sys_log_rec_TYPE_CODE}, #{item.sys_log_rec_BILL_CODE}, 
+		                'insert into ${item.TableName} (${item.InsertField}) values (${item.InsertLogVale});');
 		    </foreach>
 		</if>
 		<if test="SaveSummyList != null">
 		    <foreach item="item" index="index" collection="SaveSummyList" open=" " separator=" " close=" ">
 		        insert into ${item.TableName}
 		        (${item.InsertField}) values (${item.InsertVale});
+		        
+		        insert into tb_sys_log_rec
+		        (USER_CODE,DEPT_CODE,REC_DATE,TYPE_CODE,BILL_CODE,SQL_STR) 
+		        values (#{item.sys_log_rec_USER_CODE}, #{item.sys_log_rec_DEPT_CODE}, #{item.sys_log_rec_REC_DATE}, 
+		                #{item.sys_log_rec_TYPE_CODE}, #{item.sys_log_rec_BILL_CODE}, 
+		                'insert into ${item.TableName} (${item.InsertField}) values (${item.InsertLogVale});');
 		    </foreach>
 		</if>
 		<if test="SaveDetailList != null">
 		    <foreach item="item" index="index" collection="SaveDetailList" open=" " separator=" " close=" ">
 		        insert into ${item.TableName}
 		        (${item.InsertField}) values (${item.InsertVale});
+		        
+		        insert into tb_sys_log_rec
+		        (USER_CODE,DEPT_CODE,REC_DATE,TYPE_CODE,BILL_CODE,SQL_STR) 
+		        values (#{item.sys_log_rec_USER_CODE}, #{item.sys_log_rec_DEPT_CODE}, #{item.sys_log_rec_REC_DATE}, 
+		                #{item.sys_log_rec_TYPE_CODE}, #{item.sys_log_rec_BILL_CODE}, 
+		                'insert into ${item.TableName} (${item.InsertField}) values (${item.InsertLogVale});');
 		    </foreach>
 		</if>
 	</update>

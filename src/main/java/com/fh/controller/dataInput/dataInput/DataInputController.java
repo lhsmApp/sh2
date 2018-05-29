@@ -5,9 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.annotation.Resource;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
@@ -18,47 +16,27 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 import com.fh.controller.base.BaseController;
-import com.fh.controller.common.BillCodeUtil;
 import com.fh.controller.common.Common;
 import com.fh.controller.common.DictsUtil;
 import com.fh.controller.common.Message;
 import com.fh.controller.common.QueryFeildString;
-import com.fh.controller.common.SqlFeildToSave;
-import com.fh.controller.common.SysStruMappingList;
 import com.fh.controller.common.TmplUtil;
-import com.fh.controller.common.TmplVoucherUtil;
-import com.fh.controller.common.VoucherToBillType;
-import com.fh.entity.CertParmConfig;
-import com.fh.entity.ClsTwoFeild;
 import com.fh.entity.CommonBase;
 import com.fh.entity.JqPage;
 import com.fh.entity.Page;
 import com.fh.entity.PageResult;
-import com.fh.entity.SysStruMapping;
-import com.fh.entity.SysTableMapping;
-import com.fh.entity.TableColumns;
-import com.fh.entity.TmplConfigDetail;
 import com.fh.entity.system.User;
 import com.fh.util.PageData;
 import com.fh.util.SqlTools;
-import com.fh.util.enums.BillState;
 
 import net.sf.json.JSONArray;
 
 import com.fh.util.Const;
-import com.fh.util.DateUtil;
 import com.fh.util.Jurisdiction;
 import com.fh.service.dataInput.dataInput.DataInputManager;
-import com.fh.service.sysBillnum.sysbillnum.SysBillnumManager;
-import com.fh.service.certParmConfig.certParmConfig.impl.CertParmConfigService;
 import com.fh.service.fhoa.department.impl.DepartmentService;
 import com.fh.service.sysConfig.sysconfig.SysConfigManager;
-import com.fh.service.sysStruMapping.sysStruMapping.impl.SysStruMappingService;
-import com.fh.service.sysTableMapping.sysTableMapping.impl.SysTableMappingService;
 import com.fh.service.system.dictionaries.impl.DictionariesService;
-import com.fh.service.system.user.UserManager;
-import com.fh.service.tmplConfigDict.tmplconfigdict.impl.TmplConfigDictService;
-import com.fh.service.tmplconfig.tmplconfig.impl.TmplConfigService;
 
 /** 
  * 说明： 汇总单据确认

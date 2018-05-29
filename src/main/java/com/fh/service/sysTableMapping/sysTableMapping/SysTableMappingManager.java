@@ -1,19 +1,54 @@
 package com.fh.service.sysTableMapping.sysTableMapping;
 
 import java.util.List;
-import java.util.Map;
 
 import com.fh.entity.JqPage;
 import com.fh.entity.SysTableMapping;
 import com.fh.util.PageData;
 
 /** 
- * 说明： 工资明细
+ * 说明： 
  * 创建人：zhangxiaoliu
  * 创建时间：2017-06-19
  * @version
  */
 public interface SysTableMappingManager{
+	
+	/**获取单号下拉列表数据源 
+	 * @param pd
+	 * @throws Exception
+	 */
+	public List<String> getTableNameList(PageData pd)throws Exception;
+	
+	/**列表
+	 * @param page
+	 * @throws Exception
+	 */
+	public List<PageData> JqPage(JqPage page)throws Exception;
+	/**获取记录数量
+	 * @param pd
+	 * @throws Exception
+	 */
+	public int countJqGridExtend(JqPage page)throws Exception;
+	
+	/**用于判断数据是否重复
+	 * @param pd
+	 * @throws Exception
+	 */
+	public List<SysTableMapping> getRepeatList(List<PageData> list)throws Exception;
+	
+	/**更新数据库
+	 * @param pd
+	 * @throws Exception
+	 */
+	public void batchUpdateDatabase(List<PageData> listData)throws Exception;
+	
+	
+	
+	
+	
+	
+	
 
 	/**新增
 	 * @param pd
@@ -32,12 +67,6 @@ public interface SysTableMappingManager{
 	 * @throws Exception
 	 */
 	public void edit(PageData pd)throws Exception;
-	
-	/**列表
-	 * @param page
-	 * @throws Exception
-	 */
-	public List<PageData> list(JqPage page)throws Exception;
 	
 	/**列表(全部)
 	 * @param pd
@@ -60,16 +89,10 @@ public interface SysTableMappingManager{
 	
 	/**
 	 * @param pd
+	 * 张晓柳
 	 * @throws Exception
 	 */
 	public List<SysTableMapping> getUseTableMapping(SysTableMapping mapping)throws Exception;
-
-	
-	/**
-	 * @param pd
-	 * @throws Exception
-	 */
-	//public List<SysTableMapping> getDetailBillCodeSysTableMapping(SysTableMapping mapping)throws Exception;
 	
 	
 	

@@ -632,9 +632,9 @@ public class FundsSummyConfirmController extends BaseController {
 		if(!(SelectedCustCol7!=null && !SelectedCustCol7.trim().equals(""))){
 			QueryFeild += " and 1 != 1 ";
 		}
-		if(!(emplGroupType!=null && !emplGroupType.trim().equals(""))){
-			QueryFeild += " and 1 != 1 ";
-		}
+		//if(!(emplGroupType!=null && !emplGroupType.trim().equals(""))){
+		//	QueryFeild += " and 1 != 1 ";
+		//}
 		
 		if(SelectedTabType!=null && SelectedTabType.trim().equals("1")){
 			QueryFeild += " and BILL_STATE = '" + BillState.Normal.getNameKey() + "' ";

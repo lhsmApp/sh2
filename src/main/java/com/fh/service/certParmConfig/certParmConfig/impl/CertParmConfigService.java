@@ -23,6 +23,54 @@ public class CertParmConfigService implements CertParmConfigManager{
 	@Resource(name = "daoSupport")
 	private DaoSupport dao;
 	
+	/**列表
+	 * @param page
+	 * @throws Exception
+	 */
+	@SuppressWarnings("unchecked")
+	public List<PageData> JqPage(JqPage page)throws Exception{
+		return (List<PageData>)dao.findForList("CertParmConfigMapper.datalistJqPage", page);
+	}
+	/**获取记录数量
+	 * @param pd
+	 * @throws Exception
+	 */
+	public int countJqGridExtend(JqPage page)throws Exception{
+		return (int)dao.findForObject("CertParmConfigMapper.countJqGridExtend", page);
+	}
+
+	/**用于判断数据是否重复
+	 * @param pd
+	 * @throws Exception
+	 */
+	@SuppressWarnings("unchecked")
+	public List<PageData> getRepeatList(List<PageData> list)throws Exception{
+		return (List<PageData>)dao.findForList("CertParmConfigMapper.getRepeatList", list);
+	}
+	
+	/**更新数据库
+	 * @param pd
+	 * @throws Exception
+	 */
+	public void batchUpdateDatabase(List<PageData> listData)throws Exception{
+		dao.update("CertParmConfigMapper.batchEdit", listData);
+	}
+	
+	/**批量删除
+	 * @param ArrayDATA_IDS
+	 * @throws Exception
+	 */
+	public void deleteAll(List<PageData> listData)throws Exception{
+		dao.delete("CertParmConfigMapper.deleteAll", listData);
+	}
+	
+	
+	
+	
+	
+	
+	
+	
 	/**新增
 	 * @param pd
 	 * @throws Exception
@@ -47,15 +95,6 @@ public class CertParmConfigService implements CertParmConfigManager{
 		dao.update("CertParmConfigMapper.edit", pd);
 	}
 	
-	/**列表
-	 * @param page
-	 * @throws Exception
-	 */
-	@SuppressWarnings("unchecked")
-	public List<PageData> list(JqPage page)throws Exception{
-		return (List<PageData>)dao.findForList("CertParmConfigMapper.datalistJqPage", page);
-	}
-	
 	/**列表(全部)
 	 * @param pd
 	 * @throws Exception
@@ -71,14 +110,6 @@ public class CertParmConfigService implements CertParmConfigManager{
 	 */
 	public PageData findById(PageData pd)throws Exception{
 		return (PageData)dao.findForObject("CertParmConfigMapper.findById", pd);
-	}
-	
-	/**批量删除
-	 * @param ArrayDATA_IDS
-	 * @throws Exception
-	 */
-	public void deleteAll(String[] ArrayDATA_IDS)throws Exception{
-		dao.delete("CertParmConfigMapper.deleteAll", ArrayDATA_IDS);
 	}
 
 	

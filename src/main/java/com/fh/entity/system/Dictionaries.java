@@ -25,6 +25,14 @@ public class Dictionaries {
 	private List<Dictionaries> subDict;
 	private boolean hasDict = false;
 	private String treeurl;
+
+	public Dictionaries(){
+
+	}
+	public Dictionaries(String dICT_CODE, String nAME){
+		DICT_CODE = dICT_CODE;
+		NAME = nAME;
+	}
 	
 	public String getDICT_CODE() {
 		return DICT_CODE;

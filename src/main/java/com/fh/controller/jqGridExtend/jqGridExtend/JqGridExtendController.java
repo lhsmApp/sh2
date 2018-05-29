@@ -11,7 +11,6 @@ import java.util.Map;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.shiro.crypto.hash.SimpleHash;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.WebDataBinder;
@@ -27,29 +26,17 @@ import com.fh.entity.CommonBase;
 import com.fh.entity.JqGridModel;
 import com.fh.entity.JqPage;
 import com.fh.entity.PageResult;
-import com.fh.entity.system.Role;
 import com.fh.exception.CustomException;
 import com.fh.service.jqGridExtend.jqGridExtend.JqGridExtendManager;
-import com.fh.service.system.fhlog.FHlogManager;
-import com.fh.service.system.menu.MenuManager;
-import com.fh.service.system.role.RoleManager;
-import com.fh.service.system.user.UserManager;
-import com.fh.util.AppUtil;
 import com.fh.util.Const;
 import com.fh.util.FileDownload;
-import com.fh.util.FileUpload;
-import com.fh.util.GetPinyin;
 import com.fh.util.Jurisdiction;
-import com.fh.util.ObjectExcelRead;
 import com.fh.util.ObjectExcelView;
 import com.fh.util.PageData;
 import com.fh.util.PathUtil;
-import com.fh.util.Tools;
-//import com.wordnik.swagger.annotations.ApiOperation;
 import com.fh.util.excel.LeadingInExcel;
 
 import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 /**
  * JqGridExtend测试练习

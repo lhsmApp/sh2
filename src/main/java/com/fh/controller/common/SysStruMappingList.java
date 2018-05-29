@@ -17,27 +17,29 @@ import com.fh.util.enums.BillState;
 *
  */
 public class SysStruMappingList {
-
-	public static List<SysTableMapping> getUseTableMapping(String pzType, String busiDate, String billOff, 
-			SysTableMappingService sysTableMappingService) throws Exception{
+//
+	public static List<SysTableMapping> getUseTableMapping(String pzType, String busiDate, String billOff,
+			String tableMappingName, SysTableMappingService sysTableMappingService) throws Exception{
 		// 动态取自SysTableMapping
 		SysTableMapping sysTableMapping = new SysTableMapping();
 		sysTableMapping.setBILL_OFF(billOff);
 		sysTableMapping.setBUSI_DATE(busiDate);
 		sysTableMapping.setTYPE_CODE(pzType);
+		sysTableMapping.setTABLE_NAME_MAPPING(tableMappingName);
 		sysTableMapping.setSTATE(BillState.Normal.getNameKey());
-		List<SysTableMapping> getSysTableMappingList =sysTableMappingService.getUseTableMapping(sysTableMapping);
+		List<SysTableMapping> getSysTableMappingList = sysTableMappingService.getUseTableMapping(sysTableMapping);
 		return getSysTableMappingList;
 	}
 
-	public static List<SysStruMapping> getSysStruMappingList(String pzType, String tableName, 
+	public static List<SysStruMapping> getSysStruMappingList(String pzType, String struTableName, String struMappingName, 
 			String busiDate, String billOff, SysStruMappingService sysStruMappingService, Boolean bol) throws Exception{
 		// 前端数据表格界面字段,动态取自SysStruMapping，根据当前单位编码及表名获取字段配置信息
 		SysStruMapping sysStruMapping = new SysStruMapping();
 		sysStruMapping.setBILL_OFF(billOff);
 		sysStruMapping.setBUSI_DATE(busiDate);
 		sysStruMapping.setTYPE_CODE(pzType);
-		sysStruMapping.setTABLE_NAME_MAPPING(tableName);
+		sysStruMapping.setTABLE_NAME(struTableName);
+		sysStruMapping.setTABLE_NAME_MAPPING(struMappingName);
 		if(bol){
 			sysStruMapping.setCOL_ENABLE(BillState.Normal.getNameKey());
 		}

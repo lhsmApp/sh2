@@ -2,7 +2,6 @@ package com.fh.controller.common;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -18,9 +17,7 @@ import com.fh.util.Jurisdiction;
 import com.fh.util.PageData;
 import com.fh.util.StringUtil;
 import com.fh.util.Tools;
-import com.fh.util.enums.BillState;
 import com.fh.util.enums.EmplGroupType;
-import com.fh.util.enums.PZTYPE;
 import com.fh.util.enums.TmplType;
 
 import net.sf.json.JSONArray;

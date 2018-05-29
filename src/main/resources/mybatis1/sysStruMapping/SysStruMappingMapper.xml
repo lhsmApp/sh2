@@ -29,42 +29,97 @@
 列启用 COL_ENABLE 列启用 1启用0停用	'1'	CHAR(1)	1		FALSE	FALSE	TRUE-->
 
 	<!-- 字段 -->
-	<sql id="Field">
-		TYPE_CODE, TABLE_NAME, TABLE_NAME_MAPPING, COL_CODE, COL_MAPPING_CODE,
-		COL_MAPPING_NAME, COL_VALUE, COL_MAPPING_VALUE, BILL_OFF, BUSI_DATE, DISP_ORDER, 
+	<sql id="Field"><!-- BILL_STATE -->
+		TYPE_CODE, BILL_OFF, BUSI_DATE, TABLE_NAME, TABLE_NAME_MAPPING, 
+		COL_CODE, COL_MAPPING_CODE, COL_MAPPING_NAME, COL_VALUE, COL_MAPPING_VALUE, DISP_ORDER, 
 		COL_DGT, DEC_PRECISION, DICT_TRANS, COL_HIDE, COL_SUM, COL_AVE, COL_TRANSFER,COL_ENABLE
+	</sql>
+	<sql id="FieldSelectKey">
+		,TYPE_CODE TYPE_CODE__, BILL_OFF BILL_OFF__, BUSI_DATE BUSI_DATE__, 
+		TABLE_NAME TABLE_NAME__, TABLE_NAME_MAPPING TABLE_NAME_MAPPING__, 
+		COL_CODE COL_CODE__
 	</sql>
 
 	<!-- 字段值 -->
 	<sql id="FieldValue">
-		#{TYPE_CODE}, #{TABLE_NAME}, #{TABLE_NAME_MAPPING}, #{COL_CODE}, #{COL_MAPPING_CODE},
-	    #{COL_MAPPING_NAME}, #{COL_VALUE}, #{COL_MAPPING_VALUE}, #{BILL_OFF}, #{BUSI_DATE}, #{DISP_ORDER}, 
+		#{TYPE_CODE}, #{BILL_OFF}, #{BUSI_DATE}, #{TABLE_NAME}, #{TABLE_NAME_MAPPING}, 
+		#{COL_CODE}, #{COL_MAPPING_CODE}, #{COL_MAPPING_NAME}, #{COL_VALUE}, #{COL_MAPPING_VALUE}, #{DISP_ORDER}, 
 	    #{COL_DGT}, #{DEC_PRECISION}, #{DICT_TRANS}, #{COL_HIDE}, #{COL_SUM}, #{COL_AVE}, #{COL_TRANSFER},
 	    #{COL_ENABLE}
 	</sql>
+	<sql id="FieldValueItem">
+		#{item.TYPE_CODE}, #{item.BILL_OFF}, #{item.BUSI_DATE}, #{item.TABLE_NAME}, #{item.TABLE_NAME_MAPPING}, 
+		#{item.COL_CODE}, #{item.COL_MAPPING_CODE}, #{item.COL_MAPPING_NAME}, #{item.COL_VALUE}, #{item.COL_MAPPING_VALUE}, #{item.DISP_ORDER}, 
+	    #{item.COL_DGT}, #{item.DEC_PRECISION}, #{item.DICT_TRANS}, #{item.COL_HIDE}, #{item.COL_SUM}, #{item.COL_AVE}, #{item.COL_TRANSFER},
+	    #{item.COL_ENABLE}
+	</sql>
 
-	<!-- 新增 -->
-	<insert id="save" parameterType="pd">
-		insert into
+	<!-- 列表 -->
+	<select id="datalistJqPage" parameterType="jqPage" resultType="pd">
+		select 
+		    <include refid="Field"></include>
+		    <include refid="FieldSelectKey"></include>
+		from 
 		<include refid="tableName"></include>
-		(
-		<include refid="Field"></include>
-		) values (
-		<include refid="FieldValue"></include>
-		)
-	</insert>
+		where BUSI_DATE = '${pd.SelectedBusiDate}'
+		and TYPE_CODE = #{pd.SelectedTypeCode}
+        and UPPER(TABLE_NAME) = UPPER(#{pd.SelectedTableNameTranfer})
+        and UPPER(TABLE_NAME_MAPPING) = UPPER(#{pd.SelectedStruMappingTableName})
+        and BILL_OFF = #{pd.SelectedCustCol7}
+		<if test="sidx != null and sidx.trim() != ''" >
+			order by ${sidx} ${sord} 
+    	</if>
+		<if test="currentResult != null and rowNum != null" >           
+              limit #{currentResult}, #{rowNum} 
+        </if>
+	</select>
+	<select id="countJqGridExtend" parameterType="jqPage" resultType="int">
+		select count(*) 
+		from <include refid="tableName"></include> 
+		where BUSI_DATE = '${pd.SelectedBusiDate}'
+		and TYPE_CODE = #{pd.SelectedTypeCode}
+        and UPPER(TABLE_NAME) = UPPER(#{pd.SelectedTableNameTranfer})
+        and UPPER(TABLE_NAME_MAPPING) = UPPER(#{pd.SelectedStruMappingTableName})
+        and BILL_OFF = #{pd.SelectedCustCol7}
+	</select>
 
-	<!-- 删除 -->
-	<delete id="delete" parameterType="pd">
+	
+	<!-- 全部保存 -->
+	<update id="batchAllDelAndIns" parameterType="pd">
 		delete from
 		<include refid="tableName"></include>
 		where
-		KEY_CODE = #{id}
-	</delete>
+		<foreach item="item" index="index" collection="list" open=" (" separator=" or " close=") ">
+		    TYPE_CODE = #{item.TYPE_CODE__} 
+		    and BILL_OFF = #{item.BILL_OFF__}
+		    and BUSI_DATE = #{item.BUSI_DATE__}
+		</foreach>;
+		
+		<foreach item="item" index="index" collection="list" open=" " separator=" " close=" ">
+		    insert into <include refid="tableName"></include>
+		    (<include refid="Field"></include>) values (<include refid="FieldValueItem"></include>);
+		</foreach>
+	</update>
 
-	<!-- 修改 -->
-	<update id="edit" parameterType="pd">
-		update
+	<!-- 部分保存  -->
+	<update id="batchPartDelAndIns" parameterType="pd">
+		delete from
+		<include refid="tableName"></include>
+		where
+		<foreach item="item" index="index" collection="list" open=" (" separator=" or " close=") ">
+		    TYPE_CODE = #{item.TYPE_CODE__} 
+		    and BILL_OFF = #{item.BILL_OFF__}
+		    and BUSI_DATE = #{item.BUSI_DATE__}
+		    and COL_CODE = #{COL_CODE__}
+		</foreach>;
+		
+		<foreach item="item" index="index" collection="list" open=" " separator=" " close=" ">
+		    insert into <include refid="tableName"></include>
+		    (<include refid="Field"></include>) values (<include refid="FieldValueItem"></include>);
+		</foreach>
+	</update>
+		
+		<!-- update
 		<include refid="tableName"></include>
 		set
 		TYPE_CODE = #{TYPE_CODE}, TABLE_NAME = #{TABLE_NAME}, TABLE_NAME_MAPPING = #{TABLE_NAME_MAPPING}, COL_CODE = #{COL_CODE}, COL_MAPPING_CODE = #{COL_MAPPING_CODE},
@@ -72,83 +127,10 @@
 		COL_DGT = #{COL_DGT}, DEC_PRECISION = #{DEC_PRECISION}, DICT_TRANS = #{DICT_TRANS}, COL_HIDE = #{COL_HIDE}, COL_SUM = #{COL_SUM}, COL_AVE = #{COL_AVE},
 		COL_TRANSFER = #{COL_TRANSFER}, COL_ENABLE = #{COL_ENABLE}
 		where
-		KEY_CODE = #{KEY_CODE}
-	</update>
-
-	<!-- 通过ID获取数据 -->
-	<select id="findById" parameterType="pd" resultType="pd">
-		select
-		<include refid="Field"></include>
-		from
-		<include refid="tableName"></include>
-		where
-		KEY_CODE = #{KEY_CODE}
-	</select>
-	
-	<!-- 列表 -->
-	<select id="datalistPage" parameterType="page" resultType="pd">
-		select
-		<include refid="Field"></include>
-		from 
-		<include refid="tableName"></include>
-		where 1=1
-		<if test="pd.keywords!= null and pd.keywords != ''"><!-- 关键词检索 -->
-			and
-				(
-				<!--	根据需求自己加检索条件
-					字段1 LIKE CONCAT(CONCAT('%', #{pd.keywords}),'%')
-					 or 
-					字段2 LIKE CONCAT(CONCAT('%', #{pd.keywords}),'%') 
-				-->
-				)
-		</if>
-	</select>
-	
-	<!-- Jq分页列表 -->
-	<select id="datalistJqPage" parameterType="jqPage" resultType="pd">
-		select
-		<include refid="Field"></include>
-		from 
-		<include refid="tableName"></include>
-		<where>
-			PARENTID = #{pd.ParentId}
-			<if test="pd.keywords!= null and pd.keywords != ''"><!-- 关键词检索 -->
-				and
-					(
-					
-					<!--	根据需求自己加检索条件
-						字段1 LIKE CONCAT(CONCAT('%', #{pd.keywords}),'%')
-						 or 
-						字段2 LIKE CONCAT(CONCAT('%', #{pd.keywords}),'%') 
-					-->
-					)
-			</if>
-		</where>
-				
-		<if test="currentResult != null and rowNum != null" >           
-              limit #{currentResult}, #{rowNum} 
-        </if>
-	</select>
-
-	<!-- 列表(全部) -->
-	<select id="listAll" parameterType="pd" resultType="pd">
-		select
-		<include refid="Field"></include>
-		from
-		<include refid="tableName"></include>
-	</select>
-
-	<!-- 批量删除 -->
-	<delete id="deleteAll" parameterType="String">
-		delete from
-		<include refid="tableName"></include>
-		where
-		KEY_CODE in
-		<foreach item="item" index="index" collection="array" open="("
-			separator="," close=")">
-			#{item}
-		</foreach>
-	</delete>
+		    TYPE_CODE = #{TYPE_CODE__} 
+		    and BILL_OFF = #{BILL_OFF__}
+		    and BUSI_DATE = #{BUSI_DATE__}
+		    and COL_CODE = #{COL_CODE__} -->
 
 	<!-- 张晓柳 -->
 	<select id="getShowStruList" parameterType="com.fh.entity.SysStruMapping" resultType="com.fh.entity.SysStruMapping">
@@ -157,6 +139,7 @@
 		from
 		<include refid="tableName"></include>
 		where TYPE_CODE = #{TYPE_CODE}
+        and UPPER(TABLE_NAME) = UPPER(#{TABLE_NAME})
         and UPPER(TABLE_NAME_MAPPING) = UPPER(#{TABLE_NAME_MAPPING})
         and BILL_OFF = #{BILL_OFF}
         and BUSI_DATE = #{BUSI_DATE}

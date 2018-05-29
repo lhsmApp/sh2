@@ -82,7 +82,7 @@ public class QueryFeildString {
 		}
 		String QueryFeild = "";
 		if(BUSI_DATE!=null && !BUSI_DATE.trim().equals("")){
-			QueryFeild += " and BUSI_DATE like '%" + BUSI_DATE.trim() + "%' ";
+			QueryFeild += " and BUSI_DATE = '" + BUSI_DATE.trim() + "' ";
 		}
 		if(DEPT_CODE!=null && !DEPT_CODE.trim().equals("")){
 			String strIn = getSqlInString(DEPT_CODE);

@@ -269,7 +269,7 @@ public class FundsSummyQueryController extends BaseController {
 
 		TmplVoucherUtil tmplVoucherUtil = new TmplVoucherUtil(sysTableMappingService, sysStruMappingService, tmplconfigService, 
 				tmplconfigdictService, dictionariesService, departmentService, userService, keyListBase);
-			String jqGridColModel = tmplVoucherUtil.generateStructureNoEdit(SelectedTypeCode, TB_GEN_BUS_SUMMY_BILL, SelectedBusiDate, SelectedCustCol7, true);
+			String jqGridColModel = tmplVoucherUtil.generateStructureNoEdit(SelectedTypeCode, TB_GEN_SUMMY, TB_GEN_BUS_SUMMY_BILL, SelectedBusiDate, SelectedCustCol7, TB_GEN_BUS_DETAIL, true);
 
 		commonBase.setCode(0);
 		commonBase.setMessage(jqGridColModel);
@@ -301,7 +301,7 @@ public class FundsSummyQueryController extends BaseController {
 		int records = fundsselfsummyService.countJqGridExtend(page);
 		PageData userdata = null;
 		//底行显示的求和与平均值字段
-		StringBuilder SqlUserdata = Common.GetSqlUserdata(SelectedTypeCode, TB_GEN_BUS_SUMMY_BILL, SelectedBusiDate, SelectedCustCol7, sysStruMappingService, true);
+		StringBuilder SqlUserdata = Common.GetSqlUserdata(SelectedTypeCode, TB_GEN_SUMMY, TB_GEN_BUS_SUMMY_BILL, SelectedBusiDate, SelectedCustCol7, sysStruMappingService, true);
 		if(SqlUserdata!=null && !SqlUserdata.toString().trim().equals("")){
 			//底行显示的求和与平均值字段
 			getPd.put("Userdata", SqlUserdata.toString());
@@ -342,7 +342,7 @@ public class FundsSummyQueryController extends BaseController {
 
 		TmplVoucherUtil tmplVoucherUtil = new TmplVoucherUtil(sysTableMappingService, sysStruMappingService, tmplconfigService, 
 				tmplconfigdictService, dictionariesService, departmentService, userService, SumFieldDetail);
-	    String detailColModel = tmplVoucherUtil.generateStructureNoEdit(DataTypeCode, TB_GEN_SUMMY, DataBusiDate, DataCustCol7, true);
+	    String detailColModel = tmplVoucherUtil.generateStructureNoEdit(DataTypeCode, TB_GEN_BUS_DETAIL, TB_GEN_SUMMY, DataBusiDate, DataCustCol7, TB_GEN_BUS_DETAIL, true);
 
 		commonBase.setCode(0);
 		commonBase.setMessage(detailColModel);
@@ -407,7 +407,7 @@ public class FundsSummyQueryController extends BaseController {
 
 		TmplVoucherUtil tmplVoucherUtil = new TmplVoucherUtil(sysTableMappingService, sysStruMappingService, tmplconfigService, 
 				tmplconfigdictService, dictionariesService, departmentService, userService, null);
-	    String detailColModel = tmplVoucherUtil.generateStructureNoEdit(DataTypeCode, TB_GEN_BUS_DETAIL, DataBusiDate, DataCustCol7, true);
+	    String detailColModel = tmplVoucherUtil.generateStructureNoEdit(DataTypeCode, null, TB_GEN_BUS_DETAIL, DataBusiDate, DataCustCol7, TB_GEN_BUS_DETAIL, true);
 
 		commonBase.setCode(0);
 		commonBase.setMessage(detailColModel);
@@ -441,7 +441,7 @@ public class FundsSummyQueryController extends BaseController {
 
 		PageData pdFieldDetail = new PageData();
 		// 前端数据表格界面字段,动态取自SysStruMapping，根据当前单位编码及表名获取字段配置信息
-		List<SysStruMapping> getSysStruMappingList = SysStruMappingList.getSysStruMappingList(TYPE_CODE, TB_GEN_SUMMY, BUSI_DATE, CUST_COL7, sysStruMappingService, true);
+		List<SysStruMapping> getSysStruMappingList = SysStruMappingList.getSysStruMappingList(TYPE_CODE, TB_GEN_BUS_DETAIL, TB_GEN_SUMMY, BUSI_DATE, CUST_COL7, sysStruMappingService, true);
 		if(getSysStruMappingList!=null && SumFieldDetail!=null){
 			for(SysStruMapping mapping : getSysStruMappingList){
 				String COL_CODE = mapping.getCOL_CODE().toUpperCase();
@@ -522,7 +522,7 @@ public class FundsSummyQueryController extends BaseController {
 		List<String> SumFieldDetail = getGroupDetailField(typeCode, billOff, deptCode);
 
 		// 前端数据表格界面字段,动态取自SysStruMapping，根据当前单位编码及表名获取字段配置信息
-		List<SysStruMapping> getSysStruMappingList = SysStruMappingList.getSysStruMappingList(typeCode, TB_GEN_SUMMY, busiDate, billOff, sysStruMappingService, true);
+		List<SysStruMapping> getSysStruMappingList = SysStruMappingList.getSysStruMappingList(typeCode, TB_GEN_BUS_DETAIL, TB_GEN_SUMMY, busiDate, billOff, sysStruMappingService, true);
 		
 		if(getSysStruMappingList!=null && getSysStruMappingList.size()>0 
 				&& SumFieldDetail!=null && SumFieldDetail.size()>0){

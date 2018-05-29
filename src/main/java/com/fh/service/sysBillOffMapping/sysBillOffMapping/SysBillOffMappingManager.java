@@ -3,7 +3,6 @@ package com.fh.service.sysBillOffMapping.sysBillOffMapping;
 import java.util.List;
 
 import com.fh.entity.JqPage;
-import com.fh.entity.SysBillOffMapping;
 import com.fh.util.PageData;
 
 /** 
@@ -13,6 +12,42 @@ import com.fh.util.PageData;
  * @version
  */
 public interface SysBillOffMappingManager{
+	
+	/**列表
+	 * @param page
+	 * @throws Exception
+	 */
+	public List<PageData> JqPage(JqPage page)throws Exception;
+	/**获取记录数量
+	 * @param pd
+	 * @throws Exception
+	 */
+	public int countJqGridExtend(JqPage page)throws Exception;
+	
+	/**用于判断数据是否重复
+	 * @param pd
+	 * @throws Exception
+	 */
+	public List<PageData> getRepeatList(List<PageData> list)throws Exception;
+	
+	/**更新数据库
+	 * @param pd
+	 * @throws Exception
+	 */
+	public void batchUpdateDatabase(List<PageData> listData)throws Exception;
+	
+	/**批量删除
+	 * @param ArrayDATA_IDS
+	 * @throws Exception
+	 */
+	public void deleteAll(List<PageData> listData)throws Exception;
+	
+	
+	
+	
+	
+	
+	
 
 	/**新增
 	 * @param pd
@@ -32,12 +67,6 @@ public interface SysBillOffMappingManager{
 	 */
 	public void edit(PageData pd)throws Exception;
 	
-	/**列表
-	 * @param page
-	 * @throws Exception
-	 */
-	public List<PageData> list(JqPage page)throws Exception;
-	
 	/**列表(全部)
 	 * @param pd
 	 * @throws Exception
@@ -49,12 +78,6 @@ public interface SysBillOffMappingManager{
 	 * @throws Exception
 	 */
 	public PageData findById(PageData pd)throws Exception;
-	
-	/**批量删除
-	 * @param ArrayDATA_IDS
-	 * @throws Exception
-	 */
-	public void deleteAll(String[] ArrayDATA_IDS)throws Exception;
 	
 	/**
 	 * @param pd

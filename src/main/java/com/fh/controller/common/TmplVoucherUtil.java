@@ -70,18 +70,22 @@ public class TmplVoucherUtil {
 	 * @return
 	 * @throws Exception
 	 */
-	public String generateStructureNoEdit(String pzType, String tableName, String busiDate, String billOff, Boolean bol) throws Exception {
+	public String generateStructureNoEdit(String pzType, String struTableName, String struMappingName, String busiDate, String billOff, String tableMappingName, Boolean bol) throws Exception {
 		// 字典
 		m_dicList = new LinkedHashMap<String, Object>();
 
 		StringBuilder jqGridColModelCustom = new StringBuilder();
 		
-		List<SysTableMapping> getSysTableMappingList = SysStruMappingList.getUseTableMapping(pzType, busiDate, billOff, sysTableMappingService);
+		List<SysTableMapping> getSysTableMappingList = SysStruMappingList.getUseTableMapping(pzType, busiDate, billOff, tableMappingName, sysTableMappingService);
 		if(getSysTableMappingList != null && getSysTableMappingList.size() == 1){
 			// 用语句查询出数据库表的所有字段及其属性；拼接成jqgrid全部列
-			List<TableColumns> tableColumns = tmplconfigService.getTableColumns(tableName);
+			List<TableColumns> tableColumns = tmplconfigService.getTableColumns(struMappingName);
+			String struTableNameTranfer = struTableName;
+			if(!(struTableNameTranfer!=null && !struTableNameTranfer.trim().trim().equals(""))){
+				struTableNameTranfer = getSysTableMappingList.get(0).getTABLE_NAME();
+			}
 			// 前端数据表格界面字段,动态取自SysStruMapping，根据当前单位编码及表名获取字段配置信息
-			List<SysStruMapping> getSysStruMappingList = SysStruMappingList.getSysStruMappingList(pzType, tableName, busiDate, billOff, sysStruMappingService, bol);
+			List<SysStruMapping> getSysStruMappingList = SysStruMappingList.getSysStruMappingList(pzType, struTableNameTranfer, struMappingName, busiDate, billOff, sysStruMappingService, bol);
 			
 			Map<String, Map<String, Object>> listColModelAll = jqGridColModelAllNoEdit(tableColumns);
 			

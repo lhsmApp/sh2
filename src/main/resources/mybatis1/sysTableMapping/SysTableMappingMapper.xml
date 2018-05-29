@@ -24,6 +24,14 @@
 		STATE,
 		BILL_OFF
 	</sql>
+	<sql id="FieldSelectKey">
+		,TYPE_CODE TYPE_CODE__,
+		BUSI_DATE BUSI_DATE__,
+		TABLE_NAME TABLE_NAME__,
+		TABLE_NAME_MAPPING TABLE_NAME_MAPPING__,
+		STATE STATE__,
+		BILL_OFF BILL_OFF__
+	</sql>
 
 	<!-- 字段值 -->
 	<sql id="FieldValue">
@@ -34,7 +42,89 @@
 		#{STATE},
 		#{BILL_OFF}
 	</sql>
+	<sql id="FieldValueItem">
+		#{item.TYPE_CODE},
+		#{item.BUSI_DATE},
+		#{item.TABLE_NAME},
+		#{item.TABLE_NAME_MAPPING},
+		#{item.STATE},
+		#{item.BILL_OFF}
+	</sql>
+	
+	<!-- 获取映射的表名 -->
+	<select id="getTableNameList" parameterType="pd" resultType="String">
+		select TABLE_NAME
+		from TB_TABLE_NAME_MAPPING
+		where STATE = '1'
+		order by TABLE_NAME
+	</select>
 
+	<!-- 列表 -->
+	<select id="datalistJqPage" parameterType="jqPage" resultType="pd">
+		select 
+		    <include refid="Field"></include>
+		    <include refid="FieldSelectKey"></include>
+		from <include refid="tableName"></include>
+		where BUSI_DATE = '${pd.SystemDateTime}'
+		<if test="pd.filterWhereResult!= null and pd.filterWhereResult != ''"><!-- 关键词检索 -->
+			${pd.filterWhereResult}
+		</if>
+		    <if test="pd.QueryFeild!= null and pd.QueryFeild != ''">
+		        ${pd.QueryFeild}
+		    </if>
+		<if test="sidx != null and sidx.trim() != ''" >
+			order by ${sidx} ${sord} 
+    	</if>
+		<if test="currentResult != null and rowNum != null" >           
+              limit #{currentResult}, #{rowNum} 
+        </if>
+	</select>
+	<select id="countJqGridExtend" parameterType="jqPage" resultType="int">
+		select count(*)
+        from <include refid="tableName"></include> 
+		where BUSI_DATE = '${pd.SystemDateTime}'
+		<if test="pd.filterWhereResult!= null and pd.filterWhereResult != ''"><!-- 关键词检索 -->
+			${pd.filterWhereResult}
+		</if>
+		    <if test="pd.QueryFeild!= null and pd.QueryFeild != ''">
+		        ${pd.QueryFeild}
+		    </if>
+	</select>
+
+	<!-- 列表 -->
+	<select id="getRepeatList" parameterType="pd" resultType="pd">
+		select 
+		<include refid="Field"></include>
+		from 
+		<include refid="tableName"></include>
+        <where>
+		<foreach item="item" index="index" collection="list" open=" " separator=" or " close=" ">
+            ((TYPE_CODE = #{item.TYPE_CODE} and BUSI_DATE = #{item.BUSI_DATE} and BILL_OFF = #{item.BILL_OFF}
+              and TABLE_NAME = #{item.TABLE_NAME} and TABLE_NAME_MAPPING = #{item.TABLE_NAME_MAPPING})
+             and (TYPE_CODE != #{item.TYPE_CODE__} or BUSI_DATE != #{item.BUSI_DATE__} or BILL_OFF != #{item.BILL_OFF__}
+                  or TABLE_NAME != #{item.TABLE_NAME__} or TABLE_NAME_MAPPING != #{item.TABLE_NAME_MAPPING__}))
+		</foreach>
+		</where>
+	</select>
+	
+	<update id="batchDelAndIns" parameterType="pd">
+		delete from
+		<include refid="tableName"></include>
+		where
+		<foreach item="item" index="index" collection="list" open=" (" separator=" or " close=") ">
+		    TYPE_CODE = #{item.TYPE_CODE__}
+		    and BUSI_DATE = #{item.BUSI_DATE__}
+		    and TABLE_NAME = #{item.TABLE_NAME__}
+		    and TABLE_NAME_MAPPING = #{item.TABLE_NAME_MAPPING__}
+		    and BILL_OFF = #{item.BILL_OFF__}
+		</foreach>;
+		
+		<foreach item="item" index="index" collection="list" open=" " separator=" " close=" ">
+		    insert into <include refid="tableName"></include>
+		    (<include refid="Field"></include>) values (<include refid="FieldValueItem"></include>);
+		</foreach>
+	</update>
+	
 	<!-- 新增 -->
 	<insert id="save" parameterType="pd">
 		insert into
@@ -78,51 +168,6 @@
 		where
 		KEY_CODE = #{KEY_CODE}
 	</select>
-	
-	<!-- 列表 -->
-	<select id="datalistPage" parameterType="page" resultType="pd">
-		select
-		<include refid="Field"></include>
-		from 
-		<include refid="tableName"></include>
-		where 1=1
-		<if test="pd.keywords!= null and pd.keywords != ''"><!-- 关键词检索 -->
-			and
-				(
-				<!--	根据需求自己加检索条件
-					字段1 LIKE CONCAT(CONCAT('%', #{pd.keywords}),'%')
-					 or 
-					字段2 LIKE CONCAT(CONCAT('%', #{pd.keywords}),'%') 
-				-->
-				)
-		</if>
-	</select>
-	
-	<!-- Jq分页列表 -->
-	<select id="datalistJqPage" parameterType="jqPage" resultType="pd">
-		select
-		<include refid="Field"></include>
-		from 
-		<include refid="tableName"></include>
-		<where>
-			PARENTID = #{pd.ParentId}
-			<if test="pd.keywords!= null and pd.keywords != ''"><!-- 关键词检索 -->
-				and
-					(
-					
-					<!--	根据需求自己加检索条件
-						字段1 LIKE CONCAT(CONCAT('%', #{pd.keywords}),'%')
-						 or 
-						字段2 LIKE CONCAT(CONCAT('%', #{pd.keywords}),'%') 
-					-->
-					)
-			</if>
-		</where>
-				
-		<if test="currentResult != null and rowNum != null" >           
-              limit #{currentResult}, #{rowNum} 
-        </if>
-	</select>
 
 	<!-- 列表(全部) -->
 	<select id="listAll" parameterType="pd" resultType="pd">
@@ -151,18 +196,9 @@
 		from
 		<include refid="tableName"></include>
 		where TYPE_CODE = #{TYPE_CODE}
-		and BUSI_DATE = #{BUSI_DATE}
-		and STATE = #{STATE}
 		and BILL_OFF = #{BILL_OFF}
+		and BUSI_DATE = #{BUSI_DATE}
+		and UPPER(TABLE_NAME_MAPPING) = UPPER(#{TABLE_NAME_MAPPING})
+		and STATE = #{STATE}
 	</select>
-
-	<!-- 张晓柳 -->
-	<!-- <select id="getDetailBillCodeSysTableMapping" parameterType="com.fh.entity.SysTableMapping" resultType="com.fh.entity.SysTableMapping">
-		select 
-		<include refid="Field"></include>
-		from
-		<include refid="tableName"></include>
-		where BUSI_DATE = #{BUSI_DATE}
-        and UPPER(TABLE_NAME) = UPPER(#{TABLE_NAME})
-	</select> -->
 </mapper>
