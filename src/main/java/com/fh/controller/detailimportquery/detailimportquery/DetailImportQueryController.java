@@ -298,7 +298,7 @@ public class DetailImportQueryController extends BaseController {
 			strShowCalModelDepaet = SelectedDepartCode;
 		}
 		
-		PageData pdTransfer = setPutPd(getPd);
+		PageData pdTransfer = setPutPd(getPd, true);
 		page.setPd(pdTransfer);
 		List<PageData> varList = detailimportqueryService.JqPage(page);	//列出Betting列表
 		int records = detailimportqueryService.countJqGridExtend(page);
@@ -369,7 +369,7 @@ public class DetailImportQueryController extends BaseController {
 		return tableCode;
 	}
 	
-	private PageData setPutPd(PageData getPd) throws Exception{
+	private PageData setPutPd(PageData getPd, Boolean bolBillCodeUse) throws Exception{
 		//员工组
 		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
 		String emplGroupType = DictsUtil.getEmplGroupType(SelectedTableNo);
@@ -397,7 +397,9 @@ public class DetailImportQueryController extends BaseController {
 		getQueryFeildPd.put("BUSI_DATE", SelectedBusiDate);
 		String QueryFeild = QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList);
 		QueryFeild += QueryFeildString.getBillCodeNotInSumInvalidDetail(TableNameSummy);
-		QueryFeild += QueryFeildString.getQueryFeildBillCodeDetail(SelectedBillCode, SelectBillCodeFirstShow);
+		if(bolBillCodeUse){
+			QueryFeild += QueryFeildString.getQueryFeildBillCodeDetail(SelectedBillCode, SelectBillCodeFirstShow);
+		}
 		QueryFeild += " and DEPT_CODE in (" + QueryFeildString.tranferListValueToSqlInString(AllDeptCode) + ") ";
 		if(!(SelectedCustCol7!=null && !SelectedCustCol7.trim().equals(""))){
 			QueryFeild += " and 1 != 1 ";
@@ -424,9 +426,9 @@ public class DetailImportQueryController extends BaseController {
 	 * @param
 	 * @throws Exception
 	 */
-	/*@SuppressWarnings("unchecked")
-	@RequestMapping(value="/excel")
-	public ModelAndView exportExcel(JqPage page) throws Exception{
+	@SuppressWarnings("unchecked")
+	@RequestMapping(value="/excelDetail")
+	public ModelAndView exportDetailExcel(JqPage page) throws Exception{
 		logBefore(logger, Jurisdiction.getUsername()+"导出HouseFundDetail到excel");
 		//if(!Jurisdiction.buttonJurisdiction(menuUrl, "cha")){return null;}
 
@@ -447,13 +449,14 @@ public class DetailImportQueryController extends BaseController {
 		Map<String, Object> DicList = Common.GetDicList(SelectedTableNo, strShowCalModelDepaet, SelectedCustCol7, 
 				tmplconfigService, tmplconfigdictService, dictionariesService, departmentService, userService, "");
 		
-		PageData pdTransfer = setPutPd(getPd);
+		PageData pdTransfer = setPutPd(getPd, false);
 		page.setPd(pdTransfer);
 		List<PageData> varOList = detailimportqueryService.datalistExport(page);
 		
 		ModelAndView mv = new ModelAndView();
 		Map<String,Object> dataMap = new LinkedHashMap<String,Object>();
-		dataMap.put("filename", "");
+		String fileName = "导出明细";
+		dataMap.put("filename", new String(fileName.getBytes("gb2312"), "ISO-8859-1"));
 		List<String> titles = new ArrayList<String>();
 		List<PageData> varList = new ArrayList<PageData>();
 		if(map_SetColumnsList != null && map_SetColumnsList.size() > 0){
@@ -476,7 +479,7 @@ public class DetailImportQueryController extends BaseController {
 							    value = dicAdd.getOrDefault(getCellValue, "");
 							    vpd.put("var" + j, value);
 						    } else {
-							    vpd.put("var" + j, getCellValue.toString());
+						    	vpd.put("var" + j, getCellValue.toString());
 						    }
 						    j++;
 						}
@@ -490,7 +493,7 @@ public class DetailImportQueryController extends BaseController {
 		ObjectExcelView erv = new ObjectExcelView();
 		mv = new ModelAndView(erv,dataMap); 
 		return mv;
-	}*/
+	}
 	
 	 /**导出到excel
 	 * @param

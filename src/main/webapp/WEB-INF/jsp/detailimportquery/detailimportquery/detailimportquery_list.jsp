@@ -321,13 +321,13 @@
 		        });
 	    	}
 	    }
-	    //function exportItems(){
-	    //	window.location.href='<%=basePath%>detailimportquery/excel.do?SelectedTableNo='+which
-        //    +'&SelectedBusiDate='+$("#SelectedBusiDate").val()
-        //    +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
-        //    +'&SelectedCustCol7='+$("#SelectedCustCol7").val()
-        //    +'&SelectedBillCode='+$("#SelectedBillCode").val();
-	    //}
+	    function exportDetailItems(){
+	    	window.location.href='<%=basePath%>detailimportquery/excelDetail.do?SelectedTableNo='+which
+            +'&SelectedBusiDate='+$("#SelectedBusiDate").val()
+            +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
+            +'&SelectedCustCol7='+$("#SelectedCustCol7").val()
+            +'&SelectedBillCode='+$("#SelectedBillCode").val();
+	    }
 	
 	    //加载单位树
 	    function initComplete(){
@@ -466,14 +466,6 @@
 		        			sepclass : "ui-separator",
 		        			sepcontent: ""
 		        		});
-		        		/*$(gridBase_selector).navButtonAdd(pagerBase_selector, {
-				             caption : "导出",
-				             buttonicon : "ace-icon fa fa-cloud-download",
-				             onClickButton : exportItems,
-				             position : "last",
-				             title : "导出",
-				             cursor : "pointer"
-				         });*/
 				     if(which=='1' || which=='2' || which=='3' || which=='4' || which=='5'){
 			                $(gridBase_selector).navButtonAdd(pagerBase_selector, {
 					             caption : "工资个税",
@@ -492,6 +484,18 @@
 					             cursor : "pointer"
 					         });
 				     }
+		        		$(gridBase_selector).navSeparatorAdd(pagerBase_selector, {
+		        			sepclass : "ui-separator",
+		        			sepcontent: ""
+		        		});
+		        		$(gridBase_selector).navButtonAdd(pagerBase_selector, {
+				             caption : "导出明细",
+				             buttonicon : "ace-icon fa fa-cloud-download",
+				             onClickButton : exportDetailItems,
+				             position : "last",
+				             title : "导出明细",
+				             cursor : "pointer"
+				         });
         }
 </script>
 </html>

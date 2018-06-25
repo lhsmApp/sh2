@@ -14,12 +14,6 @@ import com.fh.util.PageData;
  */
 public interface SysTableMappingManager{
 	
-	/**获取单号下拉列表数据源 
-	 * @param pd
-	 * @throws Exception
-	 */
-	public List<String> getTableNameList(PageData pd)throws Exception;
-	
 	/**列表
 	 * @param page
 	 * @throws Exception

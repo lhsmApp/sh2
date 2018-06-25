@@ -58,7 +58,12 @@ public interface FundsSelfSummyManager{
 	 * @throws Exception
 	 */
 	public List<PageData> getSaveList(String str)throws Exception;
-	
+
+	/**日志
+	 * @param 
+	 * @throws Exception
+	 */
+	public void batchSaveLog(Map<String, Object> map)throws Exception;
 	/**汇总
 	 * @param 
 	 * @throws Exception

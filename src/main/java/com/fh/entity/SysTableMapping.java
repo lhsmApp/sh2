@@ -16,6 +16,13 @@ public class SysTableMapping {
 	private String TABLE_NAME_MAPPING;
 	private String STATE;
 	private String BILL_OFF;
+	/*private String TABLE_TYPE;
+	public String getTABLE_TYPE() {
+		return TABLE_TYPE;
+	}
+	public void setTABLE_TYPE(String tABLE_TYPE) {
+		TABLE_TYPE = tABLE_TYPE;
+	}*/
 	public String getTYPE_CODE() {
 		return TYPE_CODE;
 	}

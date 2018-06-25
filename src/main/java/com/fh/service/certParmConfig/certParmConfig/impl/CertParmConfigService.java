@@ -53,7 +53,7 @@ public class CertParmConfigService implements CertParmConfigManager{
 	 * @throws Exception
 	 */
 	public void batchUpdateDatabase(List<PageData> listData)throws Exception{
-		dao.update("CertParmConfigMapper.batchEdit", listData);
+		dao.update("CertParmConfigMapper.batchDelAndIns", listData);
 	}
 	
 	/**批量删除
@@ -63,55 +63,6 @@ public class CertParmConfigService implements CertParmConfigManager{
 	public void deleteAll(List<PageData> listData)throws Exception{
 		dao.delete("CertParmConfigMapper.deleteAll", listData);
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	/**新增
-	 * @param pd
-	 * @throws Exception
-	 */
-	public void save(PageData pd)throws Exception{
-		dao.save("CertParmConfigMapper.save", pd);
-	}
-	
-	/**删除
-	 * @param pd
-	 * @throws Exception
-	 */
-	public void delete(PageData pd)throws Exception{
-		dao.delete("CertParmConfigMapper.delete", pd);
-	}
-	
-	/**修改
-	 * @param pd
-	 * @throws Exception
-	 */
-	public void edit(PageData pd)throws Exception{
-		dao.update("CertParmConfigMapper.edit", pd);
-	}
-	
-	/**列表(全部)
-	 * @param pd
-	 * @throws Exception
-	 */
-	@SuppressWarnings("unchecked")
-	public List<PageData> listAll(PageData pd)throws Exception{
-		return (List<PageData>)dao.findForList("CertParmConfigMapper.listAll", pd);
-	}
-	
-	/**通过id获取数据
-	 * @param pd
-	 * @throws Exception
-	 */
-	public PageData findById(PageData pd)throws Exception{
-		return (PageData)dao.findForObject("CertParmConfigMapper.findById", pd);
-	}
-
 	
 	/**
 	 * @param pd

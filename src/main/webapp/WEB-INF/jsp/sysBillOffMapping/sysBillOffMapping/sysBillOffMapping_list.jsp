@@ -54,7 +54,7 @@
 						<!-- arrowed-in-right -->
 						<span
 							class="label label-xlg label-yellow arrowed-in arrowed-right"
-							id="subTitle" style="margin-left: 2px;">账套映射表 </span> <span
+							id="subTitle" style="margin-left: 2px;">凭证账套映射管理 </span> <span
 							style="border-left: 1px solid #e2e2e2; margin: 0px 10px;">&nbsp;</span>
 						<button id="btnQuery" class="btn btn-white btn-info btn-sm"
 							onclick="showQueryCondi($('#jqGrid'),null,true)">
@@ -241,9 +241,9 @@
 				{ label: '业务类型', name: 'TYPE_CODE__', width: 60,hidden : true,editable: true,},
 				{ label: '账套映射', name: 'MAPPING_CODE__', width: 60,hidden : true,editable: true,},
 
-				{ label: '账套', name: 'BILL_OFF', width: 60,editable: true, editrules:{required:true}, edittype: 'select',formatter:'select',formatoptions:{value:"${billOffStrAll}"},editoptions:{value:"${billOffStrSelect}"},stype: 'select',searchoptions:{value:"${billOffStrAll}"}},
-				{ label: '业务类型', name: 'TYPE_CODE', width: 60,editable: true, editrules:{required:true},edittype: 'select',formatter:'select',formatoptions:{value:"${typeCodeStrAll}"},editoptions:{value:"${typeCodeStrSelect}"},stype: 'select',searchoptions:{value:"${typeCodeStrAll}"}},
-				{ label: '账套映射', name: 'MAPPING_CODE', width: 90,editable: true, editrules:{required:true},edittype: 'select',formatter:'select',formatoptions:{value:"${billOffStrAll}"},editoptions:{value:"${billOffStrSelect}"},stype: 'select',searchoptions:{value:"${billOffStrAll}"}},
+				{ label: '账套', name: 'BILL_OFF', width: 60,editable: true, editrules:{required:true}, edittype: 'select',formatter:'select',formatoptions:{value:"${billOffStrSelect}"},editoptions:{value:"${billOffStrSelect}"},stype: 'select',searchoptions:{value:"${billOffStrAll}"}},
+				{ label: '业务类型', name: 'TYPE_CODE', width: 60,editable: true, editrules:{required:true},edittype: 'select',formatter:'select',formatoptions:{value:"${typeCodeStrSelect}"},editoptions:{value:"${typeCodeStrSelect}"},stype: 'select',searchoptions:{value:"${typeCodeStrAll}"}},
+				{ label: '账套映射', name: 'MAPPING_CODE', width: 90,editable: true, editrules:{required:true},edittype: 'select',formatter:'select',formatoptions:{value:"${billOffStrSelect}"},editoptions:{value:"${billOffStrSelect}"},stype: 'select',searchoptions:{value:"${billOffStrAll}"}},
 				{ label: 'FMIS数据表', name: 'FMIS_TABLE', width: 80, editable: true,edittype:'text', editoptions:{maxLength:'50'}}    
 			],
 			reloadAfterSubmit: true, 

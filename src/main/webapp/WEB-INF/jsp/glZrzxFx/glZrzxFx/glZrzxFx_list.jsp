@@ -209,9 +209,9 @@
 				{ label: '责任中心',name:'DEPT_CODE__', width:90,hidden : true,editable: true},
 				{ label: '分线', name: 'LINE_NO__', width: 60,hidden : true,editable: true,},
 
-				{ label: '账套', name: 'BILL_OFF', width: 60,editable: true,edittype: 'select',formatter:'select',formatoptions:{value:"${billOffStrAll}"},editoptions:{value:"${billOffStrSelect}"},stype: 'select',searchoptions:{value:"${billOffStrAll}"}},
-				{ label: '责任中心', name: 'DEPT_CODE', width: 90,editable: true,edittype: 'select',formatter:'select',formatoptions:{value:"${departmentStrAll}"},editoptions:{value:"${departmentStrSelect}"},stype: 'select',searchoptions:{value:"${departmentStrAll}"}},
-				{ label: '分线', name: 'LINE_NO', width: 60,editable: true,edittype: 'select',formatter:'select',formatoptions:{value:"${lineNoStrAll}"},editoptions:{value:"${lineNoStrSelect}"},stype: 'select',searchoptions:{value:"${lineNoStrAll}"}},
+				{ label: '账套', name: 'BILL_OFF', width: 60,editable: true,edittype: 'select',formatter:'select',formatoptions:{value:"${billOffStrSelect}"},editoptions:{value:"${billOffStrSelect}"},stype: 'select',searchoptions:{value:"${billOffStrAll}"}},
+				{ label: '责任中心', name: 'DEPT_CODE', width: 90,editable: true,edittype: 'select',formatter:'select',formatoptions:{value:"${departmentStrSelect}"},editoptions:{value:"${departmentStrSelect}"},stype: 'select',searchoptions:{value:"${departmentStrAll}"}},
+				{ label: '分线', name: 'LINE_NO', width: 60,editable: true,edittype: 'select',formatter:'select',formatoptions:{value:"${lineNoStrSelect}"},editoptions:{value:"${lineNoStrSelect}"},stype: 'select',searchoptions:{value:"${lineNoStrAll}"}},
 				{ label: '状态', name: 'STATE', width: 80, editable: true,align:'center',formatter: customFmatterState,edittype:"checkbox",editoptions: {value:"0:1"},unformat: aceSwitch,search:false}                   
 			],
 			reloadAfterSubmit: true, 

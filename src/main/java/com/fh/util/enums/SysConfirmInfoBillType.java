@@ -50,7 +50,7 @@ public enum SysConfirmInfoBillType {
      * @return String 
      */  
     public static String getValueByKey(String key) {  
-    	BillType[] enums = BillType.values();  
+    	SysConfirmInfoBillType[] enums = SysConfirmInfoBillType.values();  
         for (int i = 0; i < enums.length; i++) {  
             if (enums[i].getNameKey().equals(key)) {  
                 return enums[i].getNameValue();  

@@ -45,7 +45,7 @@
 						<span class="label label-xlg label-success arrowed-right">人工成本</span>
 						<!-- arrowed-in-right --> 
 						<span class="label label-xlg label-yellow arrowed-in arrowed-right"
-							id="subTitle" style="margin-left: 2px;">汇总单据确认</span> 
+							id="subTitle" style="margin-left: 2px;">凭证单据确认</span> 
                         <span style="border-left: 1px solid #e2e2e2; margin: 0px 10px;">&nbsp;</span>
 								
 						<button id="btnQuery" class="btn btn-white btn-info btn-sm"

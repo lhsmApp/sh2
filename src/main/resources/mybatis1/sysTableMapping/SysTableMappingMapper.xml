@@ -11,6 +11,7 @@
 业务类型	TYPE_CODE	"业务类型 1工会经费、教育经费凭证 2党费凭证3社保互推凭证4公积金互推凭证5个缴凭证6应付劳务费凭证7企业年金提取凭证8补充医疗提取凭证9企业年金发放凭证10评估调整凭证"	' '	VARCHAR(20)	20		TRUE	FALSE	TRUE
 业务期间	BUSI_DATE	业务期间	‘ ’	VARCHAR(8)	8		TRUE	FALSE	TRUE
 业务表	TABLE_NAME	业务表	' '	VARCHAR(30)	30		TRUE	FALSE	TRUE
+//业务表类型 TABLE_TYPE   ‘’ CHAR(1)	1		FALSE	FALSE	TRUE
 映射业务表	TABLE_NAME_MAPPING	映射业务表	' '	VARCHAR(30)	30		FALSE	FALSE	TRUE
 状态	STATE	"状态1封存,0解封"	' '	CHAR(1)	1		FALSE	FALSE	TRUE
 账套	BILL_OFF		‘ ’	VARCHAR(6)	6		TRUE	FALSE	TRUE -->
@@ -20,6 +21,7 @@
 		TYPE_CODE,
 		BUSI_DATE,
 		TABLE_NAME,
+		<!-- TABLE_TYPE, -->
 		TABLE_NAME_MAPPING,
 		STATE,
 		BILL_OFF
@@ -28,6 +30,7 @@
 		,TYPE_CODE TYPE_CODE__,
 		BUSI_DATE BUSI_DATE__,
 		TABLE_NAME TABLE_NAME__,
+		<!-- TABLE_TYPE TABLE_TYPE__, -->
 		TABLE_NAME_MAPPING TABLE_NAME_MAPPING__,
 		STATE STATE__,
 		BILL_OFF BILL_OFF__
@@ -38,6 +41,7 @@
 		#{TYPE_CODE},
 		#{BUSI_DATE},
 		#{TABLE_NAME},
+		<!-- #{TABLE_TYPE}, -->
 		#{TABLE_NAME_MAPPING},
 		#{STATE},
 		#{BILL_OFF}
@@ -46,18 +50,11 @@
 		#{item.TYPE_CODE},
 		#{item.BUSI_DATE},
 		#{item.TABLE_NAME},
+		<!-- #{item.TABLE_TYPE}, -->
 		#{item.TABLE_NAME_MAPPING},
 		#{item.STATE},
 		#{item.BILL_OFF}
 	</sql>
-	
-	<!-- 获取映射的表名 -->
-	<select id="getTableNameList" parameterType="pd" resultType="String">
-		select TABLE_NAME
-		from TB_TABLE_NAME_MAPPING
-		where STATE = '1'
-		order by TABLE_NAME
-	</select>
 
 	<!-- 列表 -->
 	<select id="datalistJqPage" parameterType="jqPage" resultType="pd">
@@ -100,9 +97,9 @@
         <where>
 		<foreach item="item" index="index" collection="list" open=" " separator=" or " close=" ">
             ((TYPE_CODE = #{item.TYPE_CODE} and BUSI_DATE = #{item.BUSI_DATE} and BILL_OFF = #{item.BILL_OFF}
-              and TABLE_NAME = #{item.TABLE_NAME} and TABLE_NAME_MAPPING = #{item.TABLE_NAME_MAPPING})
+              <!-- and TABLE_NAME = #{item.TABLE_NAME} --> and TABLE_NAME_MAPPING = #{item.TABLE_NAME_MAPPING})
              and (TYPE_CODE != #{item.TYPE_CODE__} or BUSI_DATE != #{item.BUSI_DATE__} or BILL_OFF != #{item.BILL_OFF__}
-                  or TABLE_NAME != #{item.TABLE_NAME__} or TABLE_NAME_MAPPING != #{item.TABLE_NAME_MAPPING__}))
+                  <!-- or TABLE_NAME != #{item.TABLE_NAME__} --> or TABLE_NAME_MAPPING != #{item.TABLE_NAME_MAPPING__}))
 		</foreach>
 		</where>
 	</select>
@@ -114,7 +111,7 @@
 		<foreach item="item" index="index" collection="list" open=" (" separator=" or " close=") ">
 		    TYPE_CODE = #{item.TYPE_CODE__}
 		    and BUSI_DATE = #{item.BUSI_DATE__}
-		    and TABLE_NAME = #{item.TABLE_NAME__}
+		    <!-- and TABLE_NAME = #{item.TABLE_NAME__} -->
 		    and TABLE_NAME_MAPPING = #{item.TABLE_NAME_MAPPING__}
 		    and BILL_OFF = #{item.BILL_OFF__}
 		</foreach>;
@@ -152,6 +149,7 @@
 		TYPE_CODE = #{TYPE_CODE},
 		BUSI_DATE = #{BUSI_DATE},
 		TABLE_NAME = #{TABLE_NAME},
+		<!-- TABLE_TYPE = #{TABLE_TYPE}, -->
 		TABLE_NAME_MAPPING = #{TABLE_NAME_MAPPING},
 		STATE = #{STATE},
 		BILL_OFF = #{BILL_OFF}

@@ -37,7 +37,7 @@
 	<sql id="FieldSelectKey">
 		,TYPE_CODE TYPE_CODE__, BILL_OFF BILL_OFF__, BUSI_DATE BUSI_DATE__, 
 		TABLE_NAME TABLE_NAME__, TABLE_NAME_MAPPING TABLE_NAME_MAPPING__, 
-		COL_CODE COL_CODE__
+		COL_MAPPING_CODE COL_MAPPING_CODE__
 	</sql>
 
 	<!-- 字段值 -->
@@ -63,7 +63,7 @@
 		<include refid="tableName"></include>
 		where BUSI_DATE = '${pd.SelectedBusiDate}'
 		and TYPE_CODE = #{pd.SelectedTypeCode}
-        and UPPER(TABLE_NAME) = UPPER(#{pd.SelectedTableNameTranfer})
+        <!-- and UPPER(TABLE_NAME) = UPPER(#{pd.SelectedTableNameTranfer}) -->
         and UPPER(TABLE_NAME_MAPPING) = UPPER(#{pd.SelectedStruMappingTableName})
         and BILL_OFF = #{pd.SelectedCustCol7}
 		<if test="sidx != null and sidx.trim() != ''" >
@@ -78,7 +78,7 @@
 		from <include refid="tableName"></include> 
 		where BUSI_DATE = '${pd.SelectedBusiDate}'
 		and TYPE_CODE = #{pd.SelectedTypeCode}
-        and UPPER(TABLE_NAME) = UPPER(#{pd.SelectedTableNameTranfer})
+        <!-- and UPPER(TABLE_NAME) = UPPER(#{pd.SelectedTableNameTranfer}) -->
         and UPPER(TABLE_NAME_MAPPING) = UPPER(#{pd.SelectedStruMappingTableName})
         and BILL_OFF = #{pd.SelectedCustCol7}
 	</select>
@@ -93,11 +93,14 @@
 		    TYPE_CODE = #{item.TYPE_CODE__} 
 		    and BILL_OFF = #{item.BILL_OFF__}
 		    and BUSI_DATE = #{item.BUSI_DATE__}
+		    and TABLE_NAME_MAPPING = #{item.TABLE_NAME_MAPPING__}
 		</foreach>;
 		
 		<foreach item="item" index="index" collection="list" open=" " separator=" " close=" ">
-		    insert into <include refid="tableName"></include>
-		    (<include refid="Field"></include>) values (<include refid="FieldValueItem"></include>);
+		    <if test="item.BILL_STATE != null and item.BILL_STATE != '0'" >  
+		        insert into <include refid="tableName"></include>
+		        (<include refid="Field"></include>) values (<include refid="FieldValueItem"></include>);
+            </if>
 		</foreach>
 	</update>
 
@@ -110,12 +113,15 @@
 		    TYPE_CODE = #{item.TYPE_CODE__} 
 		    and BILL_OFF = #{item.BILL_OFF__}
 		    and BUSI_DATE = #{item.BUSI_DATE__}
-		    and COL_CODE = #{COL_CODE__}
+		    and TABLE_NAME_MAPPING = #{item.TABLE_NAME_MAPPING__}
+		    and COL_MAPPING_CODE = #{item.COL_MAPPING_CODE__}
 		</foreach>;
 		
 		<foreach item="item" index="index" collection="list" open=" " separator=" " close=" ">
-		    insert into <include refid="tableName"></include>
-		    (<include refid="Field"></include>) values (<include refid="FieldValueItem"></include>);
+		    <if test="item.BILL_STATE != null and item.BILL_STATE != '0'" >  
+		        insert into <include refid="tableName"></include>
+		        (<include refid="Field"></include>) values (<include refid="FieldValueItem"></include>);
+            </if>
 		</foreach>
 	</update>
 		
@@ -130,7 +136,7 @@
 		    TYPE_CODE = #{TYPE_CODE__} 
 		    and BILL_OFF = #{BILL_OFF__}
 		    and BUSI_DATE = #{BUSI_DATE__}
-		    and COL_CODE = #{COL_CODE__} -->
+		    and COL_MAPPING_CODE = #{COL_MAPPING_CODE__} -->
 
 	<!-- 张晓柳 -->
 	<select id="getShowStruList" parameterType="com.fh.entity.SysStruMapping" resultType="com.fh.entity.SysStruMapping">
@@ -139,7 +145,7 @@
 		from
 		<include refid="tableName"></include>
 		where TYPE_CODE = #{TYPE_CODE}
-        and UPPER(TABLE_NAME) = UPPER(#{TABLE_NAME})
+        <!-- and UPPER(TABLE_NAME) = UPPER(#{TABLE_NAME}) -->
         and UPPER(TABLE_NAME_MAPPING) = UPPER(#{TABLE_NAME_MAPPING})
         and BILL_OFF = #{BILL_OFF}
         and BUSI_DATE = #{BUSI_DATE}

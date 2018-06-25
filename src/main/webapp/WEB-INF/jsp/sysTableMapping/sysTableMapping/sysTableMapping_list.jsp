@@ -46,7 +46,7 @@
 						<span class="label label-xlg label-success arrowed-right">东部管道</span>
 						<!-- arrowed-in-right -->
 									<span class="label label-xlg label-yellow arrowed-in arrowed-right"
-									    id="subTitle" style="margin-left: 2px;">社保数据导入</span> 
+									    id="subTitle" style="margin-left: 2px;">凭证数据表定义</span> 
                                     <span style="border-left: 1px solid #e2e2e2; margin: 0px 10px;">&nbsp;</span>
 								
 									<button id="btnQuery" class="btn btn-white btn-info btn-sm"
@@ -182,12 +182,13 @@
 				    { label: '状态', name: 'STATE__', width: 60,hidden : true,editable: true,},
 				    { label: '帐套', name: 'BILL_OFF__', width: 60,hidden : true,editable: true,},
 				    
-				    { label: '业务期间', name: 'BUSI_DATE', width: 90,hidden : true,editable: true},
-				    { label: '映射业务表', name: 'TABLE_NAME_MAPPING', width: 90,hidden : true,editable: true},
-				    { label: '业务类型',name:'TYPE_CODE', width:90,editable: true, editrules:{required:true},edittype: 'select',formatter:'select',formatoptions:{value:"${typeCodeStrAll}"},editoptions:{value:"${typeCodeStrSelect}"},stype: 'select',searchoptions:{value:"${typeCodeStrAll}"}}, 
-				    { label: '业务表', name: 'TABLE_NAME', width: 80,editable: true, editrules:{required:true},edittype: 'select',formatter:'select',formatoptions:{value:"${tableNameStrAll}"},editoptions:{value:"${tableNameStrSelect}"},stype: 'select',searchoptions:{value:"${tableNameStrAll}"}},
-				    { label: '帐套', name: 'BILL_OFF', width: 80,editable: true, editrules:{required:true},edittype: 'select',formatter:'select',formatoptions:{value:"${billOffStrAll}"},editoptions:{value:"${billOffStrSelect}"},stype: 'select',searchoptions:{value:"${billOffStrAll}"}},
-					{ label: '状态', name: 'STATE', width: 80, editable: true,align:'center',edittype:"checkbox",editoptions: {value:"1:0"},unformat: aceSwitch,formatter: customFmatterState}
+				    { label: '业务期间', name: 'BUSI_DATE', width: 90,editable: false},
+				    { label: '映射业务表', name: 'TABLE_NAME_MAPPING', width: 160,editable: false},
+				    { label: '帐套', name: 'BILL_OFF', width: 140,editable: true, editrules:{required:true},edittype: 'select',formatter:'select',formatoptions:{value:"${billOffStrSelect}"},editoptions:{value:"${billOffStrSelect}"},stype: 'select',searchoptions:{value:"${billOffStrAll}"}},
+				    { label: '业务类型',name:'TYPE_CODE', width:160,editable: true, editrules:{required:true},edittype: 'select',formatter:'select',formatoptions:{value:"${typeCodeStrSelect}"},editoptions:{value:"${typeCodeStrSelect}"},stype: 'select',searchoptions:{value:"${typeCodeStrAll}"}}, 
+				    { label: '业务表', name: 'TABLE_NAME', width: 160,editable: true, editrules:{required:true}},
+				    //{ label: '业务表类型', name: 'TABLE_TYPE', width: 140,editable: true, editrules:{required:true},edittype: 'select',formatter:'select',formatoptions:{value:"${tableTypeStrSelect}"},editoptions:{value:"${tableTypeSelect}"},stype: 'select',searchoptions:{value:"${tableTypeStrAll}"}},
+					{ label: '状态', name: 'STATE', width: 60, editable: true,align:'center',edittype:"checkbox",editoptions: {value:"1:0"},unformat: aceSwitch,formatter: customFmatterState}
 				],
     			reloadAfterSubmit: true, 
     			viewrecords: true, 

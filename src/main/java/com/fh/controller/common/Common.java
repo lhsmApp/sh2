@@ -461,6 +461,15 @@ public class Common {
 		}
 		return bol;
 	}
+	
+	public static Boolean IsNumHavePointFeild(String Data_type){
+		Boolean bol = false;
+		if(Data_type.trim().equals("DECIMAL") || Data_type.trim().equals("DOUBLE")
+		    || Data_type.trim().equals("FLOAT")){
+				bol = true;
+		}
+		return bol;
+	}
 
 	public static String getSumFeildSelect(List<String> GroupbyFeild, List<TableColumns> tableDetailColumns, String keyExtra){
 		String SelectFeild = "";

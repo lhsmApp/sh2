@@ -1,7 +1,6 @@
 package com.fh.service.sysConfirmInfo.sysConfirmInfo;
 
 import java.util.List;
-import java.util.Map;
 
 import com.fh.entity.JqPage;
 import com.fh.entity.SysConfirmInfo;
@@ -74,6 +73,12 @@ public interface SysConfirmInfoManager{
 	 * @throws Exception
 	 */
 	public void batchCancelConfirm(List<SysConfirmInfo> listData)throws Exception;
+
+	/**
+	 * @param pd
+	 * @throws Exception
+	 */
+	public List<SysConfirmInfo> getConfirmMappingList(PageData mapping)throws Exception;
 	
 	
 	

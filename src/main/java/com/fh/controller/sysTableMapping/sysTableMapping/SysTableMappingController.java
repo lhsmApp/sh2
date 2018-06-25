@@ -27,6 +27,7 @@ import com.fh.service.sysTableMapping.sysTableMapping.SysTableMappingManager;
 import com.fh.util.Jurisdiction;
 import com.fh.util.PageData;
 import com.fh.util.SqlTools;
+//import com.fh.util.enums.SysTableMapTableType;
 
 import net.sf.json.JSONArray;
 
@@ -92,19 +93,22 @@ public class SysTableMappingController extends BaseController {
 		mv.addObject("billOffStrAll", billOffStringAll);
 		mv.addObject("billOffStrSelect", billOffStringSelect);
 		
-		List<String> listTableName = sysTableMappingService.getTableNameList(new PageData());
-		String tableNameValus = "";
-		for (String tn : listTableName) {
-			if (tableNameValus != null && !tableNameValus.toString().trim().equals("")) {
-				tableNameValus += ";";
-			}
-			tableNameValus += tn + ":" + tn;
-		}
-		String tableNameStringAll = ":[All];" + tableNameValus;
-		String tableNameStringSelect = ":;" + tableNameValus;
-		mv.addObject("tableNameStrAll", tableNameStringAll);
-		mv.addObject("tableNameStrSelect", tableNameStringSelect);
-
+		/*//TABLE_TYPE 业务表类型
+		String tableTypeValus = "";
+		SysTableMapTableType[] enums = SysTableMapTableType.values();  
+    	if(enums!=null){
+            for (int i = 0; i < enums.length; i++) {  
+    			if (tableTypeValus != null && !tableTypeValus.toString().trim().equals("")) {
+    				tableTypeValus += ";";
+    			}
+    			tableTypeValus += enums[i].getNameKey() + ":" + enums[i].getNameValue();
+            }  
+    	}
+		String tableTypeStringAll = ":[All];" + tableTypeValus;
+		String tableTypeStringSelect = ":;" + tableTypeValus;
+		mv.addObject("tableTypeStrAll", tableTypeStringAll);
+		mv.addObject("tableTypeStrSelect", tableTypeStringSelect);*/
+		
 		mv.addObject("pd", getPd);
 		return mv;
 	}
@@ -219,15 +223,20 @@ public class SysTableMappingController extends BaseController {
 		String json = DATA_ROWS.toString();  
         JSONArray array = JSONArray.fromObject(json);  
         List<PageData> listData = (List<PageData>) JSONArray.toCollection(array,PageData.class);
-        
-		String checkState = CheckState(listData);
-		if(checkState!=null && !checkState.trim().equals("")){
-			commonBase.setCode(2);
-			commonBase.setMessage(checkState);
-			return commonBase;
-		}
 
 		if(null != listData && listData.size() > 0){
+			for(PageData pdData : listData){
+				for(String strFeild : MustNotEditList){
+					pdData.put(strFeild, pdData.get(strFeild + TmplUtil.keyExtra));
+				}
+			}
+	        
+			String checkState = CheckState(listData);
+			if(checkState!=null && !checkState.trim().equals("")){
+				commonBase.setCode(2);
+				commonBase.setMessage(checkState);
+				return commonBase;
+			}
 		    sysTableMappingService.batchUpdateDatabase(listData);
 			commonBase.setCode(0);
 		}

@@ -338,7 +338,7 @@ public class FundsSummyQueryController extends BaseController {
 		//单位
 		//String DataDeptCode = getPd.getString("DataDeptCode");
 		
-		List<String> SumFieldDetail = getGroupSummyField(DataTypeCode, DataCustCol7, DeptCodeSumGroupField, DataBusiDate);
+		List<String> SumFieldDetail = getGroupSummyField(DataTypeCode, DataCustCol7, DataBusiDate, DeptCodeSumGroupField);
 
 		TmplVoucherUtil tmplVoucherUtil = new TmplVoucherUtil(sysTableMappingService, sysStruMappingService, tmplconfigService, 
 				tmplconfigdictService, dictionariesService, departmentService, userService, SumFieldDetail);
@@ -363,12 +363,12 @@ public class FundsSummyQueryController extends BaseController {
 		String DataCustCol7 = getPd.getString("DataCustCol7");
 		//凭证字典
 		String DataTypeCode = getPd.getString("DataTypeCode");
-		//单位
-		//String DataDeptCode = getPd.getString("DataDeptCode");
 		//业务区间
 		String DataBusiDate = getPd.getString("DataBusiDate");
+		//单位
+		//String DataDeptCode = getPd.getString("DataDeptCode");
 		
-		List<String> SumFieldDetail = getGroupSummyField(DataTypeCode, DataCustCol7, DeptCodeSumGroupField, DataBusiDate);
+		List<String> SumFieldDetail = getGroupSummyField(DataTypeCode, DataCustCol7, DataBusiDate, DeptCodeSumGroupField);
 		String strBillCode = getPd.getString("DetailListBillCode");
 		
 		PageData pdCode = new PageData();
@@ -400,10 +400,10 @@ public class FundsSummyQueryController extends BaseController {
 		String DataCustCol7 = getPd.getString("DataCustCol7");
 		//凭证字典
 		String DataTypeCode = getPd.getString("DataTypeCode");
-		//单位
-		//String DataDeptCode = getPd.getString("DataDeptCode");
 		//业务区间
 		String DataBusiDate = getPd.getString("DataBusiDate");
+		//单位
+		//String DataDeptCode = getPd.getString("DataDeptCode");
 
 		TmplVoucherUtil tmplVoucherUtil = new TmplVoucherUtil(sysTableMappingService, sysStruMappingService, tmplconfigService, 
 				tmplconfigdictService, dictionariesService, departmentService, userService, null);
@@ -436,7 +436,7 @@ public class FundsSummyQueryController extends BaseController {
 		String TYPE_CODE = pdGet.getString("TYPE_CODE" + TmplUtil.keyExtra);
 		//业务区间
 		String BUSI_DATE = pdGet.getString("BUSI_DATE" + TmplUtil.keyExtra);
-		List<String> SumFieldDetail = getGroupDetailField(TYPE_CODE, CUST_COL7, DeptCodeSumGroupField);
+		List<String> SumFieldDetail = getGroupDetailField(TYPE_CODE, CUST_COL7, BUSI_DATE, DeptCodeSumGroupField);
 		List<String> listTransferSumFieldDetail = new ArrayList<String>();
 
 		PageData pdFieldDetail = new PageData();
@@ -517,9 +517,9 @@ public class FundsSummyQueryController extends BaseController {
 		return getPd;
 	}
 
-	private List<String> getGroupSummyField(String typeCode, String billOff, String deptCode, String busiDate) throws Exception{
+	private List<String> getGroupSummyField(String typeCode, String billOff, String busiDate, String deptCode) throws Exception{
 		List<String> SumFieldReturn = new ArrayList<String>();
-		List<String> SumFieldDetail = getGroupDetailField(typeCode, billOff, deptCode);
+		List<String> SumFieldDetail = getGroupDetailField(typeCode, billOff, busiDate, deptCode);
 
 		// 前端数据表格界面字段,动态取自SysStruMapping，根据当前单位编码及表名获取字段配置信息
 		List<SysStruMapping> getSysStruMappingList = SysStruMappingList.getSysStruMappingList(typeCode, TB_GEN_BUS_DETAIL, TB_GEN_SUMMY, busiDate, billOff, sysStruMappingService, true);
@@ -535,9 +535,9 @@ public class FundsSummyQueryController extends BaseController {
 		return SumFieldReturn;
 	}
 	
-	private List<String> getGroupDetailField(String typeCode, String billOff, String deptCode) throws Exception{
+	private List<String> getGroupDetailField(String typeCode, String billOff, String busiDate, String deptCode) throws Exception{
 		//List<String> SumFieldBill = Arrays.asList("BILL_CODE", "BUSI_DATE", "DEPT_CODE", "BILL_OFF");
-		List<CertParmConfig> getCertParmConfigList = getSelfCertParmConfig(typeCode, billOff, deptCode);
+		List<CertParmConfig> getCertParmConfigList = getSelfCertParmConfig(typeCode, billOff, busiDate, deptCode);
 		String strSumFieldDetail = "";
 		if(getCertParmConfigList!=null && getCertParmConfigList.size()>0){
 			strSumFieldDetail = getCertParmConfigList.get(0).getGROUP_COND();
@@ -548,10 +548,11 @@ public class FundsSummyQueryController extends BaseController {
 		return listSumFieldDetail;
 	}
 	
-	private List<CertParmConfig> getSelfCertParmConfig(String typeCode, String billOff, String deptCode) throws Exception{
+	private List<CertParmConfig> getSelfCertParmConfig(String typeCode, String billOff, String busiDate, String deptCode) throws Exception{
 		CertParmConfig certParmConfig = new CertParmConfig();
 		certParmConfig.setTYPE_CODE(typeCode);
 		certParmConfig.setBILL_OFF(billOff);
+		certParmConfig.setBUSI_DATE(busiDate);
 		certParmConfig.setDEPT_CODE(deptCode);
 		List<CertParmConfig> getCertParmConfigList = certParmConfigService.getSelfCertParmConfig(certParmConfig);
 		return getCertParmConfigList;

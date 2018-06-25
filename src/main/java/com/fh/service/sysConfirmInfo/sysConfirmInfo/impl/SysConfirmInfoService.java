@@ -1,7 +1,6 @@
 package com.fh.service.sysConfirmInfo.sysConfirmInfo.impl;
 
 import java.util.List;
-import java.util.Map;
 
 import javax.annotation.Resource;
 import org.springframework.stereotype.Service;
@@ -105,6 +104,15 @@ public class SysConfirmInfoService implements SysConfirmInfoManager{
 	 */
 	public void batchCancelConfirm(List<SysConfirmInfo> listData)throws Exception{
 		dao.update("SysConfirmInfoMapper.batchCancelConfirm", listData);
+	}
+	
+	/**
+	 * @param pd
+	 * @throws Exception
+	 */
+	@SuppressWarnings("unchecked")
+	public List<SysConfirmInfo> getConfirmMappingList(PageData pd)throws Exception{
+		return (List<SysConfirmInfo>)dao.findForList("SysConfirmInfoMapper.getConfirmMappingList", pd);
 	}
 }
 

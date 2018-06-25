@@ -43,43 +43,6 @@ public interface CertParmConfigManager{
 	 */
 	public void deleteAll(List<PageData> listData)throws Exception;
 	
-	
-	
-	
-	
-	
-
-	/**新增
-	 * @param pd
-	 * @throws Exception
-	 */
-	public void save(PageData pd)throws Exception;
-	
-	/**删除
-	 * @param pd
-	 * @throws Exception
-	 */
-	public void delete(PageData pd)throws Exception;
-	
-	/**修改
-	 * @param pd
-	 * @throws Exception
-	 */
-	public void edit(PageData pd)throws Exception;
-	
-	/**列表(全部)
-	 * @param pd
-	 * @throws Exception
-	 */
-	public List<PageData> listAll(PageData pd)throws Exception;
-	
-	/**通过id获取数据
-	 * @param pd
-	 * @throws Exception
-	 */
-	public PageData findById(PageData pd)throws Exception;
-
-	
 	/**
 	 * @param pd
 	 * @throws Exception

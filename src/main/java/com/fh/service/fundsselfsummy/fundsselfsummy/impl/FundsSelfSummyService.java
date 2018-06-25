@@ -89,6 +89,13 @@ public class FundsSelfSummyService implements FundsSelfSummyManager{
 		return (List<PageData>)dao.findForList("FundsSelfSummyMapper.getSaveList", str);
 	}
 
+	/**日志
+	 * @param page
+	 * @throws Exception
+	 */
+	public void batchSaveLog(Map<String, Object> map)throws Exception{
+		dao.update("FundsSelfSummyMapper.batchSaveLog", map);
+	}
 	/**汇总
 	 * @param page
 	 * @throws Exception

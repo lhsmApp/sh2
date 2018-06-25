@@ -29,6 +29,7 @@ public class QueryFeildString {
 		//工资范围SALARYRANGE:"SAL_RANGE"
 		//二级单位oa_department:"UNITS_CODE"
 		//组织单元文本字典ORGUNIT:"ORG_UNIT"
+		//变动列CHANGEVALUE:CHANGE_COL
 		String BUSI_DATE = "";
 		String DEPT_CODE = ""; 
 		String USER_CATG = "";
@@ -38,6 +39,7 @@ public class QueryFeildString {
 		String SAL_RANGE = "";
 		String UNITS_CODE = "";
 		String ORG_UNIT = "";
+		String CHANGE_COL = "";
 		
 		String TYPE_CODE = "";
 		String BILL_CODE = "";
@@ -78,6 +80,9 @@ public class QueryFeildString {
 			}
 			if(feildList.contains("BILL_STATE")){
 				BILL_STATE = pd.getString("BILL_STATE");
+			}
+			if(feildList.contains("CHANGE_COL")){
+				CHANGE_COL = pd.getString("CHANGE_COL");
 			}
 		}
 		String QueryFeild = "";
@@ -148,6 +153,12 @@ public class QueryFeildString {
 			String strIn = getSqlInString(BILL_STATE);
 			if(strIn!=null && !strIn.equals("")){
 				QueryFeild += " and BILL_STATE in (" + strIn + ") ";
+			}
+		}
+		if(CHANGE_COL!=null && !CHANGE_COL.trim().equals("")){
+			String strIn = getSqlInString(CHANGE_COL);
+			if(strIn!=null && !strIn.equals("")){
+				QueryFeild += " and CHANGE_COL in (" + strIn + ") ";
 			}
 		}
 		return QueryFeild;

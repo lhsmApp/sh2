@@ -41,7 +41,7 @@
 									class="label label-xlg label-success arrowed-right">东部管道</span>
 									<!-- arrowed-in-right --> <span
 									class="label label-xlg label-yellow arrowed-in arrowed-right"
-									id="subTitle" style="margin-left: 2px;">数据配置</span> <span
+									id="subTitle" style="margin-left: 2px;">凭证结构定义</span> <span
 									style="border-left: 1px solid #e2e2e2; margin: 0px 10px;">&nbsp;</span>
 
 									<button id="btnQuery" class="btn btn-white btn-info btn-sm"
@@ -151,7 +151,11 @@
 
 	<script type="text/javascript"> 
     var gridBase_selector = "#jqGridBase";  
-    var pagerBase_selector = "#jqGridBasePager";  
+    var pagerBase_selector = "#jqGridBasePager";
+    
+    //COL_CODE数据源
+    //var colCodeStrAll = "";
+    //var colCodeStrSelect = "";
 	
 	//页面显示的数据的查询信息，在tosearch()里赋值
 	var ShowDataTypeCode = "";
@@ -165,132 +169,6 @@
 		//当前期间,取自tb_system_config的SystemDateTime字段
 	    var SystemDateTime = '${SystemDateTime}';
 		$("#SelectedBusiDate").val(SystemDateTime);
-		
-		//resize to fit page size
-		$(window).on('resize.jqGrid', function () {
-			$(gridBase_selector).jqGrid( 'setGridWidth', $(".page-content").width());
-			//$(gridBase_selector).jqGrid( 'setGridHeight', $(window).height() - 230);
-			resizeGridHeight($(gridBase_selector));
-	    })
-		
-		$(gridBase_selector).jqGrid({
-			url: '<%=basePath%>sysStruMapping/getPageList.do?SelectedCustCol7='+ShowDataCustCol7
-                +'&SelectedTypeCode='+ShowDataTypeCode
-                +'&SelectedBusiDate='+ShowDataBusiDate
-                +'&SelectedStruMappingTableName='+ShowDataStruMappingTableName,  
-			datatype: "json",
-			colModel: [
-				//隐藏where条件
-				{ label: '业务类型', name: 'TYPE_CODE__', width: 60,hidden : true,editable: true,},
-				{ label: '帐套', name: 'BILL_OFF__', width: 60,hidden : true,editable: true,},
-				{ label: '业务期间', name: 'BUSI_DATE__', width: 60,hidden : true,editable: true,},
-				{ label: '业务表', name: 'TABLE_NAME__', width: 60,hidden : true,editable: true,},
-				{ label: '映射业务表', name: 'TABLE_NAME_MAPPING__', width: 60,hidden : true,editable: true,},
-				{ label: '列编码', name: 'COL_CODE__', width: 60,hidden : true,editable: true,},
-
-		        { label: '业务期间', name: 'BUSI_DATE', width: 60},
-				{ label: '业务类型',name:'TYPE_CODE', width:60,align:'center',edittype: 'select',formatter:'select',formatteroptions:{value:"${typeCodeStrAll}"},editoptions:{value:"${typeCodeStrSelect}"}},
-				{ label: '帐套', name: 'BILL_OFF', width: 80,align:'center',edittype: 'select',formatter:'select',formatteroptions:{value:"${billOffStrAll}"},editoptions:{value:"${billOffStrSelect}"}},
-				{ label: '业务表', name: 'TABLE_NAME', width: 60},
-				{ label: '映射业务表', name: 'TABLE_NAME_MAPPING', width: 60},
-				{ label: '列编码', name: 'COL_CODE', width: 60},
-				
-				{ label: '映射列编码',name:'COL_MAPPING_CODE', width:60}, 
-				{ label: '映射名称',name:'COL_MAPPING_NAME', width:60}, 
-				{ label: '业务表列值',name:'COL_VALUE', width:60}, 
-				{ label: '业务表列值',name:'COL_MAPPING_VALUE', width:60}, 
-				
-				{ label: '单位',name:'DNAME', width:100}, 
-				{ label: '表名', name: 'TABLE_NAME', width: 90},
-				{ label: '列编码', name: 'COL_CODE', width: 60},
-				{ label: '列名称', name: 'COL_NAME', width: 60,editable: true,},
-
-				{ label: '列位数', name: 'COL_DGT', width: 80,formatter: 'int', sorttype: 'number',editable: true,},
-				{ label: '列小数位数', name: 'DEC_PRECISION', width: 80,formatter: 'int', sorttype: 'number',editable: true,},
-				
-				{ label: '显示序号', name: 'DISP_ORDER', width: 80,formatter: 'int', sorttype: 'number',editable: true,},
-				{ label: '字典翻译', name: 'DICT_TRANS', width: 80,align:'center',editable: true,edittype: 'select',formatter:'select',formatteroptions:{value:"${dictString}"},editoptions:{value:"${dictString}"}},                  
-				{ label: '列显示', name: 'COL_HIDE', width: 80, editable: true,align:'center',edittype:"checkbox",editoptions: {value:"1:0"},unformat: aceSwitch,formatter: customFmatterState},                   
-				{ label: '列汇总', name: 'COL_SUM', width: 80, editable: true,align:'center',edittype:"checkbox",editoptions: {value:"1:0"},unformat: aceSwitch,formatter: customFmatterState},                   
-				{ label: '列平均值', name: 'COL_AVE', width: 80, editable: true,align:'center',edittype:"checkbox",editoptions: {value:"1:0"},unformat: aceSwitch,formatter: customFmatterState},
-				{ label: '是否传输', name: 'COL_TRANSFER', width: 80, editable: true,align:'center',edittype:"checkbox",editoptions: {value:"1:0"},unformat: aceSwitch,formatter: customFmatterState},
-				{ label: '列启用', name: 'COL_ENABLE', width: 80, editable: true,align:'center',edittype:"checkbox",editoptions: {value:"1:0"},unformat: aceSwitch,formatter: customFmatterState}
-			],
-			reloadAfterSubmit: true, 
-			//viewrecords: true, // show the current page, data rang and total records on the toolbar
-    	    shrinkToFit: false,
-			rowNum: 0,
-			altRows: true, //斑马条纹,
-			sortname: 'DISP_ORDER',
-			pager: pagerBase_selector,
-			pgbuttons: false,//上下按钮 
-			pginput:false,//输入框
-			
-			rownumbers: true, // show row numbers
-            rownumWidth: 35, // the width of the row numbers columns			
-	        ondblClickRow: doubleClickRow,//双击表格编辑
-	        editurl: '<%=basePath%>sysStruMapping/save.do',
-	        
-			loadComplete : function() {
-				var table = this;
-				setTimeout(function(){
-					styleCheckbox(table);
-					updateActionIcons(table);
-					updatePagerIcons(table);
-					enableTooltips(table);
-				}, 0);
-			},
-		});
-		
-		$(window).triggerHandler('resize.jqGrid');//trigger window resize to make the grid get the correct size
-	
-		//navButtons
-		jQuery(gridBase_selector).navGrid(pagerBase_selector,
-			{ 	//navbar options
-				edit: false,
-				editicon : 'ace-icon fa fa-pencil blue',
-				add: false,
-				addicon : 'ace-icon fa fa-plus-circle purple',
-				del: false,
-				delicon : 'ace-icon fa fa-trash-o red', 
-				search: false,
-				searchicon : 'ace-icon fa fa-search orange',
-				refresh: true,
-				refreshicon : 'ace-icon fa fa-refresh green',
-				view: false,
-				viewicon : 'ace-icon fa fa-search-plus grey',
-			}, { }, { }, { }, { }, { },{ }
-		);
-
-		// 批量编辑
-        $(gridBase_selector).navButtonAdd(pagerBase_selector,
-        {
-            buttonicon: "ace-icon fa fa-pencil-square-o purple",
-            title: "批量编辑",
-            caption: "",
-            position: "last",
-            onClickButton: batchEdit
-        });
-		
-     	// 取消批量编辑
-        $(gridBase_selector).navButtonAdd(pagerBase_selector,
-        {
-            buttonicon: "ace-icon fa fa-undo",
-            title: "取消批量编辑",
-            caption: "",
-            position: "last",
-            onClickButton: batchCancelEdit
-        });
-
-        //批量保存
-        $(gridBase_selector).navButtonAdd(pagerBase_selector,
-        {
-            buttonicon: "ace-icon fa fa-save green",
-            title: "批量保存",
-            caption: "",
-            position: "last",
-            onClickButton: batchSave
-        });
  	});
 	
     //双击编辑行
@@ -456,11 +334,11 @@
 	
 	//检索
 	function tosearch() {
-		ShowDataTypeCode = $("#SelectedTypeCode").val();
-		ShowDataCustCol7 = $("#SelectedCustCol7").val();
-		ShowDataBusiDate = $("#SelectedBusiDate").val(); 
-		ShowDataStruMappingTableName = $("#SelectedStruMappingTableName").val(); 
-		if(!(ShowDataCustCol7!=null && $.trim(ShowDataCustCol7)!="")){
+		var TypeCode = $("#SelectedTypeCode").val();
+		var CustCol7 = $("#SelectedCustCol7").val();
+		var BusiDate = $("#SelectedBusiDate").val(); 
+		var StruMappingTableName = $("#SelectedStruMappingTableName").val(); 
+		if(!(CustCol7!=null && $.trim(CustCol7)!="")){
 			$("#SelectedCustCol7").tips({
 				side:3,
 	            msg:'请选择帐套',
@@ -470,7 +348,7 @@
 			$("#SelectedCustCol7").focus();
 			return false;
 		}
-		if(!(ShowDataTypeCode!=null && $.trim(ShowDataTypeCode)!="")){
+		if(!(TypeCode!=null && $.trim(TypeCode)!="")){
 			$("#SelectedTypeCode").tips({
 				side:3,
 	            msg:'请选择凭证类型',
@@ -480,8 +358,8 @@
 			$("#SelectedTypeCode").focus();
 			return false;
 		}
-		if(!(ShowDataStruMappingTableName!=null && $.trim(ShowDataStruMappingTableName)!="")){
-			$("#ShowDataStruMappingTableName").tips({
+		if(!(StruMappingTableName!=null && $.trim(StruMappingTableName)!="")){
+			$("#SelectedStruMappingTableName").tips({
 				side:3,
 	            msg:'请选择对应表',
 	            bg:'#AE81FF',
@@ -490,7 +368,7 @@
 			$("#SelectedTypeCode").focus();
 			return false;
 		}
-		if(!(ShowDataBusiDate!=null && $.trim(ShowDataBusiDate)!="")){
+		if(!(BusiDate!=null && $.trim(BusiDate)!="")){
 			$("#SelectedBusiDate").tips({
 				side:3,
 	            msg:'请填写区间',
@@ -500,14 +378,179 @@
 			$("#SelectedBusiDate").focus();
 			return false;
 		}
-		$(gridBase_selector).jqGrid('setGridParam',{  // 重新加载数据
-			url:'<%=basePath%>sysStruMapping/getPageList.do?SelectedCustCol7='+ShowDataCustCol7
+		ShowDataTypeCode = $("#SelectedTypeCode").val();
+		ShowDataCustCol7 = $("#SelectedCustCol7").val();
+		ShowDataBusiDate = $("#SelectedBusiDate").val(); 
+		ShowDataStruMappingTableName = $("#SelectedStruMappingTableName").val(); 
+
+	    //COL_CODE数据源
+	    //colCodeStrAll = "";
+	    //colCodeStrSelect = "";
+		$(gridBase_selector).jqGrid('GridUnload'); 
+		SetStructure();
+		
+		//top.jzts();
+		//$.ajax({
+		//	type: "POST",
+		//	url: '<%=basePath%>sysStruMapping/getColCodeSource.do?SelectedCustCol7='+ShowDataCustCol7
+        //        +'&SelectedTypeCode='+ShowDataTypeCode
+       //         +'&SelectedBusiDate='+ShowDataBusiDate
+       //         +'&SelectedStruMappingTableName='+ShowDataStruMappingTableName,
+	   // 	dataType:'json',
+		//	cache: false,
+		//	success: function(response){
+		//		if(response.code==0){
+		//			$(top.hangge());//关闭加载状态
+		//		    //COL_CODE数据源
+		//		    var ColCodeSource = response.message;
+		//		    colCodeStrAll = ":[All];" + ColCodeSource;
+		//		    colCodeStrSelect = ":;" + ColCodeSource;
+		//			SetStructure();
+		//		}else{
+		//			$(top.hangge());//关闭加载状态
+		//			$("#subTitle").tips({
+		//				side:3,
+		//	            msg:'获取列数据源失败：'+response.message,
+		//	            bg:'#cc0033',
+		//	            time:3
+		//	        });
+		//		}
+		//	},
+	    //	error: function(response) {
+		//		$(top.hangge());//关闭加载状态
+		//		$("#subTitle").tips({
+		//			side:3,
+		//            msg:'获取列数据源出错：'+response.responseJSON.message,
+		//            bg:'#cc0033',
+		//            time:3
+		//        });
+	    //	}
+		//}); 
+	}  
+    
+    function SetStructure(){
+		//resize to fit page size
+		$(window).on('resize.jqGrid', function () {
+			$(gridBase_selector).jqGrid( 'setGridWidth', $(".page-content").width());
+			//$(gridBase_selector).jqGrid( 'setGridHeight', $(window).height() - 230);
+			resizeGridHeight($(gridBase_selector));
+	    })
+		
+		$(gridBase_selector).jqGrid({
+			url: '<%=basePath%>sysStruMapping/getPageList.do?SelectedCustCol7='+ShowDataCustCol7
                 +'&SelectedTypeCode='+ShowDataTypeCode
                 +'&SelectedBusiDate='+ShowDataBusiDate
                 +'&SelectedStruMappingTableName='+ShowDataStruMappingTableName,  
-			datatype:'json'
-		}).trigger("reloadGrid");
-	}  
+			datatype: "json",
+			colModel: [
+				//隐藏where条件
+				{ label: '列状态', name: 'BILL_STATE__', hidden : true,editable: true,},
+				{ label: '业务期间', name: 'BUSI_DATE__', hidden : true,editable: true,},
+				{ label: '业务类型', name: 'TYPE_CODE__', hidden : true,editable: true,},
+				{ label: '帐套', name: 'BILL_OFF__', hidden : true,editable: true,},
+				{ label: '业务表', name: 'TABLE_NAME__', hidden : true,editable: true,},
+				{ label: '映射业务表', name: 'TABLE_NAME_MAPPING__', hidden : true,editable: true,},
+				{ label: '映射列编码', name: 'COL_MAPPING_CODE__', hidden : true,editable: true,},
+
+				{ label: '列状态', name: 'BILL_STATE', width: 120,editable: false,edittype: 'select',formatter:'select',formatteroptions:{value:"${billStateStrAll}"},editoptions:{value:"${billStateStrSelect}"}},
+		        { label: '业务期间', name: 'BUSI_DATE', width: 90,editable: false},
+				{ label: '业务类型',name:'TYPE_CODE', width:120,editable: false,edittype: 'select',formatter:'select',formatteroptions:{value:"${typeCodeStrAll}"},editoptions:{value:"${typeCodeStrSelect}"}},
+				{ label: '帐套', name: 'BILL_OFF', width: 120,editable: false,edittype: 'select',formatter:'select',formatteroptions:{value:"${billOffStrAll}"},editoptions:{value:"${billOffStrSelect}"}},
+				{ label: '业务表', name: 'TABLE_NAME', width: 160,editable: false},
+				{ label: '映射业务表', name: 'TABLE_NAME_MAPPING', width: 160,editable: false},
+				
+				//{ label: '列编码', name: 'COL_CODE', width: 140,editable: true,edittype: 'select',formatter:'select',formatteroptions:{value:colCodeStrAll},editoptions:{value:colCodeStrSelect}},
+				{ label: '列编码', name: 'COL_CODE', width: 140,editable: true}, 
+				{ label: '映射列编码',name:'COL_MAPPING_CODE', width:140,editable: false}, 
+				{ label: '映射名称',name:'COL_MAPPING_NAME', width:140,editable: true}, 
+				{ label: '业务表列值',name:'COL_VALUE', width:140,editable: true}, 
+				{ label: '业务表条件',name:'COL_MAPPING_VALUE', width:140,editable: true}, 
+				{ label: '列位数', name: 'COL_DGT', width: 80,editable: true,formatter: 'int', sorttype: 'number'},
+				{ label: '列小数位数', name: 'DEC_PRECISION', width: 80,editable: true,formatter: 'int', sorttype: 'number'},
+				{ label: '显示序号', name: 'DISP_ORDER', width: 80,editable: true,formatter: 'int', sorttype: 'number'},
+				{ label: '字典翻译', name: 'DICT_TRANS', width: 160,editable: true,edittype: 'select',formatter:'select',formatteroptions:{value:"${dictStrAll}"},editoptions:{value:"${dictStrSelect}"}},                  
+				{ label: '列显示', name: 'COL_HIDE', width: 80,editable: true, align:'center',edittype:"checkbox",editoptions: {value:"1:0"},unformat: aceSwitch,formatter: customFmatterState},                   
+				{ label: '列汇总', name: 'COL_SUM', width: 80,editable: true, align:'center',edittype:"checkbox",editoptions: {value:"1:0"},unformat: aceSwitch,formatter: customFmatterState},                   
+				{ label: '列平均值', name: 'COL_AVE', width: 80,editable: true, align:'center',edittype:"checkbox",editoptions: {value:"1:0"},unformat: aceSwitch,formatter: customFmatterState},
+				{ label: '是否传输', name: 'COL_TRANSFER', width: 80, editable: true,align:'center',edittype:"checkbox",editoptions: {value:"1:0"},unformat: aceSwitch,formatter: customFmatterState},
+				{ label: '列启用', name: 'COL_ENABLE', width: 80, editable: true,align:'center',edittype:"checkbox",editoptions: {value:"1:0"},unformat: aceSwitch,formatter: customFmatterState}
+			],
+			reloadAfterSubmit: true, 
+			//viewrecords: true, // show the current page, data rang and total records on the toolbar
+    	    shrinkToFit: false,
+			rowNum: 0,
+			altRows: true, //斑马条纹,
+			sortname: 'DISP_ORDER',
+			pager: pagerBase_selector,
+			pgbuttons: false,//上下按钮 
+			pginput:false,//输入框
+			
+			rownumbers: true, // show row numbers
+            rownumWidth: 35, // the width of the row numbers columns			
+	        ondblClickRow: doubleClickRow,//双击表格编辑
+	        editurl: '<%=basePath%>sysStruMapping/save.do',
+	        
+			loadComplete : function() {
+				var table = this;
+				setTimeout(function(){
+					styleCheckbox(table);
+					updateActionIcons(table);
+					updatePagerIcons(table);
+					enableTooltips(table);
+				}, 0);
+			},
+		});
+		
+		$(window).triggerHandler('resize.jqGrid');//trigger window resize to make the grid get the correct size
+	
+		//navButtons
+		jQuery(gridBase_selector).navGrid(pagerBase_selector,
+			{ 	//navbar options
+				edit: false,
+				editicon : 'ace-icon fa fa-pencil blue',
+				add: false,
+				addicon : 'ace-icon fa fa-plus-circle purple',
+				del: false,
+				delicon : 'ace-icon fa fa-trash-o red', 
+				search: false,
+				searchicon : 'ace-icon fa fa-search orange',
+				refresh: true,
+				refreshicon : 'ace-icon fa fa-refresh green',
+				view: false,
+				viewicon : 'ace-icon fa fa-search-plus grey',
+			}, { }, { }, { }, { }, { },{ }
+		);
+
+		// 批量编辑
+        $(gridBase_selector).navButtonAdd(pagerBase_selector,
+        {
+            buttonicon: "ace-icon fa fa-pencil-square-o purple",
+            title: "批量编辑",
+            caption: "",
+            position: "last",
+            onClickButton: batchEdit
+        });
+		
+     	// 取消批量编辑
+        $(gridBase_selector).navButtonAdd(pagerBase_selector,
+        {
+            buttonicon: "ace-icon fa fa-undo",
+            title: "取消批量编辑",
+            caption: "",
+            position: "last",
+            onClickButton: batchCancelEdit
+        });
+
+        //批量保存
+        $(gridBase_selector).navButtonAdd(pagerBase_selector,
+        {
+            buttonicon: "ace-icon fa fa-save green",
+            title: "批量保存",
+            caption: "",
+            position: "last",
+            onClickButton: batchSave
+        });
+    }
  	</script>
 </body>
 </html>

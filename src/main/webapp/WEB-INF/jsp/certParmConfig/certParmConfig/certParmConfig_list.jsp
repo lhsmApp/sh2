@@ -25,6 +25,18 @@
 <!-- 标准页面统一样式 -->
 <link rel="stylesheet" href="static/css/normal.css" />
 
+<style>
+
+ul{list-style-type:none;}
+
+li{border:solid 1px;width:100px;}
+
+.liShow{display:block;background:while;}
+
+.liHide{display:none;background:blue;}
+
+</style>
+
 </head>
 <body class="no-skin">
 	<div class="main-container" id="main-container">
@@ -37,25 +49,25 @@
 						<!-- arrowed-in-right -->
 						<span
 							class="label label-xlg label-yellow arrowed-in arrowed-right"
-							id="subTitle" style="margin-left: 2px;">组织机构分线关系 </span> <span
+							id="subTitle" style="margin-left: 2px;">凭证参数配置管理 </span> <span
 							style="border-left: 1px solid #e2e2e2; margin: 0px 10px;">&nbsp;</span>
 						<button id="btnQuery" class="btn btn-white btn-info btn-sm"
-							onclick="showQueryCondi($('#jqGrid'),null,true)">
-							<i class="ace-icon fa fa-chevron-down bigger-120 blue"></i> <span>显示查询</span>
+							onclick="showQueryCondi($('#jqGrid'))">
+							<i class="ace-icon fa fa-chevron-down bigger-120 blue"></i> <span>隐藏查询</span>
 						</button>
 					</div>
 					<!-- /.page-header -->
 
 					<div class="row">
 						<div class="col-xs-12">
-							<div class="widget-box" hidden>
+							<div class="widget-box">
 								<div class="widget-body">
 									<div class="widget-main">
 										<form class="form-inline">
-											<span style="margin-right: 5px;">
+											<span class="pull-left" style="margin-right: 5px;">
 												<select class="chosen-select form-control"
 													name="SelectedCustCol7" id="SelectedCustCol7"
-													data-placeholder="请选择帐套"
+													data-placeholder="请选择帐套" 
 													style="vertical-align: top; height:32px;width: 150px;">
 													<option value="">请选择帐套</option>
 													<c:forEach items="${FMISACC}" var="each">
@@ -64,7 +76,7 @@
 													</c:forEach>
 												</select>
 											</span>
-											<span class="pull-left" style="margin-right: 5px;"> 
+											<span style="margin-right: 5px;"> 
 												<select class="chosen-select form-control" 
 												    name="SelectedTypeCode" id="SelectedTypeCode" data-placeholder="请选择业务类型"
 													style="vertical-align: top; height: 32px; width: 150px;">
@@ -74,6 +86,11 @@
 																<c:if test="${pd.SelectedTypeCode==each.DICT_CODE}">selected</c:if>>${each.NAME}</option>
 														</c:forEach>
 												</select>
+											</span>
+											<span class="input-icon" style="margin-right: 5px;">
+												<input id="SelectedBusiDate" class="input-mask-date" type="text"
+												   placeholder="请输入业务区间"> 
+												<i class="ace-icon fa fa-calendar blue"></i>
 											</span>
 											<button type="button" class="btn btn-info btn-sm"
 												onclick="tosearch();">
@@ -128,21 +145,30 @@
 	<script type="text/javascript" src="static/js/common/jqgrid_style.js"></script>
 
 	<script type="text/javascript"> 
+    var grid_selector = "#jqGrid";  
+    var pager_selector = "#jqGridPager";  
+    
 	$(document).ready(function () { 
 		$(top.hangge());//关闭加载状态
+		//$('.input-mask-date').mask('999999');
+		//当前期间,取自tb_system_config的SystemDateTime字段
+	    var SystemDateTime = '${SystemDateTime}';
+		$("#SelectedBusiDate").val(SystemDateTime);
 		 
-		//resize to fit page size
 		$(window).on('resize.jqGrid', function () {
-			$("#jqGrid").jqGrid( 'setGridWidth', $(".page-content").width());
-			resizeGridHeight($("#jqGrid"),null,true);
+			$(grid_selector).jqGrid( 'setGridWidth', $(".page-content").width());
+			//$(gridBase_selector).jqGrid( 'setGridHeight', $(window).height() - 230);
+			resizeGridHeight($(grid_selector));
 	    })
 		
-		$("#jqGrid").jqGrid({
-			url: '<%=basePath%>certParmConfig/getPageList.do?SelectedCustCol7='+$("#SelectedCustCol7").val()
-            + '&SelectedTypeCode=' + $("#SelectedTypeCode").val(),
+		$(grid_selector).jqGrid({
+			url: '<%=basePath%>certParmConfig/getPageList.do?'
+					+ 'SelectedCustCol7='+$("#SelectedCustCol7").val()
+                    + '&SelectedTypeCode=' + $("#SelectedTypeCode").val()
+    	            + '&SelectedBusiDate='+$("#SelectedBusiDate").val(),
 			datatype: "json",
 			 colModel: [
-				{label: ' ',name:'myac',index:'', width:70, fixed:true, sortable:false, resize:false,
+				/*{label: ' ',name:'myac',index:'', width:70, fixed:true, sortable:false, resize:false,
 					formatter:'actions', 
 					formatoptions:{ 
 					 onEdit:function(rowid){
@@ -173,39 +199,62 @@
                         },
                         afterSave:function(rowid, res){
                         	$(".tooltip").remove();
-                        	/* $("#jqGrid").trigger("reloadGrid"); */
+                        	//$(grid_selector).trigger("reloadGrid"); 
                         	
                         },
 						keys:true,
 					    delbutton: false,//disable delete button
 					}
-				},
+				},*/
 
 				{ label: '账套',name:'BILL_OFF__', width:90,hidden : true,editable: true},
 				{ label: '业务类型', name: 'TYPE_CODE__', width: 60,hidden : true,editable: true,},
+			    { label: '业务期间', name: 'BUSI_DATE__', width: 60,hidden : true,editable: true},
 				{ label: '单位', name: 'DEPT_CODE__', width: 60,hidden : true,editable: true,},
 				{ label: '单位', name: 'DEPT_CODE', width: 60,hidden : true,editable: true,},
 
-				{ label: '账套', name: 'BILL_OFF', width: 60,editable: true,edittype: 'select',formatter:'select',formatoptions:{value:"${billOffStrAll}"},editoptions:{value:"${billOffStrSelect}"},stype: 'select',searchoptions:{value:"${billOffStrAll}"}},
-				{ label: '业务类型', name: 'TYPE_CODE', width: 60,editable: true,edittype: 'select',formatter:'select',formatoptions:{value:"${typeCodeStrAll}"},editoptions:{value:"${typeCodeStrSelect}"},stype: 'select',searchoptions:{value:"${typeCodeStrAll}"}},
-				{ label: '明细汇总字段', name: 'GROUP_COND', width: 100, editable: true,edittype:'text', editoptions:{maxLength:'200'}},
-				{ label: '总汇总字段', name: 'GROUP_COND1', width: 100, editable: true,edittype:'text', editoptions:{maxLength:'200'}}
+				{ label: '账套', name: 'BILL_OFF', width: 120,editable: true,edittype: 'select',formatter:'select',formatoptions:{value:"${billOffStrSelect}"},editoptions:{value:"${billOffStrSelect}"},stype: 'select',searchoptions:{value:"${billOffStrAll}"}},
+				{ label: '业务类型', name: 'TYPE_CODE', width: 120,editable: true,edittype: 'select',formatter:'select',formatoptions:{value:"${typeCodeStrSelect}"},editoptions:{value:"${typeCodeStrSelect}"},stype: 'select',searchoptions:{value:"${typeCodeStrAll}"}},
+				{ label: '业务期间', name: 'BUSI_DATE', width: 80,editable: false},
+				{ label: '明细汇总字段', name: 'GROUP_COND', width: 200, editable: true,edittype:'text', editoptions:{maxLength:'200'}},
+				{ label: '总汇总字段', name: 'GROUP_COND1', width: 200, editable: true,edittype:'text', editoptions:{maxLength:'200'}},
+				{ label: '确认类型', name: 'CUST_PARM1', width: 250, editable: true,edittype:'text', editoptions:{maxLength:'200'}},
+				//{ label: '确认类型', name: 'CUST_PARM1', width: 250, editable: true,edittype: 'select',formatter:'select',formatoptions:{value:"${custParma1StrSelect}"},editoptions:{value:"${custParma1StrSelect}", multiple:true, size:3},stype: 'select',searchoptions:{value:"${custParma1StrAll}"}},
+				/*{ label: '确认类型', name: 'CUST_PARM1', width: 250, editable: true,
+					edittype: 'custom',formatter:'select',
+					editoptions: {custom_element: custtomElem, custom_value:customValue},
+					formatoptions:{value: "1:在用; 2:空闲; 3:故障"}
+				},*/
+				
+				{ label: '启动确认类型', name: 'CUST_PARM1_DESC', width: 100, editable: true,edittype: 'select',formatter:'select',formatoptions:{value:"${custParma1DescStrSelect}"},editoptions:{value:"${custParma1DescStrSelect}"},stype: 'select',searchoptions:{value:"${custParma1DescStrAll}"}},
+
+				{ label: '查询条件', name: 'QUERY_COND', width: 100, editable: true,edittype:'text', editoptions:{maxLength:'200'}},
+				{ label: '自定义参数2', name: 'CUST_PARM2', width: 100, editable: true,edittype:'text', editoptions:{maxLength:'200'}},
+				{ label: '自定义参数2说明', name: 'CUST_PARM2_DESC', width: 100, editable: true,edittype:'text', editoptions:{maxLength:'200'}},
+				{ label: '自定义参数3', name: 'CUST_PARM3', width: 100, editable: true,edittype:'text', editoptions:{maxLength:'200'}},
+				{ label: '自定义参数3说明', name: 'CUST_PARM3_DESC', width: 100, editable: true,edittype:'text', editoptions:{maxLength:'200'}}
 			],
 			reloadAfterSubmit: true, 
 			viewrecords: true,
-			rowNum: 100,
-			rowList: [100,200,500],
+			shrinkToFit: false,
+			rowNum: 0,
+			//rowList: [100,200,500],
             multiSort: true,
 			sortname: 'BILL_OFF,TYPE_CODE',
-			pager: "#jqGridPager",
-			
 			altRows: true,
-			rownumbers: true, 
-            rownumWidth: 35,		
-			/* multiselect: true,
-	        multiboxonly: true, */
-	        editurl: '<%=basePath%>certParmConfig/save.do?SelectedCustCol7='+$("#SelectedCustCol7").val()
-            + '&SelectedTypeCode=' + $("#SelectedTypeCode").val(),
+			//rownumbers: true, 
+            //rownumWidth: 35,		
+            
+			multiselect: true,
+	        multiboxonly: true, 
+
+			ondblClickRow: doubleClickRow,
+			
+			pager: pager_selector,
+			pgbuttons: false, // 分页按钮是否显示 
+			pginput: false, // 是否允许输入分页页数 
+			
+	        editurl: '<%=basePath%>certParmConfig/save.do?',
 	        
 			loadComplete : function() {
 				var table = this;
@@ -221,9 +270,9 @@
 		$(window).triggerHandler('resize.jqGrid');//trigger window resize to make the grid get the correct size
 	
 		//navButtons
-		jQuery("#jqGrid").jqGrid('navGrid',"#jqGridPager",
+		jQuery(grid_selector).jqGrid('navGrid',pager_selector,
 			{ 	//navbar options
-				edit: false,
+				edit: true,
 				editicon : 'ace-icon fa fa-pencil blue',
 				add: true,
 				addicon : 'ace-icon fa fa-plus-circle purple',
@@ -258,7 +307,14 @@
 	            } , 
 	            afterSubmit: fn_addSubmit_extend
 	        },
-	        { },
+	        { 
+				//delete record form
+				recreateForm: true,
+				beforeShowForm : beforeDeleteCallback,
+				onClick : function(e) {
+					
+				}
+	        },
 	        {
 				//search form
 				recreateForm: true,
@@ -273,11 +329,11 @@
 	        {},{}
 		);
 		
-		$(gridBase_selector).navSeparatorAdd(pagerBase_selector, {
+	    $(grid_selector).navSeparatorAdd(pager_selector, {
 			sepclass : "ui-separator",
 			sepcontent: ""
 		});
-        $(gridBase_selector).navButtonAdd(pagerBase_selector, {
+        $(grid_selector).navButtonAdd(pager_selector, {
 			        id : "batchEdit",
                     buttonicon: "ace-icon fa fa-pencil-square-o purple",
                     title: "批量编辑",
@@ -286,7 +342,7 @@
                     onClickButton: batchEdit,
                     cursor : "pointer"
                 });
-        $(gridBase_selector).navButtonAdd(pagerBase_selector, {
+        $(grid_selector).navButtonAdd(pager_selector, {
         	        id : "batchCancelEdit",
                     buttonicon: "ace-icon fa fa-undo",
                     title: "取消批量编辑",
@@ -295,7 +351,7 @@
                     onClickButton: batchCancelEdit,
                     cursor : "pointer"
                 });
-        $(gridBase_selector).navButtonAdd(pagerBase_selector, {
+        $(grid_selector).navButtonAdd(pager_selector, {
         			id : "batchSave",
                      caption : "",
                      buttonicon : "ace-icon fa fa-save green",
@@ -304,7 +360,7 @@
                      title : "批量保存",
                      cursor : "pointer"
                  });
-        $(gridBase_selector).navButtonAdd(pagerBase_selector, {
+        $(grid_selector).navButtonAdd(pager_selector, {
         			id : "batchDelete",
                     caption : "",
                     buttonicon : "ace-icon fa fa-trash-o red",
@@ -313,24 +369,155 @@
                     title : "删除",
                     cursor : "pointer"
                 });
-        $(gridBase_selector).navSeparatorAdd(pagerBase_selector, {
+        $(grid_selector).navSeparatorAdd(pager_selector, {
         			sepclass : "ui-separator",
         			sepcontent: ""
         		});
  	});
 	
+ 	var nextState=1;
+ 	function change(obj){
+ 	 	var liArray=document.getElementsByTagName("LI");
+ 	 	var i=1;
+
+ 	 	var length=liArray.length;
+
+ 	 	switch(nextState){
+ 	 	    case 1:
+ 	 	 	    obj.innerHTML="当前选择↑";
+ 	 	 	    for(;i<length;i++){
+ 	 	 	 	    liArray[i].className="liShow";
+ 	 	 	    }
+ 	 	 	    nextState=0;
+ 	 	 	    break;
+ 	 	 	case 0:
+ 	 	 	    obj.innerHTML="当前选择↓";
+ 	 	 	    for(;i<length;i++){
+ 	 	 	        liArray[i].className="liHide";
+ 	 	 	    }
+ 	 	 	    nextState=1;
+ 	 	}
+ 	}
+	
+	function custtomElem(value, options) {   
+        //1:在用; 2:空闲; 3:故障
+		
+		
+		var el = "<span class='pull-left' style='margin-right: 5px;'> <div class='selectTree' id='selectTree' multiMode='true' allSelectable='false' noGroup='false'></div> <input id='SelectedDepartCode' type='hidden'></input> </span>";
+	    
+		
+        /*var el = $("<select></select>");  
+        el.append($("<option value='1'>在用</option>"));
+        el.append($("<option value='2'>空闲</option>"));
+        el.append($("<option value='3'>故障</option>"));*/
+        
+        
+        
+		/*var el = $("<ul id='myUl'></ul>");  
+		el.append($("<li class='liMenu' onclick='change(this);'>当前选择↓</li>"));
+
+		el.append($("<li value='1' class='liHide'><input type='checkbox'>在用</li>"));
+		el.append($("<li value='2' class='liHide'><input type='checkbox'>空闲</li>"));
+		el.append($("<li value='3' class='liHide'><input type='checkbox'>故障</li>"));*/
+        
+        /*if(value != null && value.length > 0) {  
+              var optvalues = value.split(',');   
+              if (optvalues.length > 0) {  
+                  for(var i=0;i<optvalues.length;i++) {  
+                      var optvalue = optvalues[i];   
+                      var optdisplay = optvalues[i];   
+                      var optel = $("<option value='"+optvalues[i]+"'>"+optvalues[i]+"</option>");   
+                      el.append(optel);   
+                  }  
+              }  
+        }*/
+        return el;   
+    }   
+           
+    function customValue(elem, operation, value) {   
+        if (operation === 'get') {   
+            return $(elem).val();   
+        } else if (operation === 'set') {  
+            $(elem).val(value);  
+        }  
+    }  
+	
+    //双击编辑行
+    var lastSelection;
+    function doubleClickRow(rowid,iRow,iCol,e){
+        var grid = $(grid_selector);
+        grid.restoreRow(lastSelection);
+        grid.editRow(rowid, {
+        	keys:true, //keys:true 这里按[enter]保存  
+            restoreAfterError: false,  
+        	oneditfunc: function(rowid){  
+                console.log(rowid);  
+            },  
+            successfunc: function(response){
+                console.log(response);  
+		        var responseJSON = JSON.parse(response.responseText);
+				if(responseJSON.code==0){
+					grid.trigger("reloadGrid");  
+					$(top.hangge());//关闭加载状态
+					$("#subTitle").tips({
+						side:3,
+			            msg:'保存成功',
+			            bg:'#009933',
+			            time:3
+			        });
+					lastSelection = rowid;
+					return [true,"",""];
+				}//else{
+		        //   grid.jqGrid('editRow',lastSelection);
+				//	$(top.hangge());//关闭加载状态
+				//	$("#subTitle").tips({
+				//		side:3,
+			    //        msg:'保存失败,'+response.responseJSON.message,
+			    //        bg:'#cc0033',
+			    //        time:3
+			    //    });
+				//}
+            },  
+            errorfunc: function(rowid, response){
+		        var responseJSON = JSON.parse(response.responseText);
+	            grid.jqGrid('editRow',lastSelection);
+				$(top.hangge());//关闭加载状态
+				if(response.statusText == "success"){
+					if(responseJSON.code != 0){
+				        grid.jqGrid('editRow',lastSelection);
+						$(top.hangge());//关闭加载状态
+						$("#subTitle").tips({
+							side:3,
+					        msg:'保存失败:'+responseJSON.message,
+					        bg:'#cc0033',
+					        time:3
+					    });
+					}
+				} else {
+					$("#subTitle").tips({
+						side:3,
+			            msg:'保存出错:'+responseJSON.message,
+			            bg:'#cc0033',
+			            time:3
+			        });
+				}
+            }  
+        });
+        lastSelection = rowid;
+    } 
+	
 	 //批量编辑
 	function batchEdit(e) {
-		var grid = $("#jqGrid");
+		var grid = $(grid_selector);
         var ids = grid.jqGrid('getDataIDs');
         for (var i = 0; i < ids.length; i++) {
             grid.jqGrid('editRow',ids[i]);
        	}
    	}
 	
-	//取消批量编辑
+   	//取消批量编辑
 	function batchCancelEdit(e) {
-		var grid = $("#jqGrid");
+		var grid = $(grid_selector);
         var ids = grid.jqGrid('getDataIDs');
         for (var i = 0; i < ids.length; i++) {
             grid.jqGrid('restoreRow',ids[i]);
@@ -340,26 +527,25 @@
 	//批量保存
 	function batchSave(e) {
 		var listData =new Array();
-		var ids = $("#jqGrid").jqGrid('getDataIDs');
+		var ids = $(grid_selector).jqGrid('getDataIDs');
 		console.log(ids);
 		//遍历访问这个集合  
 		var rowData;
 		$(ids).each(function (index, id){  
-            $("#jqGrid").saveRow(id, false, 'clientArray');
-             rowData = $("#jqGrid").getRowData(id);
+            $(grid_selector).saveRow(id, false, 'clientArray');
+             rowData = $(grid_selector).getRowData(id);
             listData.push(rowData);
 		});
 		top.jzts();
 		$.ajax({
 			type: "POST",
-			url: '<%=basePath%>certParmConfig/updateAll.do?SelectedCustCol7='+$("#SelectedCustCol7").val()
-            + '&SelectedTypeCode=' + $("#SelectedTypeCode").val(),
+			url: '<%=basePath%>certParmConfig/updateAll.do?',
 				data:{DataRows : JSON.stringify(listData)},
 				dataType : 'json',
 				cache : false,
 				success : function(response) {
 					if (response.code == 0) {
-						$("#jqGrid").trigger("reloadGrid");
+						$(grid_selector).trigger("reloadGrid");
 						$(top.hangge());//关闭加载状态
 						$("#subTitle").tips({
 							side : 3,
@@ -383,12 +569,10 @@
 			});
 		}
 
-    /**
-     * 批量删除
-     */
+    //批量删除
     function batchDelete(){
     	//获得选中的行ids的方法
-        var ids = $(gridBase_selector).getGridParam("selarrrow");  
+        var ids = $(grid_selector).getGridParam("selarrrow");  
  		
  		if(!(ids!=null&&ids.length>0)){
 			bootbox.dialog({
@@ -404,7 +588,7 @@
 					
 					//遍历访问这个集合  
 					$(ids).each(function (index, id){  
-			            var rowData = $(gridBase_selector).getRowData(id);
+			            var rowData = $(grid_selector).getRowData(id);
 			            listData.push(rowData);
 					});
 					
@@ -417,7 +601,7 @@
 						cache: false,
 						success: function(response){
 							if(response.code==0){
-								$(gridBase_selector).trigger("reloadGrid");  
+								$(grid_selector).trigger("reloadGrid");  
 								$(top.hangge());//关闭加载状态
 								$("#subTitle").tips({
 									side:3,
@@ -482,9 +666,11 @@
 	
 		//检索
 		function tosearch() {
-			$("#jqGrid").jqGrid('setGridParam',{  // 重新加载数据
-				url:'<%=basePath%>certParmConfig/getPageList.do?SelectedCustCol7='+$("#SelectedCustCol7").val()
-	            + '&SelectedTypeCode=' + $("#SelectedTypeCode").val(),
+			$(grid_selector).jqGrid('setGridParam',{  // 重新加载数据
+				url:'<%=basePath%>certParmConfig/getPageList.do?'
+					+ 'SelectedCustCol7='+$("#SelectedCustCol7").val()
+                    + '&SelectedTypeCode=' + $("#SelectedTypeCode").val()
+    	            + '&SelectedBusiDate='+$("#SelectedBusiDate").val(),
 								datatype : 'json'
 							}).trigger("reloadGrid");
 		}

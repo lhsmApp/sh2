@@ -200,4 +200,14 @@
 		    where BILL_CODE = #{item.BILL_CODE};
 		</foreach>
 	</update>
+
+	<!-- 张晓柳 -->
+	<select id="getConfirmMappingList" parameterType="pd" resultType="com.fh.entity.SysConfirmInfo">
+		select <include refid="Field"></include>
+		from <include refid="tableName"></include>
+		where STATE = '1'
+		and BILL_OFF = #{BILL_OFF}
+		and RPT_DUR = #{RPT_DUR}
+		and RPT_DEPT in (select MAPPING_CODE from tb_sys_dept_mapping where TYPE_CODE = #{TYPE_CODE} and BILL_OFF = #{BILL_OFF} and DEPT_CODE = #{DEPT_CODE})
+	</select>
 </mapper>

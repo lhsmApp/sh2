@@ -29,6 +29,7 @@ import com.fh.util.AppUtil;
 import com.fh.util.PageData;
 import com.fh.util.Jurisdiction;
 import com.fh.service.fhoa.department.DepartmentManager;
+import com.fh.service.sysChangevalueMapping.sysChangevalueMapping.SysChangevalueMappingManager;
 
 /**
  * 组织机构
@@ -45,6 +46,8 @@ public class DepartmentController extends BaseController {
 	String menuUrl = "department/list.do"; //菜单地址(权限用)
 	@Resource(name="departmentService")
 	private DepartmentManager departmentService;
+	@Resource(name="sysChangevalueMappingService")
+	private SysChangevalueMappingManager sysChangevalueMappingService;
 	
 	/**保存
 	 * @param
@@ -169,7 +172,15 @@ public class DepartmentController extends BaseController {
 		PageData pd = new PageData();
 		pd = this.getPageData();
 		try{
-			List<Department> allDepartmentList=departmentService.listAllDepartmentZTreeNewV("0");
+			List<Department> allDepartmentList=new ArrayList<Department>();
+			String zdy = pd.getString("zdy");
+			String local = pd.getString("local");
+			model.addAttribute("local", local);
+			if(zdy!=null && zdy.equals(local)){
+				allDepartmentList=sysChangevalueMappingService.listAllDeptContainsChangeCols("0", pd);
+			} else {
+				allDepartmentList=departmentService.listAllDepartmentZTreeNewV("0");
+			}
 			JSONArray arr = JSONArray.fromObject(allDepartmentList);
 			String json = arr.toString();
 			json = json.replaceAll("DEPARTMENT_CODE", "id").replaceAll("PARENT_CODE", "pId").replaceAll("NAME", "name");

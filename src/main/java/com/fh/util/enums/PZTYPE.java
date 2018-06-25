@@ -53,7 +53,7 @@ public enum PZTYPE {
      * @return String 
      */  
     public static String getValueByKey(String key) {  
-    	StaffDataType[] enums = StaffDataType.values();  
+    	PZTYPE[] enums = PZTYPE.values();  
         for (int i = 0; i < enums.length; i++) {  
             if (enums[i].getNameKey().equals(key)) {  
                 return enums[i].getNameValue();  

@@ -487,7 +487,10 @@
 		 var diag = new top.Dialog();
 		 diag.Drag = true;
 		 diag.Title = "复制";
-		 diag.URL = '<%=basePath%>department/listAllDepartmentCopy.do?TABLE_NO='+TABLE_NO+'&DEPARTMENT_CODE='+DEPARTMENT_CODE+'&RPT_DUR='+busiDate;
+		 diag.URL = '<%=basePath%>department/listAllDepartmentCopy.do?TABLE_NO='+TABLE_NO
+				 +'&DEPARTMENT_CODE='+DEPARTMENT_CODE
+				 +'&RPT_DUR='+busiDate
+				 +'&local=tmplconfig';
 		 diag.Width = 320;
 		 diag.Height = 450;
 		 diag.CancelEvent = function(){ //关闭事件

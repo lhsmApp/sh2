@@ -31,6 +31,12 @@ public interface DataInputManager{
 	 */
 	public List<PageData> getRepeatRecord(List<PageData> listData)throws Exception;
 
+	/**复制
+	 * @param pd
+	 * @throws Exception
+	 */
+	public List<PageData> getHaveCopyRecord(PageData pd)throws Exception;
+
 	/**更新数据库
 	 * @param pd
 	 * @throws Exception
@@ -47,6 +53,12 @@ public interface DataInputManager{
 	 * @throws Exception
 	 */
 	public void deleteAll(List<PageData> listData)throws Exception;
+	
+	/**复制
+	 * @param 
+	 * @throws Exception
+	 */
+	public void batchCopyAll(PageData pd)throws Exception;
 	
 }
 

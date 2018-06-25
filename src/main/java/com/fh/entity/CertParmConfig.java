@@ -5,6 +5,7 @@ public class CertParmConfig {
 	//Name	Code	Comment	Default Value	Data Type	Length	Precision	Primary	Foreign Key	Mandatory
 	//业务类型	TYPE_CODE	"业务类型"	' '	VARCHAR(20)	20		TRUE	FALSE	TRUE
 	//账套	BILL_OFF	账套	' '	VARCHAR(6)	6		FALSE	FALSE	TRUE
+	//   BUSI_DATE
 	//单位编码	DEPT_CODE	单位编码	' '	VARCHAR(10)	10		FALSE	FALSE	TRUE
 	//分组条件	GROUP_COND	分组条件	' '	VARCHAR(20)	20		FALSE	FALSE	TRUE
 	//分组条件	GROUP_COND1	分组条件	' '	VARCHAR(20)	20		FALSE	FALSE	TRUE
@@ -18,6 +19,7 @@ public class CertParmConfig {
 	
 	private String TYPE_CODE;
 	private String BILL_OFF;
+	private String BUSI_DATE;
 	private String DEPT_CODE;
 	private String GROUP_COND;
 	private String GROUP_COND1;
@@ -28,6 +30,12 @@ public class CertParmConfig {
 	private String CUST_PARM2_DESC;
 	private String CUST_PARM3;
 	private String CUST_PARM3_DESC;
+	public String getBUSI_DATE() {
+		return BUSI_DATE;
+	}
+	public void setBUSI_DATE(String bUSI_DATE) {
+		BUSI_DATE = bUSI_DATE;
+	}
 	public String getGROUP_COND1() {
 		return GROUP_COND1;
 	}

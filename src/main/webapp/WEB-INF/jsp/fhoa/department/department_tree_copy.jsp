@@ -61,6 +61,7 @@
 	<script type="text/javascript">
 		$(top.hangge());
 		var zTree;
+	    var local = '${local}';
 		$(document).ready(function(){
 			/* var setting = {
 			    showLine: true,
@@ -108,13 +109,25 @@
 			var DEPARTMENT_CODE_COPY = "${pd.DEPARTMENT_CODE}";
 			var TABLE_NO = "${pd.TABLE_NO}";
 			var RPT_DUR = "${pd.RPT_DUR}";
-			var url = "<%=basePath%>tmplconfig/copyAll.do?";
+
+			var SelectedBusiDate = "${pd.SelectedBusiDate}";
+			var SelectedCustCol7 = "${pd.SelectedCustCol7}";
+			var SelectedTypeCode = "${pd.SelectedTypeCode}";
+			var SelectedDepartCode = "${pd.SelectedDepartCode}";
+			
+			var url = "<%=basePath%>" + local + "/copyAll.do?";
 			var postData;
-			postData = {"RPT_DUR":RPT_DUR,"DEPARTMENT_CODE":DEPARTMENT_CODE,"TABLE_NO":TABLE_NO,"deptIds":JSON.stringify(listIds)};
+			postData = {"RPT_DUR":RPT_DUR,"DEPARTMENT_CODE":DEPARTMENT_CODE,"TABLE_NO":TABLE_NO,"deptIds":JSON.stringify(listIds),
+					"SelectedBusiDate":SelectedBusiDate,"SelectedCustCol7":SelectedCustCol7,"SelectedTypeCode":SelectedTypeCode,"SelectedDepartCode":SelectedDepartCode};
 			$("#zhongxin").hide();
 			$("#zhongxin2").show();
-			 $.post(url,postData,function(data){
-				top.Dialog.close();
+			$.post(url,postData,function(data){
+				if(data.code==0){
+					alert("复制成功");
+					top.Dialog.close();
+				} else {
+					alert("复制失败");
+				}
 			}); 
 		 }
 	

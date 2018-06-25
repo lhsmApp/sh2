@@ -84,7 +84,7 @@ public interface SysDeptMappingManager{
 	 * @param pd
 	 * @throws Exception
 	 */
-	public List<PageData> getNotConfirmMappingList(SysDeptMapping mapping)throws Exception;
+	public List<PageData> getConfirmMappingList(SysDeptMapping mapping)throws Exception;
 	
 	
 	

@@ -63,7 +63,7 @@ public enum TmplTypeTransfer {
      * @return String 
      */  
     public static String getValueByKey(String key) {  
-    	TmplType[] enums = TmplType.values();  
+    	TmplTypeTransfer[] enums = TmplTypeTransfer.values();  
         for (int i = 0; i < enums.length; i++) {  
             if (enums[i].getNameKey().equals(key)) {  
                 return enums[i].getNameValue();  

@@ -46,7 +46,7 @@
 						<!-- arrowed-in-right -->
 						<span
 							class="label label-xlg label-yellow arrowed-in arrowed-right"
-							id="subTitle" style="margin-left: 2px;">责任中心映射表  </span> <span
+							id="subTitle" style="margin-left: 2px;">凭证单位映射管理  </span> <span
 							style="border-left: 1px solid #e2e2e2; margin: 0px 10px;">&nbsp;</span>
 						<button id="btnQuery" class="btn btn-white btn-info btn-sm"
 							onclick="showQueryCondi($('#jqGrid'),null,true)">
@@ -165,10 +165,10 @@
 				{ label: '单位', name: 'DEPT_CODE__', width: 60,hidden : true,editable: true,},
 				{ label: '单位映射', name: 'MAPPING_CODE__', width: 60,hidden : true,editable: true,},
 
-				{ label: '账套', name: 'BILL_OFF', width: 60,editable: true, editrules:{required:true},edittype: 'select',formatter:'select',formatoptions:{value:"${billOffStrAll}"},editoptions:{value:"${billOffStrSelect}"},stype: 'select',searchoptions:{value:"${billOffStrAll}"}},
-				{ label: '业务类型', name: 'TYPE_CODE', width: 60,editable: true, editrules:{required:true},edittype: 'select',formatter:'select',formatoptions:{value:"${typeCodeStrAll}"},editoptions:{value:"${typeCodeStrSelect}"},stype: 'select',searchoptions:{value:"${typeCodeStrAll}"}},
-				{ label: '单位', name: 'DEPT_CODE', width: 90,editable: true, editrules:{required:true},edittype: 'select',formatter:'select',formatoptions:{value:"${departmentStrAll}"},editoptions:{value:"${departmentStrSelect}"},stype: 'select',searchoptions:{value:"${departmentStrAll}"}},
-				{ label: '单位映射', name: 'MAPPING_CODE', width: 90,editable: true, editrules:{required:true},edittype: 'select',formatter:'select',formatoptions:{value:"${departmentStrAll}"},editoptions:{value:"${departmentStrSelect}"},stype: 'select',searchoptions:{value:"${departmentStrAll}"}}
+				{ label: '账套', name: 'BILL_OFF', width: 60,editable: true, editrules:{required:true},edittype: 'select',formatter:'select',formatoptions:{value:"${billOffStrSelect}"},editoptions:{value:"${billOffStrSelect}"},stype: 'select',searchoptions:{value:"${billOffStrAll}"}},
+				{ label: '业务类型', name: 'TYPE_CODE', width: 60,editable: true, editrules:{required:true},edittype: 'select',formatter:'select',formatoptions:{value:"${typeCodeStrSelect}"},editoptions:{value:"${typeCodeStrSelect}"},stype: 'select',searchoptions:{value:"${typeCodeStrAll}"}},
+				{ label: '单位', name: 'DEPT_CODE', width: 90,editable: true, editrules:{required:true},edittype: 'select',formatter:'select',formatoptions:{value:"${departmentStrSelect}"},editoptions:{value:"${departmentStrSelect}"},stype: 'select',searchoptions:{value:"${departmentStrAll}"}},
+				{ label: '单位映射', name: 'MAPPING_CODE', width: 90,editable: true, editrules:{required:true},edittype: 'select',formatter:'select',formatoptions:{value:"${departmentStrSelect}"},editoptions:{value:"${departmentStrSelect}"},stype: 'select',searchoptions:{value:"${departmentStrAll}"}}
 			],
 			reloadAfterSubmit: true, 
 			viewrecords: true,

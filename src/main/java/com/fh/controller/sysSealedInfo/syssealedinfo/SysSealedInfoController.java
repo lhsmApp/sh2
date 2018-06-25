@@ -256,6 +256,7 @@ public class SysSealedInfoController extends BaseController {
 	 * @param
 	 * @throws Exception
 	 */
+	@SuppressWarnings("unchecked")
 	@RequestMapping(value = "/updateAll")
 	/* @RequestBody RequestBase<JqGridModel> jqGridModel */
 	public @ResponseBody CommonBase updateAll() throws Exception {

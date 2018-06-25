@@ -45,7 +45,7 @@
 						<span class="label label-xlg label-success arrowed-right">人工成本</span>
 						<!-- arrowed-in-right --> 
 						<span class="label label-xlg label-yellow arrowed-in arrowed-right"
-							id="subTitle" style="margin-left: 2px;">单据汇总</span> 
+							id="subTitle" style="margin-left: 2px;">凭证单据汇总</span> 
                         <span style="border-left: 1px solid #e2e2e2; margin: 0px 10px;">&nbsp;</span>
 								
 						<button id="btnQuery" class="btn btn-white btn-info btn-sm"
@@ -379,12 +379,14 @@
     	console.log(DEPT_CODE);
     	var BILL_CODE = rowData.BILL_CODE__;
     	console.log(BILL_CODE);
+    	var BUSI_DATE = rowData.BUSI_DATE__;
+    	console.log(BUSI_DATE);
     	
         var detailColModel = "[]";
 		$.ajax({
 			type: "GET",
 			url: '<%=basePath%>fundsselfsummy/getFirstDetailColModel.do?',
-	    	data: {DataCustCol7:BILL_OFF,DataTypeCode:TYPE_CODE,DataDeptCode:DEPT_CODE},
+	    	data: {DataCustCol7:BILL_OFF,DataTypeCode:TYPE_CODE,DataBusiDate:BUSI_DATE,DataDeptCode:DEPT_CODE},
 			dataType:'json',
 			cache: false,
 			success: function(response){
@@ -403,7 +405,7 @@
 
 		            $("#" + childGridID).jqGrid({
 		                url: childGridURL,
-		    	    	postData: {DataCustCol7:BILL_OFF,DataTypeCode:TYPE_CODE,DataDeptCode:DEPT_CODE},
+		    	    	postData: {DataCustCol7:BILL_OFF,DataTypeCode:TYPE_CODE,DataBusiDate:BUSI_DATE,DataDeptCode:DEPT_CODE},
 		                mtype: "GET",
 		                datatype: "json",
 		                colModel: detailColModel,
@@ -709,6 +711,37 @@
 		var CustCol7 = $("#SelectedCustCol7").val();
 		var DepartCode = $("#SelectedDepartCode").val();
 		var BillCode = $("#SelectedBillCode").val();
+		
+		if(!(CustCol7!=null && $.trim(CustCol7)!="")){
+			$("#SelectedCustCol7").tips({
+				side:3,
+	            msg:'请选择帐套',
+	            bg:'#AE81FF',
+	            time:2
+	        });
+			$("#SelectedCustCol7").focus();
+			return false;
+		}
+		if(!(TypeCode!=null && $.trim(TypeCode)!="")){
+			$("#SelectedTypeCode").tips({
+				side:3,
+	            msg:'请选择凭证类型',
+	            bg:'#AE81FF',
+	            time:2
+	        });
+			$("#SelectedTypeCode").focus();
+			return false;
+		}
+		if(!(DepartCode!=null && $.trim(DepartCode)!="")){
+			$("#SelectedDepartCode").tips({
+				side:3,
+	            msg:'请选择责任中心',
+	            bg:'#AE81FF',
+	            time:2
+	        });
+			$("#SelectedDepartCode").focus();
+			return false;
+		}
 			
         var msg = '确定要汇总吗?';
         bootbox.confirm(msg, function(result) {
@@ -724,9 +757,9 @@
 					cache: false,
 					success: function(response){
 						if(response.code==0){
+							$(top.hangge());//关闭加载状态
 							getSelectBillCodeOptions();
-							//$(gridBase_selector).trigger("reloadGrid");  
-							//$(top.hangge());//关闭加载状态
+							$(gridBase_selector).trigger("reloadGrid");  
 							$("#subTitle").tips({
 								side:3,
 					            msg:'汇总成功',
@@ -734,20 +767,60 @@
 					            time:3
 					        });
 						}else{
+							var message = response.message;
+							try{
+								$.ajax({
+									type: "POST",
+									url: '<%=basePath%>fundsselfsummy/summyBillLog.do?SelectedCustCol7='+CustCol7
+				                        +'&SelectedTypeCode='+TypeCode
+					                    +'&SelectedDepartCode='+DepartCode
+					                    +'&SelectedBillCode='+BillCode
+					                    +'&message='+encodeURIComponent(message),
+									dataType:'json',
+									cache: false,
+									success: function(response){
+										$(top.hangge());//关闭加载状态
+									},
+							    	error: function(response) {
+										$(top.hangge());//关闭加载状态
+							    	}
+								});
+							} catch(err){}
+							console.log(encodeURIComponent(message));
 							$(top.hangge());//关闭加载状态
-							$("#subTitle").tips({
+							alert('汇总失败,'+response.message);
+							/*$("#subTitle").tips({
 								side:3,
 					            msg:'汇总失败,'+response.message,
 					            bg:'#cc0033',
 					            time:3
-					        });
+					        });*/
 						}
 					},
 			    	error: function(response) {
+						var message = response.responseJSON.message;
+						try{
+							$.ajax({
+								type: "POST",
+								url: '<%=basePath%>fundsselfsummy/summyBillLog.do?SelectedCustCol7='+CustCol7
+			                        +'&SelectedTypeCode='+TypeCode
+				                    +'&SelectedDepartCode='+DepartCode
+				                    +'&SelectedBillCode='+BillCode
+				                    +'&message='+encodeURIComponent(message),
+								dataType:'json',
+								cache: false,
+								success: function(response){
+									$(top.hangge());//关闭加载状态
+								},
+						    	error: function(response) {
+									$(top.hangge());//关闭加载状态
+						    	}
+							});
+						} catch(err){}
 						$(top.hangge());//关闭加载状态
 						$("#subTitle").tips({
 							side:3,
-				            msg:'汇总出错:'+response.responseJSON.message,
+				            msg:'汇总出错:'+message,
 				            bg:'#cc0033',
 				            time:3
 				        });
@@ -791,9 +864,9 @@
 						cache: false,
 						success: function(response){
 							if(response.code==0){
+								$(top.hangge());//关闭加载状态
 							    getSelectBillCodeOptions();
 								$(gridBase_selector).trigger("reloadGrid");  
-								$(top.hangge());//关闭加载状态
 								$("#subTitle").tips({
 									side:3,
 						            msg:'取消汇总成功',

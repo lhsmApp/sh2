@@ -23,15 +23,6 @@ public class SysTableMappingService implements SysTableMappingManager{
 	@Resource(name = "daoSupport")
 	private DaoSupport dao;
 	
-	/**获取单号下拉列表数据源 
-	 * @param pd
-	 * @throws Exception
-	 */
-	@SuppressWarnings("unchecked")
-	public List<String> getTableNameList(PageData pd)throws Exception{
-		return (List<String>)dao.findForList("SysTableMappingMapper.getTableNameList", pd);
-	}
-	
 	/**列表
 	 * @param page
 	 * @throws Exception

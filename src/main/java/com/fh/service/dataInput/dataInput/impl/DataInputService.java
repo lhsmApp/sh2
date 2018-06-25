@@ -47,6 +47,15 @@ public class DataInputService implements DataInputManager{
 		return (List<PageData>)dao.findForList("DataInputMapper.getRepeatRecord", listData);
 	}
 
+	/**复制
+	 * @param pd
+	 * @throws Exception
+	 */
+	@SuppressWarnings("unchecked")
+	public List<PageData> getHaveCopyRecord(PageData pd)throws Exception{
+		return (List<PageData>)dao.findForList("DataInputMapper.getHaveCopyRecord", pd);
+	}
+
 	/**更新数据库
 	 * @param pd
 	 * @throws Exception
@@ -69,5 +78,12 @@ public class DataInputService implements DataInputManager{
 		dao.update("DataInputMapper.batchDelAndIns", listData);
 	}
 
+	/**复制
+	 * @param pd
+	 * @throws Exception
+	 */
+	public void batchCopyAll(PageData pd)throws Exception{
+		dao.update("DataInputMapper.batchCopyAll", pd);
+	}
 }
 

@@ -30,21 +30,24 @@ import com.fh.controller.common.TmplUtil;
 import com.fh.controller.common.TmplVoucherUtil;
 import com.fh.controller.common.VoucherToBillType;
 import com.fh.entity.CertParmConfig;
-import com.fh.entity.ClsTwoFeild;
+import com.fh.entity.ClsVoucherStruFeild;
 import com.fh.entity.CommonBase;
 import com.fh.entity.JqPage;
 import com.fh.entity.Page;
 import com.fh.entity.PageResult;
+import com.fh.entity.SysConfirmInfo;
 import com.fh.entity.SysDeptMapping;
 import com.fh.entity.SysStruMapping;
 import com.fh.entity.SysTableMapping;
-import com.fh.entity.TableColumns;
 import com.fh.entity.system.Department;
 import com.fh.entity.system.Dictionaries;
 import com.fh.entity.system.User;
 import com.fh.util.PageData;
 import com.fh.util.SqlTools;
 import com.fh.util.enums.BillState;
+import com.fh.util.enums.PZTYPE;
+import com.fh.util.enums.SysConfirmInfoBillType;
+import com.fh.util.enums.SysConfirmInfoBillTypeStart;
 
 import net.sf.json.JSONArray;
 
@@ -56,6 +59,7 @@ import com.fh.service.sysBillnum.sysbillnum.SysBillnumManager;
 import com.fh.service.certParmConfig.certParmConfig.impl.CertParmConfigService;
 import com.fh.service.fhoa.department.impl.DepartmentService;
 import com.fh.service.sysConfig.sysconfig.SysConfigManager;
+import com.fh.service.sysConfirmInfo.sysConfirmInfo.impl.SysConfirmInfoService;
 import com.fh.service.sysDeptMapping.sysDeptMapping.impl.SysDeptMappingService;
 import com.fh.service.sysStruMapping.sysStruMapping.impl.SysStruMappingService;
 import com.fh.service.sysTableMapping.sysTableMapping.impl.SysTableMappingService;
@@ -101,6 +105,8 @@ public class FundsSelfSummyController extends BaseController {
 	private SysBillnumManager sysbillnumService;
 	@Resource(name="sysDeptMappingService")
 	private SysDeptMappingService sysDeptMappingService;
+	@Resource(name="sysConfirmInfoService")
+	private SysConfirmInfoService sysConfirmInfoService;
 	
 	//表名
 	String TB_GEN_BUS_SUMMY_BILL = "TB_GEN_BUS_SUMMY_BILL";
@@ -343,10 +349,12 @@ public class FundsSelfSummyController extends BaseController {
 		String DataCustCol7 = getPd.getString("DataCustCol7");
 		//凭证字典
 		String DataTypeCode = getPd.getString("DataTypeCode");
+		//业务区间
+		String DataBusiDate = getPd.getString("DataBusiDate");
 		//单位
 		//String DataDeptCode = getPd.getString("DataDeptCode");
 		
-		List<String> SumFieldDetail = getGroupSummyField(DataTypeCode, DataCustCol7, DeptCodeSumGroupField);
+		List<String> SumFieldDetail = getGroupSummyField(DataTypeCode, DataCustCol7, DataBusiDate, DeptCodeSumGroupField, false);
 
 		TmplVoucherUtil tmplVoucherUtil = new TmplVoucherUtil(sysTableMappingService, sysStruMappingService, tmplconfigService, 
 				tmplconfigdictService, dictionariesService, departmentService, userService, SumFieldDetail);
@@ -371,10 +379,12 @@ public class FundsSelfSummyController extends BaseController {
 		String DataCustCol7 = getPd.getString("DataCustCol7");
 		//凭证字典
 		String DataTypeCode = getPd.getString("DataTypeCode");
+		//业务区间
+		String DataBusiDate = getPd.getString("DataBusiDate");
 		//单位
 		//String DataDeptCode = getPd.getString("DataDeptCode");
 		
-		List<String> SumFieldDetail = getGroupSummyField(DataTypeCode, DataCustCol7, DeptCodeSumGroupField);
+		List<String> SumFieldDetail = getGroupSummyField(DataTypeCode, DataCustCol7, DataBusiDate, DeptCodeSumGroupField, false);
 		String strBillCode = getPd.getString("DetailListBillCode");
 		
 		PageData pdCode = new PageData();
@@ -438,7 +448,9 @@ public class FundsSelfSummyController extends BaseController {
 		String CUST_COL7 = pdGet.getString("BILL_OFF" + TmplUtil.keyExtra);
 		//凭证字典
 		String TYPE_CODE = pdGet.getString("TYPE_CODE" + TmplUtil.keyExtra);
-		List<String> SumFieldDetail = getGroupDetailField(TYPE_CODE, CUST_COL7, DeptCodeSumGroupField);
+		//业务区间
+		String BUSI_DATE = pdGet.getString("BUSI_DATE" + TmplUtil.keyExtra);
+		List<String> SumFieldDetail = getGroupDetailField(TYPE_CODE, CUST_COL7, BUSI_DATE, DeptCodeSumGroupField, false);
 		List<String> listTransferSumFieldDetail = new ArrayList<String>();
 
 		PageData pdFieldDetail = new PageData();
@@ -502,22 +514,80 @@ public class FundsSelfSummyController extends BaseController {
 		if(checkState!=null && !checkState.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(checkState);
-			return commonBase;
+			//return commonBase;
 		}
-		//是否存在未确认责任中心
-		SysDeptMapping mapping = new SysDeptMapping();
-		mapping.setBILL_OFF(SelectedCustCol7);
-		mapping.setDEPT_CODE(SelectedDepartCode);
-		mapping.setTYPE_CODE(SelectedTypeCode);
-		List<PageData> listSysDeptMapping = sysDeptMappingService.getNotConfirmMappingList(mapping);
-		if(listSysDeptMapping!=null && listSysDeptMapping.size()>0){
+		if(SelectedTypeCode.equals(PZTYPE.GFZYJF.getNameKey())){
+			//是否存在未确认责任中心
 			String strMessage = "";
-            for(PageData dept : listSysDeptMapping){
-            	strMessage += dept.getString("MAPPING_CODE") + "(" + dept.getString("MAPPING_NAME") + ")  ";
-            }
-			commonBase.setCode(2);
-			commonBase.setMessage(strMessage + Message.NotHaveConfirmData);
-			return commonBase;
+			
+			List<CertParmConfig> getCertParmConfigList = getSelfCertParmConfig(SelectedTypeCode, SelectedCustCol7, SystemDateTime, DeptCodeSumGroupField);
+			String[] listBillType = null;
+			String strCheckOrNot = "";
+			if(getCertParmConfigList!=null && getCertParmConfigList.size()>0){
+				String getBillType = getCertParmConfigList.get(0).getCUST_PARM1();
+				strCheckOrNot = getCertParmConfigList.get(0).getCUST_PARM1_DESC();
+	        	if(getBillType!=null && !getBillType.trim().equals("")){
+	        		listBillType = getBillType.replace(" ", "").replace("'", "").replace("‘", "").replace("，", ",").split(",");
+	        	}
+			}
+			
+			if(SysConfirmInfoBillTypeStart.Start.getNameKey().equals(strCheckOrNot)){
+				SysDeptMapping mapping = new SysDeptMapping();
+				mapping.setBILL_OFF(SelectedCustCol7);
+				mapping.setDEPT_CODE(SelectedDepartCode);
+				mapping.setTYPE_CODE(SelectedTypeCode);
+				List<PageData> listSysDeptMapping = sysDeptMappingService.getConfirmMappingList(mapping);
+				
+				PageData pdConfirmInfo = new PageData();
+				pdConfirmInfo.put("BILL_OFF", SelectedCustCol7);
+				pdConfirmInfo.put("RPT_DUR", SystemDateTime);
+				pdConfirmInfo.put("DEPT_CODE", SelectedDepartCode);
+				pdConfirmInfo.put("TYPE_CODE", SelectedTypeCode);
+				List<SysConfirmInfo> listSysConfirmInfo = sysConfirmInfoService.getConfirmMappingList(pdConfirmInfo);
+				
+				if(listSysDeptMapping!=null && listSysDeptMapping.size()>0){
+		            for(PageData dept : listSysDeptMapping){
+		            	String MAPPING_CODE = dept.getString("MAPPING_CODE");
+		            	if(MAPPING_CODE!=null && !MAPPING_CODE.trim().equals("")){
+			            	if(listBillType!=null && listBillType.length>0){
+			            		for(String strBillTypeKey : listBillType){
+			            			if(strBillTypeKey!=null && !strBillTypeKey.trim().equals("")){
+					            	    Boolean bolMessage = true;
+					            	    if(listSysConfirmInfo!=null){
+						            		for(SysConfirmInfo confirm : listSysConfirmInfo){
+						            			if(MAPPING_CODE.equals(confirm.getRPT_DEPT()) && strBillTypeKey.equals(confirm.getBILL_TYPE())){
+						            				bolMessage = false;
+						            			}
+						            		}
+					            	    }
+					            		if(bolMessage){
+					            			String strBillTypeValue = SysConfirmInfoBillType.getValueByKey(strBillTypeKey);
+							            	strMessage += MAPPING_CODE + "(" + dept.getString("MAPPING_NAME") + ")" + strBillTypeValue + "  ";
+					            		}
+			            			}
+			            		}
+			            	} else {
+			            	    Boolean bolMessage = true;
+			            	    if(listSysConfirmInfo!=null){
+				            		for(SysConfirmInfo confirm : listSysConfirmInfo){
+				            			if(MAPPING_CODE.equals(confirm.getRPT_DEPT())){
+				            				bolMessage = false;
+				            			}
+				            		}
+			            	    }
+			            		if(bolMessage){
+					            	strMessage += MAPPING_CODE + "(" + dept.getString("MAPPING_NAME") + ")  ";
+			            		}
+			            	}
+		            	}
+		            }
+				}
+				if(strMessage!=null && !strMessage.trim().equals("")){
+					commonBase.setCode(2);
+					commonBase.setMessage(strMessage + Message.NotHaveConfirmData);
+					return commonBase;
+				}
+			}
 		}
 
 		/***************获取最大单号及更新最大单号********************/
@@ -551,30 +621,30 @@ public class FundsSelfSummyController extends BaseController {
 			SysTableMapping tableMappingDetail = getSysTableMappingList.get(0);
 
 			// 用语句查询出数据库表的所有字段及其属性；拼接成jqgrid全部列
-			List<TableColumns> tableColumnsBill = tmplconfigService.getTableColumns(TB_GEN_BUS_SUMMY_BILL);
-			List<TableColumns> tableColumnsSummy = tmplconfigService.getTableColumns(TB_GEN_SUMMY);
-			List<TableColumns> tableColumnsDetail = tmplconfigService.getTableColumns(TB_GEN_BUS_DETAIL);
+			//List<TableColumns> tableColumnsBill = tmplconfigService.getTableColumns(TB_GEN_BUS_SUMMY_BILL);
+			//List<TableColumns> tableColumnsSummy = tmplconfigService.getTableColumns(TB_GEN_SUMMY);
+			//List<TableColumns> tableColumnsDetail = tmplconfigService.getTableColumns(TB_GEN_BUS_DETAIL);
 			// 前端数据表格界面字段,动态取自SysStruMapping，根据当前单位编码及表名获取字段配置信息
 			List<SysStruMapping> getSysStruMappingBillList = SysStruMappingList.getSysStruMappingList(SelectedTypeCode, TB_GEN_SUMMY, TB_GEN_BUS_SUMMY_BILL, SystemDateTime, SelectedCustCol7, sysStruMappingService, true);
 			List<SysStruMapping> getSysStruMappingSummyList = SysStruMappingList.getSysStruMappingList(SelectedTypeCode, TB_GEN_BUS_DETAIL, TB_GEN_SUMMY, SystemDateTime, SelectedCustCol7, sysStruMappingService, true);
 			List<SysStruMapping> getSysStruMappingDetailList = SysStruMappingList.getSysStruMappingList(SelectedTypeCode, getSysTableMappingList.get(0).getTABLE_NAME(), TB_GEN_BUS_DETAIL, SystemDateTime, SelectedCustCol7, sysStruMappingService, true);
 
 			String strSqlBillGroupBy = "";
-			List<CertParmConfig> getCertParmConfigList = getSelfCertParmConfig(SelectedTypeCode, SelectedCustCol7, DeptCodeSumGroupField);
+			List<CertParmConfig> getCertParmConfigList = getSelfCertParmConfig(SelectedTypeCode, SelectedCustCol7, SystemDateTime, DeptCodeSumGroupField);
 			if(getCertParmConfigList!=null && getCertParmConfigList.size()>0){
 				strSqlBillGroupBy = getCertParmConfigList.get(0).getGROUP_COND1();
 			}
 			String strSqlSummyGroupBy = "";
-			List<String> SumFieldDetail = getGroupDetailField(SelectedTypeCode, SelectedCustCol7, DeptCodeSumGroupField);
+			List<String> SumFieldDetail = getGroupDetailField(SelectedTypeCode, SelectedCustCol7, SystemDateTime, DeptCodeSumGroupField, true);
 			strSqlSummyGroupBy = QueryFeildString.tranferListStringToGroupbyString(SumFieldDetail);
 			
-			ClsTwoFeild sqlFeildDetail = SqlFeildToSave.getSqlFeildToSave(SelectedCustCol7, SelectedTypeCode, SelectedDepartCode, SystemDateTime, 
+			ClsVoucherStruFeild sqlFeildDetail = SqlFeildToSave.getSqlFeildToSave(SelectedCustCol7, SelectedTypeCode, SelectedDepartCode, SystemDateTime, 
 					getBILL_CODE, getSysStruMappingDetailList);
-			String strSqlDetail = " select " + sqlFeildDetail.getSqlSelectFeild() 
+			String strSqlDetail = " select " + sqlFeildDetail.getSqlSelFeild() 
 			              + " from " + tableMappingDetail.getTABLE_NAME()
 			              + sqlFeildDetail.getSqlWhere();
-			List<PageData> pdGetSaveDetailList = fundsselfsummyService.getSaveList(strSqlDetail);
-			if(pdGetSaveDetailList!=null && pdGetSaveDetailList.size()>0){
+			List<PageData> pdGetHaveDetailList = fundsselfsummyService.getSaveList(strSqlDetail);
+			/*if(pdGetSaveDetailList!=null && pdGetSaveDetailList.size()>0){
 				for(PageData detail : pdGetSaveDetailList){
 					detail.put("TableName", TB_GEN_BUS_DETAIL);
 		        	Common.setModelDefault(detail, tableColumnsDetail, getSysStruMappingDetailList);
@@ -584,17 +654,32 @@ public class FundsSelfSummyController extends BaseController {
 		    	commonBase.setCode(2);
 		    	commonBase.setMessage(Message.NotHaveOperateData);
 		    	return commonBase;
+			}*/
+			if(!(pdGetHaveDetailList!=null && pdGetHaveDetailList.size()>0)){
+		    	commonBase.setCode(2);
+		    	commonBase.setMessage(Message.NotHaveOperateData);
+		    	return commonBase;
 			}
-
-			ClsTwoFeild sqlFeildSummy = SqlFeildToSave.getSqlFeildToSave(SelectedCustCol7, SelectedTypeCode, SelectedDepartCode, SystemDateTime, 
+			String strSaveDetail = " insert into " + TB_GEN_BUS_DETAIL 
+					+ " (" + sqlFeildDetail.getSqlInsFeild() + ") "
+					+ " (" + strSqlDetail + ") ";
+			
+			ClsVoucherStruFeild sqlFeildSummy = SqlFeildToSave.getSqlFeildToSave(SelectedCustCol7, SelectedTypeCode, SelectedDepartCode, SystemDateTime, 
 					getBILL_CODE, getSysStruMappingSummyList);
-			String strSqlSummy = " select " + sqlFeildSummy.getSqlSelectFeild() 
-		              + " from (" + strSqlDetail +") detail ";
+			String strSqlGetSummyCheckHave = " select " + sqlFeildSummy.getSqlSelFeild() 
+                    + " from (" + strSqlDetail +") detail "
+		            + sqlFeildSummy.getSqlWhere();
 			if(strSqlSummyGroupBy!=null && !strSqlSummyGroupBy.trim().equals("")){
-				strSqlSummy += " group by " + strSqlSummyGroupBy;
+				strSqlGetSummyCheckHave += " group by " + strSqlSummyGroupBy;
 			}
-			List<PageData> pdGetSaveSummyList = fundsselfsummyService.getSaveList(strSqlSummy);
-			if(pdGetSaveSummyList!=null && pdGetSaveSummyList.size()>0){
+			String strSqlInsertSummy = " select " + sqlFeildSummy.getSqlSelFeild() 
+		              + " from " + TB_GEN_BUS_DETAIL +" detail "
+				      + sqlFeildSummy.getSqlWhere();
+			if(strSqlSummyGroupBy!=null && !strSqlSummyGroupBy.trim().equals("")){
+				strSqlInsertSummy += " group by " + strSqlSummyGroupBy;
+			}
+			List<PageData> pdGetHaveSummyList = fundsselfsummyService.getSaveList(strSqlGetSummyCheckHave);
+			/*if(pdGetSaveSummyList!=null && pdGetSaveSummyList.size()>0){
 				for(PageData summy : pdGetSaveSummyList){
 					summy.put("TableName", TB_GEN_SUMMY);
 		        	Common.setModelDefault(summy, tableColumnsSummy, getSysStruMappingSummyList);
@@ -604,18 +689,36 @@ public class FundsSelfSummyController extends BaseController {
 		    	commonBase.setCode(2);
 		    	commonBase.setMessage(Message.NotHaveOperateData);
 		    	return commonBase;
+			}*/
+			if(!(pdGetHaveSummyList!=null && pdGetHaveSummyList.size()>0)){
+		    	commonBase.setCode(2);
+		    	commonBase.setMessage(Message.NotHaveOperateData);
+		    	return commonBase;
 			}
+			String strSaveSummy = " insert into " + TB_GEN_SUMMY 
+					+ " (" + sqlFeildSummy.getSqlInsFeild() + ") "
+					+ " (" + strSqlInsertSummy + ") ";
 
-			ClsTwoFeild sqlFeildBill = SqlFeildToSave.getSqlFeildToSave(SelectedCustCol7, SelectedTypeCode, SelectedDepartCode, SystemDateTime, 
+			ClsVoucherStruFeild sqlFeildBill = SqlFeildToSave.getSqlFeildToSave(SelectedCustCol7, SelectedTypeCode, SelectedDepartCode, SystemDateTime, 
 					getBILL_CODE, getSysStruMappingBillList);
-			String strSqlBill = " select distinct * from (select " + sqlFeildBill.getSqlSelectFeild();
-			strSqlBill += "                               from (" + strSqlSummy +") summy ";
+			String strSqlGetBillCheckHave = " select distinct " + sqlFeildBill.getSqlInsFeild() 
+			    + " from (" + " select " + sqlFeildBill.getSqlSelFeild();
+			strSqlGetBillCheckHave += " from (" + strSqlGetSummyCheckHave +") summy ";
+			strSqlGetBillCheckHave += sqlFeildBill.getSqlWhere(); 
 			if(strSqlBillGroupBy!=null && !strSqlBillGroupBy.trim().equals("")){
-				strSqlBill += " group by " + strSqlBillGroupBy;
+				strSqlGetBillCheckHave += " group by " + strSqlBillGroupBy;
 			}
-			strSqlBill += "                               ) bill ";
-			List<PageData> pdGetSaveBillList = fundsselfsummyService.getSaveList(strSqlBill);
-			if(pdGetSaveBillList!=null && pdGetSaveBillList.size()>0){
+			strSqlGetBillCheckHave += "                               ) bill ";
+			String strSqlInsertBill = " select distinct " + sqlFeildBill.getSqlInsFeild() 
+			      + " from (" + " select " + sqlFeildBill.getSqlSelFeild();
+			strSqlInsertBill += " from " + TB_GEN_SUMMY +" summy ";
+			strSqlInsertBill += sqlFeildBill.getSqlWhere();
+			if(strSqlBillGroupBy!=null && !strSqlBillGroupBy.trim().equals("")){
+				strSqlInsertBill += " group by " + strSqlBillGroupBy;
+			}
+			strSqlInsertBill += "                               ) bill ";
+			List<PageData> pdGetHaveBillList = fundsselfsummyService.getSaveList(strSqlGetBillCheckHave);
+			/*if(pdGetSaveBillList!=null && pdGetSaveBillList.size()>0){
 				for(PageData bill : pdGetSaveBillList){
 					bill.put("TableName", TB_GEN_BUS_SUMMY_BILL);
 		        	Common.setModelDefault(bill, tableColumnsBill, getSysStruMappingBillList);
@@ -625,17 +728,64 @@ public class FundsSelfSummyController extends BaseController {
 		    	commonBase.setCode(2);
 		    	commonBase.setMessage(Message.NotHaveOperateData);
 		    	return commonBase;
+			}*/
+			if(!(pdGetHaveBillList!=null && pdGetHaveBillList.size()>0)){
+		    	commonBase.setCode(2);
+		    	commonBase.setMessage(Message.NotHaveOperateData);
+		    	return commonBase;
 			}
-
+			String strSaveBill = " insert into " + TB_GEN_BUS_SUMMY_BILL 
+					+ " (" + sqlFeildBill.getSqlInsFeild() + ") "
+					+ " (" + strSqlInsertBill + ") ";
+			
+			PageData pdSaveData = new PageData();
+			setLogInfo(pdSaveData, SelectedTypeCode, getBILL_CODE);
+			pdSaveData.put("SqlSaveDetail", strSaveDetail);
+			pdSaveData.put("SqlSaveSummy", strSaveSummy);
+			pdSaveData.put("SqlSaveBill", strSaveBill);
+			
         	Map<String, Object> map = new HashMap<String, Object>();
         	map.put("UpdateBillNum", pdBillNum);
-        	map.put("SaveBillList", pdGetSaveBillList);
-        	map.put("SaveSummyList", pdGetSaveSummyList);
-        	map.put("SaveDetailList", pdGetSaveDetailList);
+        	//map.put("SaveBillList", pdGetHaveBillList);//pdGetSaveBillList
+        	//map.put("SaveSummyList", pdGetHaveSummyList);//pdGetSaveSummyList
+        	//map.put("SaveDetailList", pdGetHaveDetailList);//pdGetSaveDetailList
+        	map.put("SaveData", pdSaveData);
+        	fundsselfsummyService.batchSaveLog(map);
         	fundsselfsummyService.batchSummyBill(map);
 			commonBase.setCode(0);
 		}
 		
+		return commonBase;
+	}
+
+	/**汇总出错日志
+	 * @param
+	 * @throws Exception
+	 */
+	@RequestMapping(value="/summyBillLog")
+	public @ResponseBody CommonBase summyBillLog() throws Exception{
+		CommonBase commonBase = new CommonBase();
+		commonBase.setCode(-1);
+		
+		PageData getPd = this.getPageData();
+		//账套
+		//String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
+		//凭证字典
+		String SelectedTypeCode = getPd.getString("SelectedTypeCode");
+		//单位
+		//String SelectedDepartCode = getPd.getString("SelectedDepartCode");
+		//单位
+		String message = getPd.getString("message");
+		
+		PageData pdSaveError = new PageData();
+		setLogInfo(pdSaveError, SelectedTypeCode, " ");
+		pdSaveError.put("StrSaveError", message);
+		
+    	Map<String, Object> map = new HashMap<String, Object>();
+    	map.put("SaveError", pdSaveError);
+    	fundsselfsummyService.batchSaveLog(map);
+		commonBase.setCode(0);
+
 		return commonBase;
 	}
 	
@@ -795,9 +945,9 @@ public class FundsSelfSummyController extends BaseController {
 		return getPd;
 	}
 
-	private List<String> getGroupSummyField(String typeCode, String billOff, String deptCode) throws Exception{
+	private List<String> getGroupSummyField(String typeCode, String billOff, String busiDate, String deptCode, Boolean bolInsertSql) throws Exception{
 		List<String> SumFieldReturn = new ArrayList<String>();
-		List<String> SumFieldDetail = getGroupDetailField(typeCode, billOff, deptCode);
+		List<String> SumFieldDetail = getGroupDetailField(typeCode, billOff, busiDate, deptCode, bolInsertSql);
 
 		// 前端数据表格界面字段,动态取自SysStruMapping，根据当前单位编码及表名获取字段配置信息
 		List<SysStruMapping> getSysStruMappingList = SysStruMappingList.getSysStruMappingList(typeCode, TB_GEN_BUS_DETAIL, TB_GEN_SUMMY, SystemDateTime, billOff, sysStruMappingService, true);
@@ -813,23 +963,28 @@ public class FundsSelfSummyController extends BaseController {
 		return SumFieldReturn;
 	}
 	
-	private List<String> getGroupDetailField(String typeCode, String billOff, String deptCode) throws Exception{
+	private List<String> getGroupDetailField(String typeCode, String billOff, String busiDate, String deptCode, Boolean bolInsertSql) throws Exception{
 		//List<String> SumFieldBill = Arrays.asList("BILL_CODE", "BUSI_DATE", "DEPT_CODE", "BILL_OFF");
-		List<CertParmConfig> getCertParmConfigList = getSelfCertParmConfig(typeCode, billOff, deptCode);
+		List<CertParmConfig> getCertParmConfigList = getSelfCertParmConfig(typeCode, billOff, busiDate, deptCode);
 		String strSumFieldDetail = "";
 		if(getCertParmConfigList!=null && getCertParmConfigList.size()>0){
 			strSumFieldDetail = getCertParmConfigList.get(0).getGROUP_COND();
 		}
 		List<String> listSumFieldDetail = QueryFeildString.tranferStringToList(strSumFieldDetail);
-		listSumFieldDetail = QueryFeildString.extraSumField(listSumFieldDetail, SumFieldBill);//SumFieldBill
+		if(bolInsertSql){
+			listSumFieldDetail = QueryFeildString.extraSumField(listSumFieldDetail, null);
+		} else {
+			listSumFieldDetail = QueryFeildString.extraSumField(listSumFieldDetail, SumFieldBill);
+		}
 		
 		return listSumFieldDetail;
 	}
 	
-	private List<CertParmConfig> getSelfCertParmConfig(String typeCode, String billOff, String deptCode) throws Exception{
+	private List<CertParmConfig> getSelfCertParmConfig(String typeCode, String billOff, String busiDate, String deptCode) throws Exception{
 		CertParmConfig certParmConfig = new CertParmConfig();
 		certParmConfig.setTYPE_CODE(typeCode);
 		certParmConfig.setBILL_OFF(billOff);
+		certParmConfig.setBUSI_DATE(busiDate);
 		certParmConfig.setDEPT_CODE(deptCode);
 		List<CertParmConfig> getCertParmConfigList = certParmConfigService.getSelfCertParmConfig(certParmConfig);
 		return getCertParmConfigList;
