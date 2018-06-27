@@ -553,7 +553,7 @@
 			            delicon : 'ace-icon fa fa-trash-o red',
 			            search: true,
 			            searchicon : 'ace-icon fa fa-search orange',
-			            refresh: true,
+			            refresh: false,
 			            refreshicon : 'ace-icon fa fa-refresh green',
 			            view: false,
 			            viewicon : 'ace-icon fa fa-search-plus grey',

@@ -84,9 +84,7 @@ public class FundsConfirmInfoController extends BaseController {
 	private SysDeptMappingService sysDeptMappingService;
 	
 	//表名
-	String TB_GEN_BUS_SUMMY_BILL = "TB_GEN_BUS_SUMMY_BILL";
-	String TB_GEN_SUMMY = "TB_GEN_SUMMY";
-	String TB_GEN_BUS_DETAIL = "TB_GEN_BUS_DETAIL";
+	String tb_sys_dept_mapping = "tb_sys_dept_mapping";
 
 	//临时数据
 	String SelectedTypeCodeFirstShow = "请选择凭证类型";
@@ -304,7 +302,7 @@ public class FundsConfirmInfoController extends BaseController {
         				if(BillTypeLeftJoin!=null && !BillTypeLeftJoin.trim().equals("")){
         					BillTypeLeftJoin += " UNION ";
         				}
-    					BillTypeLeftJoin += " SELECT DISTINCT '" + strBillType + "' BILL_TYPE FROM TB_GEN_SUMMY ";
+    					BillTypeLeftJoin += " SELECT DISTINCT '" + strBillType + "' BILL_TYPE FROM tb_sys_dept_mapping ";
         			}
         		}
         	}

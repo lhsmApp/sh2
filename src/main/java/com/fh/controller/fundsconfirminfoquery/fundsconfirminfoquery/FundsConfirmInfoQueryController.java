@@ -186,7 +186,7 @@ public class FundsConfirmInfoQueryController extends BaseController {
 			QueryFeild += " and DEPARTMENT_CODE in (" + QueryFeildString.getSqlInString(SelectedDepartCode) + ") ";
 		}
 		if(!(SelectedCustCol7!=null && !SelectedCustCol7.trim().equals(""))){
-			QueryFeild += " 1 != 1 ";
+			QueryFeild += " and 1 != 1 ";
 		}
 		getPd.put("QueryFeild", QueryFeild);
 		

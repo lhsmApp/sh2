@@ -231,98 +231,8 @@
 			}else if(target.attr('href')=='#voucherMgr'){
 				TabType=2;
 			}
-			console.log(TabType);
-			console.log("setGrid");
 			setGrid();
 		});
-		
-		//resize to fit page size
-		$(window).on('resize.jqGrid', function () {
-			$(gridBase_selector).jqGrid( 'setGridWidth', $(".page-content").width());
-			gridHeight=236;
-			resizeGridHeight($(gridBase_selector),gridHeight);
-	    });
-
-		$(gridBase_selector).jqGrid({
-			url: '<%=basePath%>fundsconfirminfoquery/getPageList.do?SelectedTableNo='+which
-                +'&SelectedTabType='+TabType
-                +'&SelectedBusiDate='+$("#SelectedBusiDate").val()
-                +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
-                +'&SelectedCustCol7='+$("#SelectedCustCol7").val(),
-			datatype: "json",
-			colModel:  [{ label: '区间',name:'BUSI_DATE', width:90,editable: false},
-			            { label: '账套', name: 'BILL_OFF', width: 60,editable: false, edittype: 'select',formatter:'select',editoptions:{value:"${billOffStrSelect}"},formatoptions:{value:"${billOffStrSelect}"},stype: 'select',searchoptions:{value:"${billOffStrAll}"}},
-						{ label: '业务类型', name: 'TYPE_CODE', width: 60,editable: false, edittype: 'select',formatter:'select',editoptions:{value:"${typeCodeStrSelect}"},formatoptions:{value:"${typeCodeStrSelect}"},stype: 'select',searchoptions:{value:"${typeCodeStrAll}"}},
-						{ label: '责任中心编码',name:'DEPARTMENT_CODE', width:90,editable: false},
-						{ label: '责任中心名称',name:'NAME', width:90,editable: false},
-						{ label: '确认类型', name: 'BILL_TYPE', width: 90,editable: false, edittype: 'select',formatter:'select',editoptions:{value:"${billTypeStrSelect}"},formatoptions:{value:"${billTypeStrSelect}"},stype: 'select',searchoptions:{value:"${billTypeStrAll}"}},
-						{ label: '数据状态', name: 'STATE', width: 90,editable: false, edittype: 'select',formatter:'select',editoptions:{value:"${stateStrSelect}"},formatoptions:{value:"${stateStrSelect}"},stype: 'select',searchoptions:{value:"${stateStrAll}"}}
-					],
-			viewrecords: true, 
-			shrinkToFit: true,
-			//width:'100%',
-			reloadAfterSubmit: true, 
-			rowNum: 0,
-			altRows: true, //斑马条纹
-			
-			pager: pagerBase_selector,
-			pgbuttons: false, // 分页按钮是否显示 
-			pginput: false, // 是否允许输入分页页数 
-			footerrow: true,
-			userDataOnFooter: true,
-
-            sortable: true,
-            sortname: 'TYPE_CODE,PARENT_CODE,DEPARTMENT_CODE',
-			sortorder: 'asc',
-			
-			scroll: 1,
-
-			cellEdit: true,
-			loadComplete : function(data) {
-				var table = this;
-				setTimeout(function(){
-					styleCheckbox(table);
-					updateActionIcons(table);
-					updatePagerIcons(table);
-					enableTooltips(table);
-				}, 0);
-			},
-		});
-	    
-		$(window).triggerHandler('resize.jqGrid');//trigger window resize to make the grid get the correct size
-		
-			$(gridBase_selector).navGrid(pagerBase_selector, 
-					{
-			            //navbar options
-				        edit: false,
-			            editicon : 'ace-icon fa fa-pencil blue',
-			            add: false,
-			            addicon : 'ace-icon fa fa-plus-circle purple',
-			            del: false,
-			            delicon : 'ace-icon fa fa-trash-o red',
-			            search: true,
-			            searchicon : 'ace-icon fa fa-search orange',
-			            refresh: true,
-			            refreshicon : 'ace-icon fa fa-refresh green',
-			            view: false,
-			            viewicon : 'ace-icon fa fa-search-plus grey',
-		        }, { }, { }, { },
-		        {
-					//search form
-					recreateForm: true,
-					afterShowSearch: beforeSearchCallback,
-					afterRedraw: function(){
-						style_search_filters($(this));
-					},
-					multipleSearch: true,
-					//multipleGroup:true,
-					showQuery: false
-		        },
-		        {},{});
-	        		$(gridBase_selector).navSeparatorAdd(pagerBase_selector, {
-	        			sepclass : "ui-separator",
-	        			sepcontent: ""
-	        		});
 	});  
     
 	//加载单位树
@@ -359,19 +269,116 @@
 	
 	function setGrid(){
 		console.log("setGrid");
+		console.log(gridBase_selector);
+		console.log($(gridBase_selector));
+		
+		var BusiDate = $("#SelectedBusiDate").val()
+		var DepartCode = $("#SelectedDepartCode").val()
+		var CustCol7 = $("#SelectedCustCol7").val()
 		console.log(which);
 		console.log(TabType);
-		console.log($("#SelectedBusiDate").val());
-		console.log($("#SelectedDepartCode").val());
-		console.log($("#SelectedCustCol7").val());
-		$(gridBase_selector).jqGrid('setGridParam',{  // 重新加载数据
+		console.log(BusiDate);
+		console.log(CustCol7);
+		console.log(DepartCode);
+		$(gridBase_selector).jqGrid('GridUnload'); 
+		SetStructure();
+		
+		/* $(gridBase_selector).jqGrid('setGridParam',{  // 重新加载数据
+			url: '<%=basePath%>fundsconfirminfoquery/getPageList.do?SelectedTableNo='+which
+                +'&SelectedTabType='+TabType
+                +'&SelectedBusiDate='+BusiDate
+                +'&SelectedDepartCode='+DepartCode
+                +'&SelectedCustCol7='+CustCol7,
+			datatype: "json",
+		}).trigger("reloadGrid");  */
+	}
+	
+	function SetStructure(){
+		//resize to fit page size
+		$(window).on('resize.jqGrid', function () {
+			$(gridBase_selector).jqGrid( 'setGridWidth', $(".page-content").width());
+			gridHeight=236;
+			resizeGridHeight($(gridBase_selector),gridHeight);
+	    });
+
+		$(gridBase_selector).jqGrid({
 			url: '<%=basePath%>fundsconfirminfoquery/getPageList.do?SelectedTableNo='+which
                 +'&SelectedTabType='+TabType
                 +'&SelectedBusiDate='+$("#SelectedBusiDate").val()
                 +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
                 +'&SelectedCustCol7='+$("#SelectedCustCol7").val(),
-							datatype : 'json'
-						}).trigger("reloadGrid");
+			datatype: "json",
+			colModel:  [{ label: '区间',name:'BUSI_DATE', width:90,editable: false},
+			            { label: '账套', name: 'BILL_OFF', width: 60,editable: false, edittype: 'select',formatter:'select',editoptions:{value:"${billOffStrSelect}"},formatoptions:{value:"${billOffStrSelect}"},stype: 'select',searchoptions:{value:"${billOffStrAll}"}},
+						{ label: '业务类型', name: 'TYPE_CODE', width: 60,editable: false, edittype: 'select',formatter:'select',editoptions:{value:"${typeCodeStrSelect}"},formatoptions:{value:"${typeCodeStrSelect}"},stype: 'select',searchoptions:{value:"${typeCodeStrAll}"}},
+						{ label: '责任中心编码',name:'DEPARTMENT_CODE', width:90,editable: false},
+						{ label: '责任中心名称',name:'NAME', width:90,editable: false},
+						{ label: '确认类型', name: 'BILL_TYPE', width: 90,editable: false, edittype: 'select',formatter:'select',editoptions:{value:"${billTypeStrSelect}"},formatoptions:{value:"${billTypeStrSelect}"},stype: 'select',searchoptions:{value:"${billTypeStrAll}"}},
+						{ label: '数据状态', name: 'STATE', width: 90,editable: false, edittype: 'select',formatter:'select',editoptions:{value:"${stateStrSelect}"},formatoptions:{value:"${stateStrSelect}"},stype: 'select',searchoptions:{value:"${stateStrAll}"}}
+					],
+			viewrecords: true, 
+			shrinkToFit: true,
+			//width:'100%',
+			reloadAfterSubmit: true, 
+			rowNum: 0,
+			altRows: true, //斑马条纹
+			
+			pager: pagerBase_selector,
+			pgbuttons: false, // 分页按钮是否显示 
+			pginput: false, // 是否允许输入分页页数 
+
+            sortable: true,
+            sortname: 'TYPE_CODE,PARENT_CODE,DEPARTMENT_CODE',
+			sortorder: 'asc',
+			
+			scroll: 1,
+
+			cellEdit: true,
+			loadComplete : function(data) {
+				var table = this;
+				setTimeout(function(){
+					styleCheckbox(table);
+					updateActionIcons(table);
+					updatePagerIcons(table);
+					enableTooltips(table);
+				}, 0);
+			},
+		});
+	    
+		$(window).triggerHandler('resize.jqGrid');//trigger window resize to make the grid get the correct size
+		
+			$(gridBase_selector).navGrid(pagerBase_selector, 
+					{
+			            //navbar options
+				        edit: false,
+			            editicon : 'ace-icon fa fa-pencil blue',
+			            add: false,
+			            addicon : 'ace-icon fa fa-plus-circle purple',
+			            del: false,
+			            delicon : 'ace-icon fa fa-trash-o red',
+			            search: true,
+			            searchicon : 'ace-icon fa fa-search orange',
+			            refresh: false,
+			            refreshicon : 'ace-icon fa fa-refresh green',
+			            view: false,
+			            viewicon : 'ace-icon fa fa-search-plus grey',
+		        }, { }, { }, { },
+		        {
+					//search form
+					recreateForm: true,
+					afterShowSearch: beforeSearchCallback,
+					afterRedraw: function(){
+						style_search_filters($(this));
+					},
+					multipleSearch: true,
+					//multipleGroup:true,
+					showQuery: false
+		        },
+		        {},{});
+	        		$(gridBase_selector).navSeparatorAdd(pagerBase_selector, {
+	        			sepclass : "ui-separator",
+	        			sepcontent: ""
+	        		});
 	}
 </script>
 </html>
