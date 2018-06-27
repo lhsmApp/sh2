@@ -908,7 +908,7 @@
 		select BILL_CODE
 		from tb_gen_bus_summy_bill
 		where BILL_OFF = #{FMISACC}
-		<!-- and TYPE_CODE = #{TYPE_CODE} -->
+		and TYPE_CODE = #{TYPE_CODE}
 		and BUSI_DATE = #{BUSI_DATE}
 		and DEPT_CODE = #{DEPT_CODE}
 		and BILL_STATE = '1'
