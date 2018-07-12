@@ -4,15 +4,17 @@
 
 	<!--表名 -->
 	<sql id="tableName">
-		tb_sys_bill_off_mapping
+		tb_sys_log_rec
 	</sql>
 	
 	<!-- 字段 -->
 	<sql id="Field">
+		USER_CODE,
+		DEPT_CODE,
+		REC_DATE,
 		TYPE_CODE,
-		BILL_OFF,
-		MAPPING_CODE,
-		FMIS_TABLE
+		SQL_STR,
+		BILL_CODE
 	</sql>
 	
 	<!-- 列表 -->
@@ -28,8 +30,9 @@
 		        ${pd.QueryFeild}
 		    </if>
 		</where>
+		order by SQL_STR desc,
 		<if test="sidx != null and sidx.trim() != ''" >
-			order by ${sidx} ${sord} 
+			${sidx} ${sord} 
     	</if>
 		<if test="currentResult != null and rowNum != null" >           
               limit #{currentResult}, #{rowNum} 

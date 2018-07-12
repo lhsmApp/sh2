@@ -366,7 +366,8 @@
     			url: '<%=basePath%>dataInput/getPageList.do?'
     				+ 'SelectedCustCol7='+ShowDataCustCol7
                     + '&SelectedTypeCode=' + ShowDataTypeCode
-                    + '&SelectedDepartCode='+ShowDataDepartCode,
+                    + '&SelectedDepartCode='+ShowDataDepartCode
+    	            + '&SystemDateTime='+SystemDateTime,
     			datatype: "json",
     			colModel: [
     						/*{label: ' ',name:'myac',index:'', width:70, fixed:true, sortable:false, resize:false,
@@ -413,7 +414,7 @@
     						{ label: '责任中心', name: 'DEPT_CODE__', width: 60,hidden : true,editable: true,},
     						{ label: '变动列', name: 'CHANGE_COL__', width: 60,hidden : true,editable: true,},
 
-    						{ label: '业务期间', name: 'BUSI_DATE', hidden : true,editable: true},
+    						{ label: '业务期间', name: 'BUSI_DATE', hidden : false,editable: false},
     						{ label: '凭证类型', name: 'TYPE_CODE', hidden : true,editable: true},//,edittype: 'select',formatter:'select',formatoptions:{value:"${typeCodeStrSelect}"},editoptions:{value:"${typeCodeStrSelect}"},stype: 'select',searchoptions:{value:"${typeCodeStrAll}"} 
     						{ label: '账套', name: 'BILL_OFF', hidden : true,editable: true},//,edittype: 'select',formatter:'select',formatoptions:{value:"${billOffStrSelect}"},editoptions:{value:"${billOffStrSelect}"},stype: 'select',searchoptions:{value:"${billOffStrAll}"} 
     						{ label: '责任中心', name: 'DEPT_CODE', hidden : true,editable: true},//,edittype: 'select',formatter:'select',formatoptions:{value:"${departmentStrSelect}"},editoptions:{value:"${departmentStrSelect}"},stype: 'select',searchoptions:{value:"${departmentStrAll}"} 
@@ -440,7 +441,8 @@
     	            + '&SelectedTypeCode='+$("#SelectedTypeCode").val()
     	            + '&ShowDataDepartCode='+ShowDataDepartCode
     	            + '&ShowDataCustCol7='+ShowDataCustCol7
-    	            + '&ShowDataTypeCode='+ShowDataTypeCode,
+    	            + '&ShowDataTypeCode='+ShowDataTypeCode
+    	            + '&SystemDateTime='+SystemDateTime,
     			
     			pager: pagerBase_selector,
 				pgbuttons: false, // 分页按钮是否显示 
@@ -466,7 +468,7 @@
     			            //navbar options
     				        edit: true,
     			            editicon : 'ace-icon fa fa-pencil blue',
-    			            add: true,
+    			            add: false,
     			            addicon : 'ace-icon fa fa-plus-circle purple',
     			            del: false,
     			            delicon : 'ace-icon fa fa-trash-o red',
@@ -544,7 +546,7 @@
     	                     cursor : "pointer"
     	    });
 
-    	    $(gridBase_selector).navButtonAdd(pagerBase_selector, {
+    	    /*$(gridBase_selector).navButtonAdd(pagerBase_selector, {
     	        			id : "batchDelete",
     	                    caption : "",
     	                    buttonicon : "ace-icon fa fa-trash-o red",
@@ -552,7 +554,7 @@
     	                    position : "last",
     	                    title : "删除",
     	                    cursor : "pointer"
-    	    });
+    	    });*/
     	    $(gridBase_selector).navSeparatorAdd(pagerBase_selector, {
     	        			sepclass : "ui-separator",
     	        			sepcontent: ""
@@ -644,7 +646,7 @@
 	    /**
 	     * 批量删除
 	     */
-        function batchDelete(){
+	     function batchDelete(){
         	//获得选中的行ids的方法
         	var ids = $(gridBase_selector).getGridParam("selarrrow");  
 
@@ -670,7 +672,7 @@
     					$.ajax({
     						type: "POST",
     						url: '<%=basePath%>dataInput/deleteAll.do?',
-    				    	data: {DataRows:JSON.stringify(listData)},
+    				    	data: {DataRows:JSON.stringify(listData),SystemDateTime:SystemDateTime},
     						dataType:'json',
     						cache: false,
     						success: function(response){
@@ -739,7 +741,7 @@
         				$.ajax({
         					type: "POST",
         					url: '<%=basePath%>dataInput/updateAll.do?',
-        			    	data: {DataRows:JSON.stringify(listData)},
+        			    	data: {DataRows:JSON.stringify(listData),SystemDateTime:SystemDateTime},
         					dataType:'json',
         					cache: false,
         					success: function(response){
@@ -909,7 +911,7 @@
     				$.ajax({
     					type: "POST",
     					url: '<%=basePath%>dataInput/copyAll.do?'
-						 +'SelectedBusiDate='+SystemDateTime
+						 +'SystemDateTime='+SystemDateTime
 						 +'&SelectedCustCol7='+CustCol7
 					 	 +'&SelectedTypeCode='+TypeCode
 					 	 +'&SelectedDepartCode='+DepartCode,

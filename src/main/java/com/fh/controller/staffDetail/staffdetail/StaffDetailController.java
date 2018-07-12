@@ -1002,7 +1002,7 @@ public class StaffDetailController extends BaseController {
 												}
 											}
 											//账套-西气东输管道-9100 String CUST_COL7_xqdsgd = "9100";
-											//企业特定员工分类-西气东输管道机关-9870 String USER_CATG_XQDSGDJG = "PUT04";
+											//企业特定员工分类-西气东输管道机关-PUT04 String USER_CATG_XQDSGDJG = "PUT04";
 											if(getCUST_COL7.equals(CUST_COL7_xqdsgd)){
 												if(!(getUSER_CATG!=null && getUSER_CATG.equals(USER_CATG_XQDSGDJG))){
 										    	    continue;

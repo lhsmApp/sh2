@@ -63,9 +63,6 @@
 		select * 
 		from ${pd.TableName}
 		<where>
-		    <if test="pd.filterWhereResult!= null and pd.filterWhereResult != ''"><!-- 关键词检索 -->
-			    ${pd.filterWhereResult}
-		    </if>
 		    <if test="pd.QueryFeild!= null and pd.QueryFeild != ''">
 		        ${pd.QueryFeild}
 		    </if>

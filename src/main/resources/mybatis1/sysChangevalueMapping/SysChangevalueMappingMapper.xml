@@ -7,7 +7,7 @@
 		tb_sys_changevalue_mapping
 	</sql>
 	<!--表名 -->
-	<sql id="tableNameDataInput">
+	<sql id="tableDataInputName">
 		tb_data_input
 	</sql>
 	
@@ -91,24 +91,26 @@
 	<select id="getDelChangeValueList" parameterType="pd" resultType="pd">
 		select *
 		from 
-		<include refid="tableNameDataInput"></include>
+		<include refid="tableDataInputName"></include>
         <where>
 		  <foreach item="item" index="index" collection="list" open="(" separator=" or " close=")">
             ( BUSI_DATE = #{item.BUSI_DATE}
               and TYPE_CODE = #{item.TYPE_CODE__}
               and BILL_OFF = #{item.BILL_OFF__}
               and DEPT_CODE = #{item.DEPT_CODE__}
-              and CHANGE_COL = #{item.MAPPING_CODE__})
+              and CHANGE_COL = #{item.MAPPING_CODE__}
+              and DATA_VALUE != 0)
 		  </foreach>
         </where>
 	</select>
 	<select id="getUpdateChangeValueList" parameterType="pd" resultType="pd">
 		select *
 		from 
-		<include refid="tableNameDataInput"></include>
+		<include refid="tableDataInputName"></include>
         <where>
 		  <foreach item="item" index="index" collection="list" open=" " separator=" or " close=" ">
             (BUSI_DATE = #{item.BUSI_DATE} and TYPE_CODE = #{item.TYPE_CODE} and BILL_OFF = #{item.BILL_OFF} and DEPT_CODE = #{item.DEPT_CODE}
+             and DATA_VALUE != 0
              and CHANGE_COL != #{item.MAPPING_CODE} and CHANGE_COL = #{item.MAPPING_CODE__})
 		  </foreach>
         </where>

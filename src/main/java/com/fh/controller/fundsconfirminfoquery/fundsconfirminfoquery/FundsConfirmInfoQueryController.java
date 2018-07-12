@@ -52,12 +52,6 @@ public class FundsConfirmInfoQueryController extends BaseController {
 	@Resource(name="sysconfigService")
 	private SysConfigManager sysConfigManager;
 
-	//表名
-	String tb_sys_confirm_info = "tb_sys_confirm_info";
-	String tb_staff_summy_bill = "tb_staff_summy_bill";
-	String tb_social_inc_summy_bill = "tb_social_inc_summy_bill";
-	String tb_house_fund_summy_bill = "tb_house_fund_summy_bill";
-
 	//默认的which值
 	String DefaultWhile = TmplType.TB_STAFF_SUMMY_CONTRACT.getNameKey();
 

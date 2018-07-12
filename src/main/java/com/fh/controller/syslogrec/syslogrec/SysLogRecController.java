@@ -21,10 +21,12 @@ import com.fh.entity.Page;
 import com.fh.entity.PageResult;
 import com.fh.util.PageData;
 import com.fh.util.SqlTools;
+import com.fh.util.DateUtil;
 import com.fh.util.Jurisdiction;
-
+import com.fh.service.fhoa.department.DepartmentManager;
 import com.fh.service.syslogrec.syslogrec.SysLogRecManager;
 import com.fh.service.system.dictionaries.DictionariesManager;
+import com.fh.service.system.user.UserManager;
 
 /** 
  * 说明：  日志
@@ -42,6 +44,10 @@ public class SysLogRecController extends BaseController {
 
 	@Resource(name = "dictionariesService")
 	private DictionariesManager dictionariesService;
+	@Resource(name = "departmentService")
+	private DepartmentManager departmentService;
+	@Resource(name = "userService")
+	private UserManager userService;
 	
 	//界面查询字段
     List<String> QueryFeildList = Arrays.asList("TYPE_CODE", "BILL_OFF");
@@ -58,7 +64,11 @@ public class SysLogRecController extends BaseController {
 		ModelAndView mv = this.getModelAndView();
 		mv.setViewName("syslogrec/syslogrec/syslogrec_list");
 		PageData getPd = this.getPageData();
-
+		
+		//当前期间,取自tb_system_config的SystemDateTime字段
+		String strDateTime = DateUtil.getDay();
+		mv.addObject("CurryDateTime", strDateTime);
+		
 		//TYPE_CODE PZTYPE 凭证字典
 		mv.addObject("PZTYPE", DictsUtil.getDictsByParentCode(dictionariesService, "PZTYPE"));
 		String typeCodeValus = DictsUtil.getDicValue(dictionariesService, "PZTYPE");
@@ -66,14 +76,23 @@ public class SysLogRecController extends BaseController {
 		String typeCodeStringSelect = ":;" + typeCodeValus;
 		mv.addObject("typeCodeStrAll", typeCodeStringAll);
 		mv.addObject("typeCodeStrSelect", typeCodeStringSelect);
-		//BILL_OFF FMISACC 帐套字典
-		mv.addObject("FMISACC", DictsUtil.getDictsByParentCode(dictionariesService, "FMISACC"));
-		String billOffValus = DictsUtil.getDicValue(dictionariesService, "FMISACC");
-		String billOffStringAll = ":[All];" + billOffValus;
-		String billOffStringSelect = ":;" + billOffValus;
-		mv.addObject("billOffStrAll", billOffStringAll);
-		mv.addObject("billOffStrSelect", billOffStringSelect);
 
+		// *********************加载单位树  DEPT_CODE*******************************
+		String DepartmentSelectTreeSource=DictsUtil.getDepartmentSelectTreeSource(departmentService, DictsUtil.DepartShowAll);
+		mv.addObject("zTreeNodes", DepartmentSelectTreeSource);
+		// ***********************************************************
+		String departmentValus = DictsUtil.getDepartmentValue(departmentService);
+		String departmentStringAll = ":[All];" + departmentValus;
+		String departmentStringSelect = ":;" + departmentValus;
+		mv.addObject("departmentStrAll", departmentStringAll);
+		mv.addObject("departmentStrSelect", departmentStringSelect);
+
+		String userCodeValus = DictsUtil.getSysUserValue(userService);
+		String userCodeStringAll = ":[All];" + userCodeValus;
+		String userCodeStringSelect = ":;" + userCodeValus;
+		mv.addObject("userCodeStrAll", userCodeStringAll);
+		mv.addObject("userCodeStrSelect", userCodeStringSelect);
+		
 		mv.addObject("pd", getPd);
 		return mv;
 	}
@@ -87,15 +106,18 @@ public class SysLogRecController extends BaseController {
 		logBefore(logger, Jurisdiction.getUsername()+"列表");
 
 		PageData getPd = this.getPageData();
-		//账套
-		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
+		//日期
+		String SelectedBusiDate = getPd.getString("SelectedBusiDate");
 		//凭证字典
 		String SelectedTypeCode = getPd.getString("SelectedTypeCode");
+		//账套
+		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
 
-		PageData getQueryFeildPd = new PageData();
-		getQueryFeildPd.put("TYPE_CODE", SelectedTypeCode);
-		getQueryFeildPd.put("BILL_OFF", SelectedCustCol7);
-		String QueryFeild = QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList);
+		String QueryFeild = " and TYPE_CODE = '" + SelectedTypeCode + "' ";
+		if(SelectedDepartCode!=null && !SelectedDepartCode.trim().equals("")){
+			QueryFeild += " and DEPT_CODE in (" + QueryFeildString.getSqlInString(SelectedDepartCode) + ") ";
+		}
+		QueryFeild += " and (REC_DATE like '" + SelectedBusiDate + "%' or REC_DATE like '" + SelectedBusiDate.replace("-", "") + "%') ";
 		getPd.put("QueryFeild", QueryFeild);
 		
 		//多条件过滤条件

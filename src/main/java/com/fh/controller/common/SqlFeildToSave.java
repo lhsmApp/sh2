@@ -37,8 +37,8 @@ public class SqlFeildToSave {
 			for(SysStruMapping struMapping : getSysStruMappingList){
 				String COL_CODE = struMapping.getCOL_CODE();
 				String COL_MAPPING_CODE = struMapping.getCOL_MAPPING_CODE();
-				String COL_VALUE = struMapping.getCOL_VALUE().toUpperCase();
-				String COL_MAPPING_VALUE = struMapping.getCOL_MAPPING_VALUE().toUpperCase();
+				String COL_VALUE = struMapping.getCOL_VALUE().toUpperCase().trim();
+				String COL_MAPPING_VALUE = struMapping.getCOL_MAPPING_VALUE().toUpperCase().trim();
 				if(COL_CODE!=null && !COL_CODE.trim().equals("")){
 					if(sqlSelFeild!=null && !sqlSelFeild.trim().equals("")){
 						sqlSelFeild += ", ";

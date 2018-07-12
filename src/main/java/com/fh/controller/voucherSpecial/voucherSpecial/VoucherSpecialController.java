@@ -42,6 +42,7 @@ import com.fh.entity.TableColumns;
 import com.fh.entity.TmplConfigDetail;
 import com.fh.entity.system.User;
 import com.fh.service.fhoa.department.DepartmentManager;
+import com.fh.service.fundsselfsummy.fundsselfsummy.FundsSelfSummyManager;
 import com.fh.service.glZrzxFx.glZrzxFx.GlZrzxFxManager;
 import com.fh.service.sysConfig.sysconfig.SysConfigManager;
 import com.fh.service.sysSealedInfo.syssealedinfo.SysSealedInfoManager;
@@ -54,6 +55,7 @@ import com.fh.service.tmplconfig.tmplconfig.impl.TmplConfigService;
 import com.fh.service.voucher.voucher.VoucherManager;
 import com.fh.util.AppUtil;
 import com.fh.util.Const;
+import com.fh.util.DateUtil;
 import com.fh.util.Jurisdiction;
 import com.fh.util.ObjectExcelView;
 import com.fh.util.PageData;
@@ -116,6 +118,9 @@ public class VoucherSpecialController extends BaseController {
 
 	@Resource(name = "glZrzxFxService")
 	private GlZrzxFxManager glZrzxFxService;
+
+	@Resource(name="fundsselfsummyService")
+	private FundsSelfSummyManager fundsselfsummyService;
 
 	// 底行显示的求和与平均值字段
 	private StringBuilder SqlUserdata = new StringBuilder();
@@ -547,6 +552,20 @@ public class VoucherSpecialController extends BaseController {
 				String billOffMapping=pageData.getString("MAPPING_CODE");
 				String transferDataInsert = generateTransferData.generateTransferData(tableColumnsForTransfer,
 						mapTransferData, billOffMapping, TransferOperType.INSERT);
+				try{
+					PageData pdSaveError = new PageData();
+					User user = (User) Jurisdiction.getSession().getAttribute(Const.SESSION_USERROL);
+					pdSaveError.put("sys_log_rec_USER_CODE", user.getUSER_ID());
+					pdSaveError.put("sys_log_rec_DEPT_CODE", Jurisdiction.getCurrentDepartmentID());
+					pdSaveError.put("sys_log_rec_REC_DATE", DateUtil.getTime());
+					pdSaveError.put("sys_log_rec_TYPE_CODE", typeCode);
+					pdSaveError.put("sys_log_rec_BILL_CODE", " ");
+					pdSaveError.put("StrSaveError", transferDataInsert);
+			    	Map<String, Object> map = new HashMap<String, Object>();
+			    	map.put("SaveError", pdSaveError);
+			    	fundsselfsummyService.batchSaveLog(map);
+				} catch(Exception ex) {}
+				
 				String messageInsert = (String) call.invoke(new Object[] { transferDataInsert });
 				if (!messageInsert.equals("TRUE")) {
 					transferSuccessAll=false;
@@ -728,6 +747,106 @@ public class VoucherSpecialController extends BaseController {
 		List<PageData> listTransferData = (List<PageData>) JSONArray.toCollection(array, PageData.class);// 过时方法
 		if (null != listTransferData && listTransferData.size() > 0) {
 			/********************** 生成传输数据 ************************/
+			PageData pdDetail = new PageData();
+			List<String> listBillCodes = new ArrayList<String>();
+			for (PageData pdItem : listTransferData) {
+				listBillCodes.add(pdItem.getString("BILL_CODE"));
+			}
+			pdDetail.put("BILL_CODES", listBillCodes);
+
+			List<PageData> listTransferDataDetail = voucherService.findSummyDetailListByBillCodesSpecial(pdDetail);
+			addLineNumForTransferData(listTransferDataDetail);
+
+			PageData pdFirst = listTransferData.get(0);
+			String orgCode = pdFirst.getString("BILL_OFF");
+			String busiDate=pdFirst.getString("BUSI_DATE");
+			String typeCode=pdFirst.getString("TYPE_CODE");
+			
+			String tableCodeOnFmis = getTableCodeOnFmis(typeCode,orgCode);
+			// 根据表编号和真实表名称获取用于传输的字段列配置信息
+			List<TableColumns> tableColumnsForTransfer = getTableColumnsForTransfer(orgCode, busiDate, typeCode);
+			GenerateTransferData generateTransferData = new GenerateTransferData();
+			Map<String, List<PageData>> mapTransferData = new HashMap<String, List<PageData>>();
+			mapTransferData.put(tableCodeOnFmis, listTransferDataDetail);
+			
+			/*
+			 * String transferData = generateTransferData.generateTransferData(
+			 * tableColumnsForTransfer, mapTransferData, orgCode,
+			 * TransferOperType.DELETE);
+			 */
+
+			// 执行上传FIMS
+			Service service = new Service();
+			Call call = (Call) service.createCall();
+			pd.put("KEY_CODE", "JSynFactTableData");
+			String strUrl = sysConfigManager.getSysConfigByKey(pd);
+			URL url = new URL(strUrl);
+			call.setTargetEndpointAddress(url);
+			call.setOperationName(new QName("http://JSynFactTableData.j2ee", "synFactData"));
+			call.setUseSOAPAction(true);
+			
+			/*
+			 * String message = (String) call.invoke(new Object[] { transferData
+			 * }); System.out.println(message); if (message == null) {
+			 * commonBase.setCode(-1); commonBase.setMessage("传输接口出错,请联系管理员！");
+			 * } else { if (message.equals("TRUE")) {
+			 */
+			
+			PageData pdBillOffMapping=new PageData();
+			pdBillOffMapping.put("BILL_OFF", orgCode);
+			pdBillOffMapping.put("TYPE_CODE", typeCode);
+			List<PageData> listBillOffMapping = voucherService.findBilloffMapping(pdBillOffMapping);
+			
+			//上传
+			boolean transferSuccessAll=true;
+			for (PageData pageData : listBillOffMapping) {
+				String billOffMapping=pageData.getString("MAPPING_CODE");
+				String transferDataInsert = generateTransferData.generateTransferData(tableColumnsForTransfer,
+						mapTransferData, billOffMapping, TransferOperType.DELETE);
+				try{
+					PageData pdSaveError = new PageData();
+					User user = (User) Jurisdiction.getSession().getAttribute(Const.SESSION_USERROL);
+					pdSaveError.put("sys_log_rec_USER_CODE", user.getUSER_ID());
+					pdSaveError.put("sys_log_rec_DEPT_CODE", Jurisdiction.getCurrentDepartmentID());
+					pdSaveError.put("sys_log_rec_REC_DATE", DateUtil.getTime());
+					pdSaveError.put("sys_log_rec_TYPE_CODE", typeCode);
+					pdSaveError.put("sys_log_rec_BILL_CODE", " ");
+					pdSaveError.put("StrSaveError", transferDataInsert);
+			    	Map<String, Object> map = new HashMap<String, Object>();
+			    	map.put("SaveError", pdSaveError);
+			    	fundsselfsummyService.batchSaveLog(map);
+				} catch(Exception ex) {}
+				String message = (String) call.invoke(new Object[] { transferDataInsert });
+				if (message == null) {
+					transferSuccessAll=false;
+					commonBase.setCode(-1);
+					commonBase.setMessage("传输接口出错,请联系管理员！");
+					break;
+				} else {
+					if (!message.equals("TRUE")) {
+						transferSuccessAll=false;
+						commonBase.setCode(-1);
+						commonBase.setMessage(message);
+						break;
+					}
+				}
+			}
+			
+			// 更改TB_SYS_UNLOCK_INFO删除状态
+			if(transferSuccessAll){
+				User user = (User) Jurisdiction.getSession().getAttribute(Const.SESSION_USERROL);
+				String userId = user.getUSER_ID();
+				for (PageData pdItem : listTransferData) {
+					pdItem.put("DEL_USER", userId);
+					pdItem.put("DEL_DATE", DateUtils.getCurrentTime());// YYYY-MM-DD
+																		// HH:MM:SS
+				}
+				sysUnlockInfoService.edit(listTransferData);
+				commonBase.setCode(0);
+			}
+		}
+		/*if (null != listTransferData && listTransferData.size() > 0) {
+			///********************** 生成传输数据 ***********************
 			//String tableCodeOnFmis = getTableCodeOnFmis(which);
 
 			// 根据表编号和真实表名称获取用于传输的字段列配置信息
@@ -794,7 +913,7 @@ public class VoucherSpecialController extends BaseController {
 				sysUnlockInfoService.edit(listTransferData);
 				commonBase.setCode(0);
 			}
-		}
+		}*/
 		return commonBase;
 	}
 

@@ -56,8 +56,6 @@ public class SysTableMappingController extends BaseController {
 
 	//TABLE_NAME_MAPPING
 	String TABLE_NAME_MAPPING = "tb_gen_bus_detail";
-	//页面显示数据的年月
-	//String SystemDateTime = "";
 	//界面查询字段
     List<String> QueryFeildList = Arrays.asList("TYPE_CODE", "BILL_OFF", "BUSI_DATE");
     //设置必定不用编辑的列            SERIAL_NO 设置字段类型是数字，但不管隐藏 或显示都必须保存的

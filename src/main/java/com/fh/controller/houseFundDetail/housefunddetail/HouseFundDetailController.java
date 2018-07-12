@@ -870,6 +870,12 @@ public class HouseFundDetailController extends BaseController {
 										if(!(getESTB_DEPT!=null && !getESTB_DEPT.trim().equals(""))){
 											pdAdd.put("ESTB_DEPT", SelectedDepartCode);
 										}
+									    String getUSER_GROP = (String) pdAdd.get("USER_GROP");
+									    if(!(getUSER_GROP!=null && !getUSER_GROP.trim().equals(""))){
+											if(!sbRet.contains("员工组不能为空！")){
+												sbRet.add("员工组不能为空！");
+											}
+								        }
 										//Common.setModelDefault(pdAdd, map_HaveColumnsList, map_SetColumnsList);
 										//pdAdd.put("CanOperate", strHelpful);
 										//pdAdd.put("TableName", TableNameBackup);

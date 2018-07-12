@@ -152,7 +152,7 @@ public class FundsSelfSummyController extends BaseController {
 		mv.setViewName("fundsselfsummy/fundsselfsummy/fundsselfsummy_list");
 		//当前期间,取自tb_system_config的SystemDateTime字段
 		SystemDateTime = sysConfigManager.currentSection(getPd);
-		mv.addObject("SystemDateTime", SystemDateTime);
+		mv.addObject("SystemDateTime", SystemDateTime.trim());
 
 		//BILL_OFF FMISACC 帐套字典
 		mv.addObject("FMISACC", DictsUtil.getDictsByParentCode(dictionariesService, "FMISACC"));
@@ -597,7 +597,7 @@ public class FundsSelfSummyController extends BaseController {
 	    	commonBase.setMessage(Message.NotGetBillTypeFromVoucher);
 	    	return commonBase;
 	    }
-		String month = DateUtil.getMonth();
+		String month = SystemDateTime.replace("-", "");//DateUtil.getMonth();
 		PageData pdBillNum=new PageData();
 		pdBillNum.put("BILL_CODE", billNumType);
 		pdBillNum.put("BILL_DATE", month);

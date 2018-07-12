@@ -21,8 +21,8 @@
 	
 	<!-- 最新版的Jqgrid Css，如果旧版本（Ace）某些方法不好用，尝试用此版本Css，替换旧版本Css -->
 	<!-- <link rel="stylesheet" type="text/css" media="screen" href="static/ace/css/ui.jqgrid-bootstrap.css" /> -->
-	
 	<script type="text/javascript" src="static/js/jquery-1.7.2.js"></script>
+	
 	<!-- 树形下拉框start -->
 	<script type="text/javascript" src="plugins/selectZtree/selectTree.js"></script>
 	<script type="text/javascript" src="plugins/selectZtree/framework.js"></script>
@@ -34,7 +34,7 @@
 	<!-- 树形下拉框end -->
     <!-- 标准页面统一样式 -->
     <link rel="stylesheet" href="static/css/normal.css" />
-	
+	<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
     <style>
 		.page-header{
 			padding-top: 9px;
@@ -52,8 +52,7 @@
 					<div class="page-header">
 						<span class="label label-xlg label-success arrowed-right">东部管道</span>
 						<!-- arrowed-in-right -->
-						<span
-							class="label label-xlg label-yellow arrowed-in arrowed-right"
+						<span class="label label-xlg label-yellow arrowed-in arrowed-right"
 							id="subTitle" style="margin-left: 2px;">日志查询</span> <span
 							style="border-left: 1px solid #e2e2e2; margin: 0px 10px;">&nbsp;</span>
 						<button id="btnQuery" class="btn btn-white btn-info btn-sm"
@@ -70,18 +69,16 @@
 									<div class="widget-main">
 										<form class="form-inline">
 											<span class="pull-left" style="margin-right: 5px;">
-												<select class="chosen-select form-control"
-													name="SelectedCustCol7" id="SelectedCustCol7"
-													data-placeholder="请选择帐套"
-													style="vertical-align: top; height:32px;width: 150px;">
-													<option value="">请选择帐套</option>
-													<c:forEach items="${FMISACC}" var="each">
-														<option value="${each.DICT_CODE}"
-														    <c:if test="${pd.SelectedCustCol7==each.DICT_CODE}">selected</c:if>>${each.NAME}</option>
-													</c:forEach>
-												</select>
+											    <span class="input-icon" style="margin-right: 5px;">
+												    <input class="input-mask-date" type="text" placeholder="请填写日期"
+												        name="SelectedBusiDate" id="SelectedBusiDate" > 
+												    <i class="ace-icon fa fa-calendar blue"></i>
+											    </span>
+						                        <!-- <input name="SelectedBusiDate" id="SelectedBusiDate"
+						                            type="text" class="form-control Wdate"
+						                            onclick="WdatePicker({dateFmt:'yyyy-MM-dd'})"/> -->
 											</span>
-											<span style="margin-right: 5px;"> 
+											<span class="pull-left" style="margin-right: 5px;"> 
 												<select class="chosen-select form-control" 
 												    name="SelectedTypeCode" id="SelectedTypeCode" data-placeholder="请选择业务类型"
 													style="vertical-align: top; height: 32px; width: 150px;">
@@ -91,6 +88,11 @@
 																<c:if test="${pd.SelectedTypeCode==each.DICT_CODE}">selected</c:if>>${each.NAME}</option>
 														</c:forEach>
 												</select>
+											</span>
+											<span class="pull-left" style="margin-right: 5px;">
+												<div class="selectTree" id="selectTree" multiMode="true"
+												    allSelectable="false" noGroup="false"></div>
+											    <input id="SelectedDepartCode" type="hidden"></input>
 											</span>
 											<button type="button" class="btn btn-info btn-sm"
 												onclick="tosearch();">
@@ -152,6 +154,11 @@
     
 	$(document).ready(function () { 
 		$(top.hangge());//关闭加载状态
+
+		// $('.input-mask-date').mask('9999-99-99');
+        var CurryDateTime = '${CurryDateTime}';
+        //CurryDateTime = Date.parse(new Date(CurryDateTime.replace(/-/g, "/")));
+		$("#SelectedBusiDate").val(CurryDateTime);
 		 
 		//resize to fit page size
 		$(window).on('resize.jqGrid', function () {
@@ -160,25 +167,24 @@
 	    })
 		
 		$(grid_selector).jqGrid({
-			 url: '<%=basePath%>syslogrec/getPageList.do?SelectedCustCol7='+$("#SelectedCustCol7").val()
-                    + '&SelectedTypeCode=' + $("#SelectedTypeCode").val(),
+			 url: '<%=basePath%>syslogrec/getPageList.do?SelectedDepartCode='+$("#SelectedDepartCode").val()
+                    + '&SelectedTypeCode=' + $("#SelectedTypeCode").val()
+                    + '&SelectedBusiDate=' + $("#SelectedBusiDate").val(),
 			 datatype: "json",
 			 colModel: [
-				{ label: '账套',name:'BILL_OFF__', width:90,hidden : true,editable: true},
-				{ label: '业务类型', name: 'TYPE_CODE__', width: 60,hidden : true,editable: true,},
-				{ label: '账套映射', name: 'MAPPING_CODE__', width: 60,hidden : true,editable: true,},
-
-				{ label: '账套', name: 'BILL_OFF', width: 60,editable: true, editrules:{required:true}, edittype: 'select',formatter:'select',formatoptions:{value:"${billOffStrSelect}"},editoptions:{value:"${billOffStrSelect}"},stype: 'select',searchoptions:{value:"${billOffStrAll}"}},
-				{ label: '业务类型', name: 'TYPE_CODE', width: 60,editable: true, editrules:{required:true},edittype: 'select',formatter:'select',formatoptions:{value:"${typeCodeStrSelect}"},editoptions:{value:"${typeCodeStrSelect}"},stype: 'select',searchoptions:{value:"${typeCodeStrAll}"}},
-				{ label: '账套映射', name: 'MAPPING_CODE', width: 90,editable: true, editrules:{required:true},edittype: 'select',formatter:'select',formatoptions:{value:"${billOffStrSelect}"},editoptions:{value:"${billOffStrSelect}"},stype: 'select',searchoptions:{value:"${billOffStrAll}"}},
-				{ label: 'FMIS数据表', name: 'FMIS_TABLE', width: 80, editable: true,edittype:'text', editoptions:{maxLength:'50'}}    
+				{ label: '日志时间', name: 'REC_DATE', width: 60,editable: false,},
+				{ label: '业务类型', name: 'TYPE_CODE', width: 90,editable: false, edittype: 'select',formatter:'select',formatoptions:{value:"${typeCodeStrSelect}"},editoptions:{value:"${typeCodeStrSelect}"},stype: 'select',searchoptions:{value:"${typeCodeStrAll}"}},
+				{ label: '登录单位', name: 'DEPT_CODE', width: 90,editable: false, edittype: 'select',formatter:'select',formatoptions:{value:"${departmentStrSelect}"},editoptions:{value:"${departmentStrSelect}"},stype: 'select',searchoptions:{value:"${departmentStrAll}"}},
+				{ label: '用户', name: 'USER_CODE', width: 60, editable: false,edittype: 'select',formatter:'select',formatoptions:{value:"${userCodeStrSelect}"},editoptions:{value:"${userCodeStrSelect}"},stype: 'select',searchoptions:{value:"${userCodeStrAll}"}},
+				{ label: '单号', name: 'BILL_CODE', width: 90,editable: false},
+				{ label: 'SQL信息', name: 'SQL_STR', width: 200,editable: false,}
 			],
 			reloadAfterSubmit: true, 
 			viewrecords: true,
 			rowNum: 0,
 			//rowList: [100,200,500],
             multiSort: true,
-			sortname: 'BILL_OFF,TYPE_CODE,MAPPING_CODE',
+			sortname: 'TYPE_CODE,DEPT_CODE',
 			altRows: true,
 			//rownumbers: true, 
             //rownumWidth: 35,		
@@ -235,11 +241,30 @@
 		});
  	});
 	
+	//加载单位树
+    function initComplete(){
+	    //下拉树
+	    var defaultNodes = {"treeNodes":${zTreeNodes}};
+		//绑定change事件
+		$("#selectTree").bind("change",function(){
+			$("#SelectedDepartCode").val("");
+			if($(this).attr("relValue")){
+				$("#SelectedDepartCode").val($(this).attr("relValue"));
+		    }
+			getSelectBillCodeOptions();
+		});
+		//赋给data属性
+		$("#selectTree").data("data",defaultNodes);  
+		$("#selectTree").render();
+		$("#selectTree2_input").val("请选择单位");
+    }
+	
 		//检索
 		function tosearch() {
 			$(grid_selector).jqGrid('setGridParam',{  // 重新加载数据
-				url:'<%=basePath%>syslogrec/getPageList.do?SelectedCustCol7='+$("#SelectedCustCol7").val()
-                + '&SelectedTypeCode=' + $("#SelectedTypeCode").val(),
+				url:'<%=basePath%>syslogrec/getPageList.do?SelectedDepartCode='+$("#SelectedDepartCode").val()
+                + '&SelectedTypeCode=' + $("#SelectedTypeCode").val()
+                + '&SelectedBusiDate=' + $("#SelectedBusiDate").val(),
 								datatype : 'json'
 							}).trigger("reloadGrid");
 		}

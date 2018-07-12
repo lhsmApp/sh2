@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 import com.fh.controller.base.BaseController;
+import com.fh.controller.common.CheckSystemDateTime;
 import com.fh.controller.common.Message;
 import com.fh.controller.common.QueryFeildString;
 import com.fh.controller.common.SelectBillCodeOptions;
@@ -63,7 +64,7 @@ public class DataInputController extends BaseController {
 	private DepartmentService departmentService;
 	
 	//当前期间,取自tb_system_config的SystemDateTime字段
-	String SystemDateTime = "";
+	//String SystemDateTime = "";
     //设置必定不用编辑的列
     List<String> MustNotEditList = Arrays.asList("TYPE_CODE", "BILL_OFF", "DEPT_CODE", "BUSI_DATE");
 
@@ -94,8 +95,8 @@ public class DataInputController extends BaseController {
 		ModelAndView mv = this.getModelAndView();
 		mv.setViewName("dataInput/dataInput/dataInput_list");
 		//当前期间,取自tb_system_config的SystemDateTime字段
-		SystemDateTime = sysConfigManager.currentSection(getPd);
-		mv.addObject("SystemDateTime", SystemDateTime);
+		String SystemDateTime = sysConfigManager.currentSection(getPd);
+		mv.addObject("SystemDateTime", SystemDateTime.trim());
 		User user = (User) Jurisdiction.getSession().getAttribute(Const.SESSION_USERROL);
 		String DepartName = user.getDEPARTMENT_NAME();
 		mv.addObject("DepartName", DepartName);
@@ -241,8 +242,6 @@ public class DataInputController extends BaseController {
 		PageData getPd = this.getPageData();
 		
 		PageData pdTransfer = setTransferPd(getPd);
-		//页面显示数据的年月
-		pdTransfer.put("SystemDateTime", SystemDateTime);
 		page.setPd(pdTransfer);
 		
 		List<PageData> varList = dataInputService.JqPage(page);	//列出Betting列表
@@ -279,6 +278,14 @@ public class DataInputController extends BaseController {
 		String ShowDataDepartCode = getPd.getString("ShowDataDepartCode");
 		//操作
 		String oper = getPd.getString("oper");
+		//当前区间
+		String SystemDateTime = getPd.getString("SystemDateTime");
+		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager);
+		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
+			commonBase.setCode(2);
+			commonBase.setMessage(mesDateTime);
+			return commonBase;
+		}
 		
 		//必定不用编辑的列  MustNotEditList Arrays.asList("BUSI_DATE");
 		List<PageData> listData = new ArrayList<PageData>();
@@ -338,6 +345,14 @@ public class DataInputController extends BaseController {
 		String json = DATA_ROWS.toString();  
         JSONArray array = JSONArray.fromObject(json);  
         List<PageData> listData = (List<PageData>) JSONArray.toCollection(array,PageData.class);
+		//当前区间
+		String SystemDateTime = getPd.getString("SystemDateTime");
+		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager);
+		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
+			commonBase.setCode(2);
+			commonBase.setMessage(mesDateTime);
+			return commonBase;
+		}
         
 		if(null != listData && listData.size() > 0){
 			for(PageData pdData : listData){
@@ -374,6 +389,14 @@ public class DataInputController extends BaseController {
 		String json = DATA_ROWS.toString();  
         JSONArray array = JSONArray.fromObject(json);  
         List<PageData> listData = (List<PageData>) JSONArray.toCollection(array,PageData.class);
+		//当前区间
+		String SystemDateTime = getPd.getString("SystemDateTime");
+		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager);
+		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
+			commonBase.setCode(2);
+			commonBase.setMessage(mesDateTime);
+			return commonBase;
+		}
         if(null != listData && listData.size() > 0){
 			dataInputService.deleteAll(listData);
 			commonBase.setCode(0);
@@ -398,8 +421,14 @@ public class DataInputController extends BaseController {
 		String SelectedTypeCode = pd.getString("SelectedTypeCode");
 		//单位
 		String SelectedDepartCode = pd.getString("SelectedDepartCode");
-		//业务期间
-		String SelectedBusiDate = pd.getString("SelectedBusiDate");
+		//当前区间
+		String SystemDateTime = pd.getString("SystemDateTime");
+		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager);
+		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
+			commonBase.setCode(2);
+			commonBase.setMessage(mesDateTime);
+			return commonBase;
+		}
 		//
 		//JSONArray array = JSONArray.fromObject(pd.getString("deptIds"));
 		//List<String> listCode = (List<String>) JSONArray.toCollection(array, String.class);// 过时方法
@@ -407,7 +436,7 @@ public class DataInputController extends BaseController {
 		//if(listCode.contains(SelectedDepartCode)){
 		//	bolSelf = true;
 		//}
-		List<String> listSelfDate = getListDate(SelectedBusiDate, true);
+		List<String> listSelfDate = getListDate(SystemDateTime, true);
 		List<String> listSelfCode = Arrays.asList(SelectedDepartCode);
 		if(listSelfDate!=null&&listSelfDate.size()>0 && listSelfCode!=null&&listSelfCode.size()>0){//bolSelf && 
 			pd.put("BUSI_DATES_SELF", listSelfDate);
@@ -424,7 +453,7 @@ public class DataInputController extends BaseController {
 		
 		if ((listSelfDate!=null&&listSelfDate.size()>0 && listSelfCode!=null&&listSelfCode.size()>0)) {//bolSelf && 
 				//|| (listOthersDate!=null&&listOthersDate.size()>0 && listOthersCode!=null&&listOthersCode.size()>0)
-			String checkState = CheckCopyData(SelectedCustCol7, SelectedTypeCode, SelectedDepartCode, SelectedBusiDate, pd);
+			String checkState = CheckCopyData(SelectedCustCol7, SelectedTypeCode, SelectedDepartCode, SystemDateTime, pd);
 			if(checkState!=null && !checkState.trim().equals("")){
 				commonBase.setCode(2);
 				commonBase.setMessage(checkState);
@@ -539,6 +568,8 @@ public class DataInputController extends BaseController {
 		String SelectedTypeCode = getPd.getString("SelectedTypeCode");
 		//单位
 		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
+		//当前区间
+		String SystemDateTime = getPd.getString("SystemDateTime");
 		
 		PageData getQueryFeildPd = new PageData();
 		getQueryFeildPd.put("DEPT_CODE", SelectedDepartCode);
