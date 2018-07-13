@@ -61,6 +61,7 @@ import com.fh.util.enums.BillState;
 import com.fh.util.enums.SysConfigKeyCode;
 import com.fh.util.enums.TmplType;
 import com.fh.util.enums.TransferOperType;
+import com.sun.mail.handlers.message_rfc822;
 
 import net.sf.json.JSONArray;
 
@@ -996,10 +997,12 @@ public class VoucherController extends BaseController {
 				// String fmisOrg = Tools.readTxtFile(Const.ORG_CODE); //
 				// 读取总部组织机构编码
 				String fmisOrg = item.getString("CUST_COL7"); // 读取总部组织机构编码
+				String busiDate = item.getString("BUSI_DATE"); // 读取业务期间
 				// String tableName = "T_" + getTableCode(which);// 在fmis建立的业务表名
 				String tableName = "T_" + getTableCodeOnFmis(which);// 在fmis建立的业务表名
 				String result = (String) call.invoke(new Object[] { tableName, invoiceNumber, fmisOrg });// 对应定义参数
 				if (result.length() > 0) {
+					commonBase.setCode(0);
 					String[] stringArr = result.split(";");
 					String pzbh = stringArr[0]; // 凭证编号
 					// String kjqj = stringArr[1];// 会计期间
@@ -1010,6 +1013,8 @@ public class VoucherController extends BaseController {
 					pdCert.put("BILL_USER", userId);
 					pdCert.put("BILL_DATE", DateUtils.getCurrentTime());// YYYY-MM-DD
 																		// HH:MM:SS
+					pdCert.put("VOUCHER_DATE", stringArr[1]);
+					pdCert.put("BUSI_DATE", busiDate);
 					listVoucherNo.add(pdCert);
 				}
 			}
@@ -1070,23 +1075,24 @@ public class VoucherController extends BaseController {
 
 				String result = (String) call
 						.invoke(new Object[] { tableName, fmisOrg, voucherDate, voucherNumber, workDate });// 对应定义参数
-				if (result.length() > 0) {
-					String[] stringArr = result.split(";");
-					String flag = stringArr[0];
-					if (flag.equals("TRUE")) {
-						String reseverNumber = stringArr[1];// 冲销凭证编号
-						// String invoiceNumbers = "";// 冲销凭证编号
+				String [] resultStrs=result.split(";");
+				if(resultStrs.length>0&&resultStrs[0].equals("FALSE")){
+					commonBase.setMessage(result);
+				}	
+				else if(resultStrs.length>0&&resultStrs[0].equals("TRUE")){
+					commonBase.setCode(0);
+					String reseverNumber = resultStrs[1];// 冲销凭证编号
+					// String invoiceNumbers = "";// 冲销凭证编号
 
-						// 执行获取凭证成功后对数据表进行凭证号更新
-						PageData pdCert = new PageData();
-						pdCert.put("BILL_CODE", item.getString("BILL_CODE"));
-						pdCert.put("CERT_CODE", item.getString("CERT_CODE"));
-						pdCert.put("REVCERT_CODE", reseverNumber);
-						pdCert.put("BILL_USER", userId);
-						pdCert.put("BILL_DATE", DateUtils.getCurrentTime());// YYYY-MM-DD
-																			// HH:MM:SS
-						listVoucherNo.add(pdCert);
-					}
+					// 执行获取凭证成功后对数据表进行凭证号更新
+					PageData pdCert = new PageData();
+					pdCert.put("BILL_CODE", item.getString("BILL_CODE"));
+					//pdCert.put("CERT_CODE", item.getString("CERT_CODE"));
+					pdCert.put("REVCERT_CODE", reseverNumber);
+					//pdCert.put("BILL_USER", userId);
+					//pdCert.put("BILL_DATE", DateUtils.getCurrentTime());// YYYY-MM-DD
+																		// HH:MM:SS
+					listVoucherNo.add(pdCert);
 				}
 			}
 			if (null != listVoucherNo && listVoucherNo.size() > 0) {
