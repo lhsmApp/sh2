@@ -57,7 +57,7 @@ public class SysChangevalueMappingController extends BaseController {
 	private DictionariesManager dictionariesService;
 	
 	//当前期间,取自tb_system_config的SystemDateTime字段
-	String SystemDateTime = "";
+	//String SystemDateTime = "";
 	
 	//界面查询字段
     List<String> QueryFeildList = Arrays.asList("TYPE_CODE", "BILL_OFF", "DEPT_CODE");
@@ -77,7 +77,8 @@ public class SysChangevalueMappingController extends BaseController {
 		mv.setViewName("sysChangevalueMapping/sysChangevalueMapping/sysChangevalueMapping_list");
 		PageData getPd = this.getPageData();
 		//当前期间,取自tb_system_config的SystemDateTime字段
-		SystemDateTime = sysConfigManager.currentSection(getPd);
+		String SystemDateTime = sysConfigManager.currentSection(getPd);
+		mv.addObject("SystemDateTime", SystemDateTime.trim());
 		
 		//BILL_OFF FMISACC 帐套字典
 		mv.addObject("FMISACC", DictsUtil.getDictsByParentCode(dictionariesService, "FMISACC"));
@@ -204,6 +205,8 @@ public class SysChangevalueMappingController extends BaseController {
 			ShowDataDepartCode = Jurisdiction.getCurrentDepartmentID();
 		}*/
 		String oper = pd.getString("oper");
+		//当前区间
+		String SystemDateTime = pd.getString("SystemDateTime");
 
 		List<PageData> listData = new ArrayList<PageData>();
 		if(oper.equals("add")){
@@ -261,6 +264,8 @@ public class SysChangevalueMappingController extends BaseController {
 		commonBase.setCode(-1);
 
 		PageData getPd = this.getPageData();
+		//当前区间
+		String SystemDateTime = getPd.getString("SystemDateTime");
 		
 		Object DATA_ROWS = getPd.get("DataRows");
 		String json = DATA_ROWS.toString();  
@@ -298,6 +303,8 @@ public class SysChangevalueMappingController extends BaseController {
 		commonBase.setCode(-1);
 
 		PageData getPd = this.getPageData();
+		//当前区间
+		String SystemDateTime = getPd.getString("SystemDateTime");
 		
 		Object DATA_ROWS = getPd.get("DataRows");
 		String json = DATA_ROWS.toString();  

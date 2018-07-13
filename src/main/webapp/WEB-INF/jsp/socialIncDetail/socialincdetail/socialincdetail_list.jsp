@@ -170,6 +170,9 @@
 	    //前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
         var jqGridColModel;
 
+		//当前期间,取自tb_system_config的SystemDateTime字段
+	    var SystemDateTime = '';
+
         function getSelectBillCodeOptions(){
         	console.log("getSelectBillCodeOptions()");
             var SelectedDepartCode = $("#SelectedDepartCode").val();
@@ -181,7 +184,8 @@
 				url: '<%=basePath%>socialincdetail/getBillCodeList.do?'
                     +'SelectedDepartCode='+SelectedDepartCode
                     +'&SelectedCustCol7='+SelectedCustCol7
-                    +'&DepartTreeSource='+DepartTreeSource,
+                    +'&DepartTreeSource='+DepartTreeSource
+    	            + '&SystemDateTime='+SystemDateTime,
 				dataType:'json',
 				cache: false,
 				success: function(response){
@@ -222,7 +226,7 @@
 			$(top.hangge());//关闭加载状态
 		    
 			//当前期间,取自tb_system_config的SystemDateTime字段
-		    var SystemDateTime = '${SystemDateTime}';
+		    SystemDateTime = '${SystemDateTime}';
 			//当前登录人所在二级单位
 		    var DepartName = '${DepartName}';
 		    $("#showDur").text('当前期间：' + SystemDateTime + ' 登录人责任中心：' + DepartName);
@@ -354,7 +358,8 @@
     		                    +'&DepartTreeSource='+DepartTreeSource
     		                    +'&ShowDataDepartCode='+ShowDataDepartCode
     		                    +'&ShowDataCustCol7='+ShowDataCustCol7
-    		                    + '&ShowDataBillCode='+ShowDataBillCode,
+    		                    + '&ShowDataBillCode='+ShowDataBillCode
+    		    	            + '&SystemDateTime='+SystemDateTime,
     				    	data: {DataRows:JSON.stringify(listData)},
     						dataType:'json',
     						cache: false,
@@ -430,7 +435,8 @@
         	                    +'&DepartTreeSource='+DepartTreeSource
         	                    +'&ShowDataDepartCode='+ShowDataDepartCode
         	                    +'&ShowDataCustCol7='+ShowDataCustCol7
-        	                    + '&ShowDataBillCode='+ShowDataBillCode,
+        	                    + '&ShowDataBillCode='+ShowDataBillCode
+        	    	            + '&SystemDateTime='+SystemDateTime,
         			    	data: {DataRows:JSON.stringify(listData)},
         					dataType:'json',
         					cache: false,
@@ -508,7 +514,8 @@
                                 +'&DepartTreeSource='+DepartTreeSource
                                 +'&ShowDataDepartCode='+ShowDataDepartCode
                                 +'&ShowDataCustCol7='+ShowDataCustCol7
-                                + '&ShowDataBillCode='+ShowDataBillCode,
+                                + '&ShowDataBillCode='+ShowDataBillCode
+                	            + '&SystemDateTime='+SystemDateTime,
         		    	    data: {DataRows:JSON.stringify(listData)},
         				    dataType:'json',
         				    cache: false,
@@ -566,7 +573,8 @@
                 + '&DepartTreeSource='+DepartTreeSource
                 + '&ShowDataDepartCode='+ShowDataDepartCode
                 + '&ShowDataCustCol7='+ShowDataCustCol7
-                + '&ShowDataBillCode='+ShowDataBillCode;
+                + '&ShowDataBillCode='+ShowDataBillCode
+	            + '&SystemDateTime='+SystemDateTime;
     	   diag.Width = 300;
     	   diag.Height = 150;
     	   diag.CancelEvent = function(){ //关闭事件
@@ -589,7 +597,8 @@
                 +'&DepartTreeSource='+DepartTreeSource
                 +'&ShowDataDepartCode='+ShowDataDepartCode
                 +'&ShowDataCustCol7='+ShowDataCustCol7
-                + '&ShowDataBillCode='+ShowDataBillCode;
+                + '&ShowDataBillCode='+ShowDataBillCode
+	            + '&SystemDateTime='+SystemDateTime;
         }
 
         /**
@@ -656,7 +665,8 @@
 				type: "POST",
 				url: '<%=basePath%>socialincdetail/getShowColModel.do?'
                     +'SelectedDepartCode='+$("#SelectedDepartCode").val()
-                    +'&SelectedCustCol7='+$("#SelectedCustCol7").val(),
+                    +'&SelectedCustCol7='+$("#SelectedCustCol7").val()
+    	            + '&SystemDateTime='+SystemDateTime,
 				dataType:'json',
 				cache: false,
 				success: function(response){
@@ -703,7 +713,8 @@
     			url: '<%=basePath%>socialincdetail/getPageList.do?'
     				+ 'SelectedDepartCode='+$("#SelectedDepartCode").val()
     	            + '&SelectedCustCol7='+$("#SelectedCustCol7").val()
-                    +'&SelectedBillCode='+$("#SelectedBillCode").val(),
+                    +'&SelectedBillCode='+$("#SelectedBillCode").val()
+    	            + '&SystemDateTime='+SystemDateTime,
     			datatype: "json",
     			colModel: jqGridColModel,
     			reloadAfterSubmit: true, 
@@ -722,7 +733,8 @@
                     +'&DepartTreeSource='+DepartTreeSource
                     +'&ShowDataDepartCode='+ShowDataDepartCode
                     +'&ShowDataCustCol7='+ShowDataCustCol7
-                    + '&ShowDataBillCode='+ShowDataBillCode,
+                    + '&ShowDataBillCode='+ShowDataBillCode
+    	            + '&SystemDateTime='+SystemDateTime,
     			
     			pager: pagerBase_selector,
     			footerrow: true,

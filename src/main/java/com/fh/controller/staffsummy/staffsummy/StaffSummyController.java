@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 import com.fh.controller.base.BaseController;
 import com.fh.controller.common.BillCodeUtil;
+import com.fh.controller.common.CheckSystemDateTime;
 import com.fh.controller.common.Common;
 import com.fh.controller.common.DictsUtil;
 import com.fh.controller.common.Message;
@@ -100,7 +101,7 @@ public class StaffSummyController extends BaseController {
 	String SelectBillCodeLastShow = "全部单据";
 	
 	//页面显示数据的年月
-	String SystemDateTime = "";
+	//String SystemDateTime = "";
 
 	// 查询表的主键字段，作为标准列，jqgrid添加带__列，mybaits获取带__列
 	private List<String> keyListBase = Arrays.asList("BILL_CODE", "BUSI_DATE", "DEPT_CODE", "CUST_COL7");
@@ -131,7 +132,7 @@ public class StaffSummyController extends BaseController {
 		//员工组
 		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
 		//当前期间,取自tb_system_config的SystemDateTime字段
-		SystemDateTime = sysConfigManager.currentSection(getPd);
+		String SystemDateTime = sysConfigManager.currentSection(getPd);
 		
 		ModelAndView mv = this.getModelAndView();
 		mv.setViewName("staffsummy/staffsummy/staffsummy_list");
@@ -141,7 +142,7 @@ public class StaffSummyController extends BaseController {
 		getPd.put("SelectNoBillCodeShow", SelectBillCodeFirstShow);
 		getPd.put("SelectAllBillCodeShow", SelectBillCodeLastShow);
 		getPd.put("InitBillCodeOptions", SelectBillCodeOptions.getSelectBillCodeOptions(null, SelectBillCodeFirstShow, SelectBillCodeLastShow));
-		mv.addObject("SystemDateTime", SystemDateTime);
+        mv.addObject("SystemDateTime", SystemDateTime.trim());
 		User user = (User) Jurisdiction.getSession().getAttribute(Const.SESSION_USERROL);
 		String DepartName = user.getDEPARTMENT_NAME();
 		mv.addObject("DepartName", DepartName);
@@ -186,6 +187,8 @@ public class StaffSummyController extends BaseController {
 		}
 		//账套
 		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
+		//当前区间
+		String SystemDateTime = getPd.getString("SystemDateTime");
 		
 		PageData getQueryFeildPd = new PageData();
 		//工资分的类型, 只有工资返回值
@@ -286,6 +289,8 @@ public class StaffSummyController extends BaseController {
 		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
 		//单号
 		String SelectedBillCode = getPd.getString("SelectedBillCode");
+		//当前区间
+		String SystemDateTime = getPd.getString("SystemDateTime");
 		
 		PageData getQueryFeildPd = new PageData();
 		//工资分的类型, 只有工资返回值
@@ -490,6 +495,14 @@ public class StaffSummyController extends BaseController {
 		commonBase.setCode(-1);
 		
 		PageData getPd = this.getPageData();
+		//当前区间
+		String SystemDateTime = getPd.getString("SystemDateTime");
+		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager);
+		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
+			commonBase.setCode(2);
+			commonBase.setMessage(mesDateTime);
+			return commonBase;
+		}
 		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
 		String strTypeCodeTramsfer = getWhileValueToTypeCodeTramsfer(SelectedTableNo);
 		
@@ -501,7 +514,7 @@ public class StaffSummyController extends BaseController {
         for(PageData each : listData){
         	listBillCode.add(each.getString("BILL_CODE" + TmplUtil.keyExtra));
         }
-		String checkState = CheckState(QueryFeildString.tranferListValueToSqlInString(listBillCode));
+		String checkState = CheckState(QueryFeildString.tranferListValueToSqlInString(listBillCode), SystemDateTime);
 		if(checkState!=null && !checkState.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(checkState);
@@ -528,6 +541,14 @@ public class StaffSummyController extends BaseController {
 		commonBase.setCode(-1);
 		
 		PageData getPd = this.getPageData();
+		//当前区间
+		String SystemDateTime = getPd.getString("SystemDateTime");
+		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager);
+		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
+			commonBase.setCode(2);
+			commonBase.setMessage(mesDateTime);
+			return commonBase;
+		}
 		//员工组
 		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
 		String strTypeCodeTramsfer = getWhileValueToTypeCodeTramsfer(SelectedTableNo);
@@ -588,7 +609,7 @@ public class StaffSummyController extends BaseController {
 		}
 		retSetBillCodeFeild = QueryFeildString.extraSumField(retSetBillCodeFeild, SumFieldBill);
 		if(!SelectedBillCode.equals(SelectBillCodeFirstShow)){//if(listData!=null && listData.size()>0){//
-			String checkState = CheckState("'" + SelectedBillCode + "'");
+			String checkState = CheckState("'" + SelectedBillCode + "'", SystemDateTime);
 			if(checkState!=null && !checkState.trim().equals("")){
 				commonBase.setCode(2);
 				commonBase.setMessage(checkState);
@@ -817,7 +838,7 @@ public class StaffSummyController extends BaseController {
 	}
 	
 	//判断已传输或作废或删除
-	private String CheckState(String strSqlInBillCode) throws Exception{
+	private String CheckState(String strSqlInBillCode, String SystemDateTime) throws Exception{
 		String strRut = "";
 		
 		String QueryFeild = " and BILL_CODE in (" + strSqlInBillCode + ") ";

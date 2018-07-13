@@ -76,6 +76,7 @@
 	    var ShowDataCustCol7 = '${ShowDataCustCol7}';
 	    var ShowDataBillCode = '${ShowDataBillCode}';
 	    var SalaryOrBonus = '${SalaryOrBonus}';
+	    var SystemDateTime = '${SystemDateTime}';
 	    var tipfiles = "请选择xls格式的文件";
 	    
 		$(document).ready(function () {
@@ -85,7 +86,8 @@
                 +'&SelectedDepartCode='+SelectedDepartCode+'&SelectedCustCol7='+SelectedCustCol7+'&SelectedBillCode='+SelectedBillCode
                 +'&DepartTreeSource='+DepartTreeSource
                 +'&ShowDataDepartCode='+ShowDataDepartCode+'&ShowDataCustCol7='+ShowDataCustCol7+'&ShowDataBillCode='+ShowDataBillCode
-                +'&SalaryOrBonus='+SalaryOrBonus;
+                +'&SalaryOrBonus='+SalaryOrBonus
+                +'&SystemDateTime='+SystemDateTime;
 			
 		    var commonBaseCode = '${commonBaseCode}';
 		    var commonMessage = "${commonMessage}";
@@ -148,7 +150,8 @@
                 +'&SelectedDepartCode='+SelectedDepartCode+'&SelectedCustCol7='+SelectedCustCol7+'&SelectedBillCode='+SelectedBillCode
                 +'&DepartTreeSource='+DepartTreeSource
                 +'&ShowDataDepartCode='+ShowDataDepartCode+'&ShowDataCustCol7='+ShowDataCustCol7+'&ShowDataBillCode='+ShowDataBillCode
-                +'&SalaryOrBonus='+SalaryOrBonus;
+                +'&SalaryOrBonus='+SalaryOrBonus
+                +'&SystemDateTime='+SystemDateTime;
 			window.location.href = url;
 		}
 		//保存

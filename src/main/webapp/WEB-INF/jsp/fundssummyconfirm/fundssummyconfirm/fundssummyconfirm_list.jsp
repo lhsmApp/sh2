@@ -189,9 +189,15 @@
 	var TabType = 1;
 	//前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
 	var jqGridColModel;
+
+	//当前期间,取自tb_system_config的SystemDateTime字段
+    var SystemDateTime = '';
 	
 	$(document).ready(function () {
 		$(top.hangge());//关闭加载状态
+	    
+		//当前期间,取自tb_system_config的SystemDateTime字段
+	    SystemDateTime = '${SystemDateTime}';
 	    
 		//前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
 	    jqGridColModel = "[]";//此处记得用eval()行数将string转为array
@@ -214,7 +220,8 @@
 		$('[data-toggle="buttons"] .btn').on('click', function(e){
 			var target = $(this).find('input[type=radio]');
 			which = parseInt(target.val());
-			window.location.href='<%=basePath%>fundssummyconfirm/list.do?SelectedTableNo='+which;
+			window.location.href='<%=basePath%>fundssummyconfirm/list.do?SelectedTableNo='+which
+            + '&SystemDateTime='+SystemDateTime;
 		});
 		
 		//tab页切换
@@ -247,7 +254,8 @@
         var detailColModel = "[]";
 		$.ajax({
 			type: "GET",
-			url: '<%=basePath%>fundssummyconfirm/getFirstDetailColModel.do?SelectedTableNo='+which,
+			url: '<%=basePath%>fundssummyconfirm/getFirstDetailColModel.do?SelectedTableNo='+which
+            + '&SystemDateTime='+SystemDateTime,
 	    	data: {DataDeptCode:DEPT_CODE,DataCustCol7:CUST_COL7},
 			dataType:'json',
 			cache: false,
@@ -260,7 +268,8 @@
 		            var childGridID = parentRowID + _table;
 		            var childGridPagerID = parentRowID + _pager;
 		            // send the parent row primary key to the server so that we know which grid to show
-		            var childGridURL = '<%=basePath%>fundssummyconfirm/getFirstDetailList.do?SelectedTableNo='+which+'&DetailListBillCode='+BILL_CODE;
+		            var childGridURL = '<%=basePath%>fundssummyconfirm/getFirstDetailList.do?SelectedTableNo='+which+'&DetailListBillCode='+BILL_CODE
+    	            + '&SystemDateTime='+SystemDateTime;
 
 		            // add a table and pager HTML elements to the parent grid row - we will render the child grid here
 		            $('#' + parentRowID).append('<table id=' + childGridID + '></table><div id=' + childGridPagerID + ' class=scroll></div>');
@@ -342,7 +351,8 @@
         var detailColModel = "[]";
 		$.ajax({
 			type: "GET",
-			url: '<%=basePath%>fundssummyconfirm/getSecondDetailColModel.do?SelectedTableNo='+which,
+			url: '<%=basePath%>fundssummyconfirm/getSecondDetailColModel.do?SelectedTableNo='+which
+            + '&SystemDateTime='+SystemDateTime,
 	    	data: {DataDeptCode:DEPT_CODE,DataCustCol7:CUST_COL7},
 			dataType:'json',
 			cache: false,
@@ -355,7 +365,8 @@
 		            var childGridID = parentRowID + _table;
 		            var childGridPagerID = parentRowID + _pager;
 		            // send the parent row primary key to the server so that we know which grid to show
-		            var childGridURL = '<%=basePath%>fundssummyconfirm/getSecondDetailList.do?SelectedTableNo='+which;
+		            var childGridURL = '<%=basePath%>fundssummyconfirm/getSecondDetailList.do?SelectedTableNo='+which
+    	            + '&SystemDateTime='+SystemDateTime;
 		            //childGridURL = childGridURL + "&parentRowID=" + encodeURIComponent(parentRowKey)
                     var listData =new Array();
 				    listData.push(rowData);
@@ -439,7 +450,8 @@
 			type: "POST",
 			url: '<%=basePath%>fundssummyconfirm/getShowColModel.do?SelectedTableNo='+which
                 +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
-                +'&SelectedCustCol7='+$("#SelectedCustCol7").val(),
+                +'&SelectedCustCol7='+$("#SelectedCustCol7").val()
+	            + '&SystemDateTime='+SystemDateTime,
 			dataType:'json',
 			cache: false,
 			success: function(response){
@@ -486,7 +498,8 @@
 			url: '<%=basePath%>fundssummyconfirm/getPageList.do?SelectedTableNo='+which
                 +'&SelectedTabType='+TabType
                 +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
-                +'&SelectedCustCol7='+$("#SelectedCustCol7").val(),
+                +'&SelectedCustCol7='+$("#SelectedCustCol7").val()
+	            + '&SystemDateTime='+SystemDateTime,
 			datatype: "json",
 			colModel: jqGridColModel,
 			viewrecords: true, 
@@ -616,7 +629,8 @@
 					$.ajax({
 						type: "POST",
 						url: '<%=basePath%>fundssummyconfirm/summyBillConfirm.do?SelectedTableNo='+which
-		                        +'&SelectedTabType='+TabType,
+		                        +'&SelectedTabType='+TabType
+		        	            + '&SystemDateTime='+SystemDateTime,
 				    	data: {DataRows:JSON.stringify(listData)},
 						dataType:'json',
 						cache: false,
@@ -684,7 +698,8 @@
 					$.ajax({
 						type: "POST",
 						url: '<%=basePath%>fundssummyconfirm/summyBillCancel.do?SelectedTableNo='+which
-                             +'&SelectedTabType='+TabType,
+                             +'&SelectedTabType='+TabType
+             	            + '&SystemDateTime='+SystemDateTime,
 				    	data: {DataRows:JSON.stringify(listData)},
 						dataType:'json',
 						cache: false,

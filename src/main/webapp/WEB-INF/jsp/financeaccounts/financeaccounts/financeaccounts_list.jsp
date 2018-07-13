@@ -188,10 +188,16 @@
 	var jqGridColModel;
 	var TabType = 1;
 	var departTreeSourceNum;
+
+	//当前期间,取自tb_system_config的SystemDateTime字段
+    var SystemDateTime = '';
 	
 	$(document).ready(function () {
 		$(top.hangge());//关闭加载状态
 		console.log("ready");
+	    
+		//当前期间,取自tb_system_config的SystemDateTime字段
+	    SystemDateTime = '${SystemDateTime}';
 		
 		//前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
 	    jqGridColModel = eval("(${jqGridColModel})");//此处记得用eval()行数将string转为array
@@ -230,7 +236,8 @@
 			var target = $(this).find('input[type=radio]');
 			which = parseInt(target.val());
 			if(which!='${pd.which}'){
-				window.location.href='<%=basePath%>financeaccounts/list.do?SelectedTableNo='+which;
+				window.location.href='<%=basePath%>financeaccounts/list.do?SelectedTableNo='+which
+	            + '&SystemDateTime='+SystemDateTime;
 			}
 		});
 		
@@ -249,7 +256,8 @@
 
 		$(gridBase_selector).jqGrid({
 			url: '<%=basePath%>financeaccounts/getPageList.do?SelectedTableNo='+which
-            +'&SelectedDepartCode='+$("#SelectedDepartCode").val(),
+            +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
+            + '&SystemDateTime='+SystemDateTime,
 			datatype: "json",
 			colModel: jqGridColModel,
 			viewrecords: true, 
@@ -323,7 +331,8 @@
             var detailColModel = "[]";
 			$.ajax({
 				type: "GET",
-				url: '<%=basePath%>financeaccounts/getDetailColModel.do?SelectedTableNo='+which+'&SelectedTabType='+TabType,
+				url: '<%=basePath%>financeaccounts/getDetailColModel.do?SelectedTableNo='+which+'&SelectedTabType='+TabType
+	            + '&SystemDateTime='+SystemDateTime,
 		    	data: {GetDetailTransferList:JSON.stringify(listData)},
 				dataType:'json',
 				cache: false,
@@ -333,7 +342,8 @@
 						detailColModel = response.message;
 
 			            detailColModel = eval(detailColModel);
-			            var childGridURL = '<%=basePath%>financeaccounts/getDetailList.do?SelectedTableNo='+which+'&SelectedTabType='+TabType;
+			            var childGridURL = '<%=basePath%>financeaccounts/getDetailList.do?SelectedTableNo='+which+'&SelectedTabType='+TabType
+	    	            + '&SystemDateTime='+SystemDateTime;
 			            
 			            $(gridDetail_selector).jqGrid({
 			                url: childGridURL,
@@ -437,7 +447,8 @@
 	            var rowData = $(gridBase_selector).getRowData(id);
 				var deptcode = rowData.DEPT_CODE__;
 				
-		    	window.location.href='<%=basePath%>financeaccounts/excel.do?DATA_ROWS='+ window.encodeURIComponent(JSON.stringify(listData));
+		    	window.location.href='<%=basePath%>financeaccounts/excel.do?DATA_ROWS='+ window.encodeURIComponent(JSON.stringify(listData))
+	            + '&SystemDateTime='+SystemDateTime;
 				
 			}
 	    }
@@ -448,7 +459,8 @@
 		$(gridDetail_selector).GridUnload();
 		$(gridBase_selector).setGridParam({  // 重新加载数据 
 			url:'<%=basePath%>accountsquery/getPageList.do?SelectedTableNo='+which
-            +'&SelectedDepartCode='+$("#SelectedDepartCode").val(),  
+            +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
+            + '&SystemDateTime='+SystemDateTime,  
 			datatype:'json',
 		      page:1
 		}).trigger("reloadGrid");

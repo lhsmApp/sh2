@@ -70,7 +70,7 @@ public class SysStruMappingController extends BaseController {
 	private DictionariesManager dictionariesService;
 
 	//页面显示数据的年月
-	String ssSystemDateTime = "";
+	//String ssSystemDateTime = "";
 
 	//表
 	String TB_GEN_BUS_SUMMY_BILL = "TB_GEN_BUS_SUMMY_BILL";
@@ -97,7 +97,7 @@ public class SysStruMappingController extends BaseController {
 		ModelAndView mv = this.getModelAndView();
 		mv.setViewName("sysStruMapping/sysStruMapping/sysStruMapping_list");
 		//当前期间,取自tb_system_config的SystemDateTime字段
-		ssSystemDateTime = sysConfigManager.currentSection(getPd);
+		String ssSystemDateTime = sysConfigManager.currentSection(getPd);
 		mv.addObject("SystemDateTime", ssSystemDateTime);
 		
 		//BILL_OFF FMISACC 帐套字典

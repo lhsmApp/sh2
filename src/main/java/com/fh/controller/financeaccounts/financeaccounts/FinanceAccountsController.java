@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 import com.fh.controller.base.BaseController;
 import com.fh.controller.common.AcconutsShowList;
+import com.fh.controller.common.CheckSystemDateTime;
 import com.fh.controller.common.Common;
 import com.fh.controller.common.DictsUtil;
 import com.fh.controller.common.QueryFeildString;
@@ -80,7 +81,7 @@ public class FinanceAccountsController extends BaseController {
 	String DefaultWhile = TmplType.TB_STAFF_DETAIL_CONTRACT.getNameKey();
 
 	//页面显示数据的年月
-	String SystemDateTime = "";
+	//String SystemDateTime = "";
 	//页面显示数据的二级单位
 	//String UserDepartCode = "";
 	//登录人的二级单位是最末层
@@ -127,14 +128,15 @@ public class FinanceAccountsController extends BaseController {
 		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
 		TmplTypeInfo implTypeCode = getWhileValueToTypeCode(SelectedTableNo);
 		List<String> keyListBase = implTypeCode.getKeyListBase();
-		
+
+		ModelAndView mv = this.getModelAndView();
+		mv.setViewName("financeaccounts/financeaccounts/financeaccounts_list");
 		//当前期间,取自tb_system_config的SystemDateTime字段
-		SystemDateTime = sysConfigManager.currentSection(getPd);
+		String SystemDateTime = sysConfigManager.currentSection(getPd);
+		mv.addObject("SystemDateTime", SystemDateTime.trim());
 		//当前登录人所在二级单位
 		String UserDepartCode = Jurisdiction.getCurrentDepartmentID();//
 		
-		ModelAndView mv = this.getModelAndView();
-		mv.setViewName("financeaccounts/financeaccounts/financeaccounts_list");
 		//while
 		getPd.put("which", SelectedTableNo);
 		mv.addObject("pd", getPd);
@@ -187,6 +189,9 @@ public class FinanceAccountsController extends BaseController {
 		if(departSelf == 1){
 			SelectedDepartCode = Jurisdiction.getCurrentDepartmentID();
 		}
+		//当前区间
+		String SystemDateTime = getPd.getString("SystemDateTime");
+
 		TmplTypeInfo implTypeCode = getWhileValueToTypeCode(SelectedTableNo);
 		String TypeCodeStaffSummy = "";//implTypeCode.getTypeCodeSummy();
 		//String TypeCodeStaffListen = implTypeCode.getTypeCodeListen();
@@ -346,6 +351,9 @@ public class FinanceAccountsController extends BaseController {
 		//if(departSelf == 1){
 		//	SelectedDepartCode = UserDepartCode;
 		//}
+		//当前区间
+		String SystemDateTime = getPd.getString("SystemDateTime");
+
 		TmplTypeInfo implTypeCode = getWhileValueToTypeCode(SelectedTableNo);
 		String TypeCodeStaffSummy = "";//implTypeCode.getTypeCodeSummy();
 		//String TypeCodeStaffListen = implTypeCode.getTypeCodeListen();

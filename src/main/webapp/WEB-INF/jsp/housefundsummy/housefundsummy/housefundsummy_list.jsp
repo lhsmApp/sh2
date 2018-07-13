@@ -171,6 +171,9 @@
 	    //var jqGridGroupField;
 	    //分组字段是否显示在表中
 	    //var jqGridGroupColumnShow;
+
+		//当前期间,取自tb_system_config的SystemDateTime字段
+	    var SystemDateTime = '';
 	    
 	    function getSelectBillCodeOptions(){
 	    	console.log("getSelectBillCodeOptions()");
@@ -180,7 +183,8 @@
 			    type: "POST",
 				url: '<%=basePath%>housefundsummy/getBillCodeList.do?'
 	                +'SelectedDepartCode='+$("#SelectedDepartCode").val()
-	                +'&SelectedCustCol7='+$("#SelectedCustCol7").val(),
+	                +'&SelectedCustCol7='+$("#SelectedCustCol7").val()
+    	            + '&SystemDateTime='+SystemDateTime,
 			    dataType:'json',
 				cache: false,
 				success: function(response){
@@ -218,7 +222,7 @@
 			$(top.hangge());//关闭加载状态
 		    
 			//当前期间,取自tb_system_config的SystemDateTime字段
-		    var SystemDateTime = '${SystemDateTime}';
+		    SystemDateTime = '${SystemDateTime}';
 			//当前登录人所在二级单位
 		    var DepartName = '${DepartName}';
 		    $("#showDur").text('当前期间：' + SystemDateTime + ' 登录人责任中心：' + DepartName); 
@@ -254,7 +258,8 @@
 				type: "GET",
 				url: '<%=basePath%>housefundsummy/getFirstDetailColModel.do?'
 		            +'SelectedCustCol7='+$("#SelectedCustCol7").val()
-		            +'&SelectedDepartCode='+$("#SelectedDepartCode").val(),
+		            +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
+    	            + '&SystemDateTime='+SystemDateTime,
 		    	data: {DataDeptCode:DEPT_CODE,DataCustCol7:CUST_COL7},
 				dataType:'json',
 				cache: false,
@@ -270,7 +275,8 @@
 			            var childGridURL = '<%=basePath%>housefundsummy/getFirstDetailList.do?'
 				            +'SelectedCustCol7='+$("#SelectedCustCol7").val()
 				            +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
-			                +'&DetailListBillCode='+BILL_CODE+'';
+			                +'&DetailListBillCode='+BILL_CODE+''
+		    	            + '&SystemDateTime='+SystemDateTime;
 			            //childGridURL = childGridURL + "&parentRowID=" + encodeURIComponent(parentRowKey)
 
 			            // add a table and pager HTML elements to the parent grid row - we will render the child grid here
@@ -354,7 +360,8 @@
 	        var detailColModel = "[]";
 			$.ajax({
 				type: "GET",
-				url: '<%=basePath%>housefundsummy/getSecondDetailColModel.do?',
+				url: '<%=basePath%>housefundsummy/getSecondDetailColModel.do?'
+    	            + 'SystemDateTime='+SystemDateTime,
 		    	data: {DataDeptCode:DEPT_CODE,DataCustCol7:CUST_COL7},
 				dataType:'json',
 				cache: false,
@@ -367,7 +374,8 @@
 			            var childGridID = parentRowID + _table;
 			            var childGridPagerID = parentRowID + _pager;
 			            // send the parent row primary key to the server so that we know which grid to show
-			            var childGridURL = '<%=basePath%>housefundsummy/getSecondDetailList.do?';
+			            var childGridURL = '<%=basePath%>housefundsummy/getSecondDetailList.do?'
+		    	            + 'SystemDateTime='+SystemDateTime;
 			            //childGridURL = childGridURL + "&parentRowID=" + encodeURIComponent(parentRowKey)
                         var listData =new Array();
 				        listData.push(rowData);
@@ -470,7 +478,8 @@
 						top.jzts();
 						$.ajax({
 							type: "POST",
-							url: '<%=basePath%>housefundsummy/deleteAll.do?',
+							url: '<%=basePath%>housefundsummy/deleteAll.do?'
+			    	            + 'SystemDateTime='+SystemDateTime,
 					    	data: {DataRows:JSON.stringify(listData)},
 							dataType:'json',
 							cache: false,
@@ -577,7 +586,8 @@
 						url: '<%=basePath%>housefundsummy/summaryDepartString.do?'
 				            +'SelectedCustCol7='+$("#SelectedCustCol7").val()
 				            +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
-				            +'&SelectedBillCode='+$("#SelectedBillCode").val(),
+				            +'&SelectedBillCode='+$("#SelectedBillCode").val()
+		    	            + '&SystemDateTime='+SystemDateTime,
 					    //data: {DataRows:JSON.stringify(listData)},
 						dataType:'json',
 						cache: false,
@@ -630,7 +640,8 @@
 				url: '<%=basePath%>housefundsummy/getShowColModel.do?'
 	                +'SelectedDepartCode='+$("#SelectedDepartCode").val()
 	                +'&SelectedCustCol7='+$("#SelectedCustCol7").val()
-		            +'&SelectedBillCode='+$("#SelectedBillCode").val(),
+		            +'&SelectedBillCode='+$("#SelectedBillCode").val()
+    	            + '&SystemDateTime='+SystemDateTime,
 				dataType:'json',
 				cache: false,
 				success: function(response){
@@ -678,7 +689,8 @@
 					url: '<%=basePath%>housefundsummy/getPageList.do?'
 			            +'SelectedCustCol7='+$("#SelectedCustCol7").val()
 			            +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
-			            +'&SelectedBillCode='+$("#SelectedBillCode").val(),
+			            +'&SelectedBillCode='+$("#SelectedBillCode").val()
+	    	            + '&SystemDateTime='+SystemDateTime,
 					datatype: "json",
 					colModel: jqGridColModel,
 					viewrecords: true, 
@@ -737,7 +749,8 @@
 					url: '<%=basePath%>housefundsummy/getPageList.do?'
 				            +'SelectedCustCol7='+$("#SelectedCustCol7").val()
 				            +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
-				            +'&SelectedBillCode='+$("#SelectedBillCode").val(),
+				            +'&SelectedBillCode='+$("#SelectedBillCode").val()
+		    	            + '&SystemDateTime='+SystemDateTime,
 					datatype: "json",
 					colModel: jqGridColModel,
 					viewrecords: true, 

@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 import com.fh.controller.base.BaseController;
+import com.fh.controller.common.CheckSystemDateTime;
 import com.fh.controller.common.Common;
 import com.fh.controller.common.DictsUtil;
 import com.fh.controller.common.Message;
@@ -91,7 +92,7 @@ public class FundsSummyConfirmController extends BaseController {
 	String tb_house_fund_detail = "tb_house_fund_detail";
 
 	//当前期间,取自tb_system_config的SystemDateTime字段
-	String SystemDateTime = "";
+	//String SystemDateTime = "";
 	//默认的which值
 	String DefaultWhile = TmplType.TB_STAFF_SUMMY_CONTRACT.getNameKey();
 	////单位
@@ -119,8 +120,8 @@ public class FundsSummyConfirmController extends BaseController {
 		ModelAndView mv = this.getModelAndView();
 		mv.setViewName("fundssummyconfirm/fundssummyconfirm/fundssummyconfirm_list");
 		//当前期间,取自tb_system_config的SystemDateTime字段
-		SystemDateTime = sysConfigManager.currentSection(getPd);
-		mv.addObject("SystemDateTime", SystemDateTime);
+		String SystemDateTime = sysConfigManager.currentSection(getPd);
+		mv.addObject("SystemDateTime", SystemDateTime.trim());
 		//while
 		getPd.put("which", SelectedTableNo);
 
@@ -362,6 +363,14 @@ public class FundsSummyConfirmController extends BaseController {
 		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
 		//tab
 		String SelectedTabType = getPd.getString("SelectedTabType");
+		//当前区间
+		String SystemDateTime = getPd.getString("SystemDateTime");
+		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager);
+		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
+			commonBase.setCode(2);
+			commonBase.setMessage(mesDateTime);
+			return commonBase;
+		}
 		
 		List<SysConfirmInfo> listTransfer = new ArrayList<SysConfirmInfo>();
 		
@@ -389,7 +398,7 @@ public class FundsSummyConfirmController extends BaseController {
         	itemAdd.setSTATE(BillState.Normal.getNameKey());
         	listTransfer.add(itemAdd);
         }
-		String checkState = CheckState(SelectedTableNo, SelectedTabType, QueryFeildString.tranferListValueToSqlInString(listBillCode));
+		String checkState = CheckState(SelectedTableNo, SelectedTabType, QueryFeildString.tranferListValueToSqlInString(listBillCode), SystemDateTime);
 		if(checkState!=null && !checkState.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(checkState);
@@ -418,6 +427,14 @@ public class FundsSummyConfirmController extends BaseController {
 		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
 		//tab
 		String SelectedTabType = getPd.getString("SelectedTabType");
+		//当前区间
+		String SystemDateTime = getPd.getString("SystemDateTime");
+		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager);
+		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
+			commonBase.setCode(2);
+			commonBase.setMessage(mesDateTime);
+			return commonBase;
+		}
 		
 		List<SysConfirmInfo> listTransfer = new ArrayList<SysConfirmInfo>();
 		
@@ -436,7 +453,7 @@ public class FundsSummyConfirmController extends BaseController {
         	itemAdd.setSTATE(BillState.Invalid.getNameKey());
         	listTransfer.add(itemAdd);
         }
-		String checkState = CheckState(SelectedTableNo, SelectedTabType, QueryFeildString.tranferListValueToSqlInString(listBillCode));
+		String checkState = CheckState(SelectedTableNo, SelectedTabType, QueryFeildString.tranferListValueToSqlInString(listBillCode), SystemDateTime);
 		if(checkState!=null && !checkState.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(checkState);
@@ -451,7 +468,7 @@ public class FundsSummyConfirmController extends BaseController {
 	}
 	
 	//判断单据状态
-	private String CheckState(String SelectedTableNo, String SelectedTabType, String strSqlInBillCode) throws Exception{
+	private String CheckState(String SelectedTableNo, String SelectedTabType, String strSqlInBillCode, String SystemDateTime) throws Exception{
 		String strRut = "";
 		
 		String QueryFeild = " and BILL_CODE in (" + strSqlInBillCode + ") ";
@@ -617,6 +634,9 @@ public class FundsSummyConfirmController extends BaseController {
 		if(departSelf == 1){
 			SelectedDepartCode = Jurisdiction.getCurrentDepartmentID();
 		}
+		//当前区间
+		String SystemDateTime = getPd.getString("SystemDateTime");
+
 		List<String> AllDeptCode = Common.getAllDeptCode(departmentService, Jurisdiction.getCurrentDepartmentID());
 		
 		PageData getQueryFeildPd = new PageData();

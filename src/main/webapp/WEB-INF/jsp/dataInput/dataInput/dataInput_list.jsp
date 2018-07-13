@@ -206,7 +206,8 @@
 			top.jzts();
 			$.ajax({
 			    type: "POST",
-				url: '<%=basePath%>dataInput/getTypeCodeList.do?SelectedCustCol7='+$("#SelectedCustCol7").val(),
+				url: '<%=basePath%>dataInput/getTypeCodeList.do?SelectedCustCol7='+$("#SelectedCustCol7").val()
+	            + '&SystemDateTime='+SystemDateTime,
 			    dataType:'json',
 				cache: false,
 				success: function(response){
@@ -241,7 +242,8 @@
 			$.ajax({
 			    type: "POST",
 				url: '<%=basePath%>dataInput/getDepartCodeList.do?SelectedCustCol7='+$("#SelectedCustCol7").val()
-						+'&SelectedTypeCode='+$("#SelectedTypeCode").val(),
+						+'&SelectedTypeCode='+$("#SelectedTypeCode").val()
+			            + '&SystemDateTime='+SystemDateTime,
 			    dataType:'json',
 				cache: false,
 				success: function(response){
@@ -321,7 +323,8 @@
 				type: "POST",
 				url: '<%=basePath%>dataInput/getChangeColsList.do?SelectedCustCol7='+ShowDataCustCol7
 	                +'&SelectedTypeCode='+ShowDataTypeCode
-	                +'&SelectedDepartCode='+ShowDataDepartCode,
+	                +'&SelectedDepartCode='+ShowDataDepartCode
+	                + '&SystemDateTime='+SystemDateTime,
 		    	dataType:'json',
 				cache: false,
 				success: function(response){
@@ -671,7 +674,8 @@
     					top.jzts();
     					$.ajax({
     						type: "POST",
-    						url: '<%=basePath%>dataInput/deleteAll.do?',
+    						url: '<%=basePath%>dataInput/deleteAll.do?'
+    				            + 'SystemDateTime='+SystemDateTime,
     				    	data: {DataRows:JSON.stringify(listData),SystemDateTime:SystemDateTime},
     						dataType:'json',
     						cache: false,
@@ -740,7 +744,8 @@
         				top.jzts();
         				$.ajax({
         					type: "POST",
-        					url: '<%=basePath%>dataInput/updateAll.do?',
+        					url: '<%=basePath%>dataInput/updateAll.do?'
+        			            + 'SystemDateTime='+SystemDateTime,
         			    	data: {DataRows:JSON.stringify(listData),SystemDateTime:SystemDateTime},
         					dataType:'json',
         					cache: false,
@@ -900,7 +905,8 @@
 					// 	 +'&SelectedTypeCode='+TypeCode
 					// 	 +'&SelectedDepartCode='+DepartCode
 					// 	 +'&local=dataInput'
-		       	    //     +'&zdy=dataInput';
+		       	    //     +'&zdy=dataInput'
+                    //+ '&SystemDateTime='+SystemDateTime;
 	       	        //diag.Width = 320;
 	       	        //diag.Height = 450;
 	       	        //diag.CancelEvent = function(){ //关闭事件
@@ -914,7 +920,8 @@
 						 +'SystemDateTime='+SystemDateTime
 						 +'&SelectedCustCol7='+CustCol7
 					 	 +'&SelectedTypeCode='+TypeCode
-					 	 +'&SelectedDepartCode='+DepartCode,
+					 	 +'&SelectedDepartCode='+DepartCode
+				            + '&SystemDateTime='+SystemDateTime,
     					dataType:'json',
     					cache: false,
     					success: function(response){

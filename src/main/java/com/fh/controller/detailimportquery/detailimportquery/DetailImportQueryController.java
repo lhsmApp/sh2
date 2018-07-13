@@ -76,7 +76,7 @@ public class DetailImportQueryController extends BaseController {
 	String SelectBillCodeFirstShow = "临时数据";
 	String SelectBillCodeLastShow = "";
 	//当前期间,取自tb_system_config的SystemDateTime字段
-	String SystemDateTime = "";
+	//String SystemDateTime = "";
     //
 	String AdditionalReportColumns = "";
 	//默认的which值
@@ -109,8 +109,8 @@ public class DetailImportQueryController extends BaseController {
 		ModelAndView mv = this.getModelAndView();
 		mv.setViewName("detailimportquery/detailimportquery/detailimportquery_list");
 		//当前期间,取自tb_system_config的SystemDateTime字段
-		SystemDateTime = sysConfigManager.currentSection(getPd);
-		mv.addObject("SystemDateTime", SystemDateTime);
+		String SystemDateTime = sysConfigManager.currentSection(getPd);
+		mv.addObject("SystemDateTime", SystemDateTime.trim());
 		//while
 		getPd.put("which", SelectedTableNo);
 	    //导出数据的员工组
@@ -597,7 +597,6 @@ public class DetailImportQueryController extends BaseController {
 		mv.addObject("local", "detailimportquery");
 		mv.addObject("SelectedTableNo", SelectedTableNo);
 		mv.addObject("SelectedBusiDate", SelectedBusiDate);
-		mv.addObject("SystemDateTime", SystemDateTime);
 		mv.addObject("DepartTreeSource", DepartTreeSource);
 		mv.addObject("SalaryOrBonus", SalaryOrBonus);
 		mv.addObject("commonBaseCode", commonBase.getCode());
