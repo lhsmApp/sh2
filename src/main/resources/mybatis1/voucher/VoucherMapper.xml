@@ -650,7 +650,7 @@
 
 		<if test='VOUCHER_TYPE=="2"'>
 			select A.*,C.CERT_CODE,C.REVCERT_CODE,C.BILL_USER
-			CERT_BILL_USER,C.BILL_DATE CERT_BILL_DATE
+			CERT_BILL_USER,C.VOUCHER_DATE CERT_BILL_DATE
 			from ${TABLE_CODE} A
 			JOIN
 			tb_sys_sealed_info B
@@ -677,7 +677,7 @@
 				)
 			</if>
 			<if test="BUSI_DATE!= null and BUSI_DATE != ''">
-				and BUSI_DATE = #{BUSI_DATE}
+				and A.BUSI_DATE = #{BUSI_DATE}
 			</if>
 			<if test="USER_GROP!= null and USER_GROP != ''">
 				and USER_GROP = #{USER_GROP}
@@ -778,7 +778,7 @@
 
 	<select id="findSummyDetailList" parameterType="pd" resultType="pd">
 		select A.*,C.CERT_CODE,C.REVCERT_CODE,C.BILL_USER
-		CERT_BILL_USER,C.BILL_DATE CERT_BILL_DATE
+		CERT_BILL_USER,C.VOUCHER_DATE CERT_BILL_DATE
 		from ${TABLE_CODE} A
 		LEFT JOIN
 		tb_gl_cert C
@@ -855,9 +855,9 @@
 				delete from
 				TB_GL_CERT
 				where BILL_CODE = #{item.BILL_CODE};
-				insert into TB_GL_CERT(BILL_CODE,CERT_CODE,BILL_USER,BILL_DATE)
+				insert into TB_GL_CERT(BILL_CODE,CERT_CODE,BILL_USER,BILL_DATE,VOUCHER_DATE,BUSI_DATE)
 				values
-				(#{item.BILL_CODE},#{item.CERT_CODE},#{item.BILL_USER},#{item.BILL_DATE})
+				(#{item.BILL_CODE},#{item.CERT_CODE},#{item.BILL_USER},#{item.BILL_DATE},#{item.VOUCHER_DATE},#{item.BUSI_DATE})
 			</if>
 		</foreach>
 	</update>
@@ -867,13 +867,14 @@
 		<foreach item="item" index="index" collection="list" open=" "
 			separator="; " close=" ">
 			<if test="item!=null">
-				delete from
+				<!-- delete from
 				TB_GL_CERT
 				where BILL_CODE = #{item.BILL_CODE};
 				insert into
-				TB_GL_CERT(BILL_CODE,CERT_CODE,REVCERT_CODE,BILL_USER,BILL_DATE)
+				TB_GL_CERT(BILL_CODE,CERT_CODE,REVCERT_CODE,BILL_USER,BILL_DATE,VOUCHER_DATE,BUSI_DATE)
 				values
-				(#{item.BILL_CODE},#{item.CERT_CODE},#{item.REVCERT_CODE},#{item.BILL_USER},#{item.BILL_DATE})
+				(#{item.BILL_CODE},#{item.CERT_CODE},#{item.REVCERT_CODE},#{item.BILL_USER},#{item.BILL_DATE},#{item.VOUCHER_DATE},#{item.BUSI_DATE}) -->
+				update TB_GL_CERT set REVCERT_CODE=#{item.REVCERT_CODE} where BILL_CODE = #{item.BILL_CODE};
 			</if>
 		</foreach>
 	</update>
@@ -972,7 +973,7 @@
 
 		<if test='VOUCHER_TYPE=="2"'>
 			select A.*,C.CERT_CODE,C.REVCERT_CODE,C.BILL_USER
-			CERT_BILL_USER,C.BILL_DATE CERT_BILL_DATE
+			CERT_BILL_USER,C.VOUCHER_DATE CERT_BILL_DATE
 			from tb_gen_bus_summy_bill A
 			JOIN
 			tb_sys_sealed_info B
@@ -1206,7 +1207,7 @@
 	
 	<select id="findSummyDetailListSpecial" parameterType="pd" resultType="pd">
 		select A.*,C.CERT_CODE,C.REVCERT_CODE,C.BILL_USER
-		CERT_BILL_USER,C.BILL_DATE CERT_BILL_DATE
+		CERT_BILL_USER,C.VOUCHER_DATE CERT_BILL_DATE
 		from tb_gen_summy A
 		LEFT JOIN
 		tb_gl_cert C
