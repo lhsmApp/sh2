@@ -184,6 +184,23 @@
 		    );
 		</foreach>
 	</update>
+	<update id="batchDelAndInsHorizontal" parameterType="pd">
+		<foreach item="item" index="index" collection="list" open=" " separator=" " close=" ">
+		    delete from <include refid="tableDataInputName"></include>
+		    where TYPE_CODE = #{item.TYPE_CODE}
+		    and BILL_OFF = #{item.BILL_OFF}
+		    and BUSI_DATE = #{item.BUSI_DATE}
+		    and DEPT_CODE = #{item.DEPT_CODE};
+		</foreach>
+		<foreach item="item" index="index" collection="list" open=" " separator=" " close=" ">
+		    insert into <include refid="tableDataInputName"></include>
+		    (
+		    <include refid="Field"></include>
+		    ) values (
+	        <include refid="FieldValueItem"></include>
+		    );
+		</foreach>
+	</update>
 	
 	<!-- 复制 -->
 	<update id="batchCopyAll" parameterType="pd">

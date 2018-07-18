@@ -77,6 +77,9 @@ public class DataInputService implements DataInputManager{
 	public void batchUpdateDatabase(List<PageData> listData)throws Exception{
 		dao.update("DataInputMapper.batchDelAndIns", listData);
 	}
+	public void batchUpdateDatabaseHorizontal(List<PageData> listData)throws Exception{
+		dao.update("DataInputMapper.batchDelAndInsHorizontal", listData);
+	}
 
 	/**复制
 	 * @param pd

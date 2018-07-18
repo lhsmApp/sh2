@@ -40,6 +40,12 @@ public interface FundsSummyConfirmManager{
 	 * @throws Exception
 	 */
 	public List<PageData> getSecondDetailList(PageData pd)throws Exception;
+
+	/**
+	 * @param 
+	 * @throws Exception
+	 */
+	public List<PageData> getOperList(PageData pd)throws Exception;
 	
 }
 

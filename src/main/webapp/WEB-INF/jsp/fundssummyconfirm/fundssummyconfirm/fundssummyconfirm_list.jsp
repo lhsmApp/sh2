@@ -108,6 +108,9 @@
 											<button type="button" class="btn btn-info btn-sm" onclick="tosearch();">
 												<i class="ace-icon fa fa-search bigger-110"></i>
 											</button>
+									        <button type="button" class="btn btn-info btn-sm" onclick="confirm()">
+										        <i class="ace-icon fa bigger-120 blue"></i><span>凭证确认</span>
+									        </button>
 										</form>
 									</div>
 								</div>
@@ -737,5 +740,97 @@
             });
 		}
     }
+	
+	//确认
+    function confirm() {
+		var CustCol7 = $("#SelectedCustCol7").val();
+		var DepartCode = $("#SelectedDepartCode").val(); 
+
+		if(!(CustCol7!=null && $.trim(CustCol7)!="")){
+			$("#SelectedCustCol7").tips({
+				side:3,
+	            msg:'请选择帐套',
+	            bg:'#AE81FF',
+	            time:2
+	        });
+			$("#SelectedCustCol7").focus();
+			return false;
+		}
+		if(CustCol7!=ShowDataCustCol7){
+			$("#SelectedCustCol7").tips({
+				side:3,
+	            msg:'查询条件中所选账套与页面显示数据账套不一致，请单击查询再进行操作',
+	            bg:'#AE81FF',
+	            time:2
+	        });
+			$("#SelectedCustCol7").focus();
+			return false;
+		}
+		/*if(!(DepartCode!=null && $.trim(DepartCode)!="")){
+			$("#SelectedDepartCode").tips({
+				side:3,
+	            msg:'请选择责任中心',
+	            bg:'#AE81FF',
+	            time:2
+	        });
+			$("#SelectedDepartCode").focus();
+			return false;
+		}
+		if(DepartCode!=ShowDataDepartCode){
+			$("#SelectedDepartCode").tips({
+				side:3,
+	            msg:'查询条件中所选责任中心与页面显示数据责任中心不一致，请单击查询再进行操作',
+	            bg:'#AE81FF',
+	            time:2
+	        });
+			$("#SelectedDepartCode").focus();
+			return false;
+		}*/
+         var msg = '确定要确认吗?';
+         bootbox.confirm(msg, function(result) {
+        	 if(result) {
+       	        top.jzts();
+
+				$.ajax({
+					type: "POST",
+					url: '<%=basePath%>dataInputHorizontal/confirmAll.do?SelectedTableNo='+which
+                     +'&SelectedCustCol7='+CustCol7
+				 	 +'&SelectedDepartCode='+DepartCode
+      	             +'&SystemDateTime='+SystemDateTime,
+					dataType:'json',
+					cache: false,
+					success: function(response){
+						if(response.code==0){
+							$(top.hangge());//关闭加载状态
+							tosearch();
+							$("#subTitle").tips({
+								side:3,
+					            msg:'确认成功',
+					            bg:'#009933',
+					            time:3
+					        });
+						}else{
+							$(top.hangge());//关闭加载状态
+							$("#subTitle").tips({
+								side:3,
+					            msg:'确认失败,'+response.message,
+					            bg:'#cc0033',
+					            time:3
+					        });
+						}
+					},
+			    	error: function(response) {
+						$(top.hangge());//关闭加载状态
+						$("#subTitle").tips({
+							side:3,
+				            msg:'确认出错:'+response.responseJSON.message,
+				            bg:'#cc0033',
+				            time:3
+				        });
+			    	}
+				});
+        	 }
+         });
+	}
 </script>
 </html>

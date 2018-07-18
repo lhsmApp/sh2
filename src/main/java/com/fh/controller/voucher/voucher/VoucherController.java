@@ -58,6 +58,7 @@ import com.fh.util.StringUtil;
 import com.fh.util.date.DateFormatUtils;
 import com.fh.util.date.DateUtils;
 import com.fh.util.enums.BillState;
+import com.fh.util.enums.EmplGroupType;
 import com.fh.util.enums.SysConfigKeyCode;
 import com.fh.util.enums.TmplType;
 import com.fh.util.enums.TransferOperType;
@@ -665,7 +666,7 @@ public class VoucherController extends BaseController {
 			List<PageData> listTransferDataDetail = voucherService.findSummyDetailListByBillCodes(pdDetail);
 			addLineNumForTransferData(which, listTransferDataDetail);
 
-			String tableCodeOnFmis = getTableCodeOnFmis(which);
+			String tableCodeOnFmis = DictsUtil.getTableCodeOnFmis(which, sysConfigManager);
 			// String voucherType=pd.getString("VOUCHER_TYPE");
 
 			PageData pdFirst = listTransferData.get(0);
@@ -904,7 +905,7 @@ public class VoucherController extends BaseController {
 			/********************** 生成传输数据 ************************/
 			String which = pd.getString("TABLE_CODE");
 			String tableCode = getTableCode(which);
-			String tableCodeOnFmis = getTableCodeOnFmis(which);
+			String tableCodeOnFmis = DictsUtil.getTableCodeOnFmis(which, sysConfigManager);
 			// String voucherType=pd.getString("VOUCHER_TYPE");
 
 			// 根据表编号和真实表名称获取用于传输的字段列配置信息
@@ -999,7 +1000,7 @@ public class VoucherController extends BaseController {
 				String fmisOrg = item.getString("CUST_COL7"); // 读取总部组织机构编码
 				String busiDate = item.getString("BUSI_DATE"); // 读取业务期间
 				// String tableName = "T_" + getTableCode(which);// 在fmis建立的业务表名
-				String tableName = "T_" + getTableCodeOnFmis(which);// 在fmis建立的业务表名
+				String tableName = "T_" + DictsUtil.getTableCodeOnFmis(which, sysConfigManager);// 在fmis建立的业务表名
 				String result = (String) call.invoke(new Object[] { tableName, invoiceNumber, fmisOrg });// 对应定义参数
 				if (result.length() > 0) {
 					commonBase.setCode(0);
@@ -1070,7 +1071,7 @@ public class VoucherController extends BaseController {
 				String voucherDate = item.getString("CERT_BILL_DATE");// 凭证日期
 				String voucherNumber = item.getString("CERT_CODE");// 凭证编号
 				// String tableName = "T_" + getTableCode(which);// 在fmis建立的业务表名
-				String tableName = "T_" + getTableCodeOnFmis(which);// 在fmis建立的业务表名
+				String tableName = "T_" + DictsUtil.getTableCodeOnFmis(which, sysConfigManager);// 在fmis建立的业务表名
 				String workDate = DateUtils.getCurrentTime(DateFormatUtils.DATE_NOFUll_FORMAT);// 当前工作日期格式20170602
 
 				String result = (String) call
@@ -1170,43 +1171,6 @@ public class VoucherController extends BaseController {
 		 * "TB_HOUSE_FUND_SUMMY"; } else { tableCode = "TB_STAFF_SUMMY"; }
 		 * return tableCode;
 		 */
-	}
-
-	/**
-	 * 根据前端业务表索引获取定义在Fmis系统上定义的表名称
-	 * 
-	 * @param which
-	 *            1、合同化工资 2、社保 3、公积金 4、市场化工资 5、系统内劳务工资 6、运行人员工资 7、劳务派遣工资
-	 * @return
-	 * @throws Exception
-	 */
-	private String getTableCodeOnFmis(String which) throws Exception {
-		PageData pd = new PageData();
-		String tableCodeOri = "";// 数据库真实业务数据表
-		if (which.equals(TmplType.TB_STAFF_TRANSFER_CONTRACT.getNameKey())) {
-			pd.put("KEY_CODE", "StaffTransferHT");
-			tableCodeOri = sysConfigManager.getSysConfigByKey(pd);
-		} else if (which.equals(TmplType.TB_STAFF_TRANSFER_MARKET.getNameKey())) {
-			pd.put("KEY_CODE", "StaffTransferSC");
-			tableCodeOri = sysConfigManager.getSysConfigByKey(pd);
-		} else if (which.equals(TmplType.TB_STAFF_TRANSFER_SYS_LABOR.getNameKey())) {
-			pd.put("KEY_CODE", "StaffTransferXT");
-			tableCodeOri = sysConfigManager.getSysConfigByKey(pd);
-		} else if (which.equals(TmplType.TB_STAFF_TRANSFER_OPER_LABOR.getNameKey())) {
-			pd.put("KEY_CODE", "StaffTransferYX");
-			tableCodeOri = sysConfigManager.getSysConfigByKey(pd);
-		} else if (which.equals(TmplType.TB_STAFF_TRANSFER_LABOR.getNameKey())) {
-			pd.put("KEY_CODE", "StaffTransferLW");
-			tableCodeOri = sysConfigManager.getSysConfigByKey(pd);
-		} else if (which.equals(TmplType.TB_SOCIAL_INC_TRANSFER.getNameKey())) {
-			tableCodeOri = "TB_SOCIAL_INC_SUMMY";
-		} else if (which.equals(TmplType.TB_HOUSE_FUND_TRANSFER.getNameKey())) {
-			tableCodeOri = "TB_HOUSE_FUND_SUMMY";
-		} else {
-			pd.put("KEY_CODE", "StaffTransferHT");
-			tableCodeOri = sysConfigManager.getSysConfigByKey(pd);
-		}
-		return tableCodeOri;
 	}
 
 	/**

@@ -20,6 +20,7 @@
 	<!-- 字段 -->
 	<sql id="Field">
 		BILL_CODE,
+		CERT_CODE,
 		RPT_DEPT,
 		RPT_DUR,
 		RPT_USER,
@@ -32,6 +33,7 @@
 	<!-- 字段值 -->
 	<sql id="FieldValue">
 		#{BILL_CODE},
+		#{CERT_CODE},
 		#{RPT_DEPT},
 		#{RPT_DUR},
 		#{RPT_USER},
@@ -42,6 +44,7 @@
 	</sql>
 	<sql id="FieldItemValue">
 		#{item.BILL_CODE},
+		#{item.CERT_CODE},
 		#{item.RPT_DEPT},
 		#{item.RPT_DUR},
 		#{item.RPT_USER},
@@ -76,6 +79,7 @@
 		<include refid="tableName"></include>
 		set
 		BILL_CODE = #{BILL_CODE},
+		CERT_CODE = #{CERT_CODE},
 		RPT_DEPT = #{RPT_DEPT},
 		RPT_DUR = #{RPT_DUR},
 		RPT_USER = #{RPT_USER},
@@ -185,6 +189,35 @@
 		    <include refid="tableName"></include>
 		    (<include refid="Field"></include>) values (<include refid="FieldItemValue"></include>);
 		</foreach>
+	</update>
+	<update id="batchAllConfirm" parameterType="java.util.Map">
+		<!-- <if test="TransferConfirmDel != null"> -->
+		    delete from <include refid="tableName"></include>
+		    where RPT_DUR = #{TransferConfirmDel.RPT_DUR} 
+		    and BILL_TYPE=#{TransferConfirmDel.BILL_TYPE}
+		    and BILL_OFF=#{TransferConfirmDel.BILL_OFF} 
+		    and RPT_DEPT in (TransferConfirmDel.CanOperateDeptCode);
+		<!-- </if> -->
+		<if test="TransferConfirmAdd != null">
+		    <foreach item="item" index="index" collection="TransferConfirmAdd" open=" " separator=" " close=" ">
+		        insert into
+		        <include refid="tableName"></include>
+		        (<include refid="Field"></include>) values (<include refid="FieldItemValue"></include>);
+		    </foreach>
+		</if>
+		
+		<if test="TransferCertDel != null">
+			delete from TB_GL_CERT
+			where BUSI_DATE = #{TransferCertDel.BUSI_DATE}
+		    and BILL_CODE in (TransferConfirmDel.CanOperateBillCode);
+		</if>
+		<if test="TransferCertAdd != null">
+		    <foreach item="item" index="index" collection="TransferCertAdd" open=" " separator=" " close=" ">
+				insert into TB_GL_CERT(BILL_CODE,CERT_CODE,REVCERT_CODE,BILL_USER,BILL_DATE,VOUCHER_DATE,BUSI_DATE)
+				values
+				(#{item.BILL_CODE},#{item.CERT_CODE},#{item.REVCERT_CODE},#{item.BILL_USER},#{item.BILL_DATE},#{item.VOUCHER_DATE},#{item.BUSI_DATE});
+		    </foreach>
+		</if>
 	</update>
 
 	<!-- 张晓柳 -->

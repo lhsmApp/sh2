@@ -47,6 +47,7 @@ public interface DataInputManager{
 	 * @throws Exception
 	 */
 	public void batchUpdateDatabase(List<PageData> listData)throws Exception;
+	public void batchUpdateDatabaseHorizontal(List<PageData> listData)throws Exception;
 	
 	/**批量删除
 	 * @param 
