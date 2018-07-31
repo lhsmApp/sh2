@@ -25,6 +25,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.fh.controller.base.BaseController;
 import com.fh.controller.common.Common;
+import com.fh.controller.common.Corresponding;
 import com.fh.controller.common.DictsUtil;
 import com.fh.controller.common.GenerateTransferData;
 import com.fh.controller.common.QueryFeildString;
@@ -269,7 +270,7 @@ public class VoucherController extends BaseController {
 		String sealTypeTransfer = which == null ? TmplType.TB_STAFF_TRANSFER_CONTRACT.getNameKey() : which;// 传输接口类型
 		PageData getQueryFeildPd = new PageData();
 		// 工资分的类型, 只有工资返回值
-		getQueryFeildPd.put("USER_GROP", DictsUtil.getEmplGroupType(which));
+		getQueryFeildPd.put("USER_GROP", Corresponding.getUserGroupTypeFromTmplType(which));
 		getQueryFeildPd.put("DEPT_CODE", SelectedDepartCode);
 		getQueryFeildPd.put("CUST_COL7", SelectedCustCol7);
 		String QueryFeild = QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList);
@@ -395,7 +396,7 @@ public class VoucherController extends BaseController {
 		pd.put("BILL_TYPE_TRANSFER", sealTypeTransfer);// 接口封存类型
 		pd.put("VOUCHER_TYPE", voucherType);// 接口封存类型
 		// pd.put("BILL_TYPE", sealType);// 接口封存类型对应的汇总接口类型
-		pd.put("USER_GROP", DictsUtil.getEmplGroupType(which));
+		pd.put("USER_GROP", Corresponding.getUserGroupTypeFromTmplType(which));
 		String strDeptCode = "";
 		if (departSelf == 1)
 			strDeptCode = Jurisdiction.getCurrentDepartmentID();
@@ -460,7 +461,7 @@ public class VoucherController extends BaseController {
 		pd.put("TABLE_CODE", tableCode);
 		String sealType = which == null ? TmplType.TB_STAFF_TRANSFER_CONTRACT.getNameKey() : which;// 传输接口类型;
 		pd.put("BILL_TYPE", sealType);// 封存类型
-		pd.put("USER_GROP", DictsUtil.getEmplGroupType(which));
+		pd.put("USER_GROP", Corresponding.getUserGroupTypeFromTmplType(which));
 		// String strDeptCode = pd.getString("DEPT_CODE");// 单位检索条件
 		String strDeptCode = "";
 		if (departSelf == 1)

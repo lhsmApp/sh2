@@ -284,15 +284,15 @@ public class FundsConfirmInfoController extends BaseController {
 		String SelectedBusiDate = getPd.getString("SelectedBusiDate");
 		getPd.put("filterSelectedBusiDate", SelectedBusiDate);
 		
-		List<CertParmConfig> listCertParmConfig = getSelfCertParmConfig(SelectedTypeCode, SelectedCustCol7, SelectedBusiDate, DeptCodeSumGroupField);
-		String strCheckOrNot = "";
-		String getBillType = "";
-		if(listCertParmConfig!=null && listCertParmConfig.size()>0){
-			getBillType = listCertParmConfig.get(0).getCUST_PARM1();
-			strCheckOrNot = listCertParmConfig.get(0).getCUST_PARM1_DESC();
-		}
+		//List<CertParmConfig> listCertParmConfig = getSelfCertParmConfig(SelectedTypeCode, SelectedCustCol7, SelectedBusiDate, DeptCodeSumGroupField);
+		//String strCheckOrNot = "";
+		//String getBillType = "";
+		//if(listCertParmConfig!=null && listCertParmConfig.size()>0){
+		//	getBillType = listCertParmConfig.get(0).getCUST_PARM1();
+		//	strCheckOrNot = listCertParmConfig.get(0).getCUST_PARM1_DESC();
+		//}
 		
-		if(SysConfirmInfoBillTypeStart.Start.getNameKey().equals(strCheckOrNot)
+		/*if(SysConfirmInfoBillTypeStart.Start.getNameKey().equals(strCheckOrNot)
 				&& getBillType!=null && !getBillType.trim().equals("")){
 			String[] listBillType = getBillType.replace(" ", "").replace("'", "").replace("‘", "").replace("，", ",").split(",");
 			String BillTypeLeftJoin = "";
@@ -309,7 +309,7 @@ public class FundsConfirmInfoController extends BaseController {
 			if(BillTypeLeftJoin!=null && !BillTypeLeftJoin.trim().equals("")){
 				getPd.put("BillTypeLeftJoin", BillTypeLeftJoin);
 			}
-		}
+		}*/
 		
 		PageData getQueryFeildPd = new PageData();
 		getQueryFeildPd.put("DEPT_CODE", SelectedDepartCode);
@@ -338,7 +338,7 @@ public class FundsConfirmInfoController extends BaseController {
 		return getPd;
 	}
 	
-	private List<CertParmConfig> getSelfCertParmConfig(String typeCode, String billOff, String busiDate, String deptCode) throws Exception{
+	/*private List<CertParmConfig> getSelfCertParmConfig(String typeCode, String billOff, String busiDate, String deptCode) throws Exception{
 		CertParmConfig certParmConfig = new CertParmConfig();
 		certParmConfig.setTYPE_CODE(typeCode);
 		certParmConfig.setBILL_OFF(billOff);
@@ -346,7 +346,7 @@ public class FundsConfirmInfoController extends BaseController {
 		certParmConfig.setDEPT_CODE(deptCode);
 		List<CertParmConfig> getCertParmConfigList = certParmConfigService.getSelfCertParmConfig(certParmConfig);
 		return getCertParmConfigList;
-	}
+	}*/
 	
 	@InitBinder
 	public void initBinder(WebDataBinder binder){

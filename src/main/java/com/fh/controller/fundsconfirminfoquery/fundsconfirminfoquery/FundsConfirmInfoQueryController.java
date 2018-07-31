@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 import com.fh.controller.base.BaseController;
 import com.fh.controller.common.Common;
+import com.fh.controller.common.Corresponding;
 import com.fh.controller.common.DictsUtil;
 import com.fh.controller.common.QueryFeildString;
 import com.fh.entity.JqPage;
@@ -169,7 +170,7 @@ public class FundsConfirmInfoQueryController extends BaseController {
 		}
 		List<String> AllDeptCode = Common.getAllDeptCode(departmentService, Jurisdiction.getCurrentDepartmentID());
 
-		String BILL_TYPE = getBillType(SelectedTableNo);
+		String BILL_TYPE = Corresponding.getSysConfirmInfoBillTypeFromTmplType(SelectedTableNo);
 		getPd.put("BILL_TYPE", BILL_TYPE);
 		getPd.put("RPT_DUR", SelectedBusiDate);
 		getPd.put("BUSI_DATE", SelectedBusiDate);
@@ -248,33 +249,6 @@ public class FundsConfirmInfoQueryController extends BaseController {
 			which = value;
 		}
 		return which;
-	}
-	/**
-	 * 根据前端业务表索引获取表名称
-	 * 
-	 * @param which
-	 * @return
-	 */
-	private String getBillType(String which) {
-		String billType = "";
-		if (which != null){
-			if(which.equals(TmplType.TB_STAFF_SUMMY_CONTRACT.getNameKey())) {
-				billType = SysConfirmInfoBillType.STAFF_CONTRACT.getNameKey();
-			} else if(which.equals(TmplType.TB_STAFF_SUMMY_MARKET.getNameKey())) {
-				billType = SysConfirmInfoBillType.STAFF_MARKET.getNameKey();
-			} else if(which.equals(TmplType.TB_STAFF_SUMMY_SYS_LABOR.getNameKey())) {
-				billType = SysConfirmInfoBillType.STAFF_SYS_LABOR.getNameKey();
-			} else if(which.equals(TmplType.TB_STAFF_SUMMY_OPER_LABOR.getNameKey())) {
-				billType = SysConfirmInfoBillType.STAFF_OPER_LABOR.getNameKey();
-			} else if(which.equals(TmplType.TB_STAFF_SUMMY_LABOR.getNameKey())) {
-				billType = SysConfirmInfoBillType.STAFF_LABOR.getNameKey();
-			} else if (which.equals(TmplType.TB_SOCIAL_INC_SUMMY.getNameKey())) {
-				billType = SysConfirmInfoBillType.SOCIAL_INC.getNameKey();
-			} else if (which.equals(TmplType.TB_HOUSE_FUND_SUMMY.getNameKey())) {
-				billType = SysConfirmInfoBillType.HOUSE_FUND.getNameKey();
-			}
-		}
-		return billType;
 	}
 	
 	@InitBinder

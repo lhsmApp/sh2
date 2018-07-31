@@ -27,6 +27,7 @@ import com.fh.controller.common.Message;
 import com.fh.controller.common.QueryFeildString;
 import com.fh.controller.common.SelectBillCodeOptions;
 import com.fh.controller.common.TmplUtil;
+import com.fh.controller.common.Corresponding;
 import com.fh.entity.CommonBase;
 import com.fh.entity.JqPage;
 import com.fh.entity.Page;
@@ -176,8 +177,8 @@ public class StaffSummyController extends BaseController {
 		PageData getPd = this.getPageData();
 		//员工组
 		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
-		String strTypeCodeTramsfer = getWhileValueToTypeCodeTramsfer(SelectedTableNo);
-		String emplGroupType = DictsUtil.getEmplGroupType(SelectedTableNo);
+		String strTypeCodeTramsfer = Corresponding.getTypeCodeTransferFromTmplType(SelectedTableNo);
+		String emplGroupType = Corresponding.getUserGroupTypeFromTmplType(SelectedTableNo);
 		//单位
 		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
 		int departSelf = Common.getDepartSelf(departmentService);
@@ -273,8 +274,8 @@ public class StaffSummyController extends BaseController {
 		PageData getPd = this.getPageData();
 		//员工组
 		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
-		String strTypeCodeTramsfer = getWhileValueToTypeCodeTramsfer(SelectedTableNo);
-		String emplGroupType = DictsUtil.getEmplGroupType(SelectedTableNo);
+		String strTypeCodeTramsfer = Corresponding.getTypeCodeTransferFromTmplType(SelectedTableNo);
+		String emplGroupType = Corresponding.getUserGroupTypeFromTmplType(SelectedTableNo);
 		TmplTypeInfo implTypeCode = getWhileValueToTypeCode(SelectedTableNo);
 		String TypeCodeSummyBill = implTypeCode.getTypeCodeSummyBill();
 		String TypeCodeDetail = implTypeCode.getTypeCodeDetail();
@@ -504,7 +505,7 @@ public class StaffSummyController extends BaseController {
 			return commonBase;
 		}
 		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
-		String strTypeCodeTramsfer = getWhileValueToTypeCodeTramsfer(SelectedTableNo);
+		String strTypeCodeTramsfer = Corresponding.getTypeCodeTransferFromTmplType(SelectedTableNo);
 		
 		Object DATA_ROWS = getPd.get("DataRows");
 		String json = DATA_ROWS.toString();  
@@ -551,8 +552,8 @@ public class StaffSummyController extends BaseController {
 		}
 		//员工组
 		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
-		String strTypeCodeTramsfer = getWhileValueToTypeCodeTramsfer(SelectedTableNo);
-		String emplGroupType = DictsUtil.getEmplGroupType(SelectedTableNo);
+		String strTypeCodeTramsfer = Corresponding.getTypeCodeTransferFromTmplType(SelectedTableNo);
+		String emplGroupType = Corresponding.getUserGroupTypeFromTmplType(SelectedTableNo);
 		TmplTypeInfo implTypeCode = getWhileValueToTypeCode(SelectedTableNo);
 		String TypeCodeSummyBill = implTypeCode.getTypeCodeSummyBill();
 		String TypeCodeSummyDetail = implTypeCode.getTypeCodeSummyDetail();
@@ -862,31 +863,6 @@ public class StaffSummyController extends BaseController {
 			which = value;
 		}
 		return which;
-	}
-
-	private String getWhileValueToTypeCodeTramsfer(String which) throws Exception{
-		String strReturn = "";
-		if(which.equals(TmplType.TB_STAFF_SUMMY_CONTRACT.getNameKey())){
-			//合同化
-			strReturn = TmplType.TB_STAFF_TRANSFER_CONTRACT.getNameKey();
-		}
-		if(which.equals(TmplType.TB_STAFF_SUMMY_MARKET.getNameKey())){
-			//市场化
-			strReturn = TmplType.TB_STAFF_TRANSFER_MARKET.getNameKey();
-		}
-		if(which.equals(TmplType.TB_STAFF_SUMMY_SYS_LABOR.getNameKey())){
-			//系统内劳务
-			strReturn = TmplType.TB_STAFF_TRANSFER_SYS_LABOR.getNameKey();
-		}
-		if(which.equals(TmplType.TB_STAFF_SUMMY_OPER_LABOR.getNameKey())){
-			//运行人员
-			strReturn = TmplType.TB_STAFF_TRANSFER_OPER_LABOR.getNameKey();
-		}
-		if(which.equals(TmplType.TB_STAFF_SUMMY_LABOR.getNameKey())){
-			//劳务派遣工资
-			strReturn = TmplType.TB_STAFF_TRANSFER_LABOR.getNameKey();
-		}
-		return strReturn;
 	}
 
 	private TmplTypeInfo getWhileValueToTypeCode(String which) throws Exception{

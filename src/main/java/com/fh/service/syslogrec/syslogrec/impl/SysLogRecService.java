@@ -37,5 +37,14 @@ public class SysLogRecService implements SysLogRecManager{
 	public int countJqGridExtend(JqPage page)throws Exception{
 		return (int)dao.findForObject("SysLogRecMapper.countJqGridExtend", page);
 	}
+
+	/**导出到excel
+	 * @param page
+	 * @throws Exception
+	 */
+	@SuppressWarnings("unchecked")
+	public List<PageData> export(JqPage page)throws Exception{
+		return (List<PageData>)dao.findForList("SysLogRecMapper.export", page);
+	}
 }
 

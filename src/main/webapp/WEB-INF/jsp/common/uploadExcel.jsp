@@ -71,10 +71,12 @@
 	    var SelectedDepartCode = '${SelectedDepartCode}';
 	    var SelectedCustCol7 = '${SelectedCustCol7}';
 	    var SelectedBillCode = '${SelectedBillCode}';
+	    var SelectedTypeCode = '${SelectedTypeCode}';
 	    var DepartTreeSource = '${DepartTreeSource}';
 	    var ShowDataDepartCode = '${ShowDataDepartCode}';
 	    var ShowDataCustCol7 = '${ShowDataCustCol7}';
 	    var ShowDataBillCode = '${ShowDataBillCode}';
+	    var ShowDataTypeCode = '${ShowDataTypeCode}';
 	    var SalaryOrBonus = '${SalaryOrBonus}';
 	    var SystemDateTime = '${SystemDateTime}';
 	    var tipfiles = "请选择xls格式的文件";
@@ -83,9 +85,9 @@
 			$(top.hangge());
 			
 			document.getElementById("Form").action = local + "/readExcel.do?TABLE_CODE="+which+"&SelectedTableNo="+which
-                +'&SelectedDepartCode='+SelectedDepartCode+'&SelectedCustCol7='+SelectedCustCol7+'&SelectedBillCode='+SelectedBillCode
+                +'&SelectedDepartCode='+SelectedDepartCode+'&SelectedCustCol7='+SelectedCustCol7+'&SelectedBillCode='+SelectedBillCode+'&SelectedTypeCode='+SelectedTypeCode
                 +'&DepartTreeSource='+DepartTreeSource
-                +'&ShowDataDepartCode='+ShowDataDepartCode+'&ShowDataCustCol7='+ShowDataCustCol7+'&ShowDataBillCode='+ShowDataBillCode
+                +'&ShowDataDepartCode='+ShowDataDepartCode+'&ShowDataCustCol7='+ShowDataCustCol7+'&ShowDataBillCode='+ShowDataBillCode+'&ShowDataTypeCode='+ShowDataTypeCode
                 +'&SalaryOrBonus='+SalaryOrBonus
                 +'&SystemDateTime='+SystemDateTime;
 			
@@ -147,9 +149,9 @@
 		//下载模板
 		function downModel(basePath){
 			var url = basePath + local + '/downExcel.do?TABLE_CODE='+which+"&SelectedTableNo="+which
-                +'&SelectedDepartCode='+SelectedDepartCode+'&SelectedCustCol7='+SelectedCustCol7+'&SelectedBillCode='+SelectedBillCode
+                +'&SelectedDepartCode='+SelectedDepartCode+'&SelectedCustCol7='+SelectedCustCol7+'&SelectedBillCode='+SelectedBillCode+'&SelectedTypeCode='+SelectedTypeCode
                 +'&DepartTreeSource='+DepartTreeSource
-                +'&ShowDataDepartCode='+ShowDataDepartCode+'&ShowDataCustCol7='+ShowDataCustCol7+'&ShowDataBillCode='+ShowDataBillCode
+                +'&ShowDataDepartCode='+ShowDataDepartCode+'&ShowDataCustCol7='+ShowDataCustCol7+'&ShowDataBillCode='+ShowDataBillCode+'&ShowDataTypeCode='+ShowDataTypeCode
                 +'&SalaryOrBonus='+SalaryOrBonus
                 +'&SystemDateTime='+SystemDateTime;
 			window.location.href = url;

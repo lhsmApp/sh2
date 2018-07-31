@@ -17,6 +17,7 @@ public interface SalaryLaborCostFactSheetManager{
 	 * @param page
 	 * @throws Exception
 	 */
-	public List<PageData> JqPage(JqPage page)throws Exception;
+	public List<PageData> getRptDetailList(JqPage page)throws Exception;
+	public List<PageData> getRptTotalList(JqPage page)throws Exception;
 }
 

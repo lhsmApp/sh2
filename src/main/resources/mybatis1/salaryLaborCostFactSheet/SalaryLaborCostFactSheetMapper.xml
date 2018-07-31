@@ -3,26 +3,30 @@
 <mapper namespace="SalaryLaborCostFactSheetMapper">
 
 	<!--表名 -->
-	<sql id="tableName">
-	
+	<sql id="tableNameDetail">
+	    view_staff_rpt_detail
+	</sql>
+	<sql id="tableNameTotal">
+	    view_staff_rpt_total
 	</sql>
 
 	<!-- 列表 -->
-	<select id="datalistJqPage" parameterType="jqPage" resultType="pd">
+	<select id="getRptDetailList" parameterType="jqPage" resultType="pd">
 		select *
-		from <include refid="tableName"></include>
-		where BUSI_DATE = '${pd.SystemDateTime}'
-		<if test="pd.filterWhereResult!= null and pd.filterWhereResult != ''"><!-- 关键词检索 -->
-			${pd.filterWhereResult}
-		</if>
+		from <include refid="tableNameDetail"></include>
+		<where>
 		    <if test="pd.QueryFeild!= null and pd.QueryFeild != ''">
 		        ${pd.QueryFeild}
 		    </if>
-		<if test="sidx != null and sidx.trim() != ''" >
-			order by ${sidx} ${sord} 
-    	</if>
-		<if test="currentResult != null and rowNum != null" >           
-              limit #{currentResult}, #{rowNum} 
-        </if>
+		</where>
+	</select>
+	<select id="getRptTotalList" parameterType="jqPage" resultType="pd">
+		select *
+		from <include refid="tableNameTotal"></include>
+		<where>
+		    <if test="pd.QueryFeild!= null and pd.QueryFeild != ''">
+		        ${pd.QueryFeild}
+		    </if>
+		</where>
 	</select>
 </mapper>

@@ -23,5 +23,11 @@ public interface SysLogRecManager{
 	 * @throws Exception
 	 */
 	public int countJqGridExtend(JqPage page)throws Exception;
+
+	/**导出到excel
+	 * @param page
+	 * @throws Exception
+	 */
+	public List<PageData> export(JqPage page)throws Exception;
 }
 

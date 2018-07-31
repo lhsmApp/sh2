@@ -30,10 +30,11 @@
 		        ${pd.QueryFeild}
 		    </if>
 		</where>
-		order by SQL_STR desc,
+		order by 
 		<if test="sidx != null and sidx.trim() != ''" >
-			${sidx} ${sord} 
+			${sidx} ${sord},
     	</if>
+    	REC_DATE desc
 		<if test="currentResult != null and rowNum != null" >           
               limit #{currentResult}, #{rowNum} 
         </if>
@@ -49,5 +50,17 @@
 		        ${pd.QueryFeild}
 		    </if>
 		</where>
+	</select>
+	
+	<select id="export" parameterType="jqPage" resultType="pd">
+		select 
+		    <include refid="Field"></include>
+		from <include refid="tableName"></include>
+		<where>
+		    <if test="pd.QueryFeild!= null and pd.QueryFeild != ''">
+		        ${pd.QueryFeild}
+		    </if>
+		</where>
+		order by TYPE_CODE,DEPT_CODE,SQL_STR desc
 	</select>
 </mapper>

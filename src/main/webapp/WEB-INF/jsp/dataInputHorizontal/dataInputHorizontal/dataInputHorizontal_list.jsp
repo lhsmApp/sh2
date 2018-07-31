@@ -459,7 +459,7 @@
     			            addicon : 'ace-icon fa fa-plus-circle purple',
     			            del: false,
     			            delicon : 'ace-icon fa fa-trash-o red',
-    			            search: true,
+    			            search: false,
     			            searchicon : 'ace-icon fa fa-search orange',
     			            refresh: true,
     			            refreshicon : 'ace-icon fa fa-refresh green',
@@ -489,11 +489,60 @@
     					showQuery: false
     		        },
     		        {},{});
-    			
+
     		$(gridBase_selector).navSeparatorAdd(pagerBase_selector, {
     			sepclass : "ui-separator",
     			sepcontent: ""
     		});
+    	    $(gridBase_selector).navButtonAdd(pagerBase_selector, {
+    			id : "batchEdit",
+    	        buttonicon: "ace-icon fa fa-pencil-square-o purple",
+    	        title: "批量编辑",
+    	        caption: "",
+    	        position: "last",
+    	        onClickButton: batchEdit,
+    	        cursor : "pointer"
+    	    });
+            $(gridBase_selector).navButtonAdd(pagerBase_selector, {
+                	id : "batchCancelEdit",
+    	                    buttonicon: "ace-icon fa fa-undo",
+    	                    title: "取消批量编辑",
+    	                    caption: "",
+    	                    position: "last",
+    	                    onClickButton: batchCancelEdit,
+    	                    cursor : "pointer"
+    	    });
+    	    $(gridBase_selector).navButtonAdd(pagerBase_selector, {
+    	        			id : "batchSave",
+    	                     caption : "",
+    	                     buttonicon : "ace-icon fa fa-save green",
+    	                     onClickButton : batchSave,
+    	                     position : "last",
+    	                     title : "批量保存",
+    	                     cursor : "pointer"
+    	    });
+    		$(gridBase_selector).navSeparatorAdd(pagerBase_selector, {
+    			sepclass : "ui-separator",
+    			sepcontent: ""
+    		});
+    	    $(gridBase_selector).navButtonAdd(pagerBase_selector, {
+				 id : "importItems",
+	             caption : "导入",
+	             buttonicon : "ace-icon fa fa-cloud-upload",
+	             onClickButton : importItems,
+	             position : "last",
+	             title : "导入",
+	             cursor : "pointer"
+	         });
+             $(gridBase_selector).navButtonAdd(pagerBase_selector, {
+				 id : "exportItems",
+                 caption : "导出",
+                 buttonicon : "ace-icon fa fa-cloud-download",
+                 onClickButton : exportItems,
+                 position : "last",
+                 title : "导出",
+                 cursor : "pointer"
+             });
 	    }
 		
 	    //双击编辑行
@@ -559,6 +608,102 @@
             });
             lastSelection = rowid;
 	    } 
+
+	    //批量编辑
+	    function batchEdit(e) {
+			var grid = $(gridBase_selector);
+	        var ids = grid.jqGrid('getDataIDs');
+	        for (var i = 0; i < ids.length; i++) {
+	            grid.jqGrid('editRow',ids[i]);
+	        }
+	    }
+	
+	    //取消批量编辑
+	    function batchCancelEdit(e) {
+			var grid = $(gridBase_selector);
+	        var ids = grid.jqGrid('getDataIDs');
+	        for (var i = 0; i < ids.length; i++) {
+	            grid.jqGrid('restoreRow',ids[i]);
+	        }
+	    }
+
+	    /**
+	     * 批量保存
+         */
+        function batchSave(){
+        	//获得选中行ids的方法
+        	//var ids = $(gridBase_selector).getGridParam("selarrrow");  
+            var ids = $(gridBase_selector).getDataIDs();  
+        	
+        	if(!(ids!=null&&ids.length>0)){
+        		bootbox.dialog({
+        			message: "<span class='bigger-110'>您没有任何内容!</span>",
+        			buttons: 			
+        			{ "button":{ "label":"确定", "className":"btn-sm btn-success"}}
+        		});
+        	}else{
+                var msg = '确定要保存数据吗?';
+                bootbox.confirm(msg, function(result) {
+        			if(result) {
+        				var listData =new Array();
+        				
+        				//遍历访问这个集合  
+        				$(ids).each(function (index, id){  
+        		            $(gridBase_selector).saveRow(id, false, 'clientArray');
+        		            var rowData = $(gridBase_selector).getRowData(id);
+        		            listData.push(rowData);
+        				});
+        				
+        				top.jzts();
+        				$.ajax({
+        					type: "POST",
+        					url: '<%=basePath%>dataInputHorizontal/updateAll.do?'
+        	    				+ 'SelectedDepartCode='+$("#SelectedDepartCode").val()
+        	    	            + '&SelectedCustCol7='+$("#SelectedCustCol7").val()
+        	    	            + '&SelectedTypeCode='+$("#SelectedTypeCode").val()
+        	    	            + '&ShowDataDepartCode='+ShowDataDepartCode
+        	    	            + '&ShowDataCustCol7='+ShowDataCustCol7
+        	    	            + '&ShowDataTypeCode='+ShowDataTypeCode
+        	    	            + '&SystemDateTime='+SystemDateTime,
+        			    	data: {DataRows:JSON.stringify(listData)},
+        					dataType:'json',
+        					cache: false,
+        					success: function(response){
+        						if(response.code==0){
+        							$(gridBase_selector).trigger("reloadGrid");  
+        							$(top.hangge());//关闭加载状态
+        							$("#subTitle").tips({
+        								side:3,
+        					            msg:'保存成功',
+        					            bg:'#009933',
+        					            time:3
+        					        });
+        						}else{
+        							batchEdit(null);
+        							$(top.hangge());//关闭加载状态
+        							$("#subTitle").tips({
+        								side:3,
+        					            msg:'保存失败,'+response.message,
+        					            bg:'#cc0033',
+        					            time:3
+        					        });
+        						}
+        					},
+        			    	error: function(response) {
+        						batchEdit(null);
+        						$(top.hangge());//关闭加载状态
+        						$("#subTitle").tips({
+        							side:3,
+        				            msg:'保存出错:'+response.responseJSON.message,
+        				            bg:'#cc0033',
+        				            time:3
+        				        });
+        			    	}
+        				});
+        			}
+                });
+        	}
+        }
 
         /**
          * 增加成功
@@ -714,6 +859,195 @@
             	 }
              });
 		}
+
+        /**
+         * 导入
+         */
+        function importItems(){
+			var TypeCode = $("#SelectedTypeCode").val();
+			var CustCol7 = $("#SelectedCustCol7").val();
+			var DepartCode = $("#SelectedDepartCode").val(); 
+
+			if(!(SystemDateTime!=null && $.trim(SystemDateTime)!="")){
+				$("#SelectedCustCol7").tips({
+					side:3,
+		            msg:'当前区间不能为空,请联系管理员',
+		            bg:'#AE81FF',
+		            time:2
+		        });
+				$("#SelectedCustCol7").focus();
+				return false;
+			}
+			if(!(CustCol7!=null && $.trim(CustCol7)!="")){
+				$("#SelectedCustCol7").tips({
+					side:3,
+		            msg:'请选择帐套',
+		            bg:'#AE81FF',
+		            time:2
+		        });
+				$("#SelectedCustCol7").focus();
+				return false;
+			}
+			if(CustCol7!=ShowDataCustCol7){
+				$("#SelectedCustCol7").tips({
+					side:3,
+		            msg:'查询条件中所选账套与页面显示数据账套不一致，请单击查询再进行操作',
+		            bg:'#AE81FF',
+		            time:2
+		        });
+				$("#SelectedCustCol7").focus();
+				return false;
+			}
+			if(!(TypeCode!=null && $.trim(TypeCode)!="")){
+				$("#SelectedTypeCode").tips({
+					side:3,
+		            msg:'请选择凭证类型',
+		            bg:'#AE81FF',
+		            time:2
+		        });
+				$("#SelectedTypeCode").focus();
+				return false;
+			}
+			if(TypeCode!=ShowDataTypeCode){
+				$("#SelectedTypeCode").tips({
+					side:3,
+		            msg:'查询条件中所选类型与页面显示数据类型不一致，请单击查询再进行操作',
+		            bg:'#AE81FF',
+		            time:2
+		        });
+				$("#SelectedTypeCode").focus();
+				return false;
+			}
+			if(!(DepartCode!=null && $.trim(DepartCode)!="")){
+				$("#SelectedDepartCode").tips({
+					side:3,
+		            msg:'请选择责任中心',
+		            bg:'#AE81FF',
+		            time:2
+		        });
+				$("#SelectedDepartCode").focus();
+				return false;
+			}
+			if(DepartCode!=ShowDataDepartCode){
+				$("#SelectedDepartCode").tips({
+					side:3,
+		            msg:'查询条件中所选责任中心与页面显示数据责任中心不一致，请单击查询再进行操作',
+		            bg:'#AE81FF',
+		            time:2
+		        });
+				$("#SelectedDepartCode").focus();
+				return false;
+			}
+     	   top.jzts();
+    	   var diag = new top.Dialog();
+    	   diag.Drag=true;
+    	   diag.Title ="EXCEL 导入到数据库";
+    	   diag.URL = '<%=basePath%>dataInputHorizontal/goUploadExcel.do?'
+				+ 'SelectedDepartCode='+$("#SelectedDepartCode").val()
+	            + '&SelectedCustCol7='+$("#SelectedCustCol7").val()
+	            + '&SelectedTypeCode='+$("#SelectedTypeCode").val()
+	            + '&ShowDataDepartCode='+ShowDataDepartCode
+	            + '&ShowDataCustCol7='+ShowDataCustCol7
+	            + '&ShowDataTypeCode='+ShowDataTypeCode
+	            + '&SystemDateTime='+SystemDateTime;
+    	   diag.Width = 300;
+    	   diag.Height = 150;
+    	   diag.CancelEvent = function(){ //关闭事件
+    		  top.jzts();
+    		  $(gridBase_selector).trigger("reloadGrid");  
+    		  $(top.hangge());//关闭加载状态
+    	      diag.close();
+           };
+           diag.show();
+        }
+
+        /**
+         * 导出
+         */
+        function exportItems(){
+			var TypeCode = $("#SelectedTypeCode").val();
+			var CustCol7 = $("#SelectedCustCol7").val();
+			var DepartCode = $("#SelectedDepartCode").val(); 
+
+			if(!(SystemDateTime!=null && $.trim(SystemDateTime)!="")){
+				$("#SelectedCustCol7").tips({
+					side:3,
+		            msg:'当前区间不能为空,请联系管理员',
+		            bg:'#AE81FF',
+		            time:2
+		        });
+				$("#SelectedCustCol7").focus();
+				return false;
+			}
+			if(!(CustCol7!=null && $.trim(CustCol7)!="")){
+				$("#SelectedCustCol7").tips({
+					side:3,
+		            msg:'请选择帐套',
+		            bg:'#AE81FF',
+		            time:2
+		        });
+				$("#SelectedCustCol7").focus();
+				return false;
+			}
+			if(CustCol7!=ShowDataCustCol7){
+				$("#SelectedCustCol7").tips({
+					side:3,
+		            msg:'查询条件中所选账套与页面显示数据账套不一致，请单击查询再进行操作',
+		            bg:'#AE81FF',
+		            time:2
+		        });
+				$("#SelectedCustCol7").focus();
+				return false;
+			}
+			if(!(TypeCode!=null && $.trim(TypeCode)!="")){
+				$("#SelectedTypeCode").tips({
+					side:3,
+		            msg:'请选择凭证类型',
+		            bg:'#AE81FF',
+		            time:2
+		        });
+				$("#SelectedTypeCode").focus();
+				return false;
+			}
+			if(TypeCode!=ShowDataTypeCode){
+				$("#SelectedTypeCode").tips({
+					side:3,
+		            msg:'查询条件中所选类型与页面显示数据类型不一致，请单击查询再进行操作',
+		            bg:'#AE81FF',
+		            time:2
+		        });
+				$("#SelectedTypeCode").focus();
+				return false;
+			}
+			if(!(DepartCode!=null && $.trim(DepartCode)!="")){
+				$("#SelectedDepartCode").tips({
+					side:3,
+		            msg:'请选择责任中心',
+		            bg:'#AE81FF',
+		            time:2
+		        });
+				$("#SelectedDepartCode").focus();
+				return false;
+			}
+			if(DepartCode!=ShowDataDepartCode){
+				$("#SelectedDepartCode").tips({
+					side:3,
+		            msg:'查询条件中所选责任中心与页面显示数据责任中心不一致，请单击查询再进行操作',
+		            bg:'#AE81FF',
+		            time:2
+		        });
+				$("#SelectedDepartCode").focus();
+				return false;
+			}
+        	window.location.href='<%=basePath%>dataInputHorizontal/excel.do?'
+				+ 'SelectedDepartCode='+$("#SelectedDepartCode").val()
+	            + '&SelectedCustCol7='+$("#SelectedCustCol7").val()
+	            + '&SelectedTypeCode='+$("#SelectedTypeCode").val()
+	            + '&ShowDataDepartCode='+ShowDataDepartCode
+	            + '&ShowDataCustCol7='+ShowDataCustCol7
+	            + '&ShowDataTypeCode='+ShowDataTypeCode
+	            + '&SystemDateTime='+SystemDateTime;
+        }
 
  	</script>
 </html>

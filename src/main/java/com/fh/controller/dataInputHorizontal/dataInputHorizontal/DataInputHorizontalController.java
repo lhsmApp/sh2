@@ -5,7 +5,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Resource;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
@@ -13,7 +15,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 import com.fh.controller.base.BaseController;
 import com.fh.controller.common.CheckSystemDateTime;
@@ -26,11 +30,17 @@ import com.fh.entity.Page;
 import com.fh.entity.PageResult;
 import com.fh.entity.system.Dictionaries;
 import com.fh.entity.system.User;
+import com.fh.exception.CustomException;
 import com.fh.util.PageData;
 import com.fh.util.SqlTools;
+import com.fh.util.excel.LeadingInExcelToPageData;
+import com.fh.util.excel.TransferSbcDbc;
+
+import net.sf.json.JSONArray;
 
 import com.fh.util.Const;
 import com.fh.util.Jurisdiction;
+import com.fh.util.ObjectExcelView;
 import com.fh.service.dataInput.dataInput.DataInputManager;
 import com.fh.service.fhoa.department.impl.DepartmentService;
 import com.fh.service.sysChangevalueMapping.sysChangevalueMapping.SysChangevalueMappingManager;
@@ -302,6 +312,81 @@ public class DataInputHorizontalController extends BaseController {
 		}
 		return commonBase;
 	}
+	
+	 /**批量修改
+	 * @param
+	 * @throws Exception
+	 */
+	@SuppressWarnings("unchecked")
+	@RequestMapping(value="/updateAll")
+	public @ResponseBody CommonBase updateAll() throws Exception{
+		//if(!Jurisdiction.buttonJurisdiction(menuUrl, "edit")){return null;} //校验权限	
+		CommonBase commonBase = new CommonBase();
+		commonBase.setCode(-1);
+
+		PageData pd = this.getPageData();
+		//账套
+		String SelectedCustCol7 = pd.getString("SelectedCustCol7");
+		String ShowDataCustCol7 = pd.getString("ShowDataCustCol7");
+		//凭证字典
+		String SelectedTypeCode = pd.getString("SelectedTypeCode");
+		String ShowDataTypeCode = pd.getString("ShowDataTypeCode");
+		//责任中心
+		String SelectedDepartCode = pd.getString("SelectedDepartCode");
+		String ShowDataDepartCode = pd.getString("ShowDataDepartCode");
+		//当前区间
+		String SystemDateTime = pd.getString("SystemDateTime");
+		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager);
+		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
+			commonBase.setCode(2);
+			commonBase.setMessage(mesDateTime);
+			return commonBase;
+		}
+		//判断选择为必须选择的
+		String strGetCheckMustSelected = CheckMustSelectedAndSame(SelectedCustCol7, ShowDataCustCol7, 
+				SelectedTypeCode, ShowDataTypeCode, 
+				SelectedDepartCode, ShowDataDepartCode);
+		if(strGetCheckMustSelected!=null && !strGetCheckMustSelected.trim().equals("")){
+			commonBase.setCode(2);
+			commonBase.setMessage(strGetCheckMustSelected);
+			return commonBase;
+		}
+		
+		Object DATA_ROWS = pd.get("DataRows");
+		String json = DATA_ROWS.toString();  
+        JSONArray array = JSONArray.fromObject(json);  
+        List<PageData> getListData = (List<PageData>) JSONArray.toCollection(array,PageData.class);
+		
+		if(null != getListData && getListData.size() > 0){
+			PageData pdData = getListData.get(0);
+
+			PageData pdSet = new PageData();
+			pdSet.put("BILL_OFF", SelectedCustCol7);
+			pdSet.put("TYPE_CODE", SelectedTypeCode);
+			pdSet.put("DEPT_CODE", SelectedDepartCode);
+			List<Dictionaries> list = sysChangevalueMappingService.getSelectMapCodeList(pdSet);
+			if(list!=null && list.size()>0){
+				List<PageData> listData = new ArrayList<PageData>();
+				for(Dictionaries dic : list){
+					PageData pdAdd = new PageData();
+					pdAdd.put("TYPE_CODE", SelectedTypeCode);
+					pdAdd.put("BILL_OFF", SelectedCustCol7);
+					pdAdd.put("DEPT_CODE", SelectedDepartCode);
+					pdAdd.put("BUSI_DATE", SystemDateTime);
+					pdAdd.put("CHANGE_COL", dic.getDICT_CODE());
+					String strVal = pdData.getString(dic.getDICT_CODE());
+					if(!(strVal!=null && !strVal.trim().equals(""))){
+						strVal = "0";
+					}
+					pdAdd.put("DATA_VALUE", strVal);
+					listData.add(pdAdd);
+				}
+				dataInputService.batchUpdateDatabaseHorizontal(listData);
+				commonBase.setCode(0);
+			}
+		}
+		return commonBase;
+	}
 
 	/**
 	 * 复制
@@ -362,6 +447,274 @@ public class DataInputHorizontalController extends BaseController {
 			commonBase.setCode(0);
 		}
 		return commonBase;
+	}
+	
+	/**打开上传EXCEL页面
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping(value="/goUploadExcel")
+	public ModelAndView goUploadExcel()throws Exception{
+		CommonBase commonBase = new CommonBase();
+	    commonBase.setCode(-1);
+	    
+		PageData getPd = this.getPageData();
+		//账套
+		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
+		String ShowDataCustCol7 = getPd.getString("ShowDataCustCol7");
+		//凭证字典
+		String SelectedTypeCode = getPd.getString("SelectedTypeCode");
+		String ShowDataTypeCode = getPd.getString("ShowDataTypeCode");
+		//责任中心
+		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
+		String ShowDataDepartCode = getPd.getString("ShowDataDepartCode");
+
+		//当前区间
+		String SystemDateTime = getPd.getString("SystemDateTime");
+		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager);
+		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
+			commonBase.setCode(2);
+			commonBase.setMessage(mesDateTime);
+		}
+		//判断选择为必须选择的
+		String strGetCheckMustSelected = CheckMustSelectedAndSame(SelectedCustCol7, ShowDataCustCol7, 
+				SelectedTypeCode, ShowDataTypeCode, 
+				SelectedDepartCode, ShowDataDepartCode);
+		if(strGetCheckMustSelected!=null && !strGetCheckMustSelected.trim().equals("")){
+			commonBase.setCode(2);
+			commonBase.setMessage(strGetCheckMustSelected);
+		}
+		
+		ModelAndView mv = this.getModelAndView();
+		mv.setViewName("common/uploadExcel");
+		mv.addObject("local", "dataInputHorizontal");
+		mv.addObject("SelectedDepartCode", SelectedDepartCode);
+		mv.addObject("SelectedCustCol7", SelectedCustCol7);
+		mv.addObject("SelectedTypeCode", SelectedTypeCode);
+		mv.addObject("ShowDataDepartCode", ShowDataDepartCode);
+		mv.addObject("ShowDataCustCol7", ShowDataCustCol7);
+		mv.addObject("ShowDataTypeCode", ShowDataTypeCode);
+		mv.addObject("SystemDateTime", SystemDateTime);
+		mv.addObject("commonBaseCode", commonBase.getCode());
+		mv.addObject("commonMessage", commonBase.getMessage());
+		return mv;
+	}
+
+	/**从EXCEL导入到数据库
+	 * @param file
+	 * @return
+	 * @throws Exception
+	 */   
+	@SuppressWarnings({ "unchecked" })
+	@RequestMapping(value = "/readExcel")
+	//public @ResponseBody CommonBase readExcel(@RequestParam(value="excel",required=false) MultipartFile file) throws Exception{
+	public ModelAndView readExcel(@RequestParam(value="excel",required=false) MultipartFile file) throws Exception{
+		CommonBase commonBase = new CommonBase();
+		commonBase.setCode(-1);
+		//if(!Jurisdiction.buttonJurisdiction(menuUrl, "add")){return null;}//校验权限
+		
+		PageData getPd = this.getPageData();
+		//账套
+		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
+		String ShowDataCustCol7 = getPd.getString("ShowDataCustCol7");
+		//凭证字典
+		String SelectedTypeCode = getPd.getString("SelectedTypeCode");
+		String ShowDataTypeCode = getPd.getString("ShowDataTypeCode");
+		//责任中心
+		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
+		String ShowDataDepartCode = getPd.getString("ShowDataDepartCode");
+
+		//当前区间
+		String SystemDateTime = getPd.getString("SystemDateTime");
+		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager);
+		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
+			commonBase.setCode(2);
+			commonBase.setMessage(mesDateTime);
+		} else {
+		    //判断选择为必须选择的
+		    String strGetCheckMustSelected = CheckMustSelectedAndSame(SelectedCustCol7, ShowDataCustCol7, 
+		    	    SelectedTypeCode, ShowDataTypeCode, 
+		    	    SelectedDepartCode, ShowDataDepartCode);
+		    if(strGetCheckMustSelected!=null && !strGetCheckMustSelected.trim().equals("")){
+		        commonBase.setCode(2);
+		        commonBase.setMessage(strGetCheckMustSelected);
+		    } else {
+				PageData pdSet = new PageData();
+				pdSet.put("BILL_OFF", SelectedCustCol7);
+				pdSet.put("TYPE_CODE", SelectedTypeCode);
+				pdSet.put("DEPT_CODE", SelectedDepartCode);
+				List<Dictionaries> listColumnsList = sysChangevalueMappingService.getSelectMapCodeList(pdSet);
+				if(!(listColumnsList != null && listColumnsList.size() > 0)){
+			        commonBase.setCode(2);
+			        commonBase.setMessage("请在变动列配置功能配置变动列！");
+				} else {
+					// 局部变量
+					LeadingInExcelToPageData<PageData> testExcel = null;
+					Map<Integer, Object> uploadAndReadMap = null;
+					try {
+						// 定义需要读取的数据
+						String formart = "yyyy-MM-dd";
+						String propertiesFileName = "config";
+						String kyeName = "file_path";
+						int sheetIndex = 0;
+						Map<String, String> titleAndAttribute = null;
+						// 定义对应的标题名与对应属性名
+						titleAndAttribute = new LinkedHashMap<String, String>();
+							
+						//配置表设置列
+						if(listColumnsList != null && listColumnsList.size() > 0){
+							for (Dictionaries col : listColumnsList) {
+								titleAndAttribute.put(TransferSbcDbc.ToDBC(col.getNAME()), col.getDICT_CODE());
+							}
+						}
+
+						// 调用解析工具包
+						testExcel = new LeadingInExcelToPageData<PageData>(formart);
+						// 解析excel，获取客户信息集合
+
+						uploadAndReadMap = testExcel.uploadAndRead(file, propertiesFileName, kyeName, sheetIndex,
+								titleAndAttribute, null, null, null, false, false);
+					} catch (Exception e) {
+						e.printStackTrace();
+						logger.error("读取Excel文件错误", e);
+						throw new CustomException("读取Excel文件错误:" + e.getMessage(),false);
+					}
+					boolean judgement = false;
+					List<PageData> listUploadAndRead = (List<PageData>) uploadAndReadMap.get(1);
+					if (listUploadAndRead != null && !"[]".equals(listUploadAndRead.toString()) && listUploadAndRead.size() >= 1) {
+						judgement = true;
+					}
+					if (judgement) {
+						int listSize = listUploadAndRead.size();
+						if(listSize > 0){
+							PageData pdUploadAndRead = listUploadAndRead.get(0);
+							
+							List<PageData> listData = new ArrayList<PageData>();
+							for(Dictionaries dic : listColumnsList){
+								PageData pdAdd = new PageData();
+								pdAdd.put("TYPE_CODE", SelectedTypeCode);
+								pdAdd.put("BILL_OFF", SelectedCustCol7);
+								pdAdd.put("DEPT_CODE", SelectedDepartCode);
+								pdAdd.put("BUSI_DATE", SystemDateTime);
+								pdAdd.put("CHANGE_COL", dic.getDICT_CODE());
+								String strVal = pdUploadAndRead.getString(dic.getDICT_CODE());
+								if(!(strVal!=null && !strVal.trim().equals(""))){
+									strVal = "0";
+								}
+								pdAdd.put("DATA_VALUE", strVal);
+								listData.add(pdAdd);
+							}
+							dataInputService.batchUpdateDatabaseHorizontal(listData);
+							commonBase.setCode(0);
+					    } else {
+							commonBase.setCode(2);
+							commonBase.setMessage("请导入数据！");
+					    }
+					} else {
+						commonBase.setCode(-1);
+					    commonBase.setMessage("TranslateUtil");
+				    }
+	            }
+		    }	
+		}
+		ModelAndView mv = this.getModelAndView();
+		mv.setViewName("common/uploadExcel");
+		mv.addObject("local", "dataInputHorizontal");
+		mv.addObject("SelectedDepartCode", SelectedDepartCode);
+		mv.addObject("SelectedCustCol7", SelectedCustCol7);
+		mv.addObject("SelectedTypeCode", SelectedTypeCode);
+		mv.addObject("ShowDataDepartCode", ShowDataDepartCode);
+		mv.addObject("ShowDataCustCol7", ShowDataCustCol7);
+		mv.addObject("ShowDataTypeCode", ShowDataTypeCode);
+		mv.addObject("SystemDateTime", SystemDateTime);
+		mv.addObject("commonBaseCode", commonBase.getCode());
+		mv.addObject("commonMessage", commonBase.getMessage());
+		return mv;
+	}
+	
+	/**下载模版
+	 * @param response
+	 * @throws Exception
+	 */
+	@RequestMapping(value="/downExcel")
+	public ModelAndView downExcel(JqPage page) throws Exception{
+		PageData getPd = this.getPageData();
+		//账套
+		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
+		//凭证字典
+		String SelectedTypeCode = getPd.getString("SelectedTypeCode");
+		//责任中心
+		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
+		//当前区间
+		//String SystemDateTime = getPd.getString("SystemDateTime");
+
+		PageData pdTransfer = setTransferPd(getPd);
+		page.setPd(pdTransfer);
+		List<PageData> varOList = dataInputService.exportList(page);
+		return export(varOList, "DataInput", SelectedCustCol7, SelectedTypeCode, SelectedDepartCode);
+	}
+	
+	 /**导出到excel
+	 * @param
+	 * @throws Exception
+	 */
+	@RequestMapping(value="/excel")
+	public ModelAndView exportExcel(JqPage page) throws Exception{
+		logBefore(logger, Jurisdiction.getUsername()+"导出SocialIncDetail到excel");
+
+		PageData getPd = this.getPageData();
+		//账套
+		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
+		//凭证字典
+		String SelectedTypeCode = getPd.getString("SelectedTypeCode");
+		//责任中心
+		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
+		//当前区间
+		//String SystemDateTime = getPd.getString("SystemDateTime");
+
+		PageData pdTransfer = setTransferPd(getPd);
+		page.setPd(pdTransfer);
+		List<PageData> varOList = dataInputService.exportList(page);
+		return export(varOList, "", SelectedCustCol7, SelectedTypeCode, SelectedDepartCode);
+	}
+	
+	private ModelAndView export(List<PageData> varOList, String ExcelName,
+			String SelectedCustCol7, String SelectedTypeCode, String SelectedDepartCode) throws Exception{
+		if(!(varOList!=null && varOList.size()>0)){
+			varOList = new ArrayList<PageData>();
+		}
+		ModelAndView mv = new ModelAndView();
+		Map<String,Object> dataMap = new LinkedHashMap<String,Object>();
+		dataMap.put("filename", ExcelName);
+		List<String> titles = new ArrayList<String>();
+		List<PageData> varList = new ArrayList<PageData>();
+
+		PageData pdSet = new PageData();
+		pdSet.put("BILL_OFF", SelectedCustCol7);
+		pdSet.put("TYPE_CODE", SelectedTypeCode);
+		pdSet.put("DEPT_CODE", SelectedDepartCode);
+		List<Dictionaries> list = sysChangevalueMappingService.getSelectMapCodeList(pdSet);
+		if(list!=null && list.size()>0){
+			PageData vpd = new PageData();
+			int j = 1;
+			for(Dictionaries dic : list){
+				titles.add(dic.getNAME());
+			    Object getCellValue = "0";
+				for(PageData each : varOList){
+					if(dic.getDICT_CODE().toUpperCase().equals(each.getString("CHANGE_COL").toUpperCase())){
+						getCellValue = each.get("DATA_VALUE");
+					}
+				}
+				vpd.put("var" + j, getCellValue.toString());
+			    j++;
+			}
+			varList.add(vpd);
+		}
+		dataMap.put("titles", titles);
+		dataMap.put("varList", varList);
+		ObjectExcelView erv = new ObjectExcelView();
+		mv = new ModelAndView(erv,dataMap); 
+		return mv;
 	}
 	
 	private List<String> getListDate(String SelectedBusiDate, Boolean bolSelf){

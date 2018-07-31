@@ -21,6 +21,7 @@ import com.fh.controller.base.BaseController;
 import com.fh.controller.common.BillCodeUtil;
 import com.fh.controller.common.CheckSystemDateTime;
 import com.fh.controller.common.Common;
+import com.fh.controller.common.Corresponding;
 import com.fh.controller.common.DictsUtil;
 import com.fh.controller.common.Message;
 import com.fh.controller.common.QueryFeildString;
@@ -29,7 +30,6 @@ import com.fh.controller.common.SqlFeildToSave;
 import com.fh.controller.common.SysStruMappingList;
 import com.fh.controller.common.TmplUtil;
 import com.fh.controller.common.TmplVoucherUtil;
-import com.fh.controller.common.VoucherToBillType;
 import com.fh.entity.CertParmConfig;
 import com.fh.entity.ClsVoucherStruFeild;
 import com.fh.entity.CommonBase;
@@ -615,7 +615,7 @@ public class FundsSelfSummyController extends BaseController {
 		}
 
 		/***************获取最大单号及更新最大单号********************/
-	    String billNumType = VoucherToBillType.getVoucherToBillType(SelectedTypeCode);
+	    String billNumType = Corresponding.getBillTypeFromPZTYPE(SelectedTypeCode);
 	    if(!(billNumType!=null && !billNumType.trim().equals(""))){
 	    	commonBase.setCode(2);
 	    	commonBase.setMessage(Message.NotGetBillTypeFromVoucher);

@@ -88,9 +88,6 @@
 		<if test="sidx != null and sidx.trim() != ''" >
 			order by ${sidx} ${sord} 
     	</if>
-		<if test="currentResult != null and rowNum != null" >           
-              limit #{currentResult}, #{rowNum} 
-        </if>
 	</select>
 	<select id="countJqGridExtend" parameterType="jqPage" resultType="int">
 		select count(*) 
@@ -117,6 +114,31 @@
 		    </if>
 		</where>
 	</select>
+	<select id="exportList" parameterType="jqPage" resultType="pd">
+		SELECT *
+		FROM (select <include refid="FieldSelectedCol"></include>
+		             <include refid="FieldSelectedKey"></include>
+		      from <include refid="tableChangeValueMapName"></include> t
+		      LEFT JOIN (SELECT * 
+		                 FROM <include refid="tableDataInputName"></include>
+		                 where BUSI_DATE = '${pd.SystemDateTime}'
+		                 <if test="pd.filterWhereResult!= null and pd.filterWhereResult != ''"><!-- 关键词检索 -->
+			                 ${pd.filterWhereResult}
+		                 </if>
+		                 <if test="pd.QueryFeild!= null and pd.QueryFeild != ''">
+		                     ${pd.QueryFeild}
+		                 </if>) C
+		      ON t.TYPE_CODE = C.TYPE_CODE AND t.BILL_OFF = C.BILL_OFF AND t.DEPT_CODE = C.DEPT_CODE AND t.MAPPING_CODE = C.CHANGE_COL
+		      ) Z 
+		<where>
+		    <if test="pd.QueryFeild!= null and pd.QueryFeild != ''">
+		        ${pd.QueryFeild}
+		    </if>
+		</where>
+		<if test="sidx != null and sidx.trim() != ''" >
+			order by ${sidx} ${sord} 
+    	</if>
+	</select>
 	
 	<!-- 复制 -->
 	<select id="getHaveCopyRecord" parameterType="pd" resultType="pd">
@@ -125,11 +147,7 @@
 		<include refid="tableChangeValueMapName"></include>
 		where TYPE_CODE = #{SelectedTypeCode}
 		and BILL_OFF = #{SelectedCustCol7}
-		<!-- and BUSI_DATE = #{SelectedBusiDate} -->
 		and DEPT_CODE = #{SelectedDepartCode}
-		<!-- <if test="SelectedChangeCol!=null and SelectedChangeCol!=''">
-			and CHANGE_COL = #{SelectedChangeCol}
-		</if> -->
 	</select>
 	
 	<!-- 获取重复数据 -->
@@ -231,7 +249,7 @@
 				         FROM <include refid="tableDataInputName"></include>
 				         where TYPE_CODE = #{SelectedTypeCode}
 				         and BILL_OFF = #{SelectedCustCol7}
-				         and BUSI_DATE = #{SelectedBusiDate}
+				         and BUSI_DATE = #{SystemDateTime}
 				         and DEPT_CODE = #{SelectedDepartCode}
 			             <if test="SelectedChangeCol!=null and SelectedChangeCol!=''">
 				            and CHANGE_COL = #{SelectedChangeCol}
@@ -282,7 +300,7 @@
 				         FROM <include refid="tableDataInputName"></include>
 				         where TYPE_CODE = #{SelectedTypeCode}
 				         and BILL_OFF = #{SelectedCustCol7}
-				         and BUSI_DATE = #{SelectedBusiDate}
+				         and BUSI_DATE = #{SystemDateTime}
 				         and DEPT_CODE = #{SelectedDepartCode});
 			        </if>
 		        </foreach>
@@ -300,7 +318,7 @@
 				         FROM <include refid="tableDataInputName"></include>
 				         where TYPE_CODE = #{SelectedTypeCode}
 				         and BILL_OFF = #{SelectedCustCol7}
-				         and BUSI_DATE = #{SelectedBusiDate}
+				         and BUSI_DATE = #{SystemDateTime}
 				         and DEPT_CODE = #{SelectedDepartCode}
                          and CHANGE_COL in (select MAPPING_CODE 
                                             from tb_sys_changevalue_mapping 
@@ -338,11 +356,11 @@
 				         FROM <include refid="tableChangeValueMapName"></include> t
 		                 LEFT JOIN (SELECT * 
 		                            FROM <include refid="tableDataInputName"></include>
-		                            where BUSI_DATE = #{SelectedBusiDate}) C
+		                            where BUSI_DATE = #{SystemDateTime}) C
 		                 ON t.TYPE_CODE = C.TYPE_CODE AND t.BILL_OFF = C.BILL_OFF AND t.DEPT_CODE = C.DEPT_CODE AND t.MAPPING_CODE = C.CHANGE_COL
 				         where t.TYPE_CODE = #{SelectedTypeCode}
 				         and t.BILL_OFF = #{SelectedCustCol7}
-				         <!-- and t.BUSI_DATE = #{SelectedBusiDate} -->
+				         <!-- and t.BUSI_DATE = #{SystemDateTime} -->
 				         and t.DEPT_CODE = #{SelectedDepartCode});
 			        </if>
 		        </foreach>

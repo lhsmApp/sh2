@@ -312,6 +312,16 @@ public class LeadingInExcelToPageData<T> {
 			Map<String, TableColumns> map_HaveColumnsList,
 			Map<String, TmplConfigDetail> map_SetColumnsList, Map<String, Object> DicList,
 			Boolean bolIsDicSetSAL_RANGE, Boolean bolIsDicSetUSER_CATG) throws Exception{
+    	if(!(map_HaveColumnsList!=null && map_HaveColumnsList.size()>0)){
+    		map_HaveColumnsList = new HashMap<String, TableColumns>();
+    	}
+    	if(!(map_SetColumnsList!=null && map_SetColumnsList.size()>0)){
+    		map_SetColumnsList = new HashMap<String, TmplConfigDetail>();
+    	}
+    	if(!(DicList!=null && DicList.size()>0)){
+    		DicList = new HashMap<String, Object>();
+    	}
+
     	Map<Integer, Object> returnMap = new HashMap<Integer, Object>();
     	Map<String, Object> returnError = new HashMap<String, Object>();
         List<PageData> info=new ArrayList<PageData>();

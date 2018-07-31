@@ -27,8 +27,12 @@ public class SalaryLaborCostFactSheetService implements SalaryLaborCostFactSheet
 	 * @throws Exception
 	 */
 	@SuppressWarnings("unchecked")
-	public List<PageData> JqPage(JqPage page)throws Exception{
-		return (List<PageData>)dao.findForList("SalaryLaborCostFactSheetMapper.datalistJqPage", page);
+	public List<PageData> getRptDetailList(JqPage page)throws Exception{
+		return (List<PageData>)dao.findForList("SalaryLaborCostFactSheetMapper.getRptDetailList", page);
+	}
+	@SuppressWarnings("unchecked")
+	public List<PageData> getRptTotalList(JqPage page)throws Exception{
+		return (List<PageData>)dao.findForList("SalaryLaborCostFactSheetMapper.getRptTotalList", page);
 	}
 }
 
