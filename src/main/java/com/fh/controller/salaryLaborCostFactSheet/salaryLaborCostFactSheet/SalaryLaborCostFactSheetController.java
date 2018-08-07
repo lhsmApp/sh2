@@ -1,5 +1,6 @@
 package com.fh.controller.salaryLaborCostFactSheet.salaryLaborCostFactSheet;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -141,36 +142,74 @@ public class SalaryLaborCostFactSheetController extends BaseController {
 				for(PageData pdTotal : getTotalList){
 					if(cost.getOrder().equals(pdTotal.getString("dipsorder"))){
 						if(cost.getOrder().equals(BindingType.Total0.getNameKey())){
-							//cost.setName05(pdTotal.get("").toString());//总额合计
-							cost.setName06(pdTotal.get("calgz").toString());//工资
-							cost.setName07(pdTotal.get("HOUSE_ALLE").toString());//无房补贴
-							cost.setName08(pdTotal.get("TRF_ALLE").toString());//交通补贴
-							cost.setName09(pdTotal.get("TEL_EXPE").toString());//通讯补贴
-							cost.setName10(pdTotal.get("HLDY_ALLE").toString());//节日补贴
-							cost.setName11(pdTotal.get("MEAL_EXPE").toString());//误餐补贴
-							cost.setName12(pdTotal.get("ITEM_ALLE").toString());//项目补贴
-							//cost.setName13(pdTotal.get("").toString());//
-							cost.setName14(pdTotal.get("KID_ALLE").toString());//儿贴
-							cost.setName15(pdTotal.get("COOL_EXPE").toString());//防暑降温费
-							//cost.setName16("");//疗养费
-							cost.setName17(pdTotal.get("EXT_SGL_AWAD").toString());//总额外单项奖
+							String str06 = pdTotal.get("calgz").toString();
+							String str07 = pdTotal.get("HOUSE_ALLE").toString();
+							String str08 = pdTotal.get("TRF_ALLE").toString();
+							String str09 = pdTotal.get("TEL_EXPE").toString();
+							String str10 = pdTotal.get("HLDY_ALLE").toString();
+							String str11 = pdTotal.get("MEAL_EXPE").toString();
+							String str12 = pdTotal.get("ITEM_ALLE").toString();
+							String str13 = pdTotal.get("Ins").toString();
+							String str14 = pdTotal.get("KID_ALLE").toString();
+							String str15 = pdTotal.get("COOL_EXPE").toString();
+							String str16 = "0.00";
+							String str17 = pdTotal.get("EXT_SGL_AWAD").toString();
+							
+							BigDecimal dec05 = new BigDecimal(0);
+							dec05 = dec05.add(new BigDecimal(str06)).add(new BigDecimal(str07)).add(new BigDecimal(str08))
+									.add(new BigDecimal(str09)).add(new BigDecimal(str10)).add(new BigDecimal(str11))
+									.add(new BigDecimal(str12)).add(new BigDecimal(str13)).add(new BigDecimal(str14))
+									.add(new BigDecimal(str15)).add(new BigDecimal(str16)).add(new BigDecimal(str17));
+							
+							cost.setName05(dec05.toString());//总额合计
+							cost.setName06(str06);//工资
+							cost.setName07(str07);//无房补贴
+							cost.setName08(str08);//交通补贴
+							cost.setName09(str09);//通讯补贴
+							cost.setName10(str10);//节日补贴
+							cost.setName11(str11);//误餐补贴
+							cost.setName12(str12);//项目补贴
+							cost.setName13(str13);//
+							cost.setName14(str14);//儿贴
+							cost.setName15(str15);//防暑降温费
+							cost.setName16(str16);//疗养费
+							cost.setName17(str17);//总额外单项奖
 							//cost.setName18("");//单独制表
 							//cost.setName19("");//期末人数
 						}
 						if(cost.getOrder().equals(BindingType.Total44.getNameKey())){
-							//cost.setName05(pdTotal.get("").toString().toString());//总额合计
-							cost.setName06(pdTotal.get("calgz").toString());//工资
-							cost.setName07(pdTotal.get("HOUSE_ALLE").toString());//无房补贴
-							cost.setName08(pdTotal.get("TRF_ALLE").toString());//交通补贴
-							cost.setName09(pdTotal.get("TEL_EXPE").toString());//通讯补贴
-							cost.setName10(pdTotal.get("HLDY_ALLE").toString());//节日补贴
-							cost.setName11(pdTotal.get("MEAL_EXPE").toString());//误餐补贴
-							cost.setName12(pdTotal.get("ITEM_ALLE").toString());//项目补贴
-							//cost.setName13(pdTotal.get("").toString());//
-							//cost.setName14(pdTotal.get("").toString());//
-							//cost.setName15(pdTotal.get("").toString());//
-							//cost.setName16(pdTotal.get("").toString());//
-							//cost.setName17(pdTotal.get("").toString());//
+							String str06 = pdTotal.get("calgz").toString();
+							String str07 = pdTotal.get("HOUSE_ALLE").toString();
+							String str08 = pdTotal.get("TRF_ALLE").toString();
+							String str09 = pdTotal.get("TEL_EXPE").toString();
+							String str10 = pdTotal.get("HLDY_ALLE").toString();
+							String str11 = pdTotal.get("MEAL_EXPE").toString();
+							String str12 = pdTotal.get("ITEM_ALLE").toString();
+							String str13 = pdTotal.get("Ins").toString();
+							String str14 = pdTotal.get("AFTER_TAX").toString();
+							String str15 = pdTotal.get("CUST_COL13").toString();
+							String str16 = pdTotal.get("CUST_COL17").toString();
+							String str17 = pdTotal.get("CUST_COL14").toString();
+							
+							BigDecimal dec05 = new BigDecimal(0);
+							dec05 = dec05.add(new BigDecimal(str06)).add(new BigDecimal(str07)).add(new BigDecimal(str08))
+									.add(new BigDecimal(str09)).add(new BigDecimal(str10)).add(new BigDecimal(str11))
+									.add(new BigDecimal(str12)).add(new BigDecimal(str13)).add(new BigDecimal(str14))
+									.add(new BigDecimal(str15)).add(new BigDecimal(str16)).add(new BigDecimal(str17));
+							
+							cost.setName05(dec05.toString());//总额合计
+							cost.setName06(str06);//工资
+							cost.setName07(str07);//无房补贴
+							cost.setName08(str08);//交通补贴
+							cost.setName09(str09);//通讯补贴
+							cost.setName10(str10);//节日补贴
+							cost.setName11(str11);//误餐补贴
+							cost.setName12(str12);//项目补贴
+							cost.setName13(str13);//
+							cost.setName14(str14);//
+							cost.setName15(str15);//
+							cost.setName16(str16);//
+							cost.setName17(str17);//
 							//cost.setName18("");//单独制表
 							//cost.setName19("");//期末人数
 						}
@@ -179,53 +218,110 @@ public class SalaryLaborCostFactSheetController extends BaseController {
 				for(PageData pdDetail : getDetailList){
 					if(cost.getOrder().equals(pdDetail.getString("dipsorder"))){
 						if(cost.getOrder().equals(BindingType.DetailSCHHTH.getNameKey())){
-							//cost.setName05(pdDetail.get("").toString());//总额合计
-							cost.setName06(pdDetail.get("calgz").toString());//工资
-							cost.setName07(pdDetail.get("HOUSE_ALLE").toString());//无房补贴
-							cost.setName08(pdDetail.get("TRF_ALLE").toString());//交通补贴
-							cost.setName09(pdDetail.get("TEL_EXPE").toString());//通讯补贴
-							cost.setName10(pdDetail.get("HLDY_ALLE").toString());//节日补贴
-							cost.setName11(pdDetail.get("MEAL_EXPE").toString());//误餐补贴
-							cost.setName12(pdDetail.get("ITEM_ALLE").toString());//项目补贴
+							String str06 = pdDetail.get("calgz").toString();
+							String str07 = pdDetail.get("HOUSE_ALLE").toString();
+							String str08 = pdDetail.get("TRF_ALLE").toString();
+							String str09 = pdDetail.get("TEL_EXPE").toString();
+							String str10 = pdDetail.get("HLDY_ALLE").toString();
+							String str11 = pdDetail.get("MEAL_EXPE").toString();
+							String str12 = pdDetail.get("ITEM_ALLE").toString();
+							//String str13 = "0.00";
+							String str14 = pdDetail.get("KID_ALLE").toString();
+							String str15 = pdDetail.get("COOL_EXPE").toString();
+							String str16 = "0.00";
+							String str17 = pdDetail.get("EXT_SGL_AWAD").toString();
+							
+							BigDecimal dec05 = new BigDecimal(0);
+							dec05 = dec05.add(new BigDecimal(str06)).add(new BigDecimal(str07)).add(new BigDecimal(str08))
+									.add(new BigDecimal(str09)).add(new BigDecimal(str10)).add(new BigDecimal(str11))
+									.add(new BigDecimal(str12)).add(new BigDecimal(str14))
+									.add(new BigDecimal(str15)).add(new BigDecimal(str16)).add(new BigDecimal(str17));
+							
+							cost.setName05(dec05.toString());//总额合计
+							cost.setName06(str06);//工资
+							cost.setName07(str07);//无房补贴
+							cost.setName08(str08);//交通补贴
+							cost.setName09(str09);//通讯补贴
+							cost.setName10(str10);//节日补贴
+							cost.setName11(str11);//误餐补贴
+							cost.setName12(str12);//项目补贴
 							//cost.setName13("");//
-							cost.setName14(pdDetail.get("KID_ALLE").toString());//儿贴
-							cost.setName15(pdDetail.get("COOL_EXPE").toString());//防暑降温费
-							//cost.setName16("");//疗养费
-							cost.setName17(pdDetail.get("EXT_SGL_AWAD").toString());//总额外单项奖
+							cost.setName14(str14);//儿贴
+							cost.setName15(str15);//防暑降温费
+							cost.setName16(str16);//疗养费
+							cost.setName17(str17);//总额外单项奖
 							//cost.setName18("");//单独制表
 							//cost.setName19("");//期末人数
 						}
 						if(cost.getOrder().equals(BindingType.DetailXTNLW.getNameKey())){
-							//cost.setName05(pdDetail.get("").toString());//总额合计
-							cost.setName06(pdDetail.get("calgz").toString());//工资
-							cost.setName07(pdDetail.get("HOUSE_ALLE").toString());//无房补贴
-							cost.setName08(pdDetail.get("TRF_ALLE").toString());//交通补贴
-							cost.setName09(pdDetail.get("TEL_EXPE").toString());//通讯补贴
-							cost.setName10(pdDetail.get("HLDY_ALLE").toString());//节日补贴
-							cost.setName11(pdDetail.get("MEAL_EXPE").toString());//误餐补贴
-							cost.setName12(pdDetail.get("ITEM_ALLE").toString());//项目补贴
+							String str06 = pdDetail.get("calgz").toString();
+							String str07 = pdDetail.get("HOUSE_ALLE").toString();
+							String str08 = pdDetail.get("TRF_ALLE").toString();
+							String str09 = pdDetail.get("TEL_EXPE").toString();
+							String str10 = pdDetail.get("HLDY_ALLE").toString();
+							String str11 = pdDetail.get("MEAL_EXPE").toString();
+							String str12 = pdDetail.get("ITEM_ALLE").toString();
+							//String str13 = "0.00";
+							String str14 = pdDetail.get("KID_ALLE").toString();
+							String str15 = pdDetail.get("COOL_EXPE").toString();
+							String str16 = pdDetail.get("CUST_COL10").toString();
+							String str17 = pdDetail.get("CUST_COL1").toString();
+							
+							BigDecimal dec05 = new BigDecimal(0);
+							dec05 = dec05.add(new BigDecimal(str06)).add(new BigDecimal(str07)).add(new BigDecimal(str08))
+									.add(new BigDecimal(str09)).add(new BigDecimal(str10)).add(new BigDecimal(str11))
+									.add(new BigDecimal(str12)).add(new BigDecimal(str14))
+									.add(new BigDecimal(str15)).add(new BigDecimal(str16)).add(new BigDecimal(str17));
+							
+							cost.setName05(dec05.toString());//总额合计
+							cost.setName06(str06);//工资
+							cost.setName07(str07);//无房补贴
+							cost.setName08(str08);//交通补贴
+							cost.setName09(str09);//通讯补贴
+							cost.setName10(str10);//节日补贴
+							cost.setName11(str11);//误餐补贴
+							cost.setName12(str12);//项目补贴
 							//cost.setName13("");//
-							cost.setName14(pdDetail.get("KID_ALLE").toString());//儿贴
-							cost.setName15(pdDetail.get("COOL_EXPE").toString());//防暑降温费
-							//cost.setName16(pdDetail.get("").toString());//管理费
-							//cost.setName17(pdDetail.get("").toString());//可抵税费
+							cost.setName14(str14);//儿贴
+							cost.setName15(str15);//防暑降温费
+							cost.setName16(str16);//管理费
+							cost.setName17(str17);//可抵税费
 							//cost.setName18("");//单独制表
 							//cost.setName19("");//期末人数
 						}
 						if(cost.getOrder().equals(BindingType.DetailLWPQ.getNameKey())){
-							//cost.setName05(pdDetail.get("").toString());//总额合计
-							cost.setName06(pdDetail.get("calgz").toString());//工资
-							cost.setName07(pdDetail.get("TRF_ALLE").toString());//交通补贴
-							cost.setName08(pdDetail.get("TEL_EXPE").toString());//通讯补贴
-							cost.setName09(pdDetail.get("HLDY_ALLE").toString());//节日补贴
-							cost.setName10(pdDetail.get("MEAL_EXPE").toString());//误餐补贴
-							cost.setName11(pdDetail.get("CUST_COL1").toString());//劳保
-							cost.setName12(pdDetail.get("COOL_EXPE").toString());//防暑降温费
-							cost.setName13(pdDetail.get("Ins").toString());//社保公积金
-							cost.setName14(pdDetail.get("AFTER_TAX").toString());//税后加项
-							cost.setName15(pdDetail.get("CUST_COL13").toString());//工会经费
-							//cost.setName16(pdDetail.get("").toString());//管理费
-							//cost.setName17(pdDetail.get("").toString());//可抵税费
+							String str06 = pdDetail.get("calgz").toString();
+							String str07 = pdDetail.get("TRF_ALLE").toString();
+							String str08 = pdDetail.get("TEL_EXPE").toString();
+							String str09 = pdDetail.get("HLDY_ALLE").toString();
+							String str10 = pdDetail.get("MEAL_EXPE").toString();
+							String str11 = pdDetail.get("CUST_COL1").toString();
+							String str12 = pdDetail.get("COOL_EXPE").toString();
+							String str13 = pdDetail.get("Ins").toString();
+							String str14 = pdDetail.get("AFTER_TAX").toString();
+							String str15 = pdDetail.get("CUST_COL13").toString();
+							String str16 = pdDetail.get("CUST_COL17").toString();
+							String str17 = pdDetail.get("CUST_COL14").toString();
+							
+							BigDecimal dec05 = new BigDecimal(0);
+							dec05 = dec05.add(new BigDecimal(str06)).add(new BigDecimal(str07)).add(new BigDecimal(str08))
+									.add(new BigDecimal(str09)).add(new BigDecimal(str10)).add(new BigDecimal(str11))
+									.add(new BigDecimal(str12)).add(new BigDecimal(str13)).add(new BigDecimal(str14))
+									.add(new BigDecimal(str15)).add(new BigDecimal(str16)).add(new BigDecimal(str17));
+							
+							cost.setName05(dec05.toString());//总额合计
+							cost.setName06(str06);//工资
+							cost.setName07(str07);//交通补贴
+							cost.setName08(str08);//通讯补贴
+							cost.setName09(str09);//节日补贴
+							cost.setName10(str10);//误餐补贴
+							cost.setName11(str11);//劳保
+							cost.setName12(str12);//防暑降温费
+							cost.setName13(str13);//社保公积金
+							cost.setName14(str14);//税后加项
+							cost.setName15(str15);//工会经费
+							cost.setName16(str16);//管理费
+							cost.setName17(str17);//可抵税费
 							//cost.setName18("");//单独制表
 							//cost.setName19("");//期末人数
 						}

@@ -237,8 +237,6 @@
 			}else if(target.attr('href')=='#voucherMgr'){
 				TabType=2;
 			}
-			//$(gridBase_selector).jqGrid('GridUnload'); 
-			//SetStructure();
 			tosearch();
 		});
 	});  
@@ -445,53 +443,49 @@
 		//前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
 	    jqGridColModel = "[]";
 
-    	if(TabType==1){
-    		top.jzts();
-    		$.ajax({
-    			type: "POST",
-    			url: '<%=basePath%>fundsconfirmquery/getShowColModel.do?SelectedTableNo='+which
-                    +'&SelectedBusiDate='+$("#SelectedBusiDate").val()
-                    +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
-                    +'&SelectedCustCol7='+$("#SelectedCustCol7").val(),
-    			dataType:'json',
-    			cache: false,
-    			success: function(response){
-    				if(response.code==0){
-    					$(top.hangge());//关闭加载状态
-    					var mes = response.message;
-    					mes = mes.replace("[", "").replace("]", "");
-    					if($.trim(mes)!=""){
-    					    //前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
-    				        jqGridColModel = eval("(" + response.message + ")");//此处记得用eval()行数将string转为array
-    					    SetStructure1();
-    					}
-    				}else{
-    					$(top.hangge());//关闭加载状态
-    					$("#subTitle").tips({
-    						side:3,
-    			            msg:'获取显示结构失败：'+response.message,
-    			            bg:'#cc0033',
-    			            time:3
-    			        });
-    				}
-    			},
-    	    	error: function(response) {
-    				$(top.hangge());//关闭加载状态
-    				$("#subTitle").tips({
-    					side:3,
-    		            msg:'获取显示结构出错：'+response.responseJSON.message,
-    		            bg:'#cc0033',
-    		            time:3
-    		        });
-    	    	}
-    		});
-    	}
-    	if(TabType==2){
-    		SetStructure2();
-    	}
+		top.jzts();
+		$.ajax({
+			type: "POST",
+			url: '<%=basePath%>fundsconfirmquery/getShowColModel.do?SelectedTableNo='+which
+                +'&SelectedTabType='+TabType
+                +'&SelectedBusiDate='+$("#SelectedBusiDate").val()
+                +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
+                +'&SelectedCustCol7='+$("#SelectedCustCol7").val(),
+			dataType:'json',
+			cache: false,
+			success: function(response){
+				if(response.code==0){
+					$(top.hangge());//关闭加载状态
+					var mes = response.message;
+					mes = mes.replace("[", "").replace("]", "");
+					if($.trim(mes)!=""){
+					    //前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
+				        jqGridColModel = eval("(" + response.message + ")");//此处记得用eval()行数将string转为array
+					    SetStructure();
+					}
+				}else{
+					$(top.hangge());//关闭加载状态
+					$("#subTitle").tips({
+						side:3,
+			            msg:'获取显示结构失败：'+response.message,
+			            bg:'#cc0033',
+			            time:3
+			        });
+				}
+			},
+	    	error: function(response) {
+				$(top.hangge());//关闭加载状态
+				$("#subTitle").tips({
+					side:3,
+		            msg:'获取显示结构出错：'+response.responseJSON.message,
+		            bg:'#cc0033',
+		            time:3
+		        });
+	    	}
+		});
 	}  
 	
-	function SetStructure1(){
+	function SetStructure(){
 		//resize to fit page size
 		$(window).on('resize.jqGrid', function () {
 			$(gridBase_selector).jqGrid( 'setGridWidth', $(".page-content").width());
@@ -500,7 +494,7 @@
 	    });
 
 		$(gridBase_selector).jqGrid({
-			url: '<%=basePath%>fundsconfirmquery/getPageList1.do?SelectedTableNo='+which
+			url: '<%=basePath%>fundsconfirmquery/getPageList.do?SelectedTableNo='+which
                 +'&SelectedTabType='+TabType
                 +'&SelectedBusiDate='+$("#SelectedBusiDate").val()
                 +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
@@ -588,122 +582,6 @@
 		        //     title : "导出",
 		        //     cursor : "pointer"
 		        // });
-	}
-	
-	function SetStructure2(){
-		//resize to fit page size
-		$(window).on('resize.jqGrid', function () {
-			$(gridBase_selector).jqGrid( 'setGridWidth', $(".page-content").width());
-			gridHeight=236;
-			resizeGridHeight($(gridBase_selector),gridHeight);
-	    });
-
-		$(gridBase_selector).jqGrid({
-			url: '<%=basePath%>fundsconfirmquery/getPageList2.do?SelectedTableNo='+which
-            +'&SelectedTabType='+TabType
-            +'&SelectedBusiDate='+$("#SelectedBusiDate").val()
-            +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
-            +'&SelectedCustCol7='+$("#SelectedCustCol7").val(),
-			datatype: "json",
-			colModel: [ 
-						{ label: '单据编码',name:'BILL_CODE__', width:90,hidden : true,editable: true},
-						{ label: '单据期间',name:'BUSI_DATE__', width:90,hidden : true,editable: true},
-						{ label: '账套',name:'CUST_COL7__', width:90,hidden : true,editable: true},
-						{ label: '单据单位',name:'DEPT_CODE__', width:90,hidden : true,editable: true},
-			            
-			            { label: 'FMIS凭证号', name: 'CERT_CODE', width: 90,editable: false},
-			            { label: '单据编码', name: 'BILL_CODE', width: 90,editable: false},
-			            { label: '单据单位', name: 'RPT_DEPT', width: 90,editable: false, edittype: 'select',formatter:'select',editoptions:{value:"${departmentStrSelect}"},formatoptions:{value:"${departmentStrSelect}"},stype: 'select',searchoptions:{value:"${departmentStrAll}"}},
-			            //{ label: '单据期间', name: 'RPT_DUR', width: 90,editable: false},
-			            { label: '确认人', name: 'RPT_USER', width: 90,editable: false, edittype: 'select',formatter:'select',editoptions:{value:"${userStrSelect}"},formatoptions:{value:"${userStrSelect}"},stype: 'select',searchoptions:{value:"${userStrAll}"}},
-			            { label: '确认时间', name: 'RPT_DATE', width: 90,editable: false}, 
-			            { label: '单据类型', name: 'BILL_TYPE', width: 60,editable: false, edittype: 'select',formatter:'select',editoptions:{value:"${billTypeStrSelect}"},formatoptions:{value:"${billTypeStrSelect}"},stype: 'select',searchoptions:{value:"${billTypeStrAll}"}},
-						{ label: '账套', name: 'BILL_OFF', width: 60,editable: false, edittype: 'select',formatter:'select',editoptions:{value:"${billOffStrSelect}"},formatoptions:{value:"${billOffStrSelect}"},stype: 'select',searchoptions:{value:"${billOffStrAll}"}},
-						//{ label: '状态', name: 'STATE', width: 90,editable: false, edittype: 'select',formatter:'select',editoptions:{value:"${stateStrSelect}"},formatoptions:{value:"${stateStrSelect}"},stype: 'select',searchoptions:{value:"${stateStrAll}"}}
-					],
-			viewrecords: true, 
-			shrinkToFit: true,
-			//width:'100%',
-			reloadAfterSubmit: true, 
-			rowNum: 0,
-            multiselect: true,
-            multiboxonly: true,
-			altRows: true, //斑马条纹
-			
-			pager: pagerBase_selector,
-			pgbuttons: false, // 分页按钮是否显示 
-			pginput: false, // 是否允许输入分页页数 
-			footerrow: true,
-			userDataOnFooter: true,
-
-            sortable: true,
-            sortname: 'RPT_DEPT',
-			sortorder: 'asc',
-			
-			subGrid: true,
-			subGridOptions: {
-				plusicon : "ace-icon fa fa-plus center bigger-110 blue",
-				minusicon  : "ace-icon fa fa-minus center bigger-110 blue",
-				openicon : "ace-icon fa fa-chevron-right center orange"
-            },
-            subGridRowExpanded: showFirstChildGrid,
-
-			scroll: 1,
-
-			cellEdit: true,
-			loadComplete : function(data) {
-				var table = this;
-				setTimeout(function(){
-					styleCheckbox(table);
-					updateActionIcons(table);
-					updatePagerIcons(table);
-					enableTooltips(table);
-				}, 0);
-			},
-		});
-	    
-		$(window).triggerHandler('resize.jqGrid');//trigger window resize to make the grid get the correct size
-		
-		$(gridBase_selector).navGrid(pagerBase_selector, 
-				{
-		            //navbar options
-			        edit: false,
-		            editicon : 'ace-icon fa fa-pencil blue',
-		            add: false,
-		            addicon : 'ace-icon fa fa-plus-circle purple',
-		            del: false,
-		            delicon : 'ace-icon fa fa-trash-o red',
-		            search: true,
-		            searchicon : 'ace-icon fa fa-search orange',
-		            refresh: false,
-		            refreshicon : 'ace-icon fa fa-refresh green',
-		            view: false,
-		            viewicon : 'ace-icon fa fa-search-plus grey',
-	        }, { }, { }, { },
-	        {
-				//search form
-				recreateForm: true,
-				afterShowSearch: beforeSearchCallback,
-				afterRedraw: function(){
-					style_search_filters($(this));
-				},
-				multipleSearch: true,
-				//multipleGroup:true,
-				showQuery: false
-	        },
-	        {},{});
-        		$(gridBase_selector).navSeparatorAdd(pagerBase_selector, {
-        			sepclass : "ui-separator",
-        			sepcontent: ""
-        		});
-			//$(gridBase_selector).navButtonAdd(pagerBase_selector, {
-	        //     caption : "导出",
-	        //     buttonicon : "ace-icon fa fa-cloud-download",
-	        //     onClickButton : exportItems,
-	        //     position : "last",
-	        //     title : "导出",
-	        //     cursor : "pointer"
-	        // });
 	}
 	
 	/**

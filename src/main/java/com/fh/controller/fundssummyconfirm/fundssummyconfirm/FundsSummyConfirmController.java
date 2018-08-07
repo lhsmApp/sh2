@@ -109,11 +109,10 @@ public class FundsSummyConfirmController extends BaseController {
 	////单位
 	//String ShowSummyBillColModelDepartCode = DictsUtil.DepartShowAll;
 	// 查询表的主键字段，作为标准列，jqgrid添加带__列，mybaits获取带__列
-	private List<String> keyListBase1 = Arrays.asList("BILL_CODE", "DEPT_CODE", "CUST_COL7", "BUSI_DATE");
+	private List<String> keyListBase = Arrays.asList("BILL_CODE", "DEPT_CODE", "CUST_COL7", "BUSI_DATE");
 
 	//界面查询字段
-    List<String> QueryFeildList1 = Arrays.asList("USER_GROP", "CUST_COL7", "DEPT_CODE", "BUSI_DATE");
-    List<String> QueryFeildList2 = Arrays.asList("RPT_DUR", "BILL_OFF", "RPT_DEPT");
+    List<String> QueryFeildList = Arrays.asList("USER_GROP", "CUST_COL7", "DEPT_CODE", "BUSI_DATE");
     
 
 	/**列表
@@ -144,55 +143,6 @@ public class FundsSummyConfirmController extends BaseController {
 		String DepartmentSelectTreeSource=DictsUtil.getDepartmentSelectTreeSource(departmentService, DictsUtil.DepartShowAll);
 		mv.addObject("zTreeNodes", DepartmentSelectTreeSource);
 		// ***********************************************************
-		
-		String userValus = DictsUtil.getSysUserValue(userService);
-		String userStringAll = ":[All];" + userValus;
-		String userStringSelect = ":;" + userValus;
-		mv.addObject("userStrAll", userStringAll);
-		mv.addObject("userStrSelect", userStringSelect);
-		
-		String departmentValus = DictsUtil.getDepartmentValue(departmentService);
-		String departmentStringAll = ":[All];" + departmentValus;
-		String departmentStringSelect = ":;" + departmentValus;
-		mv.addObject("departmentStrAll", departmentStringAll);
-		mv.addObject("departmentStrSelect", departmentStringSelect);
-
-		//BILL_OFF FMISACC 帐套字典
-		String billOffValus = DictsUtil.getDicValue(dictionariesService, "FMISACC");
-		String billOffStringAll = ":[All];" + billOffValus;
-		String billOffStringSelect = ":;" + billOffValus;
-		mv.addObject("billOffStrAll", billOffStringAll);
-		mv.addObject("billOffStrSelect", billOffStringSelect);
-
-		String billTypeValus = "";
-		SysConfirmInfoBillType[] enumsBillType = SysConfirmInfoBillType.values();  
-    	if(enumsBillType!=null){
-            for (int i = 0; i < enumsBillType.length; i++) {  
-    			if (billTypeValus != null && !billTypeValus.toString().trim().equals("")) {
-    				billTypeValus += ";";
-    			}
-    			billTypeValus += enumsBillType[i].getNameKey() + ":" + enumsBillType[i].getNameValue();
-            }  
-    	}
-		String billTypeStringAll = ":[All];" + billTypeValus;
-		String billTypeStringSelect = ":;" + billTypeValus;
-		mv.addObject("billTypeStrAll", billTypeStringAll);
-		mv.addObject("billTypeStrSelect", billTypeStringSelect);
-
-		String stateValus = "";
-		FundsConfirmInfoState[] enumsState = FundsConfirmInfoState.values();  
-    	if(enumsState!=null){
-            for (int i = 0; i < enumsState.length; i++) {  
-    			if (stateValus != null && !stateValus.toString().trim().equals("")) {
-    				stateValus += ";";
-    			}
-    			stateValus += enumsState[i].getNameKey() + ":" + enumsState[i].getNameValue();
-            }  
-    	}
-		String stateStringAll = ":[All];" + stateValus;
-		String stateStringSelect = ":;" + stateValus;
-		mv.addObject("stateStrAll", stateStringAll);
-		mv.addObject("stateStrSelect", stateStringSelect);
 
 		mv.addObject("pd", getPd);
 		return mv;
@@ -211,6 +161,8 @@ public class FundsSummyConfirmController extends BaseController {
 		PageData getPd = this.getPageData();
 		//员工组
 		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		//tab
+		String SelectedTabType = getPd.getString("SelectedTabType");
 		//账套
 		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
 		//单位
@@ -220,8 +172,12 @@ public class FundsSummyConfirmController extends BaseController {
 		if(SelectedDepartCode!=null && !SelectedDepartCode.trim().equals("") && !SelectedDepartCode.contains(",")){
 			strShowCalModelDepaet = SelectedDepartCode;
 		}
+		String AdditionalCertCodeColumns = "";
+		if(SelectedTabType!=null && SelectedTabType.trim().equals("2")){
+			AdditionalCertCodeColumns = "CERT_CODE";
+		}
 		TmplUtil tmpl = new TmplUtil(tmplconfigService, tmplconfigdictService, dictionariesService, 
-				departmentService,userService, keyListBase1, null, null, null);
+				departmentService,userService, keyListBase, null, AdditionalCertCodeColumns, null);
 		String jqGridColModel = tmpl.generateStructureNoEdit(SelectedTableNo, strShowCalModelDepaet, SelectedCustCol7);
 
 		commonBase.setCode(0);
@@ -234,8 +190,8 @@ public class FundsSummyConfirmController extends BaseController {
 	 * @param page
 	 * @throws Exception
 	 */
-	@RequestMapping(value="/getPageList1")
-	public @ResponseBody PageResult<PageData> getPageList1(JqPage page) throws Exception{
+	@RequestMapping(value="/getPageList")
+	public @ResponseBody PageResult<PageData> getPageList(JqPage page) throws Exception{
 		logBefore(logger, Jurisdiction.getUsername()+"列表FinanceAccounts");
 
 		PageData getPd = this.getPageData();
@@ -256,7 +212,7 @@ public class FundsSummyConfirmController extends BaseController {
 		getQueryFeildPd.put("DEPT_CODE", SelectedDepartCode);
 		getQueryFeildPd.put("CUST_COL7", SelectedCustCol7);
 		getQueryFeildPd.put("BUSI_DATE", SystemDateTime);
-		String QueryFeild = QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList1);
+		String QueryFeild = QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList);
 		if(!(SystemDateTime!=null && !SystemDateTime.trim().equals(""))){
 			QueryFeild += " and 1 != 1 ";
 		}
@@ -273,8 +229,8 @@ public class FundsSummyConfirmController extends BaseController {
 			QueryFeild += " and BILL_STATE = '" + BillState.Normal.getNameKey() + "' ";
 			QueryFeild += " and BILL_CODE in (select bill_code FROM tb_sys_sealed_info WHERE state = '1' AND RPT_DUR = '" + SystemDateTime + "') ";
 			QueryFeild += " and BILL_CODE not in (select bill_code FROM TB_SYS_CONFIRM_INFO WHERE state = '1' AND RPT_DUR = '" + SystemDateTime + "') ";
-		//} else if(SelectedTabType!=null && SelectedTabType.trim().equals("2")){
-		//	QueryFeild += " and BILL_CODE     in (select bill_code FROM TB_SYS_CONFIRM_INFO WHERE state = '1' AND RPT_DUR = '" + SystemDateTime + "') ";
+		} else if(SelectedTabType!=null && SelectedTabType.trim().equals("2")){
+			QueryFeild += " and BILL_CODE     in (select bill_code FROM TB_SYS_CONFIRM_INFO WHERE state = '1' AND RPT_DUR = '" + SystemDateTime + "') ";
 		} else{
 			QueryFeild += " and 1 != 1 ";
 		}
@@ -285,13 +241,14 @@ public class FundsSummyConfirmController extends BaseController {
 		if(null != filters && !"".equals(filters)){
 			getPd.put("filterWhereResult", SqlTools.constructWhere(filters,null));
 		}
-		String strFieldSelectKey = QueryFeildString.getFieldSelectKey(keyListBase1, TmplUtil.keyExtra);
+		String strFieldSelectKey = QueryFeildString.getFieldSelectKey(keyListBase, TmplUtil.keyExtra);
 		if(null != strFieldSelectKey && !"".equals(strFieldSelectKey.trim())){
 			getPd.put("FieldSelectKey", strFieldSelectKey);
 		}
 		//表名
-		String tableNameSummy = getSummyBaseTableCode(SelectedTableNo);
-		getPd.put("TableName", tableNameSummy);
+		String getTableNameSummy = getSummyBaseTableCode(SelectedTableNo);
+		String tableName = " (select s.*, IFNULL(cert.CERT_CODE, ' ') CERT_CODE from " + getTableNameSummy + " s left join tb_gl_cert cert on s.BILL_CODE = cert.BILL_CODE) t ";
+		getPd.put("TableName", tableName);
 		page.setPd(getPd);
 		
 		List<PageData> varList = fundssummyconfirmService.JqPage(page);	//列出Betting列表
@@ -315,85 +272,6 @@ public class FundsSummyConfirmController extends BaseController {
 		result.setRecords(records);
 		result.setPage(page.getPage());
 		result.setUserdata(userdata);
-		
-		return result;
-	}
-	@RequestMapping(value="/getPageList2")
-	public @ResponseBody PageResult<PageData> getPageList2(JqPage page) throws Exception{
-		logBefore(logger, Jurisdiction.getUsername()+"列表FinanceAccounts");
-
-		PageData getPd = this.getPageData();
-		//员工组
-		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
-		String emplGroupType = Corresponding.getUserGroupTypeFromTmplType(SelectedTableNo);
-		//tab
-		String SelectedTabType = getPd.getString("SelectedTabType");
-		//账套
-		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
-		//单位
-		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
-		//当前区间
-		String SystemDateTime = getPd.getString("SystemDateTime");
-
-		PageData getQueryFeildPd = new PageData();
-		getQueryFeildPd.put("RPT_DEPT", SelectedDepartCode);
-		getQueryFeildPd.put("BILL_OFF", SelectedCustCol7);
-		getQueryFeildPd.put("RPT_DUR", SystemDateTime);
-		String QueryFeild = QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList2);
-		if(!(SystemDateTime!=null && !SystemDateTime.trim().equals(""))){
-			QueryFeild += " and 1 != 1 ";
-		}
-		if(!(SelectedCustCol7!=null && !SelectedCustCol7.trim().equals(""))){
-			QueryFeild += " and 1 != 1 ";
-		}
-		if (DictsUtil.ifCheckGroupTypeNull(SelectedTableNo)) {
-			if(!(emplGroupType!=null && !emplGroupType.trim().equals(""))){
-				QueryFeild += " and 1 != 1 ";
-			} else {
-				//表名
-				String tableNameSummy = getSummyBaseTableCode(SelectedTableNo);
-				String strIn = QueryFeildString.getSqlInString(emplGroupType);
-				QueryFeild += " and BILL_CODE in (select BILL_CODE from " + tableNameSummy + " where USER_GROP in (" + strIn + ")) ";
-			}
-		}
-		
-		//if(SelectedTabType!=null && SelectedTabType.trim().equals("1")){
-		//	QueryFeild += " and BILL_STATE = '" + BillState.Normal.getNameKey() + "' ";
-		//	QueryFeild += " and BILL_CODE in (select bill_code FROM tb_sys_sealed_info WHERE state = '1' AND RPT_DUR = '" + SystemDateTime + "') ";
-		//	QueryFeild += " and BILL_CODE not in (select bill_code FROM TB_SYS_CONFIRM_INFO WHERE state = '1' AND RPT_DUR = '" + SystemDateTime + "') ";
-		//} else 
-		if(SelectedTabType!=null && SelectedTabType.trim().equals("2")){
-			//QueryFeild += " and BILL_CODE     in (select bill_code FROM TB_SYS_CONFIRM_INFO WHERE state = '1' AND RPT_DUR = '" + SystemDateTime + "') ";
-			QueryFeild += " and state = '1' ";
-		} else{
-			QueryFeild += " and 1 != 1 ";
-		}
-		getPd.put("QueryFeild", QueryFeild);
-		
-		//多条件过滤条件
-		String filters = getPd.getString("filters");
-		if(null != filters && !"".equals(filters)){
-			getPd.put("filterWhereResult", SqlTools.constructWhere(filters,null));
-		}
-		String strFieldSelectKey = ", BILL_CODE BILL_CODE__, RPT_DUR BUSI_DATE__, BILL_OFF CUST_COL7__, RPT_DEPT DEPT_CODE__";
-		if(null != strFieldSelectKey && !"".equals(strFieldSelectKey.trim())){
-			getPd.put("FieldSelectKey", strFieldSelectKey);
-		}
-		String strSelectFrom = " (select s.BILL_CODE, s.RPT_DEPT, s.RPT_DUR, s.RPT_USER, s.RPT_DATE, s.BILL_TYPE, s.STATE, s.BILL_OFF, "
-				+ " IFNULL(cert.CERT_CODE, ' ') CERT_CODE "
-				+ " from TB_SYS_CONFIRM_INFO s "
-				+ " left join tb_gl_cert cert on s.BILL_CODE = cert.BILL_CODE) t ";
-		getPd.put("TableName", strSelectFrom);
-		page.setPd(getPd);
-		
-		List<PageData> varList = fundssummyconfirmService.JqPage(page);	//列出Betting列表
-		int records = fundssummyconfirmService.countJqGridExtend(page);
-
-		PageResult<PageData> result = new PageResult<PageData>();
-		result.setRows(varList);
-		result.setRowNum(page.getRowNum());
-		result.setRecords(records);
-		result.setPage(page.getPage());
 		
 		return result;
 	}
@@ -739,7 +617,7 @@ public class FundsSummyConfirmController extends BaseController {
 		//getQueryFeildPd.put("DEPT_CODE", SelectedDepartCode);
 		getQueryFeildPd.put("CUST_COL7", SelectedCustCol7);
 		getQueryFeildPd.put("BUSI_DATE", SystemDateTime);
-		String QueryFeild = QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList1);
+		String QueryFeild = QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList);
 		if(!(SystemDateTime!=null && !SystemDateTime.trim().equals(""))){
 			QueryFeild += " and 1 != 1 ";
 		}
