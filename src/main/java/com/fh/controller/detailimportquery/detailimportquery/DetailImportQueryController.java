@@ -34,7 +34,7 @@ import com.fh.util.ObjectExcelView;
 import com.fh.util.PageData;
 import com.fh.util.SqlTools;
 import com.fh.util.enums.EmplGroupType;
-import com.fh.util.enums.StaffDataType;
+import com.fh.util.enums.StaffDataType1;
 import com.fh.util.enums.SysConfigKeyCode;
 import com.fh.util.enums.TmplType;
 
@@ -93,7 +93,7 @@ public class DetailImportQueryController extends BaseController {
     //导出数据的员工组
     List<String> GroupIsExportData = new ArrayList<String>();
     List<Dictionaries> ListDicFMISACC = new ArrayList<Dictionaries>();
-
+    
 	/**列表
 	 * @param page
 	 * @throws Exception
@@ -715,9 +715,17 @@ public class DetailImportQueryController extends BaseController {
 		}
 		WhereSql += QueryFeildString.getBillCodeNotInSumInvalidDetail(getSummyBillTableCode(SelectedTableNo));
 		WhereSql += QueryFeildString.getBillConfirm();
+
+		//个税字段，
+		String TableFeildSalaryTax = "";//"ACCRD_TAX";
+		String TableFeildBonusSelf = "CUST_COL14";
+		//String TableFeildBonusTax = "CUST_COL10";
+        PageData SalaryTax = new PageData();
+        SalaryTax.put("KEY_CODE", SysConfigKeyCode.IndividualIncomeTax);
+        TableFeildSalaryTax = sysConfigManager.getSysConfigByKey(SalaryTax);
 		
-		if(SalaryOrBonus.equals(StaffDataType.Salary.getNameKey())){
-			WhereSql += " and DATA_TYPE = '" + StaffDataType.Salary.getNameKey() + "' ";
+		if(SalaryOrBonus.equals(StaffDataType1.Salary.getNameKey())){
+			//WhereSql += " and (GROSS_PAY != 0 || " + TableFeildSalaryTax + " != 0) ";
 			String SelectGroupFeild = " USER_CODE, USER_NAME, STAFF_IDENT, DEPT_CODE, "//USER_GROP, 
 					+ " sum(GROSS_PAY) GROSS_PAY, "
 					+ " sum(ENDW_INS) ENDW_INS, "
@@ -725,16 +733,16 @@ public class DetailImportQueryController extends BaseController {
 					+ " sum(UNEMPL_INS) UNEMPL_INS, "
 					+ " sum(HOUSE_FUND) HOUSE_FUND, "
 					+ " sum(KID_ALLE) KID_ALLE, "
-					+ " sum(SUP_PESN) SUP_PESN, sum(ACCRD_TAX) ACCRD_TAX ";
+					+ " sum(SUP_PESN) SUP_PESN, sum(" + TableFeildSalaryTax + ") " + TableFeildSalaryTax + " ";
 			//if(SelectedDepartCode.equals("HOME")){
 				SelectGroupFeild += ", UNITS_CODE ";
 			//}
 			getPd.put("SelectGroupFeild", SelectGroupFeild);
 		}
-        if(SalaryOrBonus.equals(StaffDataType.Bonus.getNameKey())){
-			WhereSql += " and DATA_TYPE = '" + StaffDataType.Bonus.getNameKey() + "' ";
+        if(SalaryOrBonus.equals(StaffDataType1.Bonus.getNameKey())){
+			//WhereSql += " and (" + TableFeildBonusSelf + " != 0 || " + TableFeildBonusTax + " != 0) ";
 			String SelectGroupFeild = " USER_CODE, USER_NAME, STAFF_IDENT, DEPT_CODE, "//USER_GROP, 
-					+ " sum(CUST_COL14) CUST_COL14 ";
+					+ " sum(" + TableFeildBonusSelf + ") " + TableFeildBonusSelf + " ";
 			//if(SelectedDepartCode.equals("HOME")){
 				SelectGroupFeild += ", UNITS_CODE ";
 			//}
@@ -807,9 +815,9 @@ public class DetailImportQueryController extends BaseController {
 			tmplPut.setDICT_TRANS(tmplGetDic.getDICT_TRANS());
 			map_SetColumnsList.put(strUNITS_CODE, tmplPut);
 		//}
-		if(SalaryOrBonus.equals(StaffDataType.Salary.getNameKey())){
+		if(SalaryOrBonus.equals(StaffDataType1.Salary.getNameKey())){
 			map_SetColumnsList.put("GROSS_PAY", new TmplConfigDetail("GROSS_PAY", "收入额", "1", true));
-			map_SetColumnsList.put("ACCRD_TAX", new TmplConfigDetail("ACCRD_TAX", "税额", "1", true));
+			map_SetColumnsList.put(TableFeildSalaryTax, new TmplConfigDetail(TableFeildSalaryTax, "税额", "1", true));
 			map_SetColumnsList.put("免税所得", new TmplConfigDetail("免税所得", "免税所得", "1", true));
 			map_SetColumnsList.put("ENDW_INS", new TmplConfigDetail("ENDW_INS", "基本养老保险费", "1", true));
 			map_SetColumnsList.put("MED_INS", new TmplConfigDetail("MED_INS", "基本医疗保险费", "1", true));
@@ -826,8 +834,8 @@ public class DetailImportQueryController extends BaseController {
 			map_SetColumnsList.put("减免税额", new TmplConfigDetail("减免税额", "减免税额", "1", true));
 			map_SetColumnsList.put("已扣缴税额", new TmplConfigDetail("已扣缴税额", "已扣缴税额", "1", true));
 		}
-        if(SalaryOrBonus.equals(StaffDataType.Bonus.getNameKey())){
-			map_SetColumnsList.put("CUST_COL14", new TmplConfigDetail("CUST_COL14", "全年一次性奖金额", "1", true));
+        if(SalaryOrBonus.equals(StaffDataType1.Bonus.getNameKey())){
+			map_SetColumnsList.put(TableFeildBonusSelf, new TmplConfigDetail(TableFeildBonusSelf, "全年一次性奖金额", "1", true));
 			map_SetColumnsList.put("免税所得", new TmplConfigDetail("免税所得", "免税所得", "1", true));
 			map_SetColumnsList.put("允许扣除的税费", new TmplConfigDetail("允许扣除的税费", "允许扣除的税费", "1", true));
 			map_SetColumnsList.put("商业健康保险费", new TmplConfigDetail("商业健康保险费", "商业健康保险费", "1", true));
@@ -866,10 +874,10 @@ public class DetailImportQueryController extends BaseController {
 			}
 			fileName += strDeptName;
 		}
-		if(SalaryOrBonus.equals(StaffDataType.Salary.getNameKey())){
+		if(SalaryOrBonus.equals(StaffDataType1.Salary.getNameKey())){
 			fileName += "_工资薪酬个税表";
 		}
-        if(SalaryOrBonus.equals(StaffDataType.Bonus.getNameKey())){
+        if(SalaryOrBonus.equals(StaffDataType1.Bonus.getNameKey())){
 			fileName += "_奖金个税表";
         }
 		

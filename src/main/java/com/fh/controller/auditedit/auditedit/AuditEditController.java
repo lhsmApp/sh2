@@ -296,7 +296,8 @@ public class AuditEditController extends BaseController {
 		String ShowDataCustCol7 = getPd.getString("ShowDataCustCol7");
 		//当前区间
 		String SystemDateTime = getPd.getString("SystemDateTime");
-		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager);
+		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager,
+				false);
 		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(mesDateTime);
@@ -387,7 +388,8 @@ public class AuditEditController extends BaseController {
 		String ShowDataCustCol7 = getPd.getString("ShowDataCustCol7");
 		//当前区间
 		String SystemDateTime = getPd.getString("SystemDateTime");
-		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager);
+		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager,
+				false);
 		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(mesDateTime);
@@ -475,7 +477,8 @@ public class AuditEditController extends BaseController {
 		String ShowDataCustCol7 = getPd.getString("ShowDataCustCol7");
 		//当前区间
 		String SystemDateTime = getPd.getString("SystemDateTime");
-		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager);
+		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager,
+				false);
 		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(mesDateTime);
@@ -542,7 +545,8 @@ public class AuditEditController extends BaseController {
 		String ShowDataCustCol7 = getPd.getString("ShowDataCustCol7");
 		//当前区间
 		String SystemDateTime = getPd.getString("SystemDateTime");
-		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager);
+		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager,
+				false);
 		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(mesDateTime);
@@ -604,7 +608,8 @@ public class AuditEditController extends BaseController {
 		String ShowDataCustCol7 = getPd.getString("ShowDataCustCol7");
 		//当前区间
 		String SystemDateTime = getPd.getString("SystemDateTime");
-		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager);
+		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager,
+				false);
 		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(mesDateTime);

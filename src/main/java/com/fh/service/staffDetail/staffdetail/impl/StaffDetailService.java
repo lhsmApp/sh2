@@ -93,17 +93,37 @@ public class StaffDetailService implements StaffDetailManager{
 	 * @param pd
 	 * @throws Exception
 	 */
-	public List<PageData> getDataCalculation(String tableName, String TableFeildTax, String TmplUtil_KeyExtra,
+	/*public List<PageData> getDataCalculation(String tableName, String TableFeildTax, String TmplUtil_KeyExtra,
 			PageData pdInsetBackup,
 			List<String> listSalaryFeildUpdate, String sqlRetSelect, 
 			List<PageData> listAddSalary, List<PageData> listAddBonus,
-			String sqlSumByUserCodeSalary,  String sqlSumByUserCodeBonus, String TableFeildSum)throws Exception{
+			String sqlSumByUserCodeSalary,  String sqlSumByUserCodeBonus, String TableFeildSum,
+			String ExemptionTax)throws Exception{
 		return dao.findDataCalculation(tableName, TableFeildTax, TmplUtil_KeyExtra,
 				    "StaffDetailMapper.insetBackup", pdInsetBackup,
 				    "StaffDetailMapper.batchDelAndIns", 
 				    listSalaryFeildUpdate, sqlRetSelect, 
 				    listAddSalary, listAddBonus,
-					sqlSumByUserCodeSalary, sqlSumByUserCodeBonus, TableFeildSum);
+					sqlSumByUserCodeSalary, sqlSumByUserCodeBonus, TableFeildSum,
+					ExemptionTax);
+	}*/
+	public List<PageData> getDataCalculation(String tableName, String TmplUtil_KeyExtra,
+			String TableFeildSalarySelf, String TableFeildSalaryTax, String TableFeildBonusSelf, String TableFeildBonusTax,
+			String TableFeildSalaryTaxConfigGradeOper, String TableFeildBonusTaxConfigGradeOper,
+			String TableFeildSalaryTaxConfigSumOper, String TableFeildBonusTaxConfigSumOper,
+			String TableFeildSalaryTaxSelfSumOper, String TableFeildBonusTaxSelfSumOper,
+			PageData pdInsetBackup,
+			List<String> listSalaryFeildUpdate, String sqlRetSelect, List<PageData> listData,
+			String sqlSumByUserCodeSalary, String sqlSumByUserCodeBonus)throws Exception{
+		return dao.findDataCalculation(tableName, TmplUtil_KeyExtra,
+				    TableFeildSalarySelf, TableFeildSalaryTax, TableFeildBonusSelf, TableFeildBonusTax,
+					TableFeildSalaryTaxConfigGradeOper, TableFeildBonusTaxConfigGradeOper,
+					TableFeildSalaryTaxConfigSumOper, TableFeildBonusTaxConfigSumOper,
+					TableFeildSalaryTaxSelfSumOper, TableFeildBonusTaxSelfSumOper,
+				    "StaffDetailMapper.insetBackup", pdInsetBackup,
+				    "StaffDetailMapper.batchDelAndIns", 
+				    listSalaryFeildUpdate, sqlRetSelect, listData,
+				    sqlSumByUserCodeSalary, sqlSumByUserCodeBonus);
 	}
 	/**更新数据库
 	 * @param pd

@@ -50,6 +50,7 @@ import com.fh.service.socialIncDetail.socialincdetail.SocialIncDetailManager;
 import com.fh.service.socialincsummy.socialincsummy.SocialIncSummyManager;
 import com.fh.service.sysBillnum.sysbillnum.SysBillnumManager;
 import com.fh.service.sysConfig.sysconfig.SysConfigManager;
+import com.fh.service.sysDeptLtdTime.sysDeptLtdTime.impl.SysDeptLtdTimeService;
 import com.fh.service.sysSealedInfo.syssealedinfo.impl.SysSealedInfoService;
 import com.fh.service.system.dictionaries.impl.DictionariesService;
 import com.fh.service.system.user.UserManager;
@@ -86,6 +87,8 @@ public class SocialIncSummyController extends BaseController {
 	private SysBillnumManager sysbillnumService;
 	@Resource(name = "userService")
 	private UserManager userService;
+	@Resource(name="sysDeptLtdTimeService")
+	private SysDeptLtdTimeService sysDeptLtdTimeService;
 
 	//表名
 	String TableNameBase = "tb_social_inc_summy_bill";
@@ -450,7 +453,7 @@ public class SocialIncSummyController extends BaseController {
 		PageData getPd = this.getPageData();
 		//当前区间
 		String SystemDateTime = getPd.getString("SystemDateTime");
-		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager);
+		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager, false);
 		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(mesDateTime);
@@ -463,6 +466,14 @@ public class SocialIncSummyController extends BaseController {
         List<String> listBillCode = new ArrayList<String>();
         for(PageData each : listData){
         	listBillCode.add(each.getString("BILL_CODE" + TmplUtil.keyExtra));
+
+			String strDepartCode = each.getString("DEPT_CODE" + TmplUtil.keyExtra);
+			String mesSysDeptLtdTime = CheckSystemDateTime.CheckSysDeptLtdTime(strDepartCode, TypeCodeSummyBill, sysDeptLtdTimeService);
+			if(mesSysDeptLtdTime!=null && !mesSysDeptLtdTime.trim().equals("")){
+				commonBase.setCode(2);
+				commonBase.setMessage(mesSysDeptLtdTime);
+				return commonBase;
+			}
         }
 		String checkState = CheckState(QueryFeildString.tranferListValueToSqlInString(listBillCode), SystemDateTime);
 		if(checkState!=null && !checkState.trim().equals("")){
@@ -504,7 +515,7 @@ public class SocialIncSummyController extends BaseController {
 		String SelectedBillCode = getPd.getString("SelectedBillCode");
 		//当前区间
 		String SystemDateTime = getPd.getString("SystemDateTime");
-		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager);
+		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager, false);
 		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(mesDateTime);
@@ -611,6 +622,12 @@ public class SocialIncSummyController extends BaseController {
 		if(bolDeleteSummy){//删除添加
 			for(PageData bill : getSaveBill){
 				String strDepartCode = bill.getString("DEPT_CODE" + TmplUtil.keyExtra);
+				String mesSysDeptLtdTime = CheckSystemDateTime.CheckSysDeptLtdTime(strDepartCode, TypeCodeSummyBill, sysDeptLtdTimeService);
+				if(mesSysDeptLtdTime!=null && !mesSysDeptLtdTime.trim().equals("")){
+					commonBase.setCode(2);
+					commonBase.setMessage(mesSysDeptLtdTime);
+					return commonBase;
+				}
         		Map<String, TmplConfigDetail> map_SetColumnsListBill = Common.GetSetColumnsList(TypeCodeSummyBill, strDepartCode, SelectedCustCol7, tmplconfigService);
 
         		bill.put("SERIAL_NO", "");
@@ -628,6 +645,12 @@ public class SocialIncSummyController extends BaseController {
 			}
 			for(PageData detail : getSaveDetail){
 				String strDepartCode = detail.getString("DEPT_CODE" + TmplUtil.keyExtra);
+				String mesSysDeptLtdTime = CheckSystemDateTime.CheckSysDeptLtdTime(strDepartCode, TypeCodeSummyBill, sysDeptLtdTimeService);
+				if(mesSysDeptLtdTime!=null && !mesSysDeptLtdTime.trim().equals("")){
+					commonBase.setCode(2);
+					commonBase.setMessage(mesSysDeptLtdTime);
+					return commonBase;
+				}
 				Map<String, TmplConfigDetail> map_SetColumnsListDetail = Common.GetSetColumnsList(TypeCodeSummyDetail, strDepartCode, SelectedCustCol7, tmplconfigService);
 
 				detail.put("SERIAL_NO", "");

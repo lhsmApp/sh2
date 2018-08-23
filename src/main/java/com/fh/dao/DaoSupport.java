@@ -14,7 +14,6 @@ import org.springframework.stereotype.Repository;
 
 import com.fh.entity.LaborTax;
 import com.fh.entity.StaffTax;
-import com.fh.util.DecimalUtil;
 import com.fh.util.PageData;
 /**
  *  
@@ -200,12 +199,13 @@ public class DaoSupport implements DAO {
 	 * @return
 	 * @throws Exception
 	 */
-	public List<PageData> findDataCalculation(String tableNameBackup, String TableFeildTax, String TmplUtil_KeyExtra,
+	/*public List<PageData> findDataCalculation(String tableNameBackup, String TableFeildTax, String TmplUtil_KeyExtra,
 			String sqlInsetBackup, PageData pdInsetBackup,
 			String sqlBatchDelAndIns, 
 			List<String> listSalaryFeildUpdate, String sqlRetSelect, 
 			List<PageData> listAddSalary, List<PageData> listAddBonus,
-			String sqlSumByUserCodeSalary,  String sqlSumByUserCodeBonus, String TableFeildSum)throws Exception{
+			String sqlSumByUserCodeSalary,  String sqlSumByUserCodeBonus, String TableFeildSum,
+			String ExemptionTax)throws Exception{
 		SqlSessionFactory sqlSessionFactory = sqlSessionTemplate.getSqlSessionFactory();
 		//批量执行器
 		SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH,false);
@@ -263,9 +263,12 @@ public class DaoSupport implements DAO {
 							BigDecimal douTAX_RATE = new BigDecimal(0);
 							BigDecimal douQUICK_DEDUCTION = new BigDecimal(0);
 							if(listStaffTax!=null){
+								if(!(ExemptionTax!=null && !ExemptionTax.trim().equals(""))){
+									ExemptionTax = "0";
+								}
 								for(int i=0; i<listStaffTax.size(); i++){
 									StaffTax eachTax = listStaffTax.get(i);
-									BigDecimal eachMouth = sumNumCheck.divide(new BigDecimal(12));
+									BigDecimal eachMouth = sumNumCheck.divide((new BigDecimal(12)), 2).subtract(new BigDecimal(ExemptionTax));
 									//int a = bigdemical.compareTo(bigdemical2)
 									//a = -1,表示bigdemical小于bigdemical2；
 									//a = 0,表示bigdemical等于bigdemical2；
@@ -386,6 +389,162 @@ public class DaoSupport implements DAO {
 							eachAdd.put(TableFeildTax, douTableFeildTax.setScale(2, BigDecimal.ROUND_HALF_UP));
 							eachAdd.put("YSZE", sumNum.setScale(2, BigDecimal.ROUND_HALF_UP));
 							eachAdd.put("YDRZE", sumTax.setScale(2, BigDecimal.ROUND_HALF_UP));
+						}
+						returnList.add(eachAdd);
+					}
+				}
+			}
+			sqlSession.flushStatements();
+			sqlSession.commit();
+			sqlSession.clearCache();
+		} finally{
+			sqlSession.rollback(); 
+			sqlSession.close();
+		}
+		return returnList;
+	}*/
+	public List<PageData> findDataCalculation(String tableNameBackup, String TmplUtil_KeyExtra,
+			String TableFeildSalarySelf, String TableFeildSalaryTax, String TableFeildBonusSelf, String TableFeildBonusTax,
+			String TableFeildSalaryTaxConfigGradeOper, String TableFeildBonusTaxConfigGradeOper,
+			String TableFeildSalaryTaxConfigSumOper, String TableFeildBonusTaxConfigSumOper,
+			String TableFeildSalaryTaxSelfSumOper, String TableFeildBonusTaxSelfSumOper,
+			String sqlInsetBackup, PageData pdInsetBackup,
+			String sqlBatchDelAndIns, 
+			List<String> listSalaryFeildUpdate, String sqlRetSelect, List<PageData> listData,
+			String sqlSumByUserCodeSalary, String sqlSumByUserCodeBonus)throws Exception{
+		SqlSessionFactory sqlSessionFactory = sqlSessionTemplate.getSqlSessionFactory();
+		//批量执行器
+		SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH,false);
+		List<StaffTax> listStaffTax = sqlSession.selectList("DataCalculation.getStaffTax");
+		sqlSession.delete("DataCalculation.deleteTableData", tableNameBackup);
+		
+		List<PageData> returnList = new ArrayList<PageData>();
+		try{
+			sqlSession.update(sqlInsetBackup, pdInsetBackup);
+			if(listData!=null && !listData.isEmpty()){
+				Integer strMaxNum = sqlSession.selectOne("DataCalculation.getMaxSerialNo", tableNameBackup);
+				String SqlInBillCode = "";
+				for(PageData eachPd : listData){
+					String SERIAL_NO = eachPd.getString("SERIAL_NO");
+					if(SERIAL_NO!=null && !SERIAL_NO.trim().equals("")){
+						if(SqlInBillCode!=null && !SqlInBillCode.trim().equals("")){
+							SqlInBillCode += ",";
+						}
+						SqlInBillCode += SERIAL_NO;
+					}
+				}
+				sqlSession.update(sqlBatchDelAndIns, listData);
+				PageData getAddSerialNo = new PageData();
+				getAddSerialNo.put("tableName", tableNameBackup);
+				getAddSerialNo.put("strMaxNum", strMaxNum);
+				List<Integer> getInsertBillCodeList =  sqlSession.selectList("DataCalculation.getAddSerialNo",  getAddSerialNo);
+				if(getInsertBillCodeList!=null){
+					for(Integer billCode : getInsertBillCodeList){
+						if(SqlInBillCode!=null && !SqlInBillCode.trim().equals("")){
+							SqlInBillCode += ",";
+						}
+						SqlInBillCode += billCode;
+					}
+				}
+				if(listSalaryFeildUpdate!=null){
+					for(String strUpdateFeild : listSalaryFeildUpdate){
+						PageData setUpdateFeild = new PageData();
+						setUpdateFeild.put("sqlUpdateFeild", strUpdateFeild);
+						setUpdateFeild.put("SqlInBillCode", SqlInBillCode);
+						sqlSession.selectList("DataCalculation.editSalaryFeild",  setUpdateFeild);
+					}
+				}
+				
+				PageData getListBySerialNo = new PageData();
+				getListBySerialNo.put("sqlRetSelect", sqlRetSelect);
+				getListBySerialNo.put("SqlInBillCode", SqlInBillCode);
+				List<PageData> retList = sqlSession.selectList("DataCalculation.getListBySerialNo",  getListBySerialNo);
+				if(retList!=null){
+					List<String> userCodeList = new ArrayList<String>();
+					for(PageData eachAdd : retList){
+						String USER_CODE = eachAdd.getString("USER_CODE");
+						eachAdd.put("B_YSZE", new BigDecimal(0));//应税总额
+						eachAdd.put("B_YDRZE", new BigDecimal(0));//已导入纳税额
+						eachAdd.put("S_YSZE", new BigDecimal(0));//应税总额
+						eachAdd.put("S_YDRZE", new BigDecimal(0));//已导入纳税额
+						//本条记录自己的税额
+						BigDecimal addB_Tax = new BigDecimal(eachAdd.get(TableFeildBonusTax + TmplUtil_KeyExtra).toString());
+						BigDecimal addS_Tax = new BigDecimal(eachAdd.get(TableFeildSalaryTax + TmplUtil_KeyExtra).toString());
+						
+						if(!userCodeList.contains(USER_CODE)){
+							userCodeList.add(USER_CODE);
+							PageData getSumByUserCodeSalary = new PageData();
+							getSumByUserCodeSalary.put("sqlSumByUserCode", sqlSumByUserCodeSalary);
+							getSumByUserCodeSalary.put("USER_CODE", USER_CODE);
+							PageData getSumSalary = sqlSession.selectOne("DataCalculation.getSumByUserCode",  getSumByUserCodeSalary);
+							BigDecimal checkSalaryTaxConfigGrade = new BigDecimal(getSumSalary.get(TableFeildSalaryTaxConfigGradeOper).toString());
+							BigDecimal getSalaryTaxConfigSum = new BigDecimal(getSumSalary.get(TableFeildSalaryTaxConfigSumOper).toString());
+
+							PageData getSumByUserCodeBonus = new PageData();
+							getSumByUserCodeBonus.put("sqlSumByUserCode", sqlSumByUserCodeBonus);
+							getSumByUserCodeBonus.put("USER_CODE", USER_CODE);
+							PageData getSumBonus = sqlSession.selectOne("DataCalculation.getSumByUserCode",  getSumByUserCodeBonus);
+							BigDecimal checkBonusTaxConfigGrade = new BigDecimal(getSumBonus.get(TableFeildBonusTaxConfigGradeOper).toString());
+							BigDecimal getBonusTaxConfigSum = new BigDecimal(getSumBonus.get(TableFeildBonusTaxConfigSumOper).toString());
+							
+							BigDecimal douSalaryTAX_RATE = new BigDecimal(0);
+							BigDecimal douSalaryQUICK_DEDUCTION = new BigDecimal(0);
+							BigDecimal douBonusTAX_RATE = new BigDecimal(0);
+							BigDecimal douBonusQUICK_DEDUCTION = new BigDecimal(0);
+							if(listStaffTax!=null){
+								for(int i=0; i<listStaffTax.size(); i++){
+									StaffTax eachTax = listStaffTax.get(i);
+									//int a = bigdemical.compareTo(bigdemical2)
+									//a = -1,表示bigdemical小于bigdemical2；
+									//a = 0,表示bigdemical等于bigdemical2；
+									//a = 1,表示bigdemical大于bigdemical2；
+									BigDecimal eachMIN_VALUE = new BigDecimal(Double.toString(eachTax.getMIN_VALUE()));
+									BigDecimal eachMAX_VALUE = new BigDecimal(Double.toString(eachTax.getMAX_VALUE()));
+									
+									int SalaryMIN_VALUE = checkSalaryTaxConfigGrade.compareTo(eachMIN_VALUE);
+									int SalaryMAX_VALUE = checkSalaryTaxConfigGrade.compareTo(eachMAX_VALUE);
+									if(SalaryMIN_VALUE == 0 || SalaryMIN_VALUE == 1){//sumNumCheck >= eachMIN_VALUE
+										if(i == listStaffTax.size() -1){
+											douSalaryTAX_RATE = new BigDecimal(Double.toString(eachTax.getTAX_RATE()));
+											douSalaryQUICK_DEDUCTION = new BigDecimal(Double.toString(eachTax.getQUICK_DEDUCTION()));
+										} else {
+											if(SalaryMAX_VALUE == 0 || SalaryMAX_VALUE == -1){//sumNumCheck <= eachTax.getMAX_VALUE()
+												douSalaryTAX_RATE = new BigDecimal(Double.toString(eachTax.getTAX_RATE()));
+												douSalaryQUICK_DEDUCTION = new BigDecimal(Double.toString(eachTax.getQUICK_DEDUCTION()));
+											}
+										}
+									}
+
+									int BonusMIN_VALUE = checkBonusTaxConfigGrade.compareTo(eachMIN_VALUE);
+									int BonusMAX_VALUE = checkBonusTaxConfigGrade.compareTo(eachMAX_VALUE);
+									if(BonusMIN_VALUE == 0 || BonusMIN_VALUE == 1){//eachMouth >= eachTax.getMIN_VALUE()
+										if(i == listStaffTax.size() -1){
+											douBonusTAX_RATE = new BigDecimal(Double.toString(eachTax.getTAX_RATE()));
+											douBonusQUICK_DEDUCTION = new BigDecimal(Double.toString(eachTax.getQUICK_DEDUCTION()));
+										} else {
+											if(BonusMAX_VALUE == 0 || BonusMAX_VALUE == -1){//eachMouth <= eachTax.getMAX_VALUE()
+												douBonusTAX_RATE = new BigDecimal(Double.toString(eachTax.getTAX_RATE()));
+												douBonusQUICK_DEDUCTION = new BigDecimal(Double.toString(eachTax.getQUICK_DEDUCTION()));
+											}
+										}
+									}
+								}
+							}
+							BigDecimal bd3Salary = new BigDecimal(Double.toString(0.010000));
+							BigDecimal sumSalaryTaxConfig = getSalaryTaxConfigSum.multiply(douSalaryTAX_RATE).multiply(bd3Salary).subtract(douSalaryQUICK_DEDUCTION);
+							BigDecimal sumSalaryTaxSelf = new BigDecimal(getSumSalary.get(TableFeildSalaryTaxSelfSumOper).toString());
+							BigDecimal douTableFeildSalaryTax = sumSalaryTaxConfig.subtract(sumSalaryTaxSelf).add(addS_Tax);
+							eachAdd.put(TableFeildSalaryTax, douTableFeildSalaryTax.setScale(2, BigDecimal.ROUND_HALF_UP));
+							eachAdd.put("S_YSZE", sumSalaryTaxConfig.setScale(2, BigDecimal.ROUND_HALF_UP));
+							eachAdd.put("S_YDRZE", sumSalaryTaxSelf.setScale(2, BigDecimal.ROUND_HALF_UP));
+
+							BigDecimal bd3Bonus = new BigDecimal(Double.toString(0.0100000));
+							BigDecimal sumBonusTaxConfig = getBonusTaxConfigSum.multiply(douBonusTAX_RATE).multiply(bd3Bonus).subtract(douBonusQUICK_DEDUCTION);
+							BigDecimal sumBonusTaxSelf = new BigDecimal(getSumBonus.get(TableFeildBonusTaxSelfSumOper).toString());
+							BigDecimal douTableFeildBonusTax = sumBonusTaxConfig.subtract(sumBonusTaxSelf).add(addB_Tax);
+							eachAdd.put(TableFeildBonusTax, douTableFeildBonusTax.setScale(2, BigDecimal.ROUND_HALF_UP));
+							eachAdd.put("B_YSZE", sumBonusTaxConfig.setScale(2, BigDecimal.ROUND_HALF_UP));
+							eachAdd.put("B_YDRZE", sumBonusTaxSelf.setScale(2, BigDecimal.ROUND_HALF_UP));
 						}
 						returnList.add(eachAdd);
 					}

@@ -53,6 +53,7 @@ import com.fh.service.staffDetail.staffdetail.StaffDetailManager;
 import com.fh.service.staffsummy.staffsummy.StaffSummyManager;
 import com.fh.service.sysBillnum.sysbillnum.SysBillnumManager;
 import com.fh.service.sysConfig.sysconfig.SysConfigManager;
+import com.fh.service.sysDeptLtdTime.sysDeptLtdTime.impl.SysDeptLtdTimeService;
 import com.fh.service.sysSealedInfo.syssealedinfo.impl.SysSealedInfoService;
 import com.fh.service.system.dictionaries.impl.DictionariesService;
 import com.fh.service.system.user.UserManager;
@@ -89,6 +90,8 @@ public class StaffSummyController extends BaseController {
 	private SysBillnumManager sysbillnumService;
 	@Resource(name = "userService")
 	private UserManager userService;
+	@Resource(name="sysDeptLtdTimeService")
+	private SysDeptLtdTimeService sysDeptLtdTimeService;
 
 	//表名
 	String TableNameBase = "tb_staff_summy_bill";
@@ -113,7 +116,7 @@ public class StaffSummyController extends BaseController {
 	//界面查询字段   员工组、账套、组织机构（特殊处理）、所属二级单位、组织单元文本
     List<String> QueryFeildList = Arrays.asList("USER_GROP", "CUST_COL7", "DEPT_CODE");
     
-	List<String> SumFieldBill = Arrays.asList("BILL_CODE", "BUSI_DATE", "DEPT_CODE", "CUST_COL7", "USER_GROP", "DATA_TYPE");
+	List<String> SumFieldBill = Arrays.asList("BILL_CODE", "BUSI_DATE", "DEPT_CODE", "CUST_COL7", "USER_GROP");
 	//修改导入明细获取字段
 	List<String> DetailSetBillCodeFeild = Arrays.asList("SERIAL_NO");
 	//另加的列、配置模板之外的列 
@@ -302,8 +305,6 @@ public class StaffSummyController extends BaseController {
 		if(!SelectedBillCode.equals(SelectBillCodeFirstShow)){
 			QueryFeild += " and BILL_STATE = '" + BillState.Normal.getNameKey() + "' ";
 			QueryFeild += QueryFeildString.getNotReportBillCode(strTypeCodeTramsfer, SystemDateTime, SelectedCustCol7, AllDeptCode + "," + SelectedDepartCode);
-		} else {
-			//QueryFeild += " and DATA_TYPE = '" + StaffDataType.Salary.getNameKey() + "' ";
 		}
 		QueryFeild += " and DEPT_CODE in (" + QueryFeildString.tranferListValueToSqlInString(AllDeptCode) + ") ";
 		//工资无账套无数据
@@ -498,7 +499,7 @@ public class StaffSummyController extends BaseController {
 		PageData getPd = this.getPageData();
 		//当前区间
 		String SystemDateTime = getPd.getString("SystemDateTime");
-		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager);
+		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager, false);
 		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(mesDateTime);
@@ -514,6 +515,14 @@ public class StaffSummyController extends BaseController {
         List<String> listBillCode = new ArrayList<String>();
         for(PageData each : listData){
         	listBillCode.add(each.getString("BILL_CODE" + TmplUtil.keyExtra));
+
+			String strDepartCode = each.getString("DEPT_CODE" + TmplUtil.keyExtra);
+			String mesSysDeptLtdTime = CheckSystemDateTime.CheckSysDeptLtdTime(strDepartCode, SelectedTableNo, sysDeptLtdTimeService);
+			if(mesSysDeptLtdTime!=null && !mesSysDeptLtdTime.trim().equals("")){
+				commonBase.setCode(2);
+				commonBase.setMessage(mesSysDeptLtdTime);
+				return commonBase;
+			}
         }
 		String checkState = CheckState(QueryFeildString.tranferListValueToSqlInString(listBillCode), SystemDateTime);
 		if(checkState!=null && !checkState.trim().equals("")){
@@ -544,7 +553,7 @@ public class StaffSummyController extends BaseController {
 		PageData getPd = this.getPageData();
 		//当前区间
 		String SystemDateTime = getPd.getString("SystemDateTime");
-		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager);
+		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager, false);
 		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(mesDateTime);
@@ -633,7 +642,6 @@ public class StaffSummyController extends BaseController {
 			getQueryFeildPd.put("DEPT_CODE", SelectedDepartCode);
 			getQueryFeildPd.put("CUST_COL7", SelectedCustCol7);
 			QueryFeild += QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList);
-			//QueryFeild += " and DATA_TYPE = '" + StaffDataType.Salary.getNameKey() + "' ";
 			QueryFeild += " and DEPT_CODE in (" + QueryFeildString.tranferListValueToSqlInString(AllDeptCode) + ") ";
 			//工资无账套无数据
 			if(!(SelectedCustCol7!=null && !SelectedCustCol7.trim().equals(""))){
@@ -684,6 +692,12 @@ public class StaffSummyController extends BaseController {
 		if(bolDeleteSummy){//删除添加
 			for(PageData bill : getSaveBill){
 				String strDepartCode = bill.getString("DEPT_CODE" + TmplUtil.keyExtra);
+				String mesSysDeptLtdTime = CheckSystemDateTime.CheckSysDeptLtdTime(strDepartCode, SelectedTableNo, sysDeptLtdTimeService);
+				if(mesSysDeptLtdTime!=null && !mesSysDeptLtdTime.trim().equals("")){
+					commonBase.setCode(2);
+					commonBase.setMessage(mesSysDeptLtdTime);
+					return commonBase;
+				}
         		Map<String, TmplConfigDetail> map_SetColumnsListBill = Common.GetSetColumnsList(TypeCodeSummyBill, strDepartCode, SelectedCustCol7, tmplconfigService);
 
         		bill.put("SERIAL_NO", "");
@@ -733,6 +747,12 @@ public class StaffSummyController extends BaseController {
 			/***************************************************/
 			for(PageData bill : getSaveBill){
 				String strDepartCode = bill.getString("DEPT_CODE" + TmplUtil.keyExtra);
+				String mesSysDeptLtdTime = CheckSystemDateTime.CheckSysDeptLtdTime(strDepartCode, SelectedTableNo, sysDeptLtdTimeService);
+				if(mesSysDeptLtdTime!=null && !mesSysDeptLtdTime.trim().equals("")){
+					commonBase.setCode(2);
+					commonBase.setMessage(mesSysDeptLtdTime);
+					return commonBase;
+				}
         		Map<String, TmplConfigDetail> map_SetColumnsListBill = Common.GetSetColumnsList(TypeCodeSummyBill, strDepartCode, SelectedCustCol7, tmplconfigService);
 				
 				billNum++;

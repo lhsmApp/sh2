@@ -12,6 +12,7 @@ import java.util.Map;
 
 import javax.annotation.Resource;
 import javax.xml.namespace.QName;
+import javax.xml.rpc.ServiceException;
 
 import org.apache.axis.client.Call;
 import org.apache.axis.client.Service;
@@ -42,7 +43,6 @@ import com.fh.util.SqlTools;
 import com.fh.util.date.DateFormatUtils;
 import com.fh.util.date.DateUtils;
 import com.fh.util.enums.BillState;
-import com.fh.util.enums.FundsConfirmInfoState;
 import com.fh.util.enums.SysConfigKeyCode;
 import com.fh.util.enums.SysConfirmInfoBillType;
 import com.fh.util.enums.TmplType;
@@ -56,6 +56,7 @@ import com.fh.service.fundssummyconfirm.fundssummyconfirm.FundsSummyConfirmManag
 import com.fh.service.fhoa.department.impl.DepartmentService;
 import com.fh.service.sysConfig.sysconfig.SysConfigManager;
 import com.fh.service.sysConfirmInfo.sysConfirmInfo.impl.SysConfirmInfoService;
+import com.fh.service.sysDeptLtdTime.sysDeptLtdTime.impl.SysDeptLtdTimeService;
 import com.fh.service.sysStruMapping.sysStruMapping.impl.SysStruMappingService;
 import com.fh.service.sysTableMapping.sysTableMapping.impl.SysTableMappingService;
 import com.fh.service.system.dictionaries.impl.DictionariesService;
@@ -101,6 +102,9 @@ public class FundsSummyConfirmController extends BaseController {
 	String tb_staff_detail = "tb_staff_detail";
 	String tb_social_inc_detail = "tb_social_inc_detail";
 	String tb_house_fund_detail = "tb_house_fund_detail";
+	String tb_staff_summy_bill = "tb_staff_summy_bill";
+	String tb_social_inc_summy_bill = "tb_social_inc_summy_bill";
+	String tb_house_fund_summy_bill = "tb_house_fund_summy_bill";
 
 	//当前期间,取自tb_system_config的SystemDateTime字段
 	//String SystemDateTime = "";
@@ -421,7 +425,8 @@ public class FundsSummyConfirmController extends BaseController {
 		String SelectedTabType = getPd.getString("SelectedTabType");
 		//当前区间
 		String SystemDateTime = getPd.getString("SystemDateTime");
-		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager);
+		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager,
+				false);
 		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(mesDateTime);
@@ -474,7 +479,7 @@ public class FundsSummyConfirmController extends BaseController {
         	itemAdd.setRPT_DEPT(DEPT_CODE);
         	String BUSI_DATE = each.getString("BUSI_DATE" + TmplUtil.keyExtra);
         	itemAdd.setRPT_DUR(BUSI_DATE);
-        	String BILL_TYPE = getSysConfirmInfoBillType(SelectedTableNo);
+        	String BILL_TYPE = Corresponding.getSysConfirmInfoBillTypeFromTmplType(SelectedTableNo);
         	itemAdd.setBILL_TYPE(BILL_TYPE);
         	itemAdd.setSTATE(BillState.Normal.getNameKey());
 
@@ -544,7 +549,8 @@ public class FundsSummyConfirmController extends BaseController {
 		String SelectedTabType = getPd.getString("SelectedTabType");
 		//当前区间
 		String SystemDateTime = getPd.getString("SystemDateTime");
-		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager);
+		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager,
+				false);
 		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(mesDateTime);
@@ -594,7 +600,7 @@ public class FundsSummyConfirmController extends BaseController {
 		CommonBase commonBase = new CommonBase();
 		commonBase.setCode(-1);
 		
-		PageData getPd = this.getPageData();
+		/*PageData getPd = this.getPageData();
 		//员工组
 		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
 		String emplGroupType = Corresponding.getUserGroupTypeFromTmplType(SelectedTableNo);
@@ -765,7 +771,182 @@ public class FundsSummyConfirmController extends BaseController {
         }
     	sysConfirmInfoService.batchAllConfirm(map);
 		commonBase.setCode(0);
+		return commonBase;*/
+		
+		PageData getPd = this.getPageData();
+		//员工组
+		//String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		//String emplGroupType = Corresponding.getUserGroupTypeFromTmplType(SelectedTableNo);
+		//String tmplType = DictsUtil.getTranferTmplType(SelectedTableNo);
+		//账套
+		//String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
+		//单位
+		////String SelectedDepartCode = getPd.getString("SelectedDepartCode");
+		//当前区间
+		String SystemDateTime = getPd.getString("SystemDateTime");
+		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager,
+				false);
+		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
+			commonBase.setCode(2);
+			commonBase.setMessage(mesDateTime);
+			return commonBase;
+		}
+		
+		PageData getQueryFeildPd = new PageData();
+		//getQueryFeildPd.put("USER_GROP", emplGroupType);
+		//getQueryFeildPd.put("DEPT_CODE", SelectedDepartCode);
+		//getQueryFeildPd.put("CUST_COL7", SelectedCustCol7);
+		getQueryFeildPd.put("BUSI_DATE", SystemDateTime);
+		String QueryFeild = QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList);
+		if(!(SystemDateTime!=null && !SystemDateTime.trim().equals(""))){
+			QueryFeild += " and 1 != 1 ";
+		}
+		//if(!(SelectedCustCol7!=null && !SelectedCustCol7.trim().equals(""))){
+		//	QueryFeild += " and 1 != 1 ";
+		//}
+		//if(!(tmplType!=null && !tmplType.trim().equals(""))){
+		//	QueryFeild += " and 1 != 1 ";
+		//}
+		//if (DictsUtil.ifCheckGroupTypeNull(SelectedTableNo)) {
+		//	if(!(emplGroupType!=null && !emplGroupType.trim().equals(""))){
+		//		QueryFeild += " and 1 != 1 ";
+		//	}
+		//}
+		QueryFeild += " and BILL_STATE = '" + BillState.Normal.getNameKey() + "' ";
+		QueryFeild += " and BILL_CODE in (select bill_code FROM tb_sys_sealed_info WHERE state = '1' AND RPT_DUR = '" + SystemDateTime + "') ";
+		getPd.put("QueryFeild", QueryFeild);
+		
+		getPd.put("TableName", tb_staff_summy_bill);
+		List<PageData> getListStaff = fundssummyconfirmService.getOperList(getPd);	//列出Betting列表
+		getPd.put("TableName", tb_social_inc_summy_bill);
+		List<PageData> getListSocial = fundssummyconfirmService.getOperList(getPd);	//列出Betting列表
+		getPd.put("TableName", tb_house_fund_summy_bill);
+		List<PageData> getListHouse = fundssummyconfirmService.getOperList(getPd);	//列出Betting列表
+		
+		List<SysConfirmInfo> listTransferConfirm = new ArrayList<SysConfirmInfo>();
+		List<PageData> listTransferCert = new ArrayList<PageData>();
+		setConfirm(getListStaff, listTransferConfirm, listTransferCert, "");
+		setConfirm(getListSocial, listTransferConfirm, listTransferCert, TmplType.TB_SOCIAL_INC_TRANSFER.getNameKey());
+		setConfirm(getListHouse, listTransferConfirm, listTransferCert, TmplType.TB_HOUSE_FUND_TRANSFER.getNameKey());
+        
+    	Map<String, Object> map = new HashMap<String, Object>();
+    	
+    	PageData pdCert = new PageData();
+    	pdCert.put("BUSI_DATE", SystemDateTime);
+        map.put("TransferCertDel", pdCert);
+
+		PageData pdConfirm = new PageData();
+		pdConfirm.put("RPT_DUR", SystemDateTime);
+    	map.put("TransferConfirmDel", pdConfirm);
+    	
+        if(null != listTransferCert && listTransferCert.size() > 0){
+        	map.put("TransferCertAdd", listTransferCert);
+		}
+    	
+        if(listTransferConfirm!=null && listTransferConfirm.size()>0){
+        	map.put("TransferConfirmAdd", listTransferConfirm);
+        }
+    	sysConfirmInfoService.batchAllConfirm(map);
+		commonBase.setCode(0);
 		return commonBase;
+	}
+	
+	private void setConfirm(List<PageData> getList, 
+			List<SysConfirmInfo> listTransferConfirm, List<PageData> listTransferCert,
+			String strTmplTypeTransfer) throws Exception{
+		if(getList!=null && getList.size()>0){
+			// 执行从FIMS获取凭证号
+			Service servicePzbh = new Service();
+			Call callPzbh = (Call) servicePzbh.createCall();
+			PageData pdKeyCodePzbh = new PageData();
+			pdKeyCodePzbh.put("KEY_CODE", "JQueryPzInformation");
+			String strUrlPzbh = sysConfigManager.getSysConfigByKey(pdKeyCodePzbh);
+			URL urlPzbh = new URL(strUrlPzbh);
+			callPzbh.setTargetEndpointAddress(urlPzbh);
+			callPzbh.setOperationName(new QName("http://JQueryPzInformation.j2ee", "commonQueryPzBh"));
+			callPzbh.setUseSOAPAction(true);
+
+			// 执行从FIMS获取冲销凭证号
+			Service serviceCxpz = new Service();
+			Call callCxpz = (Call) serviceCxpz.createCall();
+			PageData pdKeyCodeCxpz = new PageData();
+			pdKeyCodeCxpz.put("KEY_CODE", "JRevertVoucher");
+			String strUrlCxpz = sysConfigManager.getSysConfigByKey(pdKeyCodeCxpz);
+			URL urlCxpz = new URL(strUrlCxpz);
+			callCxpz.setTargetEndpointAddress(urlCxpz);
+			callCxpz.setOperationName(new QName("http://JRevertVoucher.j2ee", "AmisRevertVoucher"));
+			callCxpz.setUseSOAPAction(true);
+
+			User user = (User) Jurisdiction.getSession().getAttribute(Const.SESSION_USERROL);
+			String userId = user.getUSER_ID();
+	        for(PageData each : getList){
+	        	String BILL_CODE = each.getString("BILL_CODE");// 单据编号
+	        	String BUSI_DATE = each.getString("BUSI_DATE");
+	        	String CUST_COL7 = each.getString("CUST_COL7"); 
+	        	String USER_GROP = each.getString("USER_GROP"); 
+	        	String tmplType = Corresponding.getTmplTypeTranferFromUserGroupType(USER_GROP);
+	        	if(strTmplTypeTransfer!=null && !strTmplTypeTransfer.trim().equals("")){
+	        		tmplType = strTmplTypeTransfer;
+	        	}
+				String tableName = "T_" + DictsUtil.getTableCodeOnFmis(tmplType, sysConfigManager);// 在fmis建立的业务表名
+
+				String strPzbh = ""; // 凭证编号
+				String strPzrq = "";
+				String strCxpz = "";
+				String resultPzbh = (String) callPzbh.invoke(new Object[] { tableName, BILL_CODE, CUST_COL7 });// 对应定义参数
+				if (resultPzbh.length() > 0) {
+					String[] stringArrPzbh = resultPzbh.split(";");
+					strPzbh = stringArrPzbh[0]; // 凭证编号
+					strPzrq = stringArrPzbh[1];
+					if(strPzbh!=null && !strPzbh.trim().equals("")){
+						String workDate = DateUtils.getCurrentTime(DateFormatUtils.DATE_NOFUll_FORMAT);// 当前工作日期格式20170602
+						String resultCxpz = (String) callCxpz.invoke(new Object[] { tableName, CUST_COL7, strPzrq, strPzbh, workDate });// 对应定义参数
+						String [] resultStrsCxpz = resultCxpz.split(";");
+						if(resultStrsCxpz.length>0&&resultStrsCxpz[0].equals("FALSE")){
+							//strMessage += " " + BILL_CODE + "获取冲销凭证编号失败！";
+						}	
+						else if(resultStrsCxpz.length>0&&resultStrsCxpz[0].equals("TRUE")){
+							if(resultStrsCxpz.length>1){
+								strCxpz = resultStrsCxpz[1];// 冲销凭证编号
+							}
+						}
+					}
+				}
+				if(!(strPzrq!=null && !strPzrq.trim().equals(""))){
+					strPzrq = " ";
+				}
+				if(!(strCxpz!=null && !strCxpz.trim().equals(""))){
+					strCxpz = " ";
+				}
+				if(strPzbh!=null && !strPzbh.trim().equals("")){
+					PageData pdCert = new PageData();
+					pdCert.put("BILL_CODE", BILL_CODE);
+					pdCert.put("CERT_CODE", strPzbh);
+					pdCert.put("VOUCHER_DATE", strPzrq);
+					pdCert.put("BILL_USER", userId);
+					pdCert.put("BILL_DATE", DateUtils.getCurrentTime());// YYYY-MM-DD HH:MM:SS
+					pdCert.put("BUSI_DATE", BUSI_DATE);
+					pdCert.put("REVCERT_CODE", strCxpz);
+					listTransferCert.add(pdCert);
+					
+					if(!(strCxpz!=null && !strCxpz.trim().equals(""))){
+			        	SysConfirmInfo itemAdd = new SysConfirmInfo();
+			        	itemAdd.setBILL_CODE(BILL_CODE);
+			        	itemAdd.setCERT_CODE(strPzbh);
+			        	itemAdd.setRPT_USER(userId);
+			        	itemAdd.setRPT_DATE(DateUtil.getTime());
+			        	itemAdd.setBILL_OFF(CUST_COL7);
+			        	String DEPT_CODE = each.getString("DEPT_CODE");
+			        	itemAdd.setRPT_DEPT(DEPT_CODE);
+			        	itemAdd.setRPT_DUR(BUSI_DATE);
+			        	String BILL_TYPE = Corresponding.getSysConfirmInfoBillTypeFromTmplType(tmplType);
+			        	itemAdd.setBILL_TYPE(BILL_TYPE);
+			        	itemAdd.setSTATE(BillState.Normal.getNameKey());
+			        	listTransferConfirm.add(itemAdd);
+					}
+				}
+	        }
+		}
 	}
 	
 	//判断单据状态
@@ -835,33 +1016,6 @@ public class FundsSummyConfirmController extends BaseController {
 			which = value;
 		}
 		return which;
-	}
-	/**
-	 * 根据前端业务表索引获取确认表单据类型（1合同化工资传输2市场化工资传输3运行人员工资传输4劳务用工传输5劳务人员在建传输6社保传输7公积金传输）
-	 * 
-	 * @param which
-	 * @return
-	 */
-	private String getSysConfirmInfoBillType(String which) {
-		String tableCode = "";
-		if (which != null){
-			if(which.equals(TmplType.TB_STAFF_SUMMY_CONTRACT.getNameKey())) {
-				tableCode = SysConfirmInfoBillType.STAFF_CONTRACT.getNameKey();
-			} else if(which.equals(TmplType.TB_STAFF_SUMMY_MARKET.getNameKey())) {
-				tableCode = SysConfirmInfoBillType.STAFF_MARKET.getNameKey();
-			} else if(which.equals(TmplType.TB_STAFF_SUMMY_SYS_LABOR.getNameKey())) {
-				tableCode = SysConfirmInfoBillType.STAFF_SYS_LABOR.getNameKey();
-			} else if(which.equals(TmplType.TB_STAFF_SUMMY_OPER_LABOR.getNameKey())) {
-				tableCode = SysConfirmInfoBillType.STAFF_OPER_LABOR.getNameKey();
-			} else if(which.equals(TmplType.TB_STAFF_SUMMY_LABOR.getNameKey())) {
-				tableCode = SysConfirmInfoBillType.STAFF_LABOR.getNameKey();
-			} else if (which.equals(TmplType.TB_SOCIAL_INC_SUMMY.getNameKey())) {
-				tableCode = SysConfirmInfoBillType.SOCIAL_INC.getNameKey();
-			} else if (which.equals(TmplType.TB_HOUSE_FUND_SUMMY.getNameKey())) {
-				tableCode = SysConfirmInfoBillType.HOUSE_FUND.getNameKey();
-			}
-		}
-		return tableCode;
 	}
 	/**
 	 * 根据前端业务表索引获取表名称

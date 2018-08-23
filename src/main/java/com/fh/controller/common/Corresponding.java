@@ -1,5 +1,6 @@
 package com.fh.controller.common;
 
+import com.fh.util.PageData;
 import com.fh.util.enums.BillNumType;
 import com.fh.util.enums.EmplGroupType;
 import com.fh.util.enums.PZTYPE;
@@ -199,6 +200,22 @@ public class Corresponding {
 			emplGroupType = EmplGroupType.LWPQ.getNameKey();
 		}
 		return emplGroupType;
+	}
+	public static String getTmplTypeTranferFromUserGroupType(String userGroup) throws Exception {
+		PageData pd = new PageData();
+		String retTmplTypeTranfer = "";// 数据库真实业务数据表
+		if (userGroup.equals(EmplGroupType.HTH.getNameKey())) {
+			retTmplTypeTranfer = TmplType.TB_STAFF_TRANSFER_CONTRACT.getNameKey();
+		} else if (userGroup.equals(EmplGroupType.SCH.getNameKey())) {
+			retTmplTypeTranfer = TmplType.TB_STAFF_TRANSFER_MARKET.getNameKey();
+		} else if (userGroup.equals(EmplGroupType.XTNLW.getNameKey())) {
+			retTmplTypeTranfer = TmplType.TB_STAFF_TRANSFER_SYS_LABOR.getNameKey();
+		} else if (userGroup.equals(EmplGroupType.YXRY.getNameKey())) {
+			retTmplTypeTranfer = TmplType.TB_STAFF_TRANSFER_OPER_LABOR.getNameKey();
+		} else if (userGroup.equals(EmplGroupType.LWPQ.getNameKey())) {
+			retTmplTypeTranfer = TmplType.TB_STAFF_TRANSFER_LABOR.getNameKey();
+		}
+		return retTmplTypeTranfer;
 	}
 
 	/**

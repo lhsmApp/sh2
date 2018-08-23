@@ -61,6 +61,7 @@ import com.fh.service.certParmConfig.certParmConfig.impl.CertParmConfigService;
 import com.fh.service.fhoa.department.impl.DepartmentService;
 import com.fh.service.sysConfig.sysconfig.SysConfigManager;
 import com.fh.service.sysConfirmInfo.sysConfirmInfo.impl.SysConfirmInfoService;
+import com.fh.service.sysDeptLtdTime.sysDeptLtdTime.impl.SysDeptLtdTimeService;
 import com.fh.service.sysDeptMapping.sysDeptMapping.impl.SysDeptMappingService;
 import com.fh.service.sysStruMapping.sysStruMapping.impl.SysStruMappingService;
 import com.fh.service.sysTableMapping.sysTableMapping.impl.SysTableMappingService;
@@ -520,7 +521,8 @@ public class FundsSelfSummyController extends BaseController {
 		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
 		//当前区间
 		String SystemDateTime = getPd.getString("SystemDateTime");
-		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager);
+		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager,
+				false);
 		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(mesDateTime);
@@ -837,7 +839,8 @@ public class FundsSelfSummyController extends BaseController {
 		PageData getPd = this.getPageData();
 		//当前区间
 		String SystemDateTime = getPd.getString("SystemDateTime");
-		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager);
+		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager,
+				false);
 		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(mesDateTime);

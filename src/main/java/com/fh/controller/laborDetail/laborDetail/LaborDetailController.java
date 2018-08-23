@@ -50,6 +50,7 @@ import net.sf.json.JSONArray;
 import com.fh.service.fhoa.department.impl.DepartmentService;
 import com.fh.service.laborDetail.laborDetail.impl.LaborDetailService;
 import com.fh.service.sysConfig.sysconfig.SysConfigManager;
+import com.fh.service.sysDeptLtdTime.sysDeptLtdTime.impl.SysDeptLtdTimeService;
 import com.fh.service.system.dictionaries.impl.DictionariesService;
 import com.fh.service.tmplconfig.tmplconfig.impl.TmplConfigService;
 
@@ -73,6 +74,8 @@ public class LaborDetailController extends BaseController {
 	private DictionariesService dictionariesService;
 	@Resource(name="departmentService")
 	private DepartmentService departmentService;
+	@Resource(name="sysDeptLtdTimeService")
+	private SysDeptLtdTimeService sysDeptLtdTimeService;
 	
 	//表名
 	String TableNameDetail = "TB_LABOR_DETAIL";
@@ -223,7 +226,8 @@ public class LaborDetailController extends BaseController {
 		String oper = getPd.getString("oper");
 		//当前区间
 		String SystemDateTime = getPd.getString("SystemDateTime");
-		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager);
+		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager,
+				false);
 		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(mesDateTime);
@@ -292,7 +296,8 @@ public class LaborDetailController extends BaseController {
 		String ShowDataCustCol7 = getPd.getString("ShowDataCustCol7");
 		//当前区间
 		String SystemDateTime = getPd.getString("SystemDateTime");
-		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager);
+		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager,
+				false);
 		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(mesDateTime);
@@ -354,7 +359,8 @@ public class LaborDetailController extends BaseController {
 		String ShowDataCustCol7 = getPd.getString("ShowDataCustCol7");
 		//当前区间
 		String SystemDateTime = getPd.getString("SystemDateTime");
-		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager);
+		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager,
+				false);
 		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(mesDateTime);
@@ -412,7 +418,8 @@ public class LaborDetailController extends BaseController {
 		String ShowDataCustCol7 = getPd.getString("ShowDataCustCol7");
 		//当前区间
 		String SystemDateTime = getPd.getString("SystemDateTime");
-		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager);
+		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager,
+				false);
 		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(mesDateTime);
@@ -465,7 +472,8 @@ public class LaborDetailController extends BaseController {
 		String ShowDataCustCol7 = getPd.getString("ShowDataCustCol7");
 		//当前区间
 		String SystemDateTime = getPd.getString("SystemDateTime");
-		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager);
+		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager,
+				false);
 		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(mesDateTime);
@@ -520,7 +528,8 @@ public class LaborDetailController extends BaseController {
 		String ShowDataCustCol7 = getPd.getString("ShowDataCustCol7");
 		//当前区间
 		String SystemDateTime = getPd.getString("SystemDateTime");
-		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager);
+		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager,
+				false);
 		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(mesDateTime);

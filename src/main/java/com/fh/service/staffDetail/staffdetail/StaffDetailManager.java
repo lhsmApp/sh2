@@ -3,6 +3,7 @@ package com.fh.service.staffDetail.staffdetail;
 import java.util.List;
 import java.util.Map;
 
+import com.fh.controller.common.TmplUtil;
 import com.fh.entity.JqPage;
 import com.fh.util.PageData;
 
@@ -63,10 +64,19 @@ public interface StaffDetailManager{
 	 * @param pd
 	 * @throws Exception
 	 */
-	public List<PageData> getDataCalculation(String tableName, String TableFeildTax, String TmplUtil_KeyExtra, 
+	/*public List<PageData> getDataCalculation(String tableName, String TableFeildTax, String TmplUtil_KeyExtra, 
 			PageData pdInsetBackup,
 			List<String> listSalaryFeildUpdate, String sqlRetSelect, List<PageData> listAddSalary, List<PageData> listAddBonus,
-			String sqlSumByUserCodeSalary,  String sqlSumByUserCodeBonus, String TableFeildSum)throws Exception;
+			String sqlSumByUserCodeSalary,  String sqlSumByUserCodeBonus, String TableFeildSum,
+			String ExemptionTax)throws Exception;*/
+	public List<PageData> getDataCalculation(String tableName, String TmplUtil_KeyExtra, 
+			String TableFeildSalarySelf, String TableFeildSalaryTax, String TableFeildBonusSelf, String TableFeildBonusTax,
+			String TableFeildSalaryTaxConfigGradeOper, String TableFeildBonusTaxConfigGradeOper,
+			String TableFeildSalaryTaxConfigSumOper, String TableFeildBonusTaxConfigSumOper,
+			String TableFeildSalaryTaxSelfSumOper, String TableFeildBonusTaxSelfSumOper,
+			PageData pdInsetBackup,
+			List<String> listSalaryFeildUpdate, String sqlRetSelect, List<PageData> listData, 
+			String sqlSumByUserCodeSalary, String sqlSumByUserCodeBonus)throws Exception;
 	/**更新数据库
 	 * @param pd
 	 * @throws Exception

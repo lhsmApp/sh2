@@ -44,7 +44,6 @@ import com.fh.util.PageData;
 import com.fh.util.SqlTools;
 import com.fh.util.enums.BillState;
 import com.fh.util.enums.EmplGroupType;
-import com.fh.util.enums.StaffDataType;
 import com.fh.util.enums.SysConfigKeyCode;
 import com.fh.util.enums.TmplType;
 import com.fh.util.Const;
@@ -58,6 +57,7 @@ import com.fh.service.fhoa.department.impl.DepartmentService;
 import com.fh.service.staffDetail.staffdetail.StaffDetailManager;
 import com.fh.service.staffsummy.staffsummy.StaffSummyManager;
 import com.fh.service.sysConfig.sysconfig.SysConfigManager;
+import com.fh.service.sysDeptLtdTime.sysDeptLtdTime.impl.SysDeptLtdTimeService;
 import com.fh.service.system.dictionaries.impl.DictionariesService;
 import com.fh.service.system.user.UserManager;
 import com.fh.service.tmplConfigDict.tmplconfigdict.impl.TmplConfigDictService;
@@ -89,6 +89,8 @@ public class StaffDetailController extends BaseController {
 	private DepartmentService departmentService;
 	@Resource(name = "userService")
 	private UserManager userService;
+	@Resource(name="sysDeptLtdTimeService")
+	private SysDeptLtdTimeService sysDeptLtdTimeService;
 
 	//表名
 	String TableNameDetail = "TB_STAFF_DETAIL";
@@ -98,9 +100,18 @@ public class StaffDetailController extends BaseController {
 	String SelectBillCodeFirstShow = "临时数据";
 	String SelectBillCodeLastShow = "";
 	//个税字段，不能定义公式，
-	String TableFeildTaxCanNotHaveFormula = "ACCRD_TAX";
+	String TF_SalarySelf = "GROSS_PAY";
+	String TF_SalaryTax = "";//"ACCRD_TAX";
+	String TF_BonusSelf = "CUST_COL14";
+	String TF_BonusTax = "";//"CUST_COL10";
+	
 	//税字段
-	String TableFeildSumOper = "SUM_OPER";
+	String TableFeildSalaryTaxConfigGradeOper = "S_TAX_CONFIG_GRADE_OPER";
+	String TableFeildSalaryTaxConfigSumOper = "S_TAX_CONFIG_SUM_OPER";
+	String TableFeildSalaryTaxSelfSumOper = "S_TAX_SELF_SUM_OPER";
+	String TableFeildBonusTaxConfigGradeOper = "B_TAX_CONFIG_GRADE_OPER";
+	String TableFeildBonusTaxConfigSumOper = "B_TAX_CONFIG_SUM_OPER";
+	String TableFeildBonusTaxSelfSumOper = "B_TAX_SELF_SUM_OPER";
 
 	//默认的which值
 	String DefaultWhile = TmplType.TB_STAFF_DETAIL_CONTRACT.getNameKey();
@@ -110,7 +121,7 @@ public class StaffDetailController extends BaseController {
     //
 	String AdditionalReportColumns = "";
 	//
-	private List<String> MustInputList = Arrays.asList("USER_CODE", "DATA_TYPE", "UNITS_CODE");
+	private List<String> MustInputList = Arrays.asList("USER_CODE", "UNITS_CODE");
 	//界面查询字段
     List<String> QueryFeildList = Arrays.asList("DEPT_CODE", "CUST_COL7", "USER_GROP");
     //设置必定不用编辑的列            SERIAL_NO 设置字段类型是数字，但不管隐藏 或显示都必须保存的
@@ -150,6 +161,16 @@ public class StaffDetailController extends BaseController {
 		
 		ModelAndView mv = this.getModelAndView();
 		mv.setViewName("staffDetail/staffdetail/staffdetail_list");
+		
+		//String TF_SalaryTax
+        PageData SalaryTax = new PageData();
+        SalaryTax.put("KEY_CODE", SysConfigKeyCode.IndividualIncomeTax);
+        TF_SalaryTax = sysConfigManager.getSysConfigByKey(SalaryTax);
+		//String TF_BonusTax
+        PageData BonusTax = new PageData();
+        BonusTax.put("KEY_CODE", SysConfigKeyCode.BonusIncomeTax);
+        TF_BonusTax = sysConfigManager.getSysConfigByKey(BonusTax);
+        
 		//while
 		getPd.put("which", SelectedTableNo);
 		//单号下拉列表
@@ -373,7 +394,7 @@ public class StaffDetailController extends BaseController {
 		String oper = getPd.getString("oper");
 		//当前区间
 		String SystemDateTime = getPd.getString("SystemDateTime");
-		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager);
+		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager, false);
 		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(mesDateTime);
@@ -388,6 +409,12 @@ public class StaffDetailController extends BaseController {
 		if(strGetCheckMustSelected!=null && !strGetCheckMustSelected.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(strGetCheckMustSelected);
+			return commonBase;
+		}
+		String mesSysDeptLtdTime = CheckSystemDateTime.CheckSysDeptLtdTime(SelectedDepartCode, SelectedTableNo, sysDeptLtdTimeService);
+		if(mesSysDeptLtdTime!=null && !mesSysDeptLtdTime.trim().equals("")){
+			commonBase.setCode(2);
+			commonBase.setMessage(mesSysDeptLtdTime);
 			return commonBase;
 		}
 		
@@ -485,7 +512,7 @@ public class StaffDetailController extends BaseController {
 		String ShowDataBillCode = getPd.getString("ShowDataBillCode");
 		//当前区间
 		String SystemDateTime = getPd.getString("SystemDateTime");
-		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager);
+		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager, false);
 		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(mesDateTime);
@@ -500,6 +527,12 @@ public class StaffDetailController extends BaseController {
 		if(strGetCheckMustSelected!=null && !strGetCheckMustSelected.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(strGetCheckMustSelected);
+			return commonBase;
+		}
+		String mesSysDeptLtdTime = CheckSystemDateTime.CheckSysDeptLtdTime(SelectedDepartCode, SelectedTableNo, sysDeptLtdTimeService);
+		if(mesSysDeptLtdTime!=null && !mesSysDeptLtdTime.trim().equals("")){
+			commonBase.setCode(2);
+			commonBase.setMessage(mesSysDeptLtdTime);
 			return commonBase;
 		}
 
@@ -572,7 +605,7 @@ public class StaffDetailController extends BaseController {
 		String ShowDataBillCode = getPd.getString("ShowDataBillCode");
 		//当前区间
 		String SystemDateTime = getPd.getString("SystemDateTime");
-		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager);
+		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager, false);
 		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(mesDateTime);
@@ -587,6 +620,12 @@ public class StaffDetailController extends BaseController {
 		if(strGetCheckMustSelected!=null && !strGetCheckMustSelected.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(strGetCheckMustSelected);
+			return commonBase;
+		}
+		String mesSysDeptLtdTime = CheckSystemDateTime.CheckSysDeptLtdTime(SelectedDepartCode, SelectedTableNo, sysDeptLtdTimeService);
+		if(mesSysDeptLtdTime!=null && !mesSysDeptLtdTime.trim().equals("")){
+			commonBase.setCode(2);
+			commonBase.setMessage(mesSysDeptLtdTime);
 			return commonBase;
 		}
 		
@@ -655,7 +694,7 @@ public class StaffDetailController extends BaseController {
 		String ShowDataBillCode = getPd.getString("ShowDataBillCode");
 		//当前区间
 		String SystemDateTime = getPd.getString("SystemDateTime");
-		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager);
+		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager, false);
 		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(mesDateTime);
@@ -670,6 +709,12 @@ public class StaffDetailController extends BaseController {
 		if(strGetCheckMustSelected!=null && !strGetCheckMustSelected.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(strGetCheckMustSelected);
+			return commonBase;
+		}
+		String mesSysDeptLtdTime = CheckSystemDateTime.CheckSysDeptLtdTime(SelectedDepartCode, SelectedTableNo, sysDeptLtdTimeService);
+		if(mesSysDeptLtdTime!=null && !mesSysDeptLtdTime.trim().equals("")){
+			commonBase.setCode(2);
+			commonBase.setMessage(mesSysDeptLtdTime);
 			return commonBase;
 		}
 
@@ -694,37 +739,6 @@ public class StaffDetailController extends BaseController {
 			commonBase.setMessage(checkState);
 			return commonBase;
 		}
-		/*List<PageData> listAddSalary = new ArrayList<PageData>();
-		List<PageData> listAddBonus = new ArrayList<PageData>();
-        for(PageData item : listData){
-         	item.put("CanOperate", strHelpful);
-       	    Common.setModelDefault(item, map_HaveColumnsList, map_SetColumnsList);
-
-			String strDATA_TYPE = item.getString("DATA_TYPE");
-			if(!(strDATA_TYPE!=null && (!strDATA_TYPE.trim().equals("")))){
-				commonBase.setCode(2);
-				commonBase.setMessage(Message.RowDataTypeMustInput);
-				return commonBase;
-			}
-			if(!(strDATA_TYPE.trim().equals(StaffDataType.Salary.getNameKey()) || strDATA_TYPE.trim().equals(StaffDataType.Bonus.getNameKey()))){
-				commonBase.setCode(2);
-				commonBase.setMessage(Message.RowDataTypeInputError);
-				return commonBase;
-			}
-			if(strDATA_TYPE.equals(StaffDataType.Salary.getNameKey())){
-				listAddSalary.add(item);
-			}
-			if(strDATA_TYPE.equals(StaffDataType.Bonus.getNameKey())){
-				listAddBonus.add(item);
-			}
-        }
-		List<PageData> dataCalculation = getCalculation(SelectedTableNo, SelectedCustCol7, SelectedDepartCode, emplGroupType,
-				listAddSalary, listAddBonus);
-		String strJson =JSONArray.fromObject(dataCalculation).toString();
-		if(strJson.startsWith("[")) strJson = strJson.substring(1);
-		if(strJson.endsWith("]")) strJson = strJson.substring(0, strJson.length()-1);
-		commonBase.setCode(0);
-		commonBase.setMessage(strJson);*/
 		commonBase = CalculationUpdateDatabase(false, false, commonBase, "",
 				SelectedTableNo, SelectedCustCol7, SelectedDepartCode, emplGroupType,
 				listData, strHelpful, SystemDateTime);
@@ -760,16 +774,15 @@ public class StaffDetailController extends BaseController {
 		String ShowDataDepartCode = getPd.getString("ShowDataDepartCode");
 		String ShowDataCustCol7 = getPd.getString("ShowDataCustCol7");
 		String ShowDataBillCode = getPd.getString("ShowDataBillCode");
-		//工资或奖金枚举编码
-		String SalaryOrBonus = getPd.getString("SalaryOrBonus");
 		//当前区间
 		String SystemDateTime = getPd.getString("SystemDateTime");
-		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager);
+		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager, false);
 		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(mesDateTime);
 		}
 
+	if(commonBase.getCode()==-1){
 		//判断选择为必须选择的
 		String strGetCheckMustSelected = CheckMustSelectedAndSame(emplGroupType, 
 				SelectedCustCol7, ShowDataCustCol7, 
@@ -779,6 +792,15 @@ public class StaffDetailController extends BaseController {
 			commonBase.setCode(2);
 			commonBase.setMessage(strGetCheckMustSelected);
 		}
+	}
+	if(commonBase.getCode()==-1){
+		String mesSysDeptLtdTime = CheckSystemDateTime.CheckSysDeptLtdTime(SelectedDepartCode, SelectedTableNo, sysDeptLtdTimeService);
+		if(mesSysDeptLtdTime!=null && !mesSysDeptLtdTime.trim().equals("")){
+			commonBase.setCode(2);
+			commonBase.setMessage(mesSysDeptLtdTime);
+		}
+	}
+	if(commonBase.getCode()==-1){
 		if(!SelectedBillCode.equals(SelectBillCodeFirstShow) && commonBase.getCode() != 2){
 			String checkState = CheckState(SelectedBillCode, SystemDateTime,
 					SelectedCustCol7, SelectedDepartCode, emplGroupType, strTypeCodeTramsfer, null, "SERIAL_NO", TmplUtil.keyExtra);
@@ -787,6 +809,7 @@ public class StaffDetailController extends BaseController {
 				commonBase.setMessage(checkState);
 			}
 		}
+	}
 		ModelAndView mv = this.getModelAndView();
 		mv.setViewName("common/uploadExcel");
 		mv.addObject("local", "staffdetail");
@@ -798,7 +821,6 @@ public class StaffDetailController extends BaseController {
 		mv.addObject("ShowDataDepartCode", ShowDataDepartCode);
 		mv.addObject("ShowDataCustCol7", ShowDataCustCol7);
 		mv.addObject("ShowDataBillCode", ShowDataBillCode);
-		mv.addObject("SalaryOrBonus", SalaryOrBonus);
 		mv.addObject("SystemDateTime", SystemDateTime);
 		mv.addObject("commonBaseCode", commonBase.getCode());
 		mv.addObject("commonMessage", commonBase.getMessage());
@@ -810,7 +832,7 @@ public class StaffDetailController extends BaseController {
 	 * @return
 	 * @throws Exception
 	 */
-	@SuppressWarnings({ "unchecked" })
+	@SuppressWarnings({ "unchecked", "unused" })
 	@RequestMapping(value = "/readExcel")
 	public ModelAndView readExcel(@RequestParam(value="excel",required=false) MultipartFile file) throws Exception{
 		CommonBase commonBase = new CommonBase();
@@ -863,46 +885,65 @@ public class StaffDetailController extends BaseController {
 		String ShowDataDepartCode = getPd.getString("ShowDataDepartCode");
 		String ShowDataCustCol7 = getPd.getString("ShowDataCustCol7");
 		String ShowDataBillCode = getPd.getString("ShowDataBillCode");
-		//工资或奖金枚举编码
-		String SalaryOrBonus = getPd.getString("SalaryOrBonus");
 		//当前区间
 		String SystemDateTime = getPd.getString("SystemDateTime");
-		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager);
+		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager, false);
 		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(mesDateTime);
-		} else {
-			//判断选择为必须选择的
-			String strGetCheckMustSelected = CheckMustSelectedAndSame(emplGroupType, 
-					SelectedCustCol7, ShowDataCustCol7, 
-					SelectedDepartCode, ShowDataDepartCode, DepartTreeSource,
-					SelectedBillCode, ShowDataBillCode);
-			if(strGetCheckMustSelected!=null && !strGetCheckMustSelected.trim().equals("")){
+		} 
+		if(commonBase.getCode()==-1){
+			if(!(CurrentDepartCode!=null && !CurrentDepartCode.trim().equals(""))){
 				commonBase.setCode(2);
-				commonBase.setMessage(strGetCheckMustSelected);
-			} else {
-				if(!SelectedBillCode.equals(SelectBillCodeFirstShow)){
-					String checkState = CheckState(SelectedBillCode, SystemDateTime,
-							SelectedCustCol7, SelectedDepartCode, emplGroupType, strTypeCodeTramsfer, null, "SERIAL_NO", TmplUtil.keyExtra);
-					if(checkState!=null && !checkState.trim().equals("")){
-						commonBase.setCode(2);
-						commonBase.setMessage(checkState);
-					}
-				}
-				if(commonBase.getCode() != 2){
-					if(!(SystemDateTime!=null && !SystemDateTime.trim().equals("")
-							&& SelectedDepartCode!=null && !SelectedDepartCode.trim().equals(""))){
-						commonBase.setCode(2);
-						commonBase.setMessage("当前区间和当前单位不能为空！");
-					} else {
-						String strHelpful = QueryFeildString.getBillCodeNotInSumInvalidDetail(TableNameSummy);
-						if(!SelectedBillCode.equals(SelectBillCodeFirstShow)){
-							strHelpful += QueryFeildString.getNotReportBillCode(strTypeCodeTramsfer, SystemDateTime, SelectedCustCol7, SelectedDepartCode);
-						}
-						if(!(strHelpful != null && !strHelpful.trim().equals(""))){
-							commonBase.setCode(2);
-							commonBase.setMessage(Message.GetHelpfulDetailFalue);
-						} else {
+				commonBase.setMessage("当前登录人责任中心为空，请联系管理员！");
+			} 
+		}
+	if(commonBase.getCode()==-1){
+		//判断选择为必须选择的
+		String strGetCheckMustSelected = CheckMustSelectedAndSame(emplGroupType, 
+				SelectedCustCol7, ShowDataCustCol7, 
+				SelectedDepartCode, ShowDataDepartCode, DepartTreeSource,
+				SelectedBillCode, ShowDataBillCode);
+		if(strGetCheckMustSelected!=null && !strGetCheckMustSelected.trim().equals("")){
+			commonBase.setCode(2);
+			commonBase.setMessage(strGetCheckMustSelected);
+		} 
+	}
+	if(commonBase.getCode()==-1){
+		String mesSysDeptLtdTime = CheckSystemDateTime.CheckSysDeptLtdTime(SelectedDepartCode, SelectedTableNo, sysDeptLtdTimeService);
+		if(mesSysDeptLtdTime!=null && !mesSysDeptLtdTime.trim().equals("")){
+			commonBase.setCode(2);
+			commonBase.setMessage(mesSysDeptLtdTime);
+		}
+	}
+	if(commonBase.getCode()==-1){
+		if(!SelectedBillCode.equals(SelectBillCodeFirstShow)){
+			String checkState = CheckState(SelectedBillCode, SystemDateTime,
+					SelectedCustCol7, SelectedDepartCode, emplGroupType, strTypeCodeTramsfer, null, "SERIAL_NO", TmplUtil.keyExtra);
+			if(checkState!=null && !checkState.trim().equals("")){
+				commonBase.setCode(2);
+				commonBase.setMessage(checkState);
+			}
+		}
+	}
+	if(commonBase.getCode()==-1){
+		if(!(SystemDateTime!=null && !SystemDateTime.trim().equals("")
+				&& SelectedDepartCode!=null && !SelectedDepartCode.trim().equals(""))){
+			commonBase.setCode(2);
+			commonBase.setMessage("当前区间和当前单位不能为空！");
+		} 
+	}
+		String strHelpful = QueryFeildString.getBillCodeNotInSumInvalidDetail(TableNameSummy);
+	if(commonBase.getCode()==-1){
+		if(!SelectedBillCode.equals(SelectBillCodeFirstShow)){
+			strHelpful += QueryFeildString.getNotReportBillCode(strTypeCodeTramsfer, SystemDateTime, SelectedCustCol7, SelectedDepartCode);
+		}
+		if(!(strHelpful != null && !strHelpful.trim().equals(""))){
+			commonBase.setCode(2);
+			commonBase.setMessage(Message.GetHelpfulDetailFalue);
+		} 
+	}
+		if(commonBase.getCode()==-1){
 							Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(SelectedTableNo, SelectedDepartCode, SelectedCustCol7, tmplconfigService);
 							Map<String, TableColumns> map_HaveColumnsList = Common.GetHaveColumnsList(SelectedTableNo, tmplconfigService);
 							Map<String, Object> DicList = Common.GetDicList(SelectedTableNo, SelectedDepartCode, SelectedCustCol7, 
@@ -970,8 +1011,6 @@ public class StaffDetailController extends BaseController {
 								List<String> sbRet = new ArrayList<String>();
 								int listSize = listUploadAndRead.size();
 								if(listSize > 0){
-									List<PageData> listAddSalary = new ArrayList<PageData>();
-									List<PageData> listAddBonus = new ArrayList<PageData>();
 									for(int i=0;i<listSize;i++){
 										PageData pdAdd = listUploadAndRead.get(i);
 										String getUSER_CODE = (String) pdAdd.get("USER_CODE");
@@ -1043,20 +1082,29 @@ public class StaffDetailController extends BaseController {
 												String USER_CATG_XQDSGDJG = "PUT04";
 												
 												//工资范围编码-东零    String SAL_RANGE_dong_0 = "S12";
-												if(!(getSAL_RANGE!=null && getSAL_RANGE.equals(SAL_RANGE_dong_0))){
+												if(SAL_RANGE_dong_0==null){
+													SAL_RANGE_dong_0 = "";
+												}
+												if(SAL_RANGE_dong_0.equals(getSAL_RANGE)){
 										    	    continue;
 												}
 												//账套-新西气东输公司-9870 String CUST_COL7_xxqdsgs = "9870";
 												//企业特定员工分类-东部管道机关-PUT02 String USER_CATG_DBGDJG = "PUT02";
 												if(getCUST_COL7.equals(CUST_COL7_xxqdsgs)){
-													if(!(getUSER_CATG!=null && getUSER_CATG.equals(USER_CATG_DBGDJG))){
+													if(USER_CATG_DBGDJG==null){
+														USER_CATG_DBGDJG = "";
+													}
+													if(USER_CATG_DBGDJG.equals(getUSER_CATG)){
 											    	    continue;
 													}
 												}
 												//账套-西气东输管道-9100 String CUST_COL7_xqdsgd = "9100";
 												//企业特定员工分类-西气东输管道机关-PUT04 String USER_CATG_XQDSGDJG = "PUT04";
 												if(getCUST_COL7.equals(CUST_COL7_xqdsgd)){
-													if(!(getUSER_CATG!=null && getUSER_CATG.equals(USER_CATG_XQDSGDJG))){
+													if(USER_CATG_XQDSGDJG==null){
+														USER_CATG_XQDSGDJG = "";
+													}
+													if(USER_CATG_XQDSGDJG.equals(getUSER_CATG)){
 											    	    continue;
 													}
 												}
@@ -1100,40 +1148,6 @@ public class StaffDetailController extends BaseController {
 											String getBUSI_DATE = (String) pdAdd.get("BUSI_DATE");
 											String getDEPT_CODE = (String) pdAdd.get("DEPT_CODE");
 											String getUNITS_CODE = (String) pdAdd.get("UNITS_CODE");
-											/*String getDATA_TYPE = (String) pdAdd.get("DATA_TYPE");*/
-											/*if(!(getDATA_TYPE!=null && !getDATA_TYPE.trim().equals(""))){
-												if(!sbRet.contains("导入数据类型列不能为空！")){
-													sbRet.add("导入数据类型列不能为空！");
-												}
-											} else {
-												if(strImportDataType!=null && !strImportDataType.trim().equals("")){
-													if(!getDATA_TYPE.equals(strImportDataType)){
-														if(!sbRet.contains("导入数据类型必须一致！")){
-															sbRet.add("导入数据类型必须一致！");
-														}
-													}
-												} else {
-													strImportDataType = getDATA_TYPE;
-												}
-											}*/
-											pdAdd.put("DATA_TYPE", SalaryOrBonus);
-											if(SalaryOrBonus!=null && (!SalaryOrBonus.trim().equals(""))){
-												if(!(SalaryOrBonus.equals(StaffDataType.Salary.getNameKey()) || SalaryOrBonus.equals(StaffDataType.Bonus.getNameKey()))){
-													if(!sbRet.contains(Message.RowDataTypeInputError)){
-														sbRet.add(Message.RowDataTypeInputError);
-													}
-												}
-												if(SalaryOrBonus.equals(StaffDataType.Salary.getNameKey())){
-													listAddSalary.add(pdAdd);
-												}
-												if(SalaryOrBonus.equals(StaffDataType.Bonus.getNameKey())){
-													listAddBonus.add(pdAdd);
-												}
-											} else {
-												if(!sbRet.contains(Message.RowDataTypeMustInput)){
-													sbRet.add(Message.RowDataTypeMustInput);
-												}
-											}
 											if(!(getBUSI_DATE!=null && !getBUSI_DATE.trim().equals(""))){
 												pdAdd.put("BUSI_DATE", SystemDateTime);
 												getBUSI_DATE = SystemDateTime;
@@ -1166,9 +1180,6 @@ public class StaffDetailController extends BaseController {
 											if(!(getESTB_DEPT!=null && !getESTB_DEPT.trim().equals(""))){
 												pdAdd.put("ESTB_DEPT", SelectedDepartCode);
 											}
-											//Common.setModelDefault(pdAdd, map_HaveColumnsList, map_SetColumnsList);
-											//pdAdd.put("CanOperate", strHelpful);
-											//pdAdd.put("TableName", TableNameBackup);
 											listAdd.add(pdAdd);
 										}
 									}
@@ -1193,41 +1204,69 @@ public class StaffDetailController extends BaseController {
 														listAdd, strHelpful, SystemDateTime);
 												for(PageData pdSet : getCommonBaseAndList.getList()){
 													String pdSetUSER_CODE = pdSet.getString("USER_CODE");
-													BigDecimal douCalTax = new BigDecimal(0);
-													BigDecimal douImpTax = new BigDecimal(0);
-													BigDecimal douYDRZE = new BigDecimal(0);
-													BigDecimal douYSZE = new BigDecimal(0);
+													BigDecimal douSalaryCalTax = new BigDecimal(0);//计算出的税额
+													BigDecimal douSalaryImpTax = new BigDecimal(0);//导入税额
+													BigDecimal douSalaryYDRZE = new BigDecimal(0);
+													BigDecimal douSalaryYSZE = new BigDecimal(0);
+													
+													BigDecimal douBonusCalTax = new BigDecimal(0);
+													BigDecimal douBonusImpTax = new BigDecimal(0);
+													BigDecimal douBonusYDRZE = new BigDecimal(0);
+													BigDecimal douBonusYSZE = new BigDecimal(0);
 													for(PageData pdsum : getCommonBaseAndList.getList()){
 														String pdsumUSER_CODE = pdsum.getString("USER_CODE");
 														if(pdSetUSER_CODE!=null && pdSetUSER_CODE.equals(pdsumUSER_CODE)){
-															douCalTax = douCalTax.add(new BigDecimal(pdsum.get(TableFeildTaxCanNotHaveFormula).toString()));
-															douImpTax = douImpTax.add(new BigDecimal(pdsum.get(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra).toString()));
-
-															douYDRZE = douYDRZE.add(new BigDecimal(pdsum.get("YDRZE").toString()));
+															douSalaryCalTax = douSalaryCalTax.add(new BigDecimal(pdsum.get(TF_SalaryTax).toString()));
+															douSalaryImpTax = douSalaryImpTax.add(new BigDecimal(pdsum.get(TF_SalaryTax + TmplUtil.keyExtra).toString()));
+															douSalaryYDRZE = douSalaryYDRZE.add(new BigDecimal(pdsum.get("S_YDRZE").toString()));
+															douSalaryYSZE = douSalaryYSZE.add(new BigDecimal(pdsum.get("S_YSZE").toString()));
 															
-															douYSZE = douYSZE.add(new BigDecimal(pdsum.get("YSZE").toString()));
+															douBonusCalTax = douBonusCalTax.add(new BigDecimal(pdsum.get(TF_BonusTax).toString()));
+															douBonusImpTax = douBonusImpTax.add(new BigDecimal(pdsum.get(TF_BonusTax + TmplUtil.keyExtra).toString()));
+															douBonusYDRZE = douBonusYDRZE.add(new BigDecimal(pdsum.get("B_YDRZE").toString()));
+															douBonusYSZE = douBonusYSZE.add(new BigDecimal(pdsum.get("B_YSZE").toString()));
 														}
 													}
-													pdSet.put(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra + TmplUtil.keyExtra, douCalTax);
-													pdSet.put(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra + TmplUtil.keyExtra + TmplUtil.keyExtra, douImpTax);
-													pdSet.put("YDRZE" + TmplUtil.keyExtra, douYDRZE);
-													pdSet.put("YSZE" + TmplUtil.keyExtra, douYSZE);
+													pdSet.put(TF_SalaryTax + TmplUtil.keyExtra + TmplUtil.keyExtra, douSalaryCalTax);
+													pdSet.put(TF_SalaryTax + TmplUtil.keyExtra + TmplUtil.keyExtra + TmplUtil.keyExtra, douSalaryImpTax);
+													pdSet.put("S_YDRZE" + TmplUtil.keyExtra, douSalaryYDRZE);
+													pdSet.put("S_YSZE" + TmplUtil.keyExtra, douSalaryYSZE);
+													
+													pdSet.put(TF_BonusTax + TmplUtil.keyExtra + TmplUtil.keyExtra, douBonusCalTax);
+													pdSet.put(TF_BonusTax + TmplUtil.keyExtra + TmplUtil.keyExtra + TmplUtil.keyExtra, douBonusImpTax);
+													pdSet.put("B_YDRZE" + TmplUtil.keyExtra, douBonusYDRZE);
+													pdSet.put("B_YSZE" + TmplUtil.keyExtra, douBonusYSZE);
 												}
 												List<String> listUserCode = new ArrayList<String>();
 												for(PageData pdSet : getCommonBaseAndList.getList()){
 													String pdSetUSER_CODE = pdSet.getString("USER_CODE");
 													if(!listUserCode.contains(pdSetUSER_CODE)){
-														BigDecimal douCalTax = new BigDecimal(pdSet.get(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra + TmplUtil.keyExtra).toString());
-														BigDecimal douImpTax = new BigDecimal(pdSet.get(TableFeildTaxCanNotHaveFormula + TmplUtil.keyExtra + TmplUtil.keyExtra + TmplUtil.keyExtra).toString());
-														BigDecimal douYSZE = new BigDecimal(pdSet.get("YSZE" + TmplUtil.keyExtra).toString());
-														BigDecimal douYDRZE = new BigDecimal(pdSet.get("YDRZE" + TmplUtil.keyExtra).toString());
-														if(!(douCalTax.compareTo(douImpTax) == 0)){
-															strCalculationMessage += "员工编号:" + pdSetUSER_CODE 
-																	+ " 员工姓名:" + pdSet.getString("USER_NAME")
-																	+ " 应税总额:" + douYSZE 
-																	+ " 已导入纳税额:" + (douYDRZE.subtract(douImpTax)) 
-																	+ " 本次导入纳税额:" + douImpTax 
-																	+ " 实际应导入纳税额:" + douCalTax + "     ";//"<br/>";
+														BigDecimal douSalaryCalTax = new BigDecimal(pdSet.get(TF_SalaryTax + TmplUtil.keyExtra + TmplUtil.keyExtra).toString());
+														BigDecimal douSalaryImpTax = new BigDecimal(pdSet.get(TF_SalaryTax + TmplUtil.keyExtra + TmplUtil.keyExtra + TmplUtil.keyExtra).toString());
+														BigDecimal douSalaryYSZE = new BigDecimal(pdSet.get("S_YSZE" + TmplUtil.keyExtra).toString());
+														BigDecimal douSalaryYDRZE = new BigDecimal(pdSet.get("S_YDRZE" + TmplUtil.keyExtra).toString());
+
+														BigDecimal douBonusCalTax = new BigDecimal(pdSet.get(TF_BonusTax + TmplUtil.keyExtra + TmplUtil.keyExtra).toString());
+														BigDecimal douBonusImpTax = new BigDecimal(pdSet.get(TF_BonusTax + TmplUtil.keyExtra + TmplUtil.keyExtra + TmplUtil.keyExtra).toString());
+														BigDecimal douBonusYSZE = new BigDecimal(pdSet.get("B_YSZE" + TmplUtil.keyExtra).toString());
+														BigDecimal douBonusYDRZE = new BigDecimal(pdSet.get("B_YDRZE" + TmplUtil.keyExtra).toString());
+
+														if(!(douSalaryCalTax.compareTo(douSalaryImpTax) == 0 && douBonusCalTax.compareTo(douBonusImpTax) == 0)){
+															strCalculationMessage += " 员工编号:" + pdSetUSER_CODE + " 员工姓名:" + pdSet.getString("USER_NAME");
+															if(!(douSalaryCalTax.compareTo(douSalaryImpTax) == 0)){
+																strCalculationMessage += " 工资： "
+																		+ " 应税总额:" + douSalaryYSZE 
+																		+ " 已导入纳税额:" + (douSalaryYDRZE.subtract(douSalaryImpTax)) 
+																		+ " 本次导入纳税额:" + douSalaryImpTax 
+																		+ " 实际应导入纳税额:" + douSalaryCalTax + "     ";
+															}
+															if(!(douBonusCalTax.compareTo(douBonusImpTax) == 0)){
+																strCalculationMessage += " 奖金： "
+																		+ " 应税总额:" + douBonusYSZE 
+																		+ " 已导入纳税额:" + (douBonusYDRZE.subtract(douBonusImpTax)) 
+																		+ " 本次导入纳税额:" + douBonusImpTax 
+																		+ " 实际应导入纳税额:" + douBonusCalTax + "  <br/>";
+															}
 														}
 													}
 													listUserCode.add(pdSetUSER_CODE);
@@ -1244,20 +1283,6 @@ public class StaffDetailController extends BaseController {
 														SelectedTableNo, SelectedCustCol7, SelectedDepartCode, emplGroupType,
 														getCommonBaseAndList, strHelpful);
 											}
-											/*
-											List<PageData> dataCalculation = getCalculation(SelectedTableNo, SelectedCustCol7, SelectedDepartCode, emplGroupType,
-															listAddSalary, listAddBonus);
-											if(dataCalculation!=null){
-												for(PageData each : dataCalculation){
-													each.put("SERIAL_NO", "");
-													Common.setModelDefault(each, map_HaveColumnsList, map_SetColumnsList);
-													each.put("CanOperate", strHelpful);
-												}
-											}
-											//此处执行集合添加 
-											staffdetailService.batchUpdateDatabase(dataCalculation);
-											commonBase.setCode(0);
-											commonBase.setMessage(strErrorMessage);*/
 										}
 									}
 								}
@@ -1265,10 +1290,6 @@ public class StaffDetailController extends BaseController {
 								commonBase.setCode(-1);
 								commonBase.setMessage("TranslateUtil");
 							}
-						}
-					}
-				}
-			}
 		}
 		ModelAndView mv = this.getModelAndView();
 		mv.setViewName("common/uploadExcel");
@@ -1281,7 +1302,6 @@ public class StaffDetailController extends BaseController {
 		mv.addObject("ShowDataDepartCode", ShowDataDepartCode);
 		mv.addObject("ShowDataCustCol7", ShowDataCustCol7);
 		mv.addObject("ShowDataBillCode", ShowDataBillCode);
-		mv.addObject("SalaryOrBonus", SalaryOrBonus);
 		mv.addObject("SystemDateTime", SystemDateTime);
 		mv.addObject("commonBaseCode", commonBase.getCode());
 		mv.addObject("commonMessage", commonBase.getMessage());
@@ -1295,59 +1315,61 @@ public class StaffDetailController extends BaseController {
 		if(listData!=null && listData.size()>0){
 			Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(SelectedTableNo, SelectedDepartCode, SelectedCustCol7, tmplconfigService);
 			Map<String, TableColumns> map_HaveColumnsList = Common.GetHaveColumnsList(SelectedTableNo, tmplconfigService);
-			//个税字段，不能定义公式
-			if(map_SetColumnsList.containsKey(TableFeildTaxCanNotHaveFormula.toUpperCase())){
-				TmplConfigDetail col = map_SetColumnsList.get(TableFeildTaxCanNotHaveFormula.toUpperCase());
-				if(col.getCOL_FORMULA()!=null && !col.getCOL_FORMULA().trim().equals("")){
-					commonBase.setCode(2);
-					commonBase.setMessage("应交税金字段不能定义公式，请联系管理员修改！");
-					retCommonBaseAndList.setCommonBase(commonBase);
-					return retCommonBaseAndList;
-				}
+			//税字段，不能定义公式
+			if(!(TF_SalaryTax!=null && map_SetColumnsList.containsKey(TF_SalaryTax.toUpperCase())
+					&& TF_BonusTax!=null && map_SetColumnsList.containsKey(TF_BonusTax.toUpperCase()))){
+				commonBase.setCode(2);
+				commonBase.setMessage("配置表里定义列（个人所得税、全年一次性奖金税）必须在结构配置表中，请联系管理员修改！");
+				retCommonBaseAndList.setCommonBase(commonBase);
+				return retCommonBaseAndList;
+			}
+			if(TF_SalaryTax.toUpperCase().equals(TF_BonusTax.toUpperCase())
+					|| TF_SalarySelf.toUpperCase().equals(TF_BonusTax.toUpperCase())
+					|| TF_SalarySelf.toUpperCase().equals(TF_SalaryTax.toUpperCase())
+					|| TF_SalarySelf.toUpperCase().equals(TF_BonusSelf.toUpperCase())
+					|| TF_BonusSelf.toUpperCase().equals(TF_BonusTax.toUpperCase())
+					|| TF_BonusSelf.toUpperCase().equals(TF_SalaryTax.toUpperCase())){
+				commonBase.setCode(2);
+				commonBase.setMessage("配置表里定义列（应发合计、个人所得税、全年一次性奖金税、全年一次性奖金）不能定义为相同列，请联系管理员修改！");
+				retCommonBaseAndList.setCommonBase(commonBase);
+				return retCommonBaseAndList;
+			} 
+			TmplConfigDetail colTableFeildSalaryTax = map_SetColumnsList.get(TF_SalaryTax.toUpperCase());
+			if(colTableFeildSalaryTax.getCOL_FORMULA()!=null && !colTableFeildSalaryTax.getCOL_FORMULA().trim().equals("")){
+				commonBase.setCode(2);
+				commonBase.setMessage("个人所得税字段不能定义公式，请联系管理员修改！");
+				retCommonBaseAndList.setCommonBase(commonBase);
+				return retCommonBaseAndList;
+			}
+			TmplConfigDetail colTableFeildBonusTax = map_SetColumnsList.get(TF_BonusTax.toUpperCase());
+			if(colTableFeildBonusTax.getCOL_FORMULA()!=null && !colTableFeildBonusTax.getCOL_FORMULA().trim().equals("")){
+				commonBase.setCode(2);
+				commonBase.setMessage("全年一次性奖金税字段不能定义公式，请联系管理员修改！");
+				retCommonBaseAndList.setCommonBase(commonBase);
+				return retCommonBaseAndList;
 			}
 			
-			List<PageData> listAddSalary = new ArrayList<PageData>();
-			List<PageData> listAddBonus = new ArrayList<PageData>();
 	        for(PageData item : listData){
 	         	item.put("CanOperate", strHelpful);
           	    item.put("TableName", TableNameBackup);
 	       	    Common.setModelDefault(item, map_HaveColumnsList, map_SetColumnsList, MustNotEditList);
-
-				String strDATA_TYPE = item.getString("DATA_TYPE");
-				if(!(strDATA_TYPE!=null && (!strDATA_TYPE.trim().equals("")))){
-					commonBase.setCode(2);
-					commonBase.setMessage(Message.RowDataTypeMustInput);
-					retCommonBaseAndList.setCommonBase(commonBase);
-					return retCommonBaseAndList;
-				}
-				if(!(strDATA_TYPE.trim().equals(StaffDataType.Salary.getNameKey()) || strDATA_TYPE.trim().equals(StaffDataType.Bonus.getNameKey()))){
-					commonBase.setCode(2);
-					commonBase.setMessage(Message.RowDataTypeInputError);
-					retCommonBaseAndList.setCommonBase(commonBase);
-					return retCommonBaseAndList;
-				}
-				if(strDATA_TYPE.equals(StaffDataType.Salary.getNameKey())){
-					listAddSalary.add(item);
-				}
-				if(strDATA_TYPE.equals(StaffDataType.Bonus.getNameKey())){
-					listAddBonus.add(item);
-				}
 	        }
 			PageData getQueryFeildPd = new PageData();
 			getQueryFeildPd.put("USER_GROP", emplGroupType);
 			getQueryFeildPd.put("DEPT_CODE", SelectedDepartCode);
 			getQueryFeildPd.put("CUST_COL7", SelectedCustCol7);
-			String QueryFeild = QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList);
+			String QueryFeildPart = QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList);
 			if(!(SelectedDepartCode != null && !SelectedDepartCode.trim().equals(""))){
-				QueryFeild += " and 1 != 1 ";
+				QueryFeildPart += " and 1 != 1 ";
 			}
 			if(!(SelectedCustCol7 != null && !SelectedCustCol7.trim().equals(""))){
-				QueryFeild += " and 1 != 1 ";
+				QueryFeildPart += " and 1 != 1 ";
 			}
 			if(!(emplGroupType!=null && !emplGroupType.trim().equals(""))){
-				QueryFeild += " and 1 != 1 ";
+				QueryFeildPart += " and 1 != 1 ";
 			}
-			QueryFeild += " and BUSI_DATE = '" + SystemDateTime + "' ";
+			String QueryFeildBusiDate = " and BUSI_DATE = '" + SystemDateTime + "' ";
+			String QueryFeildBusiYear = " and BUSI_DATE like '" + CheckSystemDateTime.getSystemDateTimeYear(SystemDateTime) + "%' ";
 			String strSumInvalidNotInsert = QueryFeildString.getBillCodeNotInSumInvalidDetail(TableNameSummy);
 			
 	        PageData SalaryExemptionTaxPd = new PageData();
@@ -1360,29 +1382,37 @@ public class StaffDetailController extends BaseController {
 	        BonusPd.put("KEY_CODE", SysConfigKeyCode.StaffFormulaBonus);
 	        String configFormulaBonus = sysConfigManager.getSysConfigByKey(BonusPd);
 
-			//String sqlRetSelectSalary = Common.GetRetSelectColoumns(map_HaveColumnsList, 
-			//		SelectedTableNo, TableNameBackup, SelectedDepartCode, 
-			//		TableFeildTaxCanNotHaveFormula, TmplUtil.keyExtra, keyListBase, 
-			//		tmplconfigService);
 			String sqlRetSelect = Common.GetRetSelectNotCalculationColoumns(TableNameBackup, 
-					TableFeildTaxCanNotHaveFormula, TmplUtil.keyExtra, keyListBase, 
+					TF_SalaryTax, TF_BonusTax, TmplUtil.keyExtra, keyListBase, 
 					tmplconfigService);
 			List<String> listSalaryFeildUpdate = Common.GetSalaryFeildUpdate(SelectedTableNo, TableNameBackup, SelectedDepartCode, SelectedCustCol7, 
 					tmplconfigService);
 
-			String sqlSumByUserCodeSalary = Common.GetRetSumByUserColoumns(TableNameBackup, QueryFeild + strSumInvalidNotInsert, configFormulaSalary, salaryExemptionTax, TableFeildSumOper, TableFeildTaxCanNotHaveFormula, StaffDataType.Salary.getNameKey(), tmplconfigService);
-			String sqlSumByUserCodeBonus = Common.GetRetSumByUserColoumns(TableNameBackup, QueryFeild + strSumInvalidNotInsert, configFormulaBonus, "0", TableFeildSumOper, TableFeildTaxCanNotHaveFormula, StaffDataType.Bonus.getNameKey(), tmplconfigService);
+			String sqlSumByUserCodeSalary = Common.GetRetSumByUserColoumnsSalary(TableNameBackup, 
+					QueryFeildPart + QueryFeildBusiDate + strSumInvalidNotInsert, salaryExemptionTax, 
+					configFormulaSalary, TableFeildSalaryTaxConfigGradeOper, TableFeildSalaryTaxConfigSumOper, 
+					TF_SalaryTax, TableFeildSalaryTaxSelfSumOper,
+					tmplconfigService);
+			String sqlSumByUserCodeBonus = Common.GetRetSumByUserColoumnsBonus(TableNameBackup, 
+					QueryFeildPart + QueryFeildBusiYear + strSumInvalidNotInsert, salaryExemptionTax, 
+					configFormulaBonus, TableFeildBonusTaxConfigGradeOper, TableFeildBonusTaxConfigSumOper, 
+					TF_BonusTax, TableFeildBonusTaxSelfSumOper,
+					tmplconfigService);
 			
 			PageData pdInsetBackup = new PageData();
-			pdInsetBackup.put("QueryFeild", QueryFeild);
+			pdInsetBackup.put("QueryFeild", QueryFeildPart + QueryFeildBusiYear);
 			String strInsertFeild = QueryFeildString.tranferListValueToSelectString(map_HaveColumnsList);
 			pdInsetBackup.put("FeildList", strInsertFeild);
 			pdInsetBackup.put("SumInvalidNotInsert", strSumInvalidNotInsert);
 			
-			List<PageData> dataCalculation = staffdetailService.getDataCalculation(TableNameBackup, TableFeildTaxCanNotHaveFormula, TmplUtil.keyExtra,
+			List<PageData> dataCalculation = staffdetailService.getDataCalculation(TableNameBackup, TmplUtil.keyExtra,
+					TF_SalarySelf, TF_SalaryTax, TF_BonusSelf, TF_BonusTax,
+					TableFeildSalaryTaxConfigGradeOper, TableFeildBonusTaxConfigGradeOper,
+					TableFeildSalaryTaxConfigSumOper, TableFeildBonusTaxConfigSumOper,
+					TableFeildSalaryTaxSelfSumOper, TableFeildBonusTaxSelfSumOper,
 					pdInsetBackup,
-					listSalaryFeildUpdate, sqlRetSelect, listAddSalary, listAddBonus,
-					sqlSumByUserCodeSalary, sqlSumByUserCodeBonus, TableFeildSumOper);
+					listSalaryFeildUpdate, sqlRetSelect, listData,
+					sqlSumByUserCodeSalary, sqlSumByUserCodeBonus);
 			retCommonBaseAndList.setList(dataCalculation);
 		}
 		retCommonBaseAndList.setCommonBase(commonBase);

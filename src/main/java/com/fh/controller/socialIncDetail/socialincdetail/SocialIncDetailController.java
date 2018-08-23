@@ -50,6 +50,7 @@ import com.fh.service.fhoa.department.impl.DepartmentService;
 import com.fh.service.socialIncDetail.socialincdetail.SocialIncDetailManager;
 import com.fh.service.socialincsummy.socialincsummy.SocialIncSummyManager;
 import com.fh.service.sysConfig.sysconfig.SysConfigManager;
+import com.fh.service.sysDeptLtdTime.sysDeptLtdTime.impl.SysDeptLtdTimeService;
 import com.fh.service.sysSealedInfo.syssealedinfo.impl.SysSealedInfoService;
 import com.fh.service.system.dictionaries.impl.DictionariesService;
 import com.fh.service.system.user.UserManager;
@@ -84,6 +85,8 @@ public class SocialIncDetailController extends BaseController {
 	private DepartmentService departmentService;
 	@Resource(name = "userService")
 	private UserManager userService;
+	@Resource(name="sysDeptLtdTimeService")
+	private SysDeptLtdTimeService sysDeptLtdTimeService;
 	
 	//表名
 	String TableNameDetail = "tb_social_inc_detail";
@@ -340,7 +343,7 @@ public class SocialIncDetailController extends BaseController {
 		String oper = getPd.getString("oper");
 		//当前区间
 		String SystemDateTime = getPd.getString("SystemDateTime");
-		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager);
+		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager, false);
 		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(mesDateTime);
@@ -354,6 +357,12 @@ public class SocialIncDetailController extends BaseController {
 		if(strGetCheckMustSelected!=null && !strGetCheckMustSelected.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(strGetCheckMustSelected);
+			return commonBase;
+		}
+		String mesSysDeptLtdTime = CheckSystemDateTime.CheckSysDeptLtdTime(SelectedDepartCode, TypeCodeDetail, sysDeptLtdTimeService);
+		if(mesSysDeptLtdTime!=null && !mesSysDeptLtdTime.trim().equals("")){
+			commonBase.setCode(2);
+			commonBase.setMessage(mesSysDeptLtdTime);
 			return commonBase;
 		}
 
@@ -442,7 +451,7 @@ public class SocialIncDetailController extends BaseController {
 		String ShowDataBillCode = getPd.getString("ShowDataBillCode");
 		//当前区间
 		String SystemDateTime = getPd.getString("SystemDateTime");
-		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager);
+		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager, false);
 		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(mesDateTime);
@@ -456,6 +465,12 @@ public class SocialIncDetailController extends BaseController {
 		if(strGetCheckMustSelected!=null && !strGetCheckMustSelected.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(strGetCheckMustSelected);
+			return commonBase;
+		}
+		String mesSysDeptLtdTime = CheckSystemDateTime.CheckSysDeptLtdTime(SelectedDepartCode, TypeCodeDetail, sysDeptLtdTimeService);
+		if(mesSysDeptLtdTime!=null && !mesSysDeptLtdTime.trim().equals("")){
+			commonBase.setCode(2);
+			commonBase.setMessage(mesSysDeptLtdTime);
 			return commonBase;
 		}
 
@@ -524,7 +539,7 @@ public class SocialIncDetailController extends BaseController {
 		String ShowDataBillCode = getPd.getString("ShowDataBillCode");
 		//当前区间
 		String SystemDateTime = getPd.getString("SystemDateTime");
-		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager);
+		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager, false);
 		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(mesDateTime);
@@ -538,6 +553,12 @@ public class SocialIncDetailController extends BaseController {
 		if(strGetCheckMustSelected!=null && !strGetCheckMustSelected.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(strGetCheckMustSelected);
+			return commonBase;
+		}
+		String mesSysDeptLtdTime = CheckSystemDateTime.CheckSysDeptLtdTime(SelectedDepartCode, TypeCodeDetail, sysDeptLtdTimeService);
+		if(mesSysDeptLtdTime!=null && !mesSysDeptLtdTime.trim().equals("")){
+			commonBase.setCode(2);
+			commonBase.setMessage(mesSysDeptLtdTime);
 			return commonBase;
 		}
 		
@@ -600,7 +621,7 @@ public class SocialIncDetailController extends BaseController {
 		String ShowDataBillCode = getPd.getString("ShowDataBillCode");
 		//当前区间
 		String SystemDateTime = getPd.getString("SystemDateTime");
-		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager);
+		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager, false);
 		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(mesDateTime);
@@ -614,6 +635,12 @@ public class SocialIncDetailController extends BaseController {
 		if(strGetCheckMustSelected!=null && !strGetCheckMustSelected.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(strGetCheckMustSelected);
+			return commonBase;
+		}
+		String mesSysDeptLtdTime = CheckSystemDateTime.CheckSysDeptLtdTime(SelectedDepartCode, TypeCodeDetail, sysDeptLtdTimeService);
+		if(mesSysDeptLtdTime!=null && !mesSysDeptLtdTime.trim().equals("")){
+			commonBase.setCode(2);
+			commonBase.setMessage(mesSysDeptLtdTime);
 			return commonBase;
 		}
 
@@ -684,12 +711,13 @@ public class SocialIncDetailController extends BaseController {
 		String ShowDataBillCode = getPd.getString("ShowDataBillCode");
 		//当前区间
 		String SystemDateTime = getPd.getString("SystemDateTime");
-		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager);
+		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager, false);
 		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(mesDateTime);
 		}
 
+	if(commonBase.getCode()==-1){
 		//判断选择为必须选择的
 		String strGetCheckMustSelected = CheckMustSelectedAndSame(SelectedCustCol7, ShowDataCustCol7, 
 				SelectedDepartCode, ShowDataDepartCode, DepartTreeSource,
@@ -698,6 +726,15 @@ public class SocialIncDetailController extends BaseController {
 			commonBase.setCode(2);
 			commonBase.setMessage(strGetCheckMustSelected);
 		}
+	}
+	if(commonBase.getCode()==-1){
+		String mesSysDeptLtdTime = CheckSystemDateTime.CheckSysDeptLtdTime(SelectedDepartCode, TypeCodeDetail, sysDeptLtdTimeService);
+		if(mesSysDeptLtdTime!=null && !mesSysDeptLtdTime.trim().equals("")){
+			commonBase.setCode(2);
+			commonBase.setMessage(mesSysDeptLtdTime);
+		}
+	}
+	if(commonBase.getCode()==-1){
 		if(!SelectedBillCode.equals(SelectBillCodeFirstShow) && commonBase.getCode() != 2){
 			String checkState = CheckState(SelectedBillCode, SystemDateTime,
 					SelectedCustCol7, SelectedDepartCode, null, "SERIAL_NO", TmplUtil.keyExtra);
@@ -706,6 +743,7 @@ public class SocialIncDetailController extends BaseController {
 				commonBase.setMessage(checkState);
 			}
 		}
+	}
 		
 		ModelAndView mv = this.getModelAndView();
 		mv.setViewName("common/uploadExcel");
@@ -756,41 +794,56 @@ public class SocialIncDetailController extends BaseController {
 		String ShowDataBillCode = getPd.getString("ShowDataBillCode");
 		//当前区间
 		String SystemDateTime = getPd.getString("SystemDateTime");
-		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager);
+		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager, false);
 		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(mesDateTime);
-		} else {
-			//判断选择为必须选择的
-			String strGetCheckMustSelected = CheckMustSelectedAndSame(SelectedCustCol7, ShowDataCustCol7, 
-					SelectedDepartCode, ShowDataDepartCode, DepartTreeSource,
-					SelectedBillCode, ShowDataBillCode);
-			if(strGetCheckMustSelected!=null && !strGetCheckMustSelected.trim().equals("")){
+		}
+	if(commonBase.getCode()==-1){
+		//判断选择为必须选择的
+		String strGetCheckMustSelected = CheckMustSelectedAndSame(SelectedCustCol7, ShowDataCustCol7, 
+				SelectedDepartCode, ShowDataDepartCode, DepartTreeSource,
+				SelectedBillCode, ShowDataBillCode);
+		if(strGetCheckMustSelected!=null && !strGetCheckMustSelected.trim().equals("")){
+			commonBase.setCode(2);
+			commonBase.setMessage(strGetCheckMustSelected);
+		} 
+	}
+	if(commonBase.getCode()==-1){
+		String mesSysDeptLtdTime = CheckSystemDateTime.CheckSysDeptLtdTime(SelectedDepartCode, TypeCodeDetail, sysDeptLtdTimeService);
+		if(mesSysDeptLtdTime!=null && !mesSysDeptLtdTime.trim().equals("")){
+			commonBase.setCode(2);
+			commonBase.setMessage(mesSysDeptLtdTime);
+		}
+	}
+	if(commonBase.getCode()==-1){
+		if(!SelectedBillCode.equals(SelectBillCodeFirstShow)){
+			String checkState = CheckState(SelectedBillCode, SystemDateTime,
+					SelectedCustCol7, SelectedDepartCode, null, "SERIAL_NO", TmplUtil.keyExtra);
+			if(checkState!=null && !checkState.trim().equals("")){
 				commonBase.setCode(2);
-				commonBase.setMessage(strGetCheckMustSelected);
-			} else {
-				if(!SelectedBillCode.equals(SelectBillCodeFirstShow)){
-					String checkState = CheckState(SelectedBillCode, SystemDateTime,
-							SelectedCustCol7, SelectedDepartCode, null, "SERIAL_NO", TmplUtil.keyExtra);
-					if(checkState!=null && !checkState.trim().equals("")){
-						commonBase.setCode(2);
-						commonBase.setMessage(checkState);
-					}
-				}
-				if(commonBase.getCode() != 2){
-					if(!(SystemDateTime!=null && !SystemDateTime.trim().equals("")
-							&& SelectedDepartCode!=null && !SelectedDepartCode.trim().equals(""))){
-						commonBase.setCode(2);
-						commonBase.setMessage("当前区间和当前单位不能为空！");
-					} else {
-						String strHelpful = QueryFeildString.getBillCodeNotInSumInvalidDetail(TableNameSummy);
-						if(!SelectedBillCode.equals(SelectBillCodeFirstShow)){
-							strHelpful += QueryFeildString.getNotReportBillCode(TypeCodeTransfer, SystemDateTime, SelectedCustCol7, SelectedDepartCode);
-						}
-						if(!(strHelpful != null && !strHelpful.trim().equals(""))){
-							commonBase.setCode(2);
-							commonBase.setMessage(Message.GetHelpfulDetailFalue);
-						} else {
+				commonBase.setMessage(checkState);
+			}
+		}
+	}
+	if(commonBase.getCode()==-1){
+		if(!(SystemDateTime!=null && !SystemDateTime.trim().equals("")
+				&& SelectedDepartCode!=null && !SelectedDepartCode.trim().equals(""))){
+			commonBase.setCode(2);
+			commonBase.setMessage("当前区间和当前单位不能为空！");
+		} 
+	}
+		String strHelpful = QueryFeildString.getBillCodeNotInSumInvalidDetail(TableNameSummy);
+	if(commonBase.getCode()==-1){
+		if(!SelectedBillCode.equals(SelectBillCodeFirstShow)){
+			strHelpful += QueryFeildString.getNotReportBillCode(TypeCodeTransfer, SystemDateTime, SelectedCustCol7, SelectedDepartCode);
+		}
+		if(!(strHelpful != null && !strHelpful.trim().equals(""))){
+			commonBase.setCode(2);
+			commonBase.setMessage(Message.GetHelpfulDetailFalue);
+		}
+	}
+		if(commonBase.getCode()==-1){
 							Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(TypeCodeDetail, SelectedDepartCode, SelectedCustCol7, tmplconfigService);
 							Map<String, TableColumns> map_HaveColumnsList = Common.GetHaveColumnsList(TypeCodeDetail, tmplconfigService);
 							Map<String, Object> DicList = Common.GetDicList(TypeCodeDetail, SelectedDepartCode, SelectedCustCol7, 
@@ -972,10 +1025,6 @@ public class SocialIncDetailController extends BaseController {
 									commonBase.setCode(-1);
 									commonBase.setMessage("TranslateUtil");
 								}
-							}
-					}
-				}
-			}
 		}
  
 		ModelAndView mv = this.getModelAndView();

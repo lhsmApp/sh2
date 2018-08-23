@@ -46,6 +46,7 @@ public class QueryFeildString {
 		String TYPE_CODE = "";
 		String BILL_CODE = "";
 		String BILL_STATE = "";
+		String BUSI_TYPE = "";//业务类型 tb_sys_dept_ltd_time
 		if(feildList!=null && feildList.size()>0){
 			if(feildList.contains("BUSI_DATE")){
 				BUSI_DATE = pd.getString("BUSI_DATE");
@@ -91,6 +92,9 @@ public class QueryFeildString {
 			}
 			if(feildList.contains("CHANGE_COL")){
 				CHANGE_COL = pd.getString("CHANGE_COL");
+			}
+			if(feildList.contains("BUSI_TYPE")){
+				BUSI_TYPE = pd.getString("BUSI_TYPE");
 			}
 		}
 		String QueryFeild = "";
@@ -176,6 +180,12 @@ public class QueryFeildString {
 			String strIn = getSqlInString(CHANGE_COL);
 			if(strIn!=null && !strIn.equals("")){
 				QueryFeild += " and CHANGE_COL in (" + strIn + ") ";
+			}
+		}
+		if(BUSI_TYPE!=null && !BUSI_TYPE.trim().equals("")){
+			String strIn = getSqlInString(BUSI_TYPE);
+			if(strIn!=null && !strIn.equals("")){
+				QueryFeild += " and BUSI_TYPE in (" + strIn + ") ";
 			}
 		}
 		return QueryFeild;

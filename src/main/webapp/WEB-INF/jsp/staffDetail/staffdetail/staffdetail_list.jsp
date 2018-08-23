@@ -602,21 +602,7 @@
     	/**
      	* 导入
      	*/
-    	function importSalaryItems(){
-        	importItems("1");
-        }
-
-    	/**
-     	* 导入
-     	*/
-    	function importBonusItems(){
-        	importItems("2");
-        }
-
-    	/**
-     	* 导入
-     	*/
-    	function importItems(SalaryOrBonus){
+    	function importItems(){
     	    top.jzts();
     	    var diag = new top.Dialog();
     	    diag.Drag=true;
@@ -629,7 +615,6 @@
                +'&ShowDataDepartCode='+ShowDataDepartCode
                +'&ShowDataCustCol7='+ShowDataCustCol7
                + '&ShowDataBillCode='+ShowDataBillCode
-               + '&SalaryOrBonus='+SalaryOrBonus
 	            + '&SystemDateTime='+SystemDateTime;
     	    diag.Width = 300;
     	    diag.Height = 150;
@@ -919,36 +904,15 @@
         	             title : "计算",
         	             cursor : "pointer"
         	         });
-        	if(which == '1' || which == '2'){
-                $(gridBase_selector).navButtonAdd(pagerBase_selector, {
-    				id : "importSalaryItems",
-    				caption : "工资",
-    	             buttonicon : "ace-icon fa fa-cloud-upload",
-    	             onClickButton : importSalaryItems,
-    	             position : "last",
-    	             title : "导入工资",
-    	             cursor : "pointer"
-    	         });
-                 $(gridBase_selector).navButtonAdd(pagerBase_selector, {
-    				id : "importBonusItems",
-    				caption : "奖金",
-    	             buttonicon : "ace-icon fa fa-cloud-upload",
-    	             onClickButton : importBonusItems,
-    	             position : "last",
-    	             title : "导入奖金",
-    	             cursor : "pointer"
-    	         });
-        	} else {
-                $(gridBase_selector).navButtonAdd(pagerBase_selector, {
-    				id : "importSalaryItems",
-    				caption : "导入",
-    	             buttonicon : "ace-icon fa fa-cloud-upload",
-    	             onClickButton : importSalaryItems,
-    	             position : "last",
-    	             title : "导入",
-    	             cursor : "pointer"
-    	         });
-        	}
+            $(gridBase_selector).navButtonAdd(pagerBase_selector, {
+				id : "importItems",
+				caption : "导入",
+	             buttonicon : "ace-icon fa fa-cloud-upload",
+	             onClickButton : importItems,
+	             position : "last",
+	             title : "导入",
+	             cursor : "pointer"
+	         });
             $(gridBase_selector).navButtonAdd(pagerBase_selector, {
     		             caption : "导出",
     		             buttonicon : "ace-icon fa fa-cloud-download",

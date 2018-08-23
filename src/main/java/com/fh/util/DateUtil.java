@@ -23,6 +23,25 @@ public class DateUtil {
 	private final static SimpleDateFormat sdfTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	private final static SimpleDateFormat sdfTimes = new SimpleDateFormat("yyyyMMddHHmmss");
 
+	private final static SimpleDateFormat sdfCurrentDay = new SimpleDateFormat("dd");
+	private final static SimpleDateFormat sdfCurrentHour = new SimpleDateFormat("HH");
+	
+	/**
+	 * 获取dd格式
+	 * @return
+	 */
+	public static String getCurrentDay() {
+		return sdfCurrentDay.format(new Date());
+	}
+	
+	/**
+	 * 获取HH格式
+	 * @return
+	 */
+	public static String getCurrentHour() {
+		return sdfCurrentHour.format(new Date());
+	}
+	
 	/**
 	 * 获取YYYY格式
 	 * @return

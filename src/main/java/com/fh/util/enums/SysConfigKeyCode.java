@@ -61,4 +61,10 @@ public class SysConfigKeyCode {
 	//公积金汇总
 	public static final String HouseFundGRPCond = "HouseFundGRPCond";
 	
+	//
+	//个人所得税列编码
+	public static final String IndividualIncomeTax = "IndividualIncomeTax";
+	//全年一次性奖金税列编码
+	public static final String BonusIncomeTax = "BonusIncomeTax";
+	
 }

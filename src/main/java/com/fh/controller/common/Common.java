@@ -21,7 +21,7 @@ import com.fh.util.PageData;
 import com.fh.util.Tools;
 import com.fh.util.enums.BillState;
 import com.fh.util.enums.DurState;
-import com.fh.util.enums.StaffDataType;
+import com.fh.util.enums.StaffDataType1;
 
 import net.sf.json.JSONArray;
 
@@ -257,11 +257,14 @@ public class Common {
 	}
 	
 	public static String GetRetSelectNotCalculationColoumns(String tableName, 
-			String TableFeildTax, String keyExtra, List<String> keyListBase,
+			String TableFeildSalaryTax, String TableFeildBonusTax, String keyExtra, List<String> keyListBase,
 			TmplConfigManager tmplconfigService) throws Exception{
 		String strRetSelectBonusColoumn = " select * ";
-		if(keyListBase==null || (keyListBase!=null && !keyListBase.contains(TableFeildTax))){
-			strRetSelectBonusColoumn += ", " + TableFeildTax + " " + TableFeildTax + keyExtra;
+		if(keyListBase==null || (keyListBase!=null && !keyListBase.contains(TableFeildSalaryTax))){
+			strRetSelectBonusColoumn += ", " + TableFeildSalaryTax + " " + TableFeildSalaryTax + keyExtra;
+		}
+		if(keyListBase==null || (keyListBase!=null && !keyListBase.contains(TableFeildBonusTax))){
+			strRetSelectBonusColoumn += ", " + TableFeildBonusTax + " " + TableFeildBonusTax + keyExtra;
 		}
 		strRetSelectBonusColoumn += QueryFeildString.getFieldSelectKey(keyListBase, keyExtra);
 		strRetSelectBonusColoumn += " from " + tableName;
@@ -306,21 +309,41 @@ public class Common {
 		return listSalaryFeildCal;
 	}
 	
-	public static String GetRetSumByUserColoumns(String tableName, String QueryFeild, 
-			String configFormula, String salaryExemptionTax, String TableFeildSumOper,
-			String TableFeildTax, String DATA_TYPE, 
+	public static String GetRetSumByUserColoumnsSalary(String tableName, 
+			String QueryFeild, String salaryExemptionTax,
+			String configFormulaSalary, String TableFeildSalaryTaxConfigGradeOper, String TableFeildSalaryTaxConfigSumOper, 
+			String TableFeildSalaryTax, String TableFeildSalaryTaxSelfSumOper,
 			TmplConfigManager tmplconfigService) throws Exception{
 		if(!(salaryExemptionTax!=null && !salaryExemptionTax.trim().equals(""))){
 			salaryExemptionTax = "0";
 		}
-		String strRetSelectSalaryColoumn = " select USER_CODE, " 
-		        + " sum(" + configFormula + ") - " + salaryExemptionTax + " " + TableFeildSumOper + ", "
-				+ " sum(" + TableFeildTax + ") " + TableFeildTax + " "
+		String strRetSelectColoumn = " select USER_CODE, " 
+		        + " sum(" + configFormulaSalary + ") - " + salaryExemptionTax + " " + TableFeildSalaryTaxConfigGradeOper + ", "
+				+ " sum(" + configFormulaSalary + ") - " + salaryExemptionTax + " " + TableFeildSalaryTaxConfigSumOper + ", "
+				+ " sum(" + TableFeildSalaryTax + ") " + TableFeildSalaryTaxSelfSumOper + " "
 				+ " from " + tableName 
-				+ " where DATA_TYPE = '" + DATA_TYPE + "' "
+				+ " where 1 = 1 "
 				+ QueryFeild 
 				+ " group by USER_CODE";
-		return strRetSelectSalaryColoumn;
+		return strRetSelectColoumn;
+	}
+	public static String GetRetSumByUserColoumnsBonus(String tableName, 
+			String QueryFeild, String salaryExemptionTax,
+			String configFormulaBonus, String TableFeildBonusTaxConfigGradeOper, String TableFeildBonusTaxConfigSumOper, 
+			String TableFeildBonusTax, String TableFeildBonusTaxSelfSumOper,
+			TmplConfigManager tmplconfigService) throws Exception{
+		if(!(salaryExemptionTax!=null && !salaryExemptionTax.trim().equals(""))){
+			salaryExemptionTax = "0";
+		}
+		String strRetSelectColoumn = " select USER_CODE, " 
+				+ " ROUND(sum(" + configFormulaBonus + ")/12 - " + salaryExemptionTax + ", 2) " + TableFeildBonusTaxConfigGradeOper + ", "
+				+ " sum(" + configFormulaBonus + ") " + TableFeildBonusTaxConfigSumOper + ", "
+				+ " sum(" + TableFeildBonusTax + ") " + TableFeildBonusTaxSelfSumOper + " "
+				+ " from " + tableName 
+				+ " where 1 = 1 "
+				+ QueryFeild 
+				+ " group by USER_CODE";
+		return strRetSelectColoumn;
 	}
 	
 	/**
@@ -426,8 +449,8 @@ public class Common {
 					if (!ret.toString().trim().equals("")) {
 						ret.deleteCharAt(ret.length()-1);
 					}
-				} else if (dicName.toUpperCase().equals(("DATA_TYPE").toUpperCase())) {
-					for(StaffDataType staffDataType:StaffDataType.values()){
+				} /*else if (dicName.toUpperCase().equals(("DATA_TYPE").toUpperCase())) {
+					for(StaffDataType1 staffDataType:StaffDataType1.values()){
 						ret.append(staffDataType.getNameKey() + ":" + staffDataType.getNameValue());
 						ret.append(';');
 						dicAdd.put(staffDataType.getNameKey(), staffDataType.getNameValue());
@@ -435,7 +458,7 @@ public class Common {
 					if (!ret.toString().trim().equals("")) {
 						ret.deleteCharAt(ret.length()-1);
 					}
-				}
+				}*/
 			}
 		}
 		if (m_dicList!=null && !m_dicList.containsKey(dicName)) {

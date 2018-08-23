@@ -194,8 +194,8 @@
 		<!-- <if test="TransferConfirmDel != null"> -->
 		    delete from <include refid="tableName"></include>
 		    where RPT_DUR = #{TransferConfirmDel.RPT_DUR} 
-		    and BILL_TYPE=#{TransferConfirmDel.BILL_TYPE}
-		    and BILL_OFF=#{TransferConfirmDel.BILL_OFF};
+		    <!-- and BILL_TYPE=#{TransferConfirmDel.BILL_TYPE}
+		    and BILL_OFF=#{TransferConfirmDel.BILL_OFF} -->;
 		<!-- </if> -->
 		<if test="TransferConfirmAdd != null">
 		    <foreach item="item" index="index" collection="TransferConfirmAdd" open=" " separator=" " close=" ">
@@ -207,8 +207,9 @@
 		
 		<if test="TransferCertDel != null">
 			delete from TB_GL_CERT
-			where BILL_CODE in (${TransferCertDel.CanOperateBillCode})
-		    <!-- and BUSI_DATE = #{TransferCertDel.BUSI_DATE} -->;
+			<!-- where BILL_CODE in (${TransferCertDel.CanOperateBillCode}) -->
+		    <!-- and BUSI_DATE = #{TransferCertDel.BUSI_DATE} -->
+		    where BUSI_DATE = #{TransferCertDel.BUSI_DATE};
 		</if>
 		<if test="TransferCertAdd != null">
 		    <foreach item="item" index="index" collection="TransferCertAdd" open=" " separator=" " close=" ">
