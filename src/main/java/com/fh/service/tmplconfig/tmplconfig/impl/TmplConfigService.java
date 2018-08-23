@@ -200,6 +200,14 @@ public class TmplConfigService implements TmplConfigManager{
 		return (String)dao.findForObject("TmplConfigMapper.findTableMappingByRptDurSpecial", nextRptDur);
 	}
 	
+	/**通过期间获取数据，判断是否已经生成过参数配置信息 
+	 * @param pd
+	 * @throws Exception
+	 */
+	public String findCertParmByRptDurSpecial(String nextRptDur)throws Exception{
+		return (String)dao.findForObject("TmplConfigMapper.findCertParmByRptDurSpecial", nextRptDur);
+	}
+	
 	/**
 	 * 根据区间批量生成配置信息
 	 */
@@ -212,6 +220,13 @@ public class TmplConfigService implements TmplConfigManager{
 	 */
 	public void insertTableMappingBatchNextRptDur(PageData pd) throws Exception {
 		dao.update("TmplConfigMapper.insertTableMappingBatchNextRptDur", pd);
+	}
+	
+	/**
+	 * 根据区间批量生成参数配置信息
+	 */
+	public void insertCertParmBatchNextRptDur(PageData pd) throws Exception {
+		dao.update("TmplConfigMapper.insertCertParmBatchNextRptDur", pd);
 	}
 	/**********************************************************************************/
 }

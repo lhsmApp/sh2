@@ -14,8 +14,8 @@ public enum TmplTypeTransfer {
 	
 	TB_GHJYJF_TRANSFER("PZ01","工会教育经费传输表"),
 	TB_DF_TRANSFER("PZ02","党费传输表"),
-	TB_SB_TRANSFER("PZ03","社保传输表"),
-	TB_GJJ_TRANSFER("PZ04","公积金传输表"),
+	TB_SB_TRANSFER("PZ03","特殊社保传输表"),
+	TB_GJJ_TRANSFER("PZ04","特殊公积金传输表"),
 	TB_GJ_TRANSFER("PZ05","个缴传输表"),
 	TB_YFLWF_TRANSFER("PZ06","应付劳务费传输表"),
 	TB_QYNJTQ_TRANSFER("PZ07","企业年金提取传输表"),
