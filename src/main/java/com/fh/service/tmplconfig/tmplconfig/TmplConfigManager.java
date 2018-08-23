@@ -156,6 +156,12 @@ public interface TmplConfigManager{
 	 */
 	public String findTableMappingByRptDurSpecial(String nextRptDur)throws Exception;
 	
+	/**通过期间获取数据，判断是否已经生成过参数配置信息 
+	 * @param pd
+	 * @throws Exception
+	 */
+	public String findCertParmByRptDurSpecial(String nextRptDur)throws Exception;
+	
 	/**
 	 * 根据区间批量生成配置信息
 	 * @param pd
@@ -169,6 +175,13 @@ public interface TmplConfigManager{
 	 * @throws Exception
 	 */
 	public void insertTableMappingBatchNextRptDur(PageData pd) throws Exception;
+	
+	/**
+	 * 根据区间批量生成参数配置信息
+	 * @param pd
+	 * @throws Exception
+	 */
+	public void insertCertParmBatchNextRptDur(PageData pd) throws Exception;
 	/**********************************************************************************/
 }
 
