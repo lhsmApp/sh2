@@ -105,7 +105,7 @@
 													</c:forEach>
 												</select>
 											</span>
-											<span class="pull-left" style="margin-right: 5px;" <c:if test="${pd.departTreeSource=='0'}">hidden</c:if>>
+											<span class="pull-left" style="margin-right: 5px;">
 												<div class="selectTree" id="selectTree" multiMode="true"
 												    allSelectable="false" noGroup="false"></div>
 											    <input id="SelectedDepartCode" type="hidden"></input>
@@ -237,8 +237,7 @@
 			}else if(target.attr('href')=='#voucherMgr'){
 				TabType=2;
 			}
-			$(gridBase_selector).jqGrid('GridUnload'); 
-			SetStructure();
+			tosearch();
 		});
 	});  
 
@@ -443,11 +442,12 @@
 		$(gridBase_selector).jqGrid('GridUnload'); 
 		//前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
 	    jqGridColModel = "[]";
-		
+
 		top.jzts();
 		$.ajax({
 			type: "POST",
 			url: '<%=basePath%>fundsconfirmquery/getShowColModel.do?SelectedTableNo='+which
+                +'&SelectedTabType='+TabType
                 +'&SelectedBusiDate='+$("#SelectedBusiDate").val()
                 +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
                 +'&SelectedCustCol7='+$("#SelectedCustCol7").val(),
@@ -587,13 +587,13 @@
 	/**
 	 * 导出
 	 */
-    function exportItems(){
-		console.log("excel");
-    	window.location.href='<%=basePath%>fundsconfirmquery/excel.do?SelectedTableNo='+which
-        +'&SelectedTabType='+TabType
-        +'&SelectedBusiDate='+$("#SelectedBusiDate").val()
-        +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
-        +'&SelectedCustCol7='+$("#SelectedCustCol7").val();
-    }
+    //function exportItems(){
+	//	console.log("excel");
+    //	window.location.href='<%=basePath%>fundsconfirmquery/excel.do?SelectedTableNo='+which
+    //    +'&SelectedTabType='+TabType
+    //    +'&SelectedBusiDate='+$("#SelectedBusiDate").val()
+    //    +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
+    //    +'&SelectedCustCol7='+$("#SelectedCustCol7").val();
+    //}
 </script>
 </html>

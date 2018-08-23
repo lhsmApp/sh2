@@ -11,7 +11,7 @@ public class SysConfirmInfo {
 //单据类型	BILL_TYPE	"单据类型1合同化工资传输2市场化工资传输3运行人员工资传输4劳务用工传输5劳务人员在建传输6社保传输7公积金传输"	' '	VARCHAR(2)	2		FALSE	FALSE	TRUE
 //状态	STATE	"状态1确认0待确认"	' '	CHAR(1)	1		FALSE	FALSE	TRUE
 //账套	BILL_OFF	账套	' '	VARCHAR(8)	8		FALSE	FALSE	TRUE -->
-
+// CERT_CODE
 	
 	private String BILL_CODE; 
 	private String RPT_DEPT; 
@@ -21,6 +21,13 @@ public class SysConfirmInfo {
 	private String BILL_TYPE; 
 	private String STATE;
 	private String BILL_OFF;
+	private String CERT_CODE;
+	public String getCERT_CODE() {
+		return CERT_CODE;
+	}
+	public void setCERT_CODE(String cERT_CODE) {
+		CERT_CODE = cERT_CODE;
+	}
 	public String getBILL_CODE() {
 		return BILL_CODE;
 	}

@@ -204,9 +204,15 @@
     var InitSelectedDepartCodeOptions;
 	var SelectedBillCodeFirstShow;
 	var InitSelectedBillCodeOptions;
+
+	//当前期间,取自tb_system_config的SystemDateTime字段
+    var SystemDateTime = '';
 	
 	$(document).ready(function () {
 		$(top.hangge());//关闭加载状态
+	    
+		//当前期间,取自tb_system_config的SystemDateTime字段
+	    SystemDateTime = '${SystemDateTime}';
 	    
 		//前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
 	    jqGridColModel = "[]";//此处记得用eval()行数将string转为array
@@ -265,7 +271,8 @@
 		top.jzts();
 		$.ajax({
 		    type: "POST",
-			url: '<%=basePath%>fundsselfsummy/getTypeCodeList.do?SelectedCustCol7='+$("#SelectedCustCol7").val(),
+			url: '<%=basePath%>fundsselfsummy/getTypeCodeList.do?SelectedCustCol7='+$("#SelectedCustCol7").val()
+            + '&SystemDateTime='+SystemDateTime,
 		    dataType:'json',
 			cache: false,
 			success: function(response){
@@ -301,7 +308,8 @@
 		$.ajax({
 		    type: "POST",
 			url: '<%=basePath%>fundsselfsummy/getDepartCodeList.do?SelectedCustCol7='+$("#SelectedCustCol7").val()
-					+'&SelectedTypeCode='+$("#SelectedTypeCode").val(),
+					+'&SelectedTypeCode='+$("#SelectedTypeCode").val()
+    	            + '&SystemDateTime='+SystemDateTime,
 		    dataType:'json',
 			cache: false,
 			success: function(response){
@@ -337,7 +345,8 @@
 		    type: "POST",
 			url: '<%=basePath%>fundsselfsummy/getBillCodeList.do?SelectedCustCol7='+$("#SelectedCustCol7").val()
 			    +'&SelectedTypeCode='+$("#SelectedTypeCode").val()
-                +'&SelectedDepartCode='+$("#SelectedDepartCode").val(),
+                +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
+	            + '&SystemDateTime='+SystemDateTime,
 		    dataType:'json',
 			cache: false,
 			success: function(response){
@@ -385,7 +394,8 @@
         var detailColModel = "[]";
 		$.ajax({
 			type: "GET",
-			url: '<%=basePath%>fundsselfsummy/getFirstDetailColModel.do?',
+			url: '<%=basePath%>fundsselfsummy/getFirstDetailColModel.do?'
+	            + 'SystemDateTime='+SystemDateTime,
 	    	data: {DataCustCol7:BILL_OFF,DataTypeCode:TYPE_CODE,DataBusiDate:BUSI_DATE,DataDeptCode:DEPT_CODE},
 			dataType:'json',
 			cache: false,
@@ -398,7 +408,8 @@
 		            var childGridID = parentRowID + _table;
 		            var childGridPagerID = parentRowID + _pager;
 		            // send the parent row primary key to the server so that we know which grid to show
-		            var childGridURL = '<%=basePath%>fundsselfsummy/getFirstDetailList.do?DetailListBillCode='+BILL_CODE;
+		            var childGridURL = '<%=basePath%>fundsselfsummy/getFirstDetailList.do?DetailListBillCode='+BILL_CODE
+    	            + '&SystemDateTime='+SystemDateTime;
 
 		            // add a table and pager HTML elements to the parent grid row - we will render the child grid here
 		            $('#' + parentRowID).append('<table id=' + childGridID + '></table><div id=' + childGridPagerID + ' class=scroll></div>');
@@ -483,7 +494,8 @@
         var detailColModel = "[]";
 		$.ajax({
 			type: "GET",
-			url: '<%=basePath%>fundsselfsummy/getSecondDetailColModel.do?',
+			url: '<%=basePath%>fundsselfsummy/getSecondDetailColModel.do?'
+	            + 'SystemDateTime='+SystemDateTime,
 	    	data: {DataCustCol7:BILL_OFF,DataTypeCode:TYPE_CODE,DataDeptCode:DEPT_CODE},
 			dataType:'json',
 			cache: false,
@@ -496,7 +508,8 @@
 		            var childGridID = parentRowID + _table;
 		            var childGridPagerID = parentRowID + _pager;
 		            // send the parent row primary key to the server so that we know which grid to show
-		            var childGridURL = '<%=basePath%>fundsselfsummy/getSecondDetailList.do?';
+		            var childGridURL = '<%=basePath%>fundsselfsummy/getSecondDetailList.do?'
+	    	            + 'SystemDateTime='+SystemDateTime;
 		            //childGridURL = childGridURL + "&parentRowID=" + encodeURIComponent(parentRowKey)
                     var listData =new Array();
 				    listData.push(rowData);
@@ -569,7 +582,8 @@
 			url: '<%=basePath%>fundsselfsummy/getShowColModel.do?SelectedCustCol7='+ShowDataCustCol7
                 +'&SelectedTypeCode='+ShowDataTypeCode
                 +'&SelectedDepartCode='+ShowDataDepartCode
-                +'&SelectedBillCode='+ShowDataBillCode,
+                +'&SelectedBillCode='+ShowDataBillCode
+	            + '&SystemDateTime='+SystemDateTime,
 			dataType:'json',
 			cache: false,
 			success: function(response){
@@ -616,7 +630,8 @@
 			url: '<%=basePath%>fundsselfsummy/getPageList.do?SelectedCustCol7='+ShowDataCustCol7
                 +'&SelectedTypeCode='+ShowDataTypeCode
                 +'&SelectedDepartCode='+ShowDataDepartCode
-                +'&SelectedBillCode='+ShowDataBillCode,
+                +'&SelectedBillCode='+ShowDataBillCode
+	            + '&SystemDateTime='+SystemDateTime,
 			datatype: "json",
 			colModel: jqGridColModel,
 			viewrecords: true, 
@@ -752,7 +767,8 @@
 					url: '<%=basePath%>fundsselfsummy/summyBill.do?SelectedCustCol7='+CustCol7
                         +'&SelectedTypeCode='+TypeCode
 	                    +'&SelectedDepartCode='+DepartCode
-	                    +'&SelectedBillCode='+BillCode,
+	                    +'&SelectedBillCode='+BillCode
+	    	            + '&SystemDateTime='+SystemDateTime,
 					dataType:'json',
 					cache: false,
 					success: function(response){
@@ -775,6 +791,7 @@
 				                        +'&SelectedTypeCode='+TypeCode
 					                    +'&SelectedDepartCode='+DepartCode
 					                    +'&SelectedBillCode='+BillCode
+					    	            + '&SystemDateTime='+SystemDateTime
 					                    +'&message='+encodeURIComponent(message),
 									dataType:'json',
 									cache: false,
@@ -806,6 +823,7 @@
 			                        +'&SelectedTypeCode='+TypeCode
 				                    +'&SelectedDepartCode='+DepartCode
 				                    +'&SelectedBillCode='+BillCode
+				    	            + '&SystemDateTime='+SystemDateTime
 				                    +'&message='+encodeURIComponent(message),
 								dataType:'json',
 								cache: false,
@@ -858,7 +876,8 @@
 					top.jzts();
 					$.ajax({
 						type: "POST",
-						url: '<%=basePath%>fundsselfsummy/cancelSummy.do?',
+						url: '<%=basePath%>fundsselfsummy/cancelSummy.do?'
+		    	            + 'SystemDateTime='+SystemDateTime,
 				    	data: {DataRows:JSON.stringify(listData)},
 						dataType:'json',
 						cache: false,

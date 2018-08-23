@@ -189,6 +189,9 @@
 	var ShowDataCustCol7 = "";
 	//前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
     var jqGridColModel;
+
+	//当前期间,取自tb_system_config的SystemDateTime字段
+    var SystemDateTime = '';
     
     function SetStructure(){
 
@@ -201,7 +204,8 @@
 		$(gridBase_selector).jqGrid({
 			url: '<%=basePath%>auditedit/getPageList.do?SelectedTableNo='+which
                 +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
-                +'&SelectedCustCol7='+$("#SelectedCustCol7").val(),
+                +'&SelectedCustCol7='+$("#SelectedCustCol7").val()
+	            + '&SystemDateTime='+SystemDateTime,
 			datatype: "json",
 			colModel: jqGridColModel,
 			//caption: '当前期间：' + SystemDateTime + '， 当前单位：' + DepartName + '',
@@ -219,7 +223,8 @@
             +'&SelectedCustCol7='+$("#SelectedCustCol7").val()
             +'&DepartTreeSource='+DepartTreeSource
             +'&ShowDataDepartCode='+ShowDataDepartCode
-            +'&ShowDataCustCol7='+ShowDataCustCol7,
+            +'&ShowDataCustCol7='+ShowDataCustCol7
+            + '&SystemDateTime='+SystemDateTime,
 			
 			pager: pagerBase_selector,
 			footerrow: true,
@@ -359,6 +364,9 @@
 	
 	$(document).ready(function () {
 		$(top.hangge());//关闭加载状态
+	    
+		//当前期间,取自tb_system_config的SystemDateTime字段
+	    SystemDateTime = '${SystemDateTime}';
 
 		//部门是否是最末层节点，是否显示
 		DepartTreeSource = '${pd.departTreeSource}';
@@ -386,7 +394,8 @@
 			//if(which!='${pd.which}'){
 				window.location.href='<%=basePath%>auditedit/list.do?SelectedTableNo='+which
 	                +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
-	                +'&SelectedCustCol7='+$("#SelectedCustCol7").val();
+	                +'&SelectedCustCol7='+$("#SelectedCustCol7").val()
+	                + '&SystemDateTime='+SystemDateTimes;
 			//}
 		});
 		
@@ -501,7 +510,8 @@
 		                +'&SelectedCustCol7='+$("#SelectedCustCol7").val()
 	                    +'&DepartTreeSource='+DepartTreeSource
 	                    +'&ShowDataDepartCode='+ShowDataDepartCode
-	                    +'&ShowDataCustCol7='+ShowDataCustCol7,
+	                    +'&ShowDataCustCol7='+ShowDataCustCol7
+	                    + '&SystemDateTime='+SystemDateTime,
 				    	data: {DataRows:JSON.stringify(listData)},
 						dataType:'json',
 						cache: false,
@@ -574,7 +584,8 @@ function batchSave(){
 	                +'&SelectedCustCol7='+$("#SelectedCustCol7").val()
                     +'&DepartTreeSource='+DepartTreeSource
                     +'&ShowDataDepartCode='+ShowDataDepartCode
-                    +'&ShowDataCustCol7='+ShowDataCustCol7,
+                    +'&ShowDataCustCol7='+ShowDataCustCol7
+                    + '&SystemDateTime='+SystemDateTime,
 			    	data: {DataRows:JSON.stringify(listData)},
 					dataType:'json',
 					cache: false,
@@ -628,7 +639,8 @@ function importItems(){
    +'&SelectedCustCol7='+$("#SelectedCustCol7").val()
    +'&DepartTreeSource='+DepartTreeSource
    +'&ShowDataDepartCode='+ShowDataDepartCode
-   +'&ShowDataCustCol7='+ShowDataCustCol7;
+   +'&ShowDataCustCol7='+ShowDataCustCol7
+   + '&SystemDateTime='+SystemDateTime;
 	   diag.Width = 300;
 	   diag.Height = 150;
 	   diag.CancelEvent = function(){ //关闭事件
@@ -649,7 +661,8 @@ function exportItems(){
     +'&SelectedCustCol7='+$("#SelectedCustCol7").val()
     +'&DepartTreeSource='+DepartTreeSource
     +'&ShowDataDepartCode='+ShowDataDepartCode
-    +'&ShowDataCustCol7='+ShowDataCustCol7;
+    +'&ShowDataCustCol7='+ShowDataCustCol7
+    + '&SystemDateTime='+SystemDateTime;
 }
 
 /**
@@ -710,14 +723,6 @@ function fn_addSubmit_extend(response, postdata) {
 		ShowDataCustCol7 = $("#SelectedCustCol7").val();
 		$(gridBase_selector).jqGrid('GridUnload'); 
 		SetStructure();
-		//console.log($("#SelectedDepartCode").val());
-		//$(gridBase_selector).jqGrid('setGridParam',{  // 重新加载数据
-		//	url:'<%=basePath%>auditedit/getPageList.do?SelectedTableNo='+which
-        //    +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
-        //    +'&SelectedCustCol7='+$("#SelectedCustCol7").val(),  
-		//	datatype:'json',
-		//      page:1
-		//}).trigger("reloadGrid");
 	}  
 </script>
 </html>

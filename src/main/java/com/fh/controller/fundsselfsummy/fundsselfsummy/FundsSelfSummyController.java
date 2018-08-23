@@ -19,7 +19,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 import com.fh.controller.base.BaseController;
 import com.fh.controller.common.BillCodeUtil;
+import com.fh.controller.common.CheckSystemDateTime;
 import com.fh.controller.common.Common;
+import com.fh.controller.common.Corresponding;
 import com.fh.controller.common.DictsUtil;
 import com.fh.controller.common.Message;
 import com.fh.controller.common.QueryFeildString;
@@ -28,7 +30,6 @@ import com.fh.controller.common.SqlFeildToSave;
 import com.fh.controller.common.SysStruMappingList;
 import com.fh.controller.common.TmplUtil;
 import com.fh.controller.common.TmplVoucherUtil;
-import com.fh.controller.common.VoucherToBillType;
 import com.fh.entity.CertParmConfig;
 import com.fh.entity.ClsVoucherStruFeild;
 import com.fh.entity.CommonBase;
@@ -114,7 +115,7 @@ public class FundsSelfSummyController extends BaseController {
 	String TB_GEN_BUS_DETAIL = "TB_GEN_BUS_DETAIL";
 
 	//当前期间,取自tb_system_config的SystemDateTime字段
-	String SystemDateTime = "";
+	//String SystemDateTime = "";
 	// 查询表的主键字段，作为标准列，jqgrid添加带__列，mybaits获取带__列
 	private List<String> keyListBase = Arrays.asList("BILL_CODE", "BUSI_DATE", "TYPE_CODE", "DEPT_CODE", "BILL_OFF");
 	List<String> SumFieldBill = Arrays.asList("BILL_CODE", "BUSI_DATE", "TYPE_CODE", "DEPT_CODE", "BILL_OFF");
@@ -151,7 +152,7 @@ public class FundsSelfSummyController extends BaseController {
 		ModelAndView mv = this.getModelAndView();
 		mv.setViewName("fundsselfsummy/fundsselfsummy/fundsselfsummy_list");
 		//当前期间,取自tb_system_config的SystemDateTime字段
-		SystemDateTime = sysConfigManager.currentSection(getPd);
+		String SystemDateTime = sysConfigManager.currentSection(getPd);
 		mv.addObject("SystemDateTime", SystemDateTime.trim());
 
 		//BILL_OFF FMISACC 帐套字典
@@ -230,6 +231,8 @@ public class FundsSelfSummyController extends BaseController {
 		String SelectedTypeCode = getPd.getString("SelectedTypeCode");
 		//单位
 		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
+		//当前区间
+		String SystemDateTime = getPd.getString("SystemDateTime");
 		
 		PageData getQueryFeildPd = new PageData();
 		getQueryFeildPd.put("BILL_STATE", BillState.Normal.getNameKey());
@@ -284,6 +287,8 @@ public class FundsSelfSummyController extends BaseController {
 		//String SelectedDepartCode = getPd.getString("SelectedDepartCode");
 		//单号
 		//String SelectedBillCode = getPd.getString("SelectedBillCode");
+		//当前区间
+		String SystemDateTime = getPd.getString("SystemDateTime");
 
 		TmplVoucherUtil tmplVoucherUtil = new TmplVoucherUtil(sysTableMappingService, sysStruMappingService, tmplconfigService, 
 				tmplconfigdictService, dictionariesService, departmentService, userService, keyListBase);
@@ -308,6 +313,8 @@ public class FundsSelfSummyController extends BaseController {
 		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
 		//凭证字典
 		String SelectedTypeCode = getPd.getString("SelectedTypeCode");
+		//当前区间
+		String SystemDateTime = getPd.getString("SystemDateTime");
 		
 		PageData pdTransfer = setTransferPd(getPd);
 		pdTransfer.put("TableName", TB_GEN_BUS_SUMMY_BILL);
@@ -353,8 +360,10 @@ public class FundsSelfSummyController extends BaseController {
 		String DataBusiDate = getPd.getString("DataBusiDate");
 		//单位
 		//String DataDeptCode = getPd.getString("DataDeptCode");
+		//当前区间
+		String SystemDateTime = getPd.getString("SystemDateTime");
 		
-		List<String> SumFieldDetail = getGroupSummyField(DataTypeCode, DataCustCol7, DataBusiDate, DeptCodeSumGroupField, false);
+		List<String> SumFieldDetail = getGroupSummyField(DataTypeCode, DataCustCol7, DataBusiDate, DeptCodeSumGroupField, false, SystemDateTime);
 
 		TmplVoucherUtil tmplVoucherUtil = new TmplVoucherUtil(sysTableMappingService, sysStruMappingService, tmplconfigService, 
 				tmplconfigdictService, dictionariesService, departmentService, userService, SumFieldDetail);
@@ -383,8 +392,10 @@ public class FundsSelfSummyController extends BaseController {
 		String DataBusiDate = getPd.getString("DataBusiDate");
 		//单位
 		//String DataDeptCode = getPd.getString("DataDeptCode");
+		//当前区间
+		String SystemDateTime = getPd.getString("SystemDateTime");
 		
-		List<String> SumFieldDetail = getGroupSummyField(DataTypeCode, DataCustCol7, DataBusiDate, DeptCodeSumGroupField, false);
+		List<String> SumFieldDetail = getGroupSummyField(DataTypeCode, DataCustCol7, DataBusiDate, DeptCodeSumGroupField, false, SystemDateTime);
 		String strBillCode = getPd.getString("DetailListBillCode");
 		
 		PageData pdCode = new PageData();
@@ -418,6 +429,8 @@ public class FundsSelfSummyController extends BaseController {
 		String DataTypeCode = getPd.getString("DataTypeCode");
 		//单位
 		//String DataDeptCode = getPd.getString("DataDeptCode");
+		//当前区间
+		String SystemDateTime = getPd.getString("SystemDateTime");
 
 		TmplVoucherUtil tmplVoucherUtil = new TmplVoucherUtil(sysTableMappingService, sysStruMappingService, tmplconfigService, 
 				tmplconfigdictService, dictionariesService, departmentService, userService, null);
@@ -450,6 +463,9 @@ public class FundsSelfSummyController extends BaseController {
 		String TYPE_CODE = pdGet.getString("TYPE_CODE" + TmplUtil.keyExtra);
 		//业务区间
 		String BUSI_DATE = pdGet.getString("BUSI_DATE" + TmplUtil.keyExtra);
+		//当前区间
+		String SystemDateTime = getPd.getString("SystemDateTime");
+
 		List<String> SumFieldDetail = getGroupDetailField(TYPE_CODE, CUST_COL7, BUSI_DATE, DeptCodeSumGroupField, false);
 		List<String> listTransferSumFieldDetail = new ArrayList<String>();
 
@@ -502,6 +518,14 @@ public class FundsSelfSummyController extends BaseController {
 		String SelectedTypeCode = getPd.getString("SelectedTypeCode");
 		//单位
 		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
+		//当前区间
+		String SystemDateTime = getPd.getString("SystemDateTime");
+		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager);
+		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
+			commonBase.setCode(2);
+			commonBase.setMessage(mesDateTime);
+			return commonBase;
+		}
 
 		//判断选择为必须选择的
 		String strGetCheckMustSelected = CheckMustSelectedAndSame(SelectedCustCol7, SelectedTypeCode, SelectedDepartCode);
@@ -510,7 +534,7 @@ public class FundsSelfSummyController extends BaseController {
 			commonBase.setMessage(strGetCheckMustSelected);
 			return commonBase;
 		}
-		String checkState = CheckState(SelectedTypeCode, SelectedCustCol7, SelectedDepartCode, null);
+		String checkState = CheckState(SelectedTypeCode, SelectedCustCol7, SelectedDepartCode, null, SystemDateTime);
 		if(checkState!=null && !checkState.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(checkState);
@@ -591,7 +615,7 @@ public class FundsSelfSummyController extends BaseController {
 		}
 
 		/***************获取最大单号及更新最大单号********************/
-	    String billNumType = VoucherToBillType.getVoucherToBillType(SelectedTypeCode);
+	    String billNumType = Corresponding.getBillTypeFromPZTYPE(SelectedTypeCode);
 	    if(!(billNumType!=null && !billNumType.trim().equals(""))){
 	    	commonBase.setCode(2);
 	    	commonBase.setMessage(Message.NotGetBillTypeFromVoucher);
@@ -811,6 +835,14 @@ public class FundsSelfSummyController extends BaseController {
 		commonBase.setCode(-1);
 		
 		PageData getPd = this.getPageData();
+		//当前区间
+		String SystemDateTime = getPd.getString("SystemDateTime");
+		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager);
+		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
+			commonBase.setCode(2);
+			commonBase.setMessage(mesDateTime);
+			return commonBase;
+		}
 		
 		Object DATA_ROWS = getPd.get("DataRows");
 		String json = DATA_ROWS.toString();  
@@ -830,7 +862,7 @@ public class FundsSelfSummyController extends BaseController {
         	listTransfer.add(addPd);
         }
         String strSqlInBillCode = QueryFeildString.tranferListValueToSqlInString(listBillCode);
-		String checkState = CheckState(null, null, null, strSqlInBillCode);
+		String checkState = CheckState(null, null, null, strSqlInBillCode, SystemDateTime);
 		if(checkState!=null && !checkState.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(checkState);
@@ -859,7 +891,7 @@ public class FundsSelfSummyController extends BaseController {
 	}
 	
 	//判断单据状态
-	private String CheckState(String typeCode, String billOff, String deptCode, String strSqlInBillCode) throws Exception{
+	private String CheckState(String typeCode, String billOff, String deptCode, String strSqlInBillCode, String SystemDateTime) throws Exception{
 		String strRut = "";
 
 		String QueryFeild = " and BILL_STATE = '" + BillState.Normal.getNameKey() + "' AND BUSI_DATE = '" + SystemDateTime + "' ";
@@ -909,6 +941,8 @@ public class FundsSelfSummyController extends BaseController {
 		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
 		//单号
 		String SelectedBillCode = getPd.getString("SelectedBillCode");
+		//当前区间
+		String SystemDateTime = getPd.getString("SystemDateTime");
 		
 		PageData getQueryFeildPd = new PageData();
 		getQueryFeildPd.put("BILL_STATE", BillState.Normal.getNameKey());
@@ -945,7 +979,7 @@ public class FundsSelfSummyController extends BaseController {
 		return getPd;
 	}
 
-	private List<String> getGroupSummyField(String typeCode, String billOff, String busiDate, String deptCode, Boolean bolInsertSql) throws Exception{
+	private List<String> getGroupSummyField(String typeCode, String billOff, String busiDate, String deptCode, Boolean bolInsertSql, String SystemDateTime) throws Exception{
 		List<String> SumFieldReturn = new ArrayList<String>();
 		List<String> SumFieldDetail = getGroupDetailField(typeCode, billOff, busiDate, deptCode, bolInsertSql);
 

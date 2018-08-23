@@ -2,7 +2,6 @@ package com.fh.entity;
 
 public class ClsCostFactSheet{
 
-	private String name00;
 	private String name01;
 	private String name02; 
 	private String name03; 
@@ -23,8 +22,22 @@ public class ClsCostFactSheet{
 	private String name18; 
 	private String name19; 
 	private String name20;
+	private String order;
+	private String bindingType;
 	private String deptCode;
 	private String isRowAllGroup = "";
+	public String getBindingType() {
+		return bindingType;
+	}
+	public void setBindingType(String bindingType) {
+		this.bindingType = bindingType;
+	}
+	public String getOrder() {
+		return order;
+	}
+	public void setOrder(String order) {
+		this.order = order;
+	}
 	public String getIsRowAllGroup() {
 		return isRowAllGroup;
 	}
@@ -36,12 +49,6 @@ public class ClsCostFactSheet{
 	}
 	public void setDeptCode(String deptCode) {
 		this.deptCode = deptCode;
-	}
-	public String getName00() {
-		return name00;
-	}
-	public void setName00(String name00) {
-		this.name00 = name00;
 	}
 	public String getName01() {
 		return name01;

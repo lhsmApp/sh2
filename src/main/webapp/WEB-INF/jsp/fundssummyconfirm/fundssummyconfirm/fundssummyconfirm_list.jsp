@@ -100,7 +100,7 @@
 													</c:forEach>
 												</select>
 											</span>
-											<span class="pull-left" style="margin-right: 5px;" <c:if test="${pd.departTreeSource=='0'}">hidden</c:if>>
+											<span class="pull-left" style="margin-right: 5px;">
 												<div class="selectTree" id="selectTree" multiMode="true"
 												    allSelectable="false" noGroup="false"></div>
 											    <input id="SelectedDepartCode" type="hidden"></input>
@@ -108,6 +108,9 @@
 											<button type="button" class="btn btn-info btn-sm" onclick="tosearch();">
 												<i class="ace-icon fa fa-search bigger-110"></i>
 											</button>
+									        <button type="button" class="btn btn-info btn-sm" onclick="confirm()">
+										        <i class="ace-icon fa bigger-120 blue"></i><span>批量确认</span>
+									        </button>
 										</form>
 									</div>
 								</div>
@@ -189,9 +192,15 @@
 	var TabType = 1;
 	//前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
 	var jqGridColModel;
+
+	//当前期间,取自tb_system_config的SystemDateTime字段
+    var SystemDateTime = '';
 	
 	$(document).ready(function () {
 		$(top.hangge());//关闭加载状态
+	    
+		//当前期间,取自tb_system_config的SystemDateTime字段
+	    SystemDateTime = '${SystemDateTime}';
 	    
 		//前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
 	    jqGridColModel = "[]";//此处记得用eval()行数将string转为array
@@ -214,7 +223,8 @@
 		$('[data-toggle="buttons"] .btn').on('click', function(e){
 			var target = $(this).find('input[type=radio]');
 			which = parseInt(target.val());
-			window.location.href='<%=basePath%>fundssummyconfirm/list.do?SelectedTableNo='+which;
+			window.location.href='<%=basePath%>fundssummyconfirm/list.do?SelectedTableNo='+which
+            + '&SystemDateTime='+SystemDateTime;
 		});
 		
 		//tab页切换
@@ -227,8 +237,7 @@
 			}else if(target.attr('href')=='#voucherMgr'){
 				TabType=2;
 			}
-			$(gridBase_selector).jqGrid('GridUnload'); 
-			SetStructure();
+			tosearch();
 		});
 	});  
 
@@ -247,7 +256,8 @@
         var detailColModel = "[]";
 		$.ajax({
 			type: "GET",
-			url: '<%=basePath%>fundssummyconfirm/getFirstDetailColModel.do?SelectedTableNo='+which,
+			url: '<%=basePath%>fundssummyconfirm/getFirstDetailColModel.do?SelectedTableNo='+which
+            + '&SystemDateTime='+SystemDateTime,
 	    	data: {DataDeptCode:DEPT_CODE,DataCustCol7:CUST_COL7},
 			dataType:'json',
 			cache: false,
@@ -260,7 +270,8 @@
 		            var childGridID = parentRowID + _table;
 		            var childGridPagerID = parentRowID + _pager;
 		            // send the parent row primary key to the server so that we know which grid to show
-		            var childGridURL = '<%=basePath%>fundssummyconfirm/getFirstDetailList.do?SelectedTableNo='+which+'&DetailListBillCode='+BILL_CODE;
+		            var childGridURL = '<%=basePath%>fundssummyconfirm/getFirstDetailList.do?SelectedTableNo='+which+'&DetailListBillCode='+BILL_CODE
+    	            + '&SystemDateTime='+SystemDateTime;
 
 		            // add a table and pager HTML elements to the parent grid row - we will render the child grid here
 		            $('#' + parentRowID).append('<table id=' + childGridID + '></table><div id=' + childGridPagerID + ' class=scroll></div>');
@@ -342,7 +353,8 @@
         var detailColModel = "[]";
 		$.ajax({
 			type: "GET",
-			url: '<%=basePath%>fundssummyconfirm/getSecondDetailColModel.do?SelectedTableNo='+which,
+			url: '<%=basePath%>fundssummyconfirm/getSecondDetailColModel.do?SelectedTableNo='+which
+            + '&SystemDateTime='+SystemDateTime,
 	    	data: {DataDeptCode:DEPT_CODE,DataCustCol7:CUST_COL7},
 			dataType:'json',
 			cache: false,
@@ -355,7 +367,8 @@
 		            var childGridID = parentRowID + _table;
 		            var childGridPagerID = parentRowID + _pager;
 		            // send the parent row primary key to the server so that we know which grid to show
-		            var childGridURL = '<%=basePath%>fundssummyconfirm/getSecondDetailList.do?SelectedTableNo='+which;
+		            var childGridURL = '<%=basePath%>fundssummyconfirm/getSecondDetailList.do?SelectedTableNo='+which
+    	            + '&SystemDateTime='+SystemDateTime;
 		            //childGridURL = childGridURL + "&parentRowID=" + encodeURIComponent(parentRowKey)
                     var listData =new Array();
 				    listData.push(rowData);
@@ -438,8 +451,10 @@
 		$.ajax({
 			type: "POST",
 			url: '<%=basePath%>fundssummyconfirm/getShowColModel.do?SelectedTableNo='+which
+                +'&SelectedTabType='+TabType
                 +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
-                +'&SelectedCustCol7='+$("#SelectedCustCol7").val(),
+                +'&SelectedCustCol7='+$("#SelectedCustCol7").val()
+	            + '&SystemDateTime='+SystemDateTime,
 			dataType:'json',
 			cache: false,
 			success: function(response){
@@ -486,7 +501,8 @@
 			url: '<%=basePath%>fundssummyconfirm/getPageList.do?SelectedTableNo='+which
                 +'&SelectedTabType='+TabType
                 +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
-                +'&SelectedCustCol7='+$("#SelectedCustCol7").val(),
+                +'&SelectedCustCol7='+$("#SelectedCustCol7").val()
+	            + '&SystemDateTime='+SystemDateTime,
 			datatype: "json",
 			colModel: jqGridColModel,
 			viewrecords: true, 
@@ -585,7 +601,7 @@
 			             cursor : "pointer"
 			         });
 	        	}
-	}
+	} 
 	
 	/**
 	 * 确认
@@ -616,7 +632,8 @@
 					$.ajax({
 						type: "POST",
 						url: '<%=basePath%>fundssummyconfirm/summyBillConfirm.do?SelectedTableNo='+which
-		                        +'&SelectedTabType='+TabType,
+		                        +'&SelectedTabType='+TabType
+		        	            + '&SystemDateTime='+SystemDateTime,
 				    	data: {DataRows:JSON.stringify(listData)},
 						dataType:'json',
 						cache: false,
@@ -684,7 +701,8 @@
 					$.ajax({
 						type: "POST",
 						url: '<%=basePath%>fundssummyconfirm/summyBillCancel.do?SelectedTableNo='+which
-                             +'&SelectedTabType='+TabType,
+                             +'&SelectedTabType='+TabType
+             	            + '&SystemDateTime='+SystemDateTime,
 				    	data: {DataRows:JSON.stringify(listData)},
 						dataType:'json',
 						cache: false,
@@ -722,5 +740,77 @@
             });
 		}
     }
+	
+	//确认
+    function confirm() {
+		var CustCol7 = $("#SelectedCustCol7").val();
+		var DepartCode = $("#SelectedDepartCode").val(); 
+
+		if(!(CustCol7!=null && $.trim(CustCol7)!="")){
+			$("#SelectedCustCol7").tips({
+				side:3,
+	            msg:'请选择帐套',
+	            bg:'#AE81FF',
+	            time:2
+	        });
+			$("#SelectedCustCol7").focus();
+			return false;
+		}
+		/*if(!(DepartCode!=null && $.trim(DepartCode)!="")){
+			$("#SelectedDepartCode").tips({
+				side:3,
+	            msg:'请选择责任中心',
+	            bg:'#AE81FF',
+	            time:2
+	        });
+			$("#SelectedDepartCode").focus();
+			return false;
+		}*/
+         var msg = '确定要确认吗?';
+         bootbox.confirm(msg, function(result) {
+        	 if(result) {
+       	        top.jzts();
+
+				$.ajax({
+					type: "POST",
+					url: '<%=basePath%>fundssummyconfirm/confirmAll.do?SelectedTableNo='+which
+                     +'&SelectedCustCol7='+CustCol7
+				 	 +'&SelectedDepartCode='+DepartCode
+      	             +'&SystemDateTime='+SystemDateTime,
+					dataType:'json',
+					cache: false,
+					success: function(response){
+						if(response.code==0){
+							$(top.hangge());//关闭加载状态
+							tosearch();
+							$("#subTitle").tips({
+								side:3,
+					            msg:'确认成功',
+					            bg:'#009933',
+					            time:3
+					        });
+						}else{
+							$(top.hangge());//关闭加载状态
+							$("#subTitle").tips({
+								side:3,
+					            msg:'确认失败,'+response.message,
+					            bg:'#cc0033',
+					            time:3
+					        });
+						}
+					},
+			    	error: function(response) {
+						$(top.hangge());//关闭加载状态
+						$("#subTitle").tips({
+							side:3,
+				            msg:'确认出错:'+response.responseJSON.message,
+				            bg:'#cc0033',
+				            time:3
+				        });
+			    	}
+				});
+        	 }
+         });
+	}
 </script>
 </html>

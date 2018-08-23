@@ -31,7 +31,9 @@ public class QueryFeildString {
 		//组织单元文本字典ORGUNIT:"ORG_UNIT"
 		//变动列CHANGEVALUE:CHANGE_COL
 		String BUSI_DATE = "";
+		String RPT_DUR = "";
 		String DEPT_CODE = ""; 
+		String RPT_DEPT = ""; 
 		String USER_CATG = "";
 		String USER_GROP = "";
 		String CUST_COL7 = "";
@@ -48,8 +50,14 @@ public class QueryFeildString {
 			if(feildList.contains("BUSI_DATE")){
 				BUSI_DATE = pd.getString("BUSI_DATE");
 			}
+			if(feildList.contains("RPT_DUR")){
+				RPT_DUR = pd.getString("RPT_DUR");
+			}
 			if(feildList.contains("DEPT_CODE")){
 				DEPT_CODE = pd.getString("DEPT_CODE");
+			}
+			if(feildList.contains("RPT_DEPT")){
+				RPT_DEPT = pd.getString("RPT_DEPT");
 			}
 			if(feildList.contains("USER_CATG")){
 				USER_CATG = pd.getString("USER_CATG");
@@ -89,10 +97,19 @@ public class QueryFeildString {
 		if(BUSI_DATE!=null && !BUSI_DATE.trim().equals("")){
 			QueryFeild += " and BUSI_DATE = '" + BUSI_DATE.trim() + "' ";
 		}
+		if(RPT_DUR!=null && !RPT_DUR.trim().equals("")){
+			QueryFeild += " and RPT_DUR = '" + RPT_DUR.trim() + "' ";
+		}
 		if(DEPT_CODE!=null && !DEPT_CODE.trim().equals("")){
 			String strIn = getSqlInString(DEPT_CODE);
 			if(strIn!=null && !strIn.equals("")){
 				QueryFeild += " and DEPT_CODE in (" + strIn + ") ";
+			}
+		}
+		if(RPT_DEPT!=null && !RPT_DEPT.trim().equals("")){
+			String strIn = getSqlInString(RPT_DEPT);
+			if(strIn!=null && !strIn.equals("")){
+				QueryFeild += " and RPT_DEPT in (" + strIn + ") ";
 			}
 		}
 		if(USER_CATG!=null && !USER_CATG.trim().equals("")){
@@ -282,6 +299,11 @@ public class QueryFeildString {
 	    	}
 	    }
 		return strQueryFeild;
+	}
+	
+	public static String getBillConfirm(){
+		String strReturn = " and BILL_CODE in (select BILL_CODE from tb_sys_confirm_info where STATE = '" + BillState.Normal.getNameKey() + "') ";
+		return strReturn;
 	}
 	
 	/**

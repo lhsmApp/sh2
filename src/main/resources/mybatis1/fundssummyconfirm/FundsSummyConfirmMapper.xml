@@ -64,4 +64,14 @@
 		</where>
 		order by USER_GROP, USER_CODE
 	</select>
+	
+	<select id="getOperList" parameterType="pd" resultType="pd">
+		select * 
+		from ${TableName}
+		<where>
+		    <if test="QueryFeild!= null and QueryFeild != ''">
+		        ${QueryFeild}
+		    </if>
+		</where>
+	</select>
 </mapper>

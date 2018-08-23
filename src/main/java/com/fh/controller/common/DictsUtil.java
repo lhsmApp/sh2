@@ -9,6 +9,7 @@ import com.fh.entity.system.Department;
 import com.fh.entity.system.Dictionaries;
 import com.fh.entity.system.User;
 import com.fh.service.fhoa.department.DepartmentManager;
+import com.fh.service.sysConfig.sysconfig.SysConfigManager;
 import com.fh.service.system.dictionaries.DictionariesManager;
 import com.fh.service.system.user.UserManager;
 import com.fh.service.tmplConfigDict.tmplconfigdict.TmplConfigDictManager;
@@ -231,40 +232,88 @@ public class DictsUtil {
 	 * @return
 	 * @throws Exception
 	 */
-	public static String getEmplGroupType(String tmplCode) throws Exception {
-		String emplGroupType = "";
+	public static String getTranferTmplType(String tmplCode) throws Exception {
+		String tmplType = "";
 		if (tmplCode.equals(TmplType.TB_STAFF_DETAIL_CONTRACT.getNameKey())
-				//|| tmplCode.equals(TmplType.TB_STAFF_SUMMY_BILL_CONTRACT.getNameKey())
 				|| tmplCode.equals(TmplType.TB_STAFF_SUMMY_CONTRACT.getNameKey())
 				|| tmplCode.equals(TmplType.TB_STAFF_AUDIT_CONTRACT.getNameKey())
 				|| tmplCode.equals(TmplType.TB_STAFF_TRANSFER_CONTRACT.getNameKey())) {
-			emplGroupType = EmplGroupType.HTH.getNameKey();
+			tmplType = TmplType.TB_STAFF_TRANSFER_CONTRACT.getNameKey();
 		} else if (tmplCode.equals(TmplType.TB_STAFF_DETAIL_MARKET.getNameKey())
-				//|| tmplCode.equals(TmplType.TB_STAFF_SUMMY_BILL_MARKET.getNameKey())
 				|| tmplCode.equals(TmplType.TB_STAFF_SUMMY_MARKET.getNameKey())
 				|| tmplCode.equals(TmplType.TB_STAFF_AUDIT_MARKET.getNameKey())
 				|| tmplCode.equals(TmplType.TB_STAFF_TRANSFER_MARKET.getNameKey())) {
-			emplGroupType = EmplGroupType.SCH.getNameKey();
+			tmplType = TmplType.TB_STAFF_TRANSFER_MARKET.getNameKey();
 		} else if (tmplCode.equals(TmplType.TB_STAFF_DETAIL_SYS_LABOR.getNameKey())
-				//|| tmplCode.equals(TmplType.TB_STAFF_SUMMY_BILL_SYS_LABOR.getNameKey())
 				|| tmplCode.equals(TmplType.TB_STAFF_SUMMY_SYS_LABOR.getNameKey())
 				|| tmplCode.equals(TmplType.TB_STAFF_AUDIT_SYS_LABOR.getNameKey())
 				|| tmplCode.equals(TmplType.TB_STAFF_TRANSFER_SYS_LABOR.getNameKey())) {
-			emplGroupType = EmplGroupType.XTNLW.getNameKey();
+			tmplType = TmplType.TB_STAFF_TRANSFER_SYS_LABOR.getNameKey();
 		} else if (tmplCode.equals(TmplType.TB_STAFF_DETAIL_OPER_LABOR.getNameKey())
-				//|| tmplCode.equals(TmplType.TB_STAFF_SUMMY_BILL_OPER_LABOR.getNameKey())
 				|| tmplCode.equals(TmplType.TB_STAFF_SUMMY_OPER_LABOR.getNameKey())
 				|| tmplCode.equals(TmplType.TB_STAFF_AUDIT_OPER_LABOR.getNameKey())
 				|| tmplCode.equals(TmplType.TB_STAFF_TRANSFER_OPER_LABOR.getNameKey())) {
-			emplGroupType = EmplGroupType.YXRY.getNameKey();
+			tmplType = TmplType.TB_STAFF_TRANSFER_OPER_LABOR.getNameKey();
 		} else if (tmplCode.equals(TmplType.TB_STAFF_DETAIL_LABOR.getNameKey())
-				//|| tmplCode.equals(TmplType.TB_STAFF_SUMMY_BILL_LABOR.getNameKey())
 				|| tmplCode.equals(TmplType.TB_STAFF_SUMMY_LABOR.getNameKey())
 				|| tmplCode.equals(TmplType.TB_STAFF_AUDIT_LABOR.getNameKey())
 				|| tmplCode.equals(TmplType.TB_STAFF_TRANSFER_LABOR.getNameKey())) {
-			emplGroupType = EmplGroupType.LWPQ.getNameKey();
+			tmplType = TmplType.TB_STAFF_TRANSFER_LABOR.getNameKey();
+		} else if (tmplCode.equals(TmplType.TB_SOCIAL_INC_DETAIL.getNameKey())
+				|| tmplCode.equals(TmplType.TB_SOCIAL_INC_SUMMY.getNameKey())
+				|| tmplCode.equals(TmplType.TB_SOCIAL_INC_AUDIT.getNameKey())
+				|| tmplCode.equals(TmplType.TB_SOCIAL_INC_TRANSFER.getNameKey())) {
+			tmplType = TmplType.TB_SOCIAL_INC_TRANSFER.getNameKey();
+		} else if (tmplCode.equals(TmplType.TB_HOUSE_FUND_DETAIL.getNameKey())
+				|| tmplCode.equals(TmplType.TB_HOUSE_FUND_SUMMY.getNameKey())
+				|| tmplCode.equals(TmplType.TB_HOUSE_FUND_AUDIT.getNameKey())
+				|| tmplCode.equals(TmplType.TB_HOUSE_FUND_TRANSFER.getNameKey())) {
+			tmplType = TmplType.TB_HOUSE_FUND_TRANSFER.getNameKey();
 		}
-		return emplGroupType;
+		return tmplType;
+	}
+
+	/**
+	 * 根据模板基本类型获取员工组编码
+	 * 
+	 * @param
+	 * @return
+	 * @throws Exception
+	 */
+	public static Boolean ifCheckGroupTypeNull(String tmplCode) throws Exception {
+		Boolean bolRet = true;
+		if (!(tmplCode.equals(TmplType.TB_STAFF_DETAIL_CONTRACT.getNameKey())
+				//|| tmplCode.equals(TmplType.TB_STAFF_SUMMY_BILL_CONTRACT.getNameKey())
+				|| tmplCode.equals(TmplType.TB_STAFF_SUMMY_CONTRACT.getNameKey())
+				|| tmplCode.equals(TmplType.TB_STAFF_AUDIT_CONTRACT.getNameKey())
+				|| tmplCode.equals(TmplType.TB_STAFF_TRANSFER_CONTRACT.getNameKey())
+                 
+				||tmplCode.equals(TmplType.TB_STAFF_DETAIL_MARKET.getNameKey())
+				//|| tmplCode.equals(TmplType.TB_STAFF_SUMMY_BILL_MARKET.getNameKey())
+				|| tmplCode.equals(TmplType.TB_STAFF_SUMMY_MARKET.getNameKey())
+				|| tmplCode.equals(TmplType.TB_STAFF_AUDIT_MARKET.getNameKey())
+				|| tmplCode.equals(TmplType.TB_STAFF_TRANSFER_MARKET.getNameKey())
+                
+				||tmplCode.equals(TmplType.TB_STAFF_DETAIL_SYS_LABOR.getNameKey())
+				//|| tmplCode.equals(TmplType.TB_STAFF_SUMMY_BILL_SYS_LABOR.getNameKey())
+				|| tmplCode.equals(TmplType.TB_STAFF_SUMMY_SYS_LABOR.getNameKey())
+				|| tmplCode.equals(TmplType.TB_STAFF_AUDIT_SYS_LABOR.getNameKey())
+				|| tmplCode.equals(TmplType.TB_STAFF_TRANSFER_SYS_LABOR.getNameKey())
+                
+				||tmplCode.equals(TmplType.TB_STAFF_DETAIL_OPER_LABOR.getNameKey())
+				//|| tmplCode.equals(TmplType.TB_STAFF_SUMMY_BILL_OPER_LABOR.getNameKey())
+				|| tmplCode.equals(TmplType.TB_STAFF_SUMMY_OPER_LABOR.getNameKey())
+				|| tmplCode.equals(TmplType.TB_STAFF_AUDIT_OPER_LABOR.getNameKey())
+				|| tmplCode.equals(TmplType.TB_STAFF_TRANSFER_OPER_LABOR.getNameKey())
+                
+				||tmplCode.equals(TmplType.TB_STAFF_DETAIL_LABOR.getNameKey())
+				//|| tmplCode.equals(TmplType.TB_STAFF_SUMMY_BILL_LABOR.getNameKey())
+				|| tmplCode.equals(TmplType.TB_STAFF_SUMMY_LABOR.getNameKey())
+				|| tmplCode.equals(TmplType.TB_STAFF_AUDIT_LABOR.getNameKey())
+				|| tmplCode.equals(TmplType.TB_STAFF_TRANSFER_LABOR.getNameKey()))) {
+			bolRet = false;
+		}
+		return bolRet;
 	}
 
 	/**
@@ -305,37 +354,39 @@ public class DictsUtil {
 	}
 
 	/**
-	 * 凭证字典获取业务类型1工会经费、教育经费凭证2党费凭证3社保互推凭证4公积金互推凭证5个缴凭证6应付劳务费凭证7企业年金提取凭证8补充医疗提取凭证9企业年金发放凭证10评估调整凭证
+	 * 根据前端业务表索引获取定义在Fmis系统上定义的表名称
 	 * 
-	 * @param
+	 * @param which
+	 *            1、合同化工资 2、社保 3、公积金 4、市场化工资 5、系统内劳务工资 6、运行人员工资 7、劳务派遣工资
 	 * @return
 	 * @throws Exception
 	 */
-	/*public static String getVocherType(String pzTYPE) throws Exception {
-		String vocherType = "";// 数据库真实业务数据表
-		if(pzTYPE != null){
-			if (pzTYPE.equals(PZTYPE.GFZYJF.getNameKey())) {
-				vocherType = VoucherType.GFZYJF.getNameKey();
-			} else if (pzTYPE.equals(PZTYPE.DF.getNameKey())) {
-				vocherType = VoucherType.DF.getNameKey();
-			} else if (pzTYPE.equals(PZTYPE.SB.getNameKey())) {
-				vocherType = VoucherType.SB.getNameKey();
-			} else if (pzTYPE.equals(PZTYPE.GJJ.getNameKey())) {
-				vocherType = VoucherType.GJJ.getNameKey();
-			} else if (pzTYPE.equals(PZTYPE.GJ.getNameKey())) {
-				vocherType = VoucherType.GJ.getNameKey();
-			} else if (pzTYPE.equals(PZTYPE.YFLWF.getNameKey())) {
-				vocherType = VoucherType.YFLWF.getNameKey();
-			} else if (pzTYPE.equals(PZTYPE.QYNJTQ.getNameKey())) {
-				vocherType = VoucherType.QYNJTQ.getNameKey();
-			} else if (pzTYPE.equals(PZTYPE.BCYLTQ.getNameKey())) {
-				vocherType = VoucherType.BCYLTQ.getNameKey();
-			} else if (pzTYPE.equals(PZTYPE.QYNJFF.getNameKey())) {
-				vocherType = VoucherType.QYNJFF.getNameKey();
-			} else if (pzTYPE.equals(PZTYPE.PGTZ.getNameKey())) {
-				vocherType = VoucherType.PGTZ.getNameKey();
-			}
+	public static String getTableCodeOnFmis(String which, SysConfigManager sysConfigManager) throws Exception {
+		PageData pd = new PageData();
+		String tableCodeOri = "";// 数据库真实业务数据表
+		if (which.equals(TmplType.TB_STAFF_TRANSFER_CONTRACT.getNameKey())) {
+			pd.put("KEY_CODE", "StaffTransferHT");
+			tableCodeOri = sysConfigManager.getSysConfigByKey(pd);
+		} else if (which.equals(TmplType.TB_STAFF_TRANSFER_MARKET.getNameKey())) {
+			pd.put("KEY_CODE", "StaffTransferSC");
+			tableCodeOri = sysConfigManager.getSysConfigByKey(pd);
+		} else if (which.equals(TmplType.TB_STAFF_TRANSFER_SYS_LABOR.getNameKey())) {
+			pd.put("KEY_CODE", "StaffTransferXT");
+			tableCodeOri = sysConfigManager.getSysConfigByKey(pd);
+		} else if (which.equals(TmplType.TB_STAFF_TRANSFER_OPER_LABOR.getNameKey())) {
+			pd.put("KEY_CODE", "StaffTransferYX");
+			tableCodeOri = sysConfigManager.getSysConfigByKey(pd);
+		} else if (which.equals(TmplType.TB_STAFF_TRANSFER_LABOR.getNameKey())) {
+			pd.put("KEY_CODE", "StaffTransferLW");
+			tableCodeOri = sysConfigManager.getSysConfigByKey(pd);
+		} else if (which.equals(TmplType.TB_SOCIAL_INC_TRANSFER.getNameKey())) {
+			tableCodeOri = "TB_SOCIAL_INC_SUMMY";
+		} else if (which.equals(TmplType.TB_HOUSE_FUND_TRANSFER.getNameKey())) {
+			tableCodeOri = "TB_HOUSE_FUND_SUMMY";
+		} else {
+			pd.put("KEY_CODE", "StaffTransferHT");
+			tableCodeOri = sysConfigManager.getSysConfigByKey(pd);
 		}
-		return vocherType;
-	}*/
+		return tableCodeOri;
+	}
 }

@@ -24,6 +24,11 @@ public interface DataInputManager{
 	 * @throws Exception
 	 */
 	public int countJqGridExtend(JqPage page)throws Exception;
+	/**列表
+	 * @param page
+	 * @throws Exception
+	 */
+	public List<PageData> exportList(JqPage page)throws Exception;
 
 	/**通过流水号获取流水号，用于判断数据是否变更 
 	 * @param pd
@@ -47,6 +52,7 @@ public interface DataInputManager{
 	 * @throws Exception
 	 */
 	public void batchUpdateDatabase(List<PageData> listData)throws Exception;
+	public void batchUpdateDatabaseHorizontal(List<PageData> listData)throws Exception;
 	
 	/**批量删除
 	 * @param 

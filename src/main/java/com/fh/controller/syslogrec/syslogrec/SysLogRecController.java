@@ -2,9 +2,13 @@ package com.fh.controller.syslogrec.syslogrec;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+
 import javax.annotation.Resource;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.stereotype.Controller;
@@ -14,19 +18,24 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 import com.fh.controller.base.BaseController;
+import com.fh.controller.common.Common;
 import com.fh.controller.common.DictsUtil;
 import com.fh.controller.common.QueryFeildString;
 import com.fh.entity.JqPage;
 import com.fh.entity.Page;
 import com.fh.entity.PageResult;
+import com.fh.entity.TmplConfigDetail;
 import com.fh.util.PageData;
 import com.fh.util.SqlTools;
 import com.fh.util.DateUtil;
 import com.fh.util.Jurisdiction;
+import com.fh.util.ObjectExcelView;
 import com.fh.service.fhoa.department.DepartmentManager;
 import com.fh.service.syslogrec.syslogrec.SysLogRecManager;
 import com.fh.service.system.dictionaries.DictionariesManager;
 import com.fh.service.system.user.UserManager;
+import com.fh.service.tmplConfigDict.tmplconfigdict.impl.TmplConfigDictService;
+import com.fh.service.tmplconfig.tmplconfig.impl.TmplConfigService;
 
 /** 
  * 说明：  日志
@@ -48,10 +57,15 @@ public class SysLogRecController extends BaseController {
 	private DepartmentManager departmentService;
 	@Resource(name = "userService")
 	private UserManager userService;
-	
+	@Resource(name="tmplconfigService")
+	private TmplConfigService tmplconfigService;
+	@Resource(name="tmplconfigdictService")
+	private TmplConfigDictService tmplconfigdictService;
+
+	String TableName = "tb_sys_log_rec";
 	//界面查询字段
     List<String> QueryFeildList = Arrays.asList("TYPE_CODE", "BILL_OFF");
-	
+
 	/**列表
 	 * @param page
 	 * @throws Exception
@@ -110,7 +124,7 @@ public class SysLogRecController extends BaseController {
 		String SelectedBusiDate = getPd.getString("SelectedBusiDate");
 		//凭证字典
 		String SelectedTypeCode = getPd.getString("SelectedTypeCode");
-		//账套
+		//单位
 		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
 
 		String QueryFeild = " and TYPE_CODE = '" + SelectedTypeCode + "' ";
@@ -136,6 +150,101 @@ public class SysLogRecController extends BaseController {
 		result.setPage(page.getPage());
 		
 		return result;
+	}
+	
+	 /**导出到excel
+	 * @param
+	 * @throws Exception
+	 */
+	@SuppressWarnings("unchecked")
+	@RequestMapping(value="/excel")
+	public ModelAndView exportExcel(JqPage page) throws Exception{
+		logBefore(logger, Jurisdiction.getUsername()+"导出SocialIncDetail到excel");
+
+		PageData getPd = this.getPageData();
+		//日期
+		String SelectedBusiDate = getPd.getString("SelectedBusiDate");
+		//凭证字典
+		String SelectedTypeCode = getPd.getString("SelectedTypeCode");
+		//单位
+		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
+
+		String QueryFeild = " and TYPE_CODE = '" + SelectedTypeCode + "' ";
+		if(SelectedDepartCode!=null && !SelectedDepartCode.trim().equals("")){
+			QueryFeild += " and DEPT_CODE in (" + QueryFeildString.getSqlInString(SelectedDepartCode) + ") ";
+		}
+		QueryFeild += " and (REC_DATE like '" + SelectedBusiDate + "%' or REC_DATE like '" + SelectedBusiDate.replace("-", "") + "%') ";
+		getPd.put("QueryFeild", QueryFeild);
+		
+		//多条件过滤条件
+		String filters = getPd.getString("filters");
+		if(null != filters && !"".equals(filters)){
+			getPd.put("filterWhereResult", SqlTools.constructWhere(filters,null));
+		}
+		page.setPd(getPd);
+		List<PageData> varOList = syslogrecService.export(page);	//列出Betting列表
+		if(!(varOList!=null && varOList.size()>0)){
+			varOList = new ArrayList<PageData>();
+		}
+
+		Map<String, TmplConfigDetail> map_SetColumnsList = new LinkedHashMap<String, TmplConfigDetail>();
+		Map<String, Object> DicList = new LinkedHashMap<String, Object>(); 
+		TmplConfigDetail USER_CODE = new TmplConfigDetail("USER_CODE", "用户", "1", true);
+		USER_CODE.setDICT_TRANS("sys_user");
+		map_SetColumnsList.put("USER_CODE", USER_CODE);
+		Common.getDicValue(DicList, USER_CODE.getDICT_TRANS(), tmplconfigdictService, dictionariesService, departmentService, userService, "");
+		TmplConfigDetail DEPT_CODE = new TmplConfigDetail("DEPT_CODE", "登录单位", "1", true);
+		DEPT_CODE.setDICT_TRANS("oa_department");
+		map_SetColumnsList.put("DEPT_CODE", DEPT_CODE);
+		Common.getDicValue(DicList, DEPT_CODE.getDICT_TRANS(), tmplconfigdictService, dictionariesService, departmentService, userService, "");
+		map_SetColumnsList.put("REC_DATE", new TmplConfigDetail("REC_DATE", "日志时间", "1", true));
+		TmplConfigDetail TYPE_CODE = new TmplConfigDetail("TYPE_CODE", "凭证类型", "1", true);
+		TYPE_CODE.setDICT_TRANS("PZTYPE");
+		map_SetColumnsList.put("TYPE_CODE", TYPE_CODE);
+		Common.getDicValue(DicList, TYPE_CODE.getDICT_TRANS(), tmplconfigdictService, dictionariesService, departmentService, userService, "");
+		map_SetColumnsList.put("BILL_CODE", new TmplConfigDetail("BILL_CODE", "单号", "1", true));
+		map_SetColumnsList.put("SQL_STR", new TmplConfigDetail("SQL_STR", "SQL", "1", true));
+		
+		ModelAndView mv = new ModelAndView();
+		Map<String,Object> dataMap = new LinkedHashMap<String,Object>();
+		String fileName = "日志";
+		dataMap.put("filename", new String(fileName.getBytes("gb2312"), "ISO-8859-1"));
+		List<String> titles = new ArrayList<String>();
+		List<PageData> varList = new ArrayList<PageData>();
+		if(map_SetColumnsList != null && map_SetColumnsList.size() > 0){
+		    for (TmplConfigDetail col : map_SetColumnsList.values()) {
+				if(col.getCOL_HIDE().equals("1")){
+					titles.add(col.getCOL_NAME());
+				}
+			}
+			if(varOList!=null && varOList.size()>0){
+				for(int i=0;i<varOList.size();i++){
+					PageData vpd = new PageData();
+					int j = 1;
+					for (TmplConfigDetail col : map_SetColumnsList.values()) {
+						if(col.getCOL_HIDE().equals("1")){
+						    String trans = col.getDICT_TRANS();
+						    Object getCellValue = varOList.get(i).get(col.getCOL_CODE().toUpperCase());
+						    if(trans != null && !trans.trim().equals("")){
+						    	String value = "";
+						    	Map<String, String> dicAdd = (Map<String, String>) DicList.getOrDefault(trans, new LinkedHashMap<String, String>());
+						    	value = dicAdd.getOrDefault(getCellValue, "");
+						    	vpd.put("var" + j, value);
+						    } else {
+							    vpd.put("var" + j, getCellValue.toString());
+						    }
+						    j++;
+						}
+					}
+					varList.add(vpd);
+				}
+			}
+		}
+		dataMap.put("titles", titles);
+		dataMap.put("varList", varList);
+		ObjectExcelView erv = new ObjectExcelView();
+		mv = new ModelAndView(erv,dataMap); 
+		return mv;
 	}
 	
 	

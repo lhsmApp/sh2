@@ -60,5 +60,14 @@ public class FundsSummyConfirmService implements FundsSummyConfirmManager{
 	public List<PageData> getSecondDetailList(PageData pd)throws Exception{
 		return (List<PageData>)dao.findForList("FundsSummyConfirmMapper.getSecondDetailList", pd);
 	}
+	
+	/**
+	 * @param pd
+	 * @throws Exception
+	 */
+	@SuppressWarnings("unchecked")
+	public List<PageData> getOperList(PageData pd)throws Exception{
+		return (List<PageData>)dao.findForList("FundsSummyConfirmMapper.getOperList", pd);
+	}
 }
 

@@ -19,6 +19,7 @@ import org.springframework.web.servlet.ModelAndView;
 import com.fh.controller.base.BaseController;
 import com.fh.controller.common.AcconutsShowList;
 import com.fh.controller.common.Common;
+import com.fh.controller.common.Corresponding;
 import com.fh.controller.common.DictsUtil;
 import com.fh.controller.common.QueryFeildString;
 import com.fh.controller.common.TmplUtil;
@@ -171,7 +172,7 @@ public class AccountsQueryController extends BaseController {
 		PageData getPd = this.getPageData();
 		//员工组
 		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
-		String emplGroupType = DictsUtil.getEmplGroupType(SelectedTableNo);
+		String emplGroupType = Corresponding.getUserGroupTypeFromTmplType(SelectedTableNo);
 		//单位
 		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
 		//日期
@@ -284,7 +285,7 @@ public class AccountsQueryController extends BaseController {
 		PageData getPd = this.getPageData();
 		//员工组
 		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
-		String emplGroupType = DictsUtil.getEmplGroupType(SelectedTableNo);
+		String emplGroupType = Corresponding.getUserGroupTypeFromTmplType(SelectedTableNo);
 		String SelectedTabType = getPd.getString("SelectedTabType");
 		
 		String strTapTypeCode = getDetailTypeCode(SelectedTableNo, SelectedTabType);
@@ -328,7 +329,7 @@ public class AccountsQueryController extends BaseController {
 		PageData getPd = this.getPageData();
 		//员工组
 		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
-		String emplGroupType = DictsUtil.getEmplGroupType(SelectedTableNo);
+		String emplGroupType = Corresponding.getUserGroupTypeFromTmplType(SelectedTableNo);
 		String SelectedTabType = getPd.getString("SelectedTabType");
 		TmplTypeInfo implTypeCode = getWhileValueToTypeCode(SelectedTableNo);
 		String TypeCodeStaffSummy = "";//implTypeCode.getTypeCodeSummy();

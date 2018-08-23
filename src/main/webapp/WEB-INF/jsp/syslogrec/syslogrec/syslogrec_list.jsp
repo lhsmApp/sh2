@@ -239,6 +239,15 @@
 			sepclass : "ui-separator",
 			sepcontent: ""
 		});
+        $(grid_selector).navButtonAdd(pager_selector, {
+			 id : "exportItems",
+            caption : "导出",
+            buttonicon : "ace-icon fa fa-cloud-download",
+            onClickButton : exportItems,
+            position : "last",
+            title : "导出",
+            cursor : "pointer"
+        });
  	});
 	
 	//加载单位树
@@ -268,6 +277,15 @@
 								datatype : 'json'
 							}).trigger("reloadGrid");
 		}
+
+        /**
+         * 导出
+         */
+        function exportItems(){
+        	window.location.href='<%=basePath%>syslogrec/excel.do?SelectedDepartCode='+$("#SelectedDepartCode").val()
+            + '&SelectedTypeCode=' + $("#SelectedTypeCode").val()
+            + '&SelectedBusiDate=' + $("#SelectedBusiDate").val();
+        }
 	</script>
 </body>
 </html>

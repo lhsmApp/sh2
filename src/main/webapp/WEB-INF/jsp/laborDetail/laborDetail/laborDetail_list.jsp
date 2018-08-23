@@ -152,6 +152,9 @@
 	    //页面显示的数据的责任中心和账套信息，在tosearch()里赋值
 	    var ShowDataDepartCode = "";
 	    var ShowDataCustCol7 = "";
+
+		//当前期间,取自tb_system_config的SystemDateTime字段
+	    var SystemDateTime = '';
         
         function SetStructure(){
 	        //resize to fit page size
@@ -163,7 +166,8 @@
 		    $(gridBase_selector).jqGrid({
 			    url: '<%=basePath%>laborDetail/getPageList.do?'
 					+ 'SelectedDepartCode='+$("#SelectedDepartCode").val()
-		            + '&SelectedCustCol7='+$("#SelectedCustCol7").val(),
+		            + '&SelectedCustCol7='+$("#SelectedCustCol7").val()
+    	            + '&SystemDateTime='+SystemDateTime,
 			    datatype: "json",
 			    colModel: [
 						//{ label: '编号', name: 'USER_CODE', 
@@ -204,7 +208,8 @@
 		            + '&SelectedCustCol7='+$("#SelectedCustCol7").val()
                     + '&DepartTreeSource='+DepartTreeSource
                     + '&ShowDataDepartCode='+ShowDataDepartCode
-                    + '&ShowDataCustCol7='+ShowDataCustCol7,
+                    + '&ShowDataCustCol7='+ShowDataCustCol7
+    	            + '&SystemDateTime='+SystemDateTime,
 
                 sortable: true,
                 sortname: 'STAFF_IDENT',
@@ -370,7 +375,7 @@
             $(top.hangge());//关闭加载状态
 	    
             //当前期间,取自tb_system_config的SystemDateTime字段
-	        var SystemDateTime = '${SystemDateTime}';
+	        SystemDateTime = '${SystemDateTime}';
 			//当前登录人所在二级单位
 		    var DepartName = '${DepartName}';
 		    $("#showDur").text('当前期间：' + SystemDateTime + ' 登录人责任中心：' + DepartName);
@@ -486,7 +491,8 @@
     				            + '&SelectedCustCol7='+$("#SelectedCustCol7").val()
     		                    + '&DepartTreeSource='+DepartTreeSource
     		                    + '&ShowDataDepartCode='+ShowDataDepartCode
-    		                    + '&ShowDataCustCol7='+ShowDataCustCol7,
+    		                    + '&ShowDataCustCol7='+ShowDataCustCol7
+    		    	            + '&SystemDateTime='+SystemDateTime,
     				    	data: {DataRows:JSON.stringify(listData)},
     						dataType:'json',
     						cache: false,
@@ -560,7 +566,8 @@
      				            + '&SelectedCustCol7='+$("#SelectedCustCol7").val()
      		                    + '&DepartTreeSource='+DepartTreeSource
      		                    + '&ShowDataDepartCode='+ShowDataDepartCode
-     		                    + '&ShowDataCustCol7='+ShowDataCustCol7,
+     		                    + '&ShowDataCustCol7='+ShowDataCustCol7
+     		    	            + '&SystemDateTime='+SystemDateTime,
      				    	data: {DataRows:JSON.stringify(listData)},
      						dataType:'json',
      						cache: false,
@@ -636,7 +643,8 @@
 					            + '&SelectedCustCol7='+$("#SelectedCustCol7").val()
 			                    + '&DepartTreeSource='+DepartTreeSource
 			                    + '&ShowDataDepartCode='+ShowDataDepartCode
-			                    + '&ShowDataCustCol7='+ShowDataCustCol7,
+			                    + '&ShowDataCustCol7='+ShowDataCustCol7
+			    	            + '&SystemDateTime='+SystemDateTime,
                             data: {DataRows:JSON.stringify(listData)},
                             dataType:'json',
                             cache: false,
@@ -692,7 +700,8 @@
 	            + '&SelectedCustCol7='+$("#SelectedCustCol7").val()
                 + '&DepartTreeSource='+DepartTreeSource
                 + '&ShowDataDepartCode='+ShowDataDepartCode
-                + '&ShowDataCustCol7='+ShowDataCustCol7;
+                + '&ShowDataCustCol7='+ShowDataCustCol7
+	            + '&SystemDateTime='+SystemDateTime;
             diag.Width = 300;
             diag.Height = 150;
             diag.CancelEvent = function(){ //关闭事件
@@ -713,7 +722,8 @@
 	            + '&SelectedCustCol7='+$("#SelectedCustCol7").val()
                 + '&DepartTreeSource='+DepartTreeSource
                 + '&ShowDataDepartCode='+ShowDataDepartCode
-                + '&ShowDataCustCol7='+ShowDataCustCol7;
+                + '&ShowDataCustCol7='+ShowDataCustCol7
+	            + '&SystemDateTime='+SystemDateTime;
         }
 
         /**
@@ -772,7 +782,8 @@
 			$(gridBase_selector).jqGrid('setGridParam',{  // 重新加载数据
 				url:'<%=basePath%>laborDetail/getPageList.do?'
 					+ 'SelectedDepartCode='+$("#SelectedDepartCode").val()
-		            + '&SelectedCustCol7='+$("#SelectedCustCol7").val(),
+		            + '&SelectedCustCol7='+$("#SelectedCustCol7").val()
+    	            + '&SystemDateTime='+SystemDateTime,
 				datatype : 'json',
                 editurl: '<%=basePath%>laborDetail/edit.do?'
 					+ 'SelectedDepartCode='+$("#SelectedDepartCode").val()
@@ -780,6 +791,7 @@
                     + '&DepartTreeSource='+DepartTreeSource
                     + '&ShowDataDepartCode='+ShowDataDepartCode
                     + '&ShowDataCustCol7='+ShowDataCustCol7
+    	            + '&SystemDateTime='+SystemDateTime
 			}).trigger("reloadGrid");
 		}  
  	</script>

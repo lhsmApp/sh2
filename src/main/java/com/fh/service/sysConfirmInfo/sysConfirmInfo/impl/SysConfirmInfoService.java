@@ -1,6 +1,7 @@
 package com.fh.service.sysConfirmInfo.sysConfirmInfo.impl;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Resource;
 import org.springframework.stereotype.Service;
@@ -96,6 +97,9 @@ public class SysConfirmInfoService implements SysConfirmInfoManager{
 	 */
 	public void batchSummyConfirm(List<SysConfirmInfo> listData)throws Exception{
 		dao.update("SysConfirmInfoMapper.batchSummyConfirm", listData);
+	}
+	public void batchAllConfirm(Map<String, Object> map)throws Exception{
+		dao.update("SysConfirmInfoMapper.batchAllConfirm", map);
 	}
 
 	/**取消确认

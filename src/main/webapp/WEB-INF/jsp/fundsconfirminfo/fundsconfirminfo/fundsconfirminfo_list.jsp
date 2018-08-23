@@ -216,7 +216,8 @@ $(document).ready(function () {
 					{ label: '业务类型', name: 'TYPE_CODE', width: 60,editable: false, edittype: 'select',formatter:'select',editoptions:{value:"${typeCodeStrSelect}"},formatoptions:{value:"${typeCodeStrSelect}"},stype: 'select',searchoptions:{value:"${typeCodeStrAll}"}},
 					{ label: '单位', name: 'DEPT_CODE', width: 90,editable: false, edittype: 'select',formatter:'select',editoptions:{value:"${departmentStrSelect}"},formatoptions:{value:"${departmentStrSelect}"},stype: 'select',searchoptions:{value:"${departmentStrAll}"}},
 					{ label: '单位映射', name: 'MAPPING_CODE', width: 90,editable: false, edittype: 'select',formatter:'select',editoptions:{value:"${departmentStrSelect}"},formatoptions:{value:"${departmentStrSelect}"},stype: 'select',searchoptions:{value:"${departmentStrAll}"}},
-					{ label: '确认类型', name: 'BILL_TYPE', width: 90,editable: false, edittype: 'select',formatter:'select',editoptions:{value:"${billTypeStrSelect}"},formatoptions:{value:"${billTypeStrSelect}"},stype: 'select',searchoptions:{value:"${billTypeStrAll}"}},
+					//{ label: '确认类型', name: 'BILL_TYPE', width: 90,editable: false, edittype: 'select',formatter:'select',editoptions:{value:"${billTypeStrSelect}"},formatoptions:{value:"${billTypeStrSelect}"},stype: 'select',searchoptions:{value:"${billTypeStrAll}"}},
+					{ label: 'FMIS凭证号', name: 'CERT_CODE', width: 90,editable: false},
 					{ label: '数据状态', name: 'STATE', width: 90,editable: false, edittype: 'select',formatter:'select',editoptions:{value:"${stateStrSelect}"},formatoptions:{value:"${stateStrSelect}"},stype: 'select',searchoptions:{value:"${stateStrAll}"}}
 				],
 		viewrecords: true, 

@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 import com.fh.controller.base.BaseController;
 import com.fh.controller.common.Common;
+import com.fh.controller.common.Corresponding;
 import com.fh.controller.common.DictsUtil;
 import com.fh.controller.common.QueryFeildString;
 import com.fh.controller.common.SelectBillCodeOptions;
@@ -76,7 +77,7 @@ public class DetailImportQueryController extends BaseController {
 	String SelectBillCodeFirstShow = "临时数据";
 	String SelectBillCodeLastShow = "";
 	//当前期间,取自tb_system_config的SystemDateTime字段
-	String SystemDateTime = "";
+	//String SystemDateTime = "";
     //
 	String AdditionalReportColumns = "";
 	//默认的which值
@@ -109,8 +110,8 @@ public class DetailImportQueryController extends BaseController {
 		ModelAndView mv = this.getModelAndView();
 		mv.setViewName("detailimportquery/detailimportquery/detailimportquery_list");
 		//当前期间,取自tb_system_config的SystemDateTime字段
-		SystemDateTime = sysConfigManager.currentSection(getPd);
-		mv.addObject("SystemDateTime", SystemDateTime);
+		String SystemDateTime = sysConfigManager.currentSection(getPd);
+		mv.addObject("SystemDateTime", SystemDateTime.trim());
 		//while
 		getPd.put("which", SelectedTableNo);
 	    //导出数据的员工组
@@ -199,7 +200,7 @@ public class DetailImportQueryController extends BaseController {
 		PageData getPd = this.getPageData();
 		//员工组
 		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
-		String emplGroupType = DictsUtil.getEmplGroupType(SelectedTableNo);
+		String emplGroupType = Corresponding.getUserGroupTypeFromTmplType(SelectedTableNo);
 		//单位
 		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
 		int departSelf = Common.getDepartSelf(departmentService);
@@ -372,7 +373,7 @@ public class DetailImportQueryController extends BaseController {
 	private PageData setPutPd(PageData getPd, Boolean bolBillCodeUse) throws Exception{
 		//员工组
 		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
-		String emplGroupType = DictsUtil.getEmplGroupType(SelectedTableNo);
+		String emplGroupType = Corresponding.getUserGroupTypeFromTmplType(SelectedTableNo);
 		//单位
 		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
 		int departSelf = Common.getDepartSelf(departmentService);
@@ -435,7 +436,7 @@ public class DetailImportQueryController extends BaseController {
 		PageData getPd = this.getPageData();
 		//员工组
 		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
-		String emplGroupType = DictsUtil.getEmplGroupType(SelectedTableNo);
+		String emplGroupType = Corresponding.getUserGroupTypeFromTmplType(SelectedTableNo);
 		//日期
 		String SelectedBusiDate = getPd.getString("SelectedBusiDate");
 		//账套
@@ -597,7 +598,6 @@ public class DetailImportQueryController extends BaseController {
 		mv.addObject("local", "detailimportquery");
 		mv.addObject("SelectedTableNo", SelectedTableNo);
 		mv.addObject("SelectedBusiDate", SelectedBusiDate);
-		mv.addObject("SystemDateTime", SystemDateTime);
 		mv.addObject("DepartTreeSource", DepartTreeSource);
 		mv.addObject("SalaryOrBonus", SalaryOrBonus);
 		mv.addObject("commonBaseCode", commonBase.getCode());
@@ -619,7 +619,7 @@ public class DetailImportQueryController extends BaseController {
 		PageData getPd = this.getPageData();
 		//员工组
 		String SelectedTableNo = getWhileValue(getPd.getString("DownSelectedTableNo"));
-		//String emplGroupType = DictsUtil.getEmplGroupType(SelectedTableNo);
+		//String emplGroupType = Corresponding.getUserGroupTypeFromTmplType(SelectedTableNo);
 		String TableName = getDetailTableCode(SelectedTableNo);
 		//日期
 		String SelectedBusiDate = getPd.getString("DownSelectedBusiDate");
@@ -714,6 +714,7 @@ public class DetailImportQueryController extends BaseController {
 			}
 		}
 		WhereSql += QueryFeildString.getBillCodeNotInSumInvalidDetail(getSummyBillTableCode(SelectedTableNo));
+		WhereSql += QueryFeildString.getBillConfirm();
 		
 		if(SalaryOrBonus.equals(StaffDataType.Salary.getNameKey())){
 			WhereSql += " and DATA_TYPE = '" + StaffDataType.Salary.getNameKey() + "' ";

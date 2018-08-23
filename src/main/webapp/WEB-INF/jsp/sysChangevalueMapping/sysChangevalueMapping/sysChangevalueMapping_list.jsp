@@ -147,9 +147,15 @@
 	var ShowDataCustCol7 = "";
 	var ShowDataTypeCode = "";
 	var ShowDataDepartCode = "";
+
+	//当前期间,取自tb_system_config的SystemDateTime字段
+    var SystemDateTime = '';
     
 	$(document).ready(function () { 
 		$(top.hangge());//关闭加载状态
+	    
+		//当前期间,取自tb_system_config的SystemDateTime字段
+	    SystemDateTime = '${SystemDateTime}';
 		 
 		//resize to fit page size
 		$(window).on('resize.jqGrid', function () {
@@ -160,7 +166,8 @@
 		$(grid_selector).jqGrid({
 			url: '<%=basePath%>sysChangevalueMapping/getPageList.do?SelectedCustCol7='+ShowDataCustCol7
             + '&SelectedTypeCode=' + ShowDataTypeCode
-            + '&SelectedDepartCode='+ShowDataDepartCode,
+            + '&SelectedDepartCode='+ShowDataDepartCode
+            + '&SystemDateTime='+SystemDateTime,
 			datatype: "json",
 			colModel: [
 				{ label: '账套',name:'BILL_OFF__', width:90,hidden : true,editable: true},
@@ -197,7 +204,8 @@
             + '&SelectedDepartCode='+$("#SelectedDepartCode").val()
             + '&ShowDataDepartCode='+ShowDataDepartCode
             + '&ShowDataCustCol7='+ShowDataCustCol7
-            + '&ShowDataTypeCode='+ShowDataTypeCode,
+            + '&ShowDataTypeCode='+ShowDataTypeCode
+            + '&SystemDateTime='+SystemDateTime,
 	        
 			loadComplete : function() {
 				var table = this;
@@ -415,7 +423,8 @@
 		top.jzts();
 		$.ajax({
 			type: "POST",
-			url: '<%=basePath%>sysChangevalueMapping/updateAll.do?',
+			url: '<%=basePath%>sysChangevalueMapping/updateAll.do?'
+	            + 'SystemDateTime='+SystemDateTime,
 			data:{DataRows : JSON.stringify(listData)},
 			dataType : 'json',
 			cache : false,
@@ -471,7 +480,8 @@ function batchDelete(){
 				top.jzts();
 				$.ajax({
 					type: "POST",
-						url: '<%=basePath%>sysChangevalueMapping/deleteAll.do?',
+						url: '<%=basePath%>sysChangevalueMapping/deleteAll.do?'
+		    	            + 'SystemDateTime='+SystemDateTime,
 				    	data: {DataRows:JSON.stringify(listData)},
 						dataType:'json',
 						cache: false,
@@ -567,13 +577,15 @@ function batchDelete(){
 			$(grid_selector).jqGrid('setGridParam',{  // 重新加载数据
 				url:'<%=basePath%>sysChangevalueMapping/getPageList.do?SelectedCustCol7='+ShowDataCustCol7
                     + '&SelectedTypeCode=' + ShowDataTypeCode
-                    + '&SelectedDepartCode='+ShowDataDepartCode,
+                    + '&SelectedDepartCode='+ShowDataDepartCode
+    	            + '&SystemDateTime='+SystemDateTime,
     	        editurl: '<%=basePath%>sysChangevalueMapping/save.do?SelectedCustCol7='+$("#SelectedCustCol7").val()
     	            + '&SelectedTypeCode=' + $("#SelectedTypeCode").val()
                     + '&SelectedDepartCode='+$("#SelectedDepartCode").val()
                     + '&ShowDataDepartCode='+ShowDataDepartCode
                     + '&ShowDataCustCol7='+ShowDataCustCol7
-                    + '&ShowDataTypeCode='+ShowDataTypeCode,
+                    + '&ShowDataTypeCode='+ShowDataTypeCode
+    	            + '&SystemDateTime='+SystemDateTime,
 								datatype : 'json'
 							}).trigger("reloadGrid");
 		}

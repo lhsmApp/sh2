@@ -37,6 +37,14 @@ public class DataInputService implements DataInputManager{
 	public int countJqGridExtend(JqPage page)throws Exception{
 		return (int)dao.findForObject("DataInputMapper.countJqGridExtend", page);
 	}
+	/**列表
+	 * @param page
+	 * @throws Exception
+	 */
+	@SuppressWarnings("unchecked")
+	public List<PageData> exportList(JqPage page)throws Exception{
+		return (List<PageData>)dao.findForList("DataInputMapper.exportList", page);
+	}
 
 	/**通过流水号获取流水号，用于判断数据是否变更 
 	 * @param pd
@@ -76,6 +84,9 @@ public class DataInputService implements DataInputManager{
 	 */
 	public void batchUpdateDatabase(List<PageData> listData)throws Exception{
 		dao.update("DataInputMapper.batchDelAndIns", listData);
+	}
+	public void batchUpdateDatabaseHorizontal(List<PageData> listData)throws Exception{
+		dao.update("DataInputMapper.batchDelAndInsHorizontal", listData);
 	}
 
 	/**复制

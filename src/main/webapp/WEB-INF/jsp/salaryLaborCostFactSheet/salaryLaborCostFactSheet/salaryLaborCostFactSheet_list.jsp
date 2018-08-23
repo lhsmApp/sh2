@@ -50,10 +50,20 @@
 	        height:auto !important;
 	        padding:0px;
         }
-        
+        /* 边框 */
         .ui-jqgrid tr.jqgrow td{border-right:0.5px solid #000000;border-bottom:0.5px solid #000000} 
         .ui-jqgrid{border-left:0.5px solid #000000;border-top:0.5px solid #000000}
         
+        /* 竖着显示 */
+        .WriteErect{
+            Writing-mode:tb-rl;
+            text-align:center;
+            margin:auto;
+            }
+        /*  */
+        /*  */
+        /*  */
+        /*  */
         .SelectBG{
             background-color:#AAAAAA;
             }
@@ -88,7 +98,7 @@
 								<div class="widget-body">
 									<div class="widget-main">
 										<form class="form-inline">
-											<span class="pull-left" style="margin-right: 5px;">
+											<!-- <span class="pull-left" style="margin-right: 5px;">
 												<select class="chosen-select form-control"
 													name="SelectedCustCol7" id="SelectedCustCol7" data-placeholder="请选择帐套"
 													style="vertical-align: top; height:32px;width: 150px;">
@@ -98,7 +108,7 @@
 														    <c:if test="${pd.SelectedCustCol7==each.DICT_CODE}">selected</c:if>>${each.NAME}</option>
 													</c:forEach>
 												</select>
-											</span> 
+											</span> -->
 											<span class="input-icon pull-left" style="margin-right: 5px;">
 												<input id="SelectedBusiDate" class="input-mask-date" type="text"
 												   placeholder="请输入业务区间"> 
@@ -106,6 +116,9 @@
 											</span>
 											<button type="button" class="btn btn-info btn-sm" onclick="tosearch();">
 												<i class="ace-icon fa fa-search bigger-110"></i>
+											</button>
+											<button type="button" class="btn btn-info btn-sm" onclick="exportItems();">
+												导出
 											</button>
 										</form>
 									</div>
@@ -195,7 +208,7 @@
 		//检索
 		function tosearch() {
 			var BusiDate = $("#SelectedBusiDate").val(); 
-			var CustCol7 = $("#SelectedCustCol7").val();
+			//var CustCol7 = $("#SelectedCustCol7").val();
 			if(!(BusiDate!=null && $.trim(BusiDate)!="")){
 				$("#SelectedBusiDate").tips({
 					side:3,
@@ -206,7 +219,7 @@
 				$("#SelectedBusiDate").focus();
 				return false;
 			} 
-			if(!(CustCol7!=null && $.trim(CustCol7)!="")){
+			/*if(!(CustCol7!=null && $.trim(CustCol7)!="")){
 				$("#SelectedCustCol7").tips({
 					side:3,
 		            msg:'请选择帐套',
@@ -215,7 +228,7 @@
 		        });
 				$("#SelectedCustCol7").focus();
 				return false;
-			}
+			}*/
 			$(gridBase_selector).jqGrid('GridUnload'); 
 			SetStructure();
 		}
@@ -230,8 +243,8 @@
 		
 		    $(gridBase_selector).jqGrid({
     			url: '<%=basePath%>salaryLaborCostFactSheet/getPageList.do?'
-    	            + 'SelectedBusiDate='+$("#SelectedBusiDate").val()
-    	            + '&SelectedCustCol7='+$("#SelectedCustCol7").val(),
+    	            + 'SelectedBusiDate='+$("#SelectedBusiDate").val(),
+    	            //+ '&SelectedCustCol7='+$("#SelectedCustCol7").val(),
 		        datatype: "json",
 				colNames:['类别','类别','类别','类别',
 				          '总额合计',
@@ -413,7 +426,7 @@
 	        var mya = $(jqGrid).getDataIDs();
 	        //当前显示多少条
 	        var length = mya.length;
-	        /*for (var i = 0; i < length; i++) {
+	        for (var i = 0; i < length; i++) {
 	            //从上到下获取一条信息
 	            var before = $(jqGrid).jqGrid('getRowData', mya[i]);
 	        	var isRowAllGroup = before.isRowAllGroup;
@@ -433,8 +446,50 @@
 	    	            }
 	                } 
 	        	}
+	        }
+	        //头行数
+	        var rowsHeaderNum = 1;
+            //标题两行
+	        /*for (var i = 0; i < rowsHeaderNum; i++) {
+	            //从上到下获取一条信息
+	            var before = $(jqGrid).jqGrid('getRowData', mya[i]);
+                for (var n = 0; n < cellNamesAll.length; n++) {
+    	            //定义合并列数
+    	            var colSpanTaxCount = 1;
+    	            for (m = n + 1; m <= cellNamesAll.length; m++) {
+                        if (before[cellNamesAll[n]] == before[cellNamesAll[m]] ) {
+                            colSpanTaxCount++;
+                            $(jqGrid).setCell(mya[i], cellNamesAll[m], '', { display: 'none' });
+                        } else {
+                        	colSpanTaxCount = 1;
+                            break;
+                        }
+                        $("#" + cellNamesAll[n] + "" + mya[i] + "").attr("colspan", colSpanTaxCount);//最后合并需要合并的行与合并的行数
+    	            }
+                } 
 	        }*/
-
+            for (var n = 0; n < cellNamesAll.length; n++) {
+    	        for (var i = 0; i < rowsHeaderNum; i++) {
+    	            //从上到下获取一条信息
+    	            var before = $(jqGrid).jqGrid('getRowData', mya[i]);
+    	            //定义合并行数
+    	            var rowSpanTaxCount = 1;
+    	            for (j = i + 1; j <= rowsHeaderNum; j++) {
+    	                //和上边的信息对比 如果值一样就合并行数+1 然后设置rowspan 让当前单元格隐藏
+    	                var end = $(jqGrid).jqGrid('getRowData', mya[j]);
+        	            //定义合并列数
+        	            var colSpanTaxCount = 1;
+    	                if (before[cellNamesAll[n]] == end[cellNamesAll[n]]) {
+                            rowSpanTaxCount++;
+                            $(jqGrid).setCell(mya[j], cellNamesAll[n], '', { display: 'none' });
+                        } else {
+                            rowSpanTaxCount = 1;
+                            break;
+                        }
+    	                $("#" + cellNamesAll[n] + "" + mya[i] + "").attr("rowspan", rowSpanTaxCount);
+    	            }
+    	        }
+            }
 	        /*for (var i = 0; i < length; i++) {
 	            //从上到下获取一条信息
 	            var before = $(jqGrid).jqGrid('getRowData', mya[i]);
@@ -475,50 +530,7 @@
     	            }
     	        }
             }*/
-            
-	        //头行数
-	        var rowsHeaderNum = 1;
-	        for (var i = 0; i < rowsHeaderNum; i++) {
-	            //从上到下获取一条信息
-	            var before = $(jqGrid).jqGrid('getRowData', mya[i]);
-                for (var n = 0; n < cellNamesAll.length; n++) {
-    	            //定义合并列数
-    	            var colSpanTaxCount = 1;
-    	            for (m = n + 1; m <= cellNamesAll.length; m++) {
-                        if (before[cellNamesAll[n]] == before[cellNamesAll[m]] ) {
-                            colSpanTaxCount++;
-                            $(jqGrid).setCell(mya[i], cellNamesAll[m], '', { display: 'none' });
-                        } else {
-                        	colSpanTaxCount = 1;
-                            break;
-                        }
-                        $("#" + cellNamesAll[n] + "" + mya[i] + "").attr("colspan", colSpanTaxCount);//最后合并需要合并的行与合并的行数
-    	            }
-                } 
-	        }
-            for (var n = 0; n < cellNamesAll.length; n++) {
-    	        for (var i = 0; i < rowsHeaderNum; i++) {
-    	            //从上到下获取一条信息
-    	            var before = $(jqGrid).jqGrid('getRowData', mya[i]);
-    	            //定义合并行数
-    	            var rowSpanTaxCount = 1;
-    	            for (j = i + 1; j <= rowsHeaderNum; j++) {
-    	                //和上边的信息对比 如果值一样就合并行数+1 然后设置rowspan 让当前单元格隐藏
-    	                var end = $(jqGrid).jqGrid('getRowData', mya[j]);
-        	            //定义合并列数
-        	            var colSpanTaxCount = 1;
-    	                if (before[cellNamesAll[n]] == end[cellNamesAll[n]]) {
-                            rowSpanTaxCount++;
-                            $(jqGrid).setCell(mya[j], cellNamesAll[n], '', { display: 'none' });
-                        } else {
-                            rowSpanTaxCount = 1;
-                            break;
-                        }
-    	                $("#" + cellNamesAll[n] + "" + mya[i] + "").attr("rowspan", rowSpanTaxCount);
-    	            }
-    	        }
-            }
-
+            //中间列标题
 	        for (var i = rowsHeaderNum; i < length-1; i++) {
 	            //从上到下获取一条信息
 	            var before = $(jqGrid).jqGrid('getRowData', mya[i]);
@@ -556,10 +568,12 @@
                             break;
                         }
     	                $("#" + cellNamesHeader[n] + "" + mya[i] + "").attr("rowspan", rowSpanTaxCount);
+    	                //$("#" + cellNamesHeader[n] + "" + mya[i] + "").addClass("WriteErect");
     	            }
     	        }
             }
-	        for (var i = length-1; i < length; i++) {
+            //最后一行
+	        /*for (var i = length-1; i < length; i++) {
 	            //从上到下获取一条信息
 	            var before = $(jqGrid).jqGrid('getRowData', mya[i]);
                 for (var n = 0; n < cellNamesAll.length; n++) {
@@ -568,19 +582,27 @@
     	            for (m = n + 1; m <= cellNamesAll.length; m++) {
                         if (before[cellNamesAll[n]] == before[cellNamesAll[m]] ) {
                             colSpanTaxCount++;
-                            //$(jqGrid).setCell(mya[i], cellNamesAll[m], '', { display: 'none' });
+                            $(jqGrid).setCell(mya[i], cellNamesAll[m], '', { display: 'none' });
                         } else {
                         	colSpanTaxCount = 1;
                             break;
                         }
-                        //$("#" + cellNamesAll[n] + "" + mya[i] + "").attr("colspan", colSpanTaxCount);//最后合并需要合并的行与合并的行数
+                        $("#" + cellNamesAll[n] + "" + mya[i] + "").attr("colspan", colSpanTaxCount);//最后合并需要合并的行与合并的行数
     	            }
                 }
                 //$(jqGrid).setCell(mya[i], cellNamesAll[0], '', { align: 'left' });
                 $('#'+mya[i]).find("td").addClass("SelectTextLeft");
 	            $('#'+mya[i]).find("td").addClass("SelectBG");
-	        }
+	        }*/
 	    }
+
+        /**
+         * 导出
+         */
+        function exportItems(){
+        	window.location.href='<%=basePath%>salaryLaborCostFactSheet/excel.do?'
+	            + 'SelectedBusiDate='+$("#SelectedBusiDate").val();
+        }
 	</script>
 </body>
 </html>

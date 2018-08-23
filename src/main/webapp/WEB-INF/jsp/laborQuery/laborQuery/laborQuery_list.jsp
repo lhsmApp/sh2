@@ -154,6 +154,9 @@
 
         //有权限导出表的部门
         var bolCanExportTable;
+
+		//当前期间,取自tb_system_config的SystemDateTime字段
+	    var SystemDateTime = '';
         
         function SetStructure(){
 	        //resize to fit page size
@@ -166,7 +169,8 @@
 			    url: '<%=basePath%>laborQuery/getPageList.do?'
                     + 'SelectedBusiDate='+$("#SelectedBusiDate").val()
 					+ '&SelectedDepartCode='+$("#SelectedDepartCode").val()
-		            + '&SelectedCustCol7='+$("#SelectedCustCol7").val(),
+		            + '&SelectedCustCol7='+$("#SelectedCustCol7").val()
+    	            + '&SystemDateTime='+SystemDateTime,
 			    datatype: "json",
 			    colModel: [
 						//{ label: '编号', name: 'USER_CODE', 
@@ -282,7 +286,7 @@
             $(top.hangge());//关闭加载状态
 	    
             //当前期间,取自tb_system_config的SystemDateTime字段
-	        var SystemDateTime = '${SystemDateTime}';
+	        SystemDateTime = '${SystemDateTime}';
 			$("#SelectedBusiDate").val(SystemDateTime);
 			//当前登录人所在二级单位
 		    var DepartName = '${DepartName}';
@@ -306,7 +310,8 @@
 		    	diag.URL = '<%=basePath%>laborQuery/goDownExcel.do?'
                     + 'SelectedBusiDate='+$("#SelectedBusiDate").val()
 					+ '&SelectedDepartCode='+$("#SelectedDepartCode").val()
-		            + '&SelectedCustCol7='+$("#SelectedCustCol7").val();
+		            + '&SelectedCustCol7='+$("#SelectedCustCol7").val()
+    	            + '&SystemDateTime='+SystemDateTime;
 		    	diag.Width = 300;
 		    	diag.Height = 170;
 		    	diag.CancelEvent = function(){ //关闭事件
@@ -350,7 +355,8 @@
 				url:'<%=basePath%>laborQuery/getPageList.do?'
                     + 'SelectedBusiDate='+$("#SelectedBusiDate").val()
 					+ '&SelectedDepartCode='+$("#SelectedDepartCode").val()
-		            + '&SelectedCustCol7='+$("#SelectedCustCol7").val(),
+		            + '&SelectedCustCol7='+$("#SelectedCustCol7").val()
+    	            + '&SystemDateTime='+SystemDateTime,
 				datatype : 'json',
 			}).trigger("reloadGrid");
 		}  

@@ -20,12 +20,14 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 import com.fh.controller.base.BaseController;
 import com.fh.controller.common.BillCodeUtil;
+import com.fh.controller.common.CheckSystemDateTime;
 import com.fh.controller.common.Common;
 import com.fh.controller.common.DictsUtil;
 import com.fh.controller.common.Message;
 import com.fh.controller.common.QueryFeildString;
 import com.fh.controller.common.SelectBillCodeOptions;
 import com.fh.controller.common.TmplUtil;
+import com.fh.controller.common.Corresponding;
 import com.fh.entity.CommonBase;
 import com.fh.entity.JqPage;
 import com.fh.entity.Page;
@@ -100,7 +102,7 @@ public class StaffSummyController extends BaseController {
 	String SelectBillCodeLastShow = "全部单据";
 	
 	//页面显示数据的年月
-	String SystemDateTime = "";
+	//String SystemDateTime = "";
 
 	// 查询表的主键字段，作为标准列，jqgrid添加带__列，mybaits获取带__列
 	private List<String> keyListBase = Arrays.asList("BILL_CODE", "BUSI_DATE", "DEPT_CODE", "CUST_COL7");
@@ -131,7 +133,7 @@ public class StaffSummyController extends BaseController {
 		//员工组
 		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
 		//当前期间,取自tb_system_config的SystemDateTime字段
-		SystemDateTime = sysConfigManager.currentSection(getPd);
+		String SystemDateTime = sysConfigManager.currentSection(getPd);
 		
 		ModelAndView mv = this.getModelAndView();
 		mv.setViewName("staffsummy/staffsummy/staffsummy_list");
@@ -141,7 +143,7 @@ public class StaffSummyController extends BaseController {
 		getPd.put("SelectNoBillCodeShow", SelectBillCodeFirstShow);
 		getPd.put("SelectAllBillCodeShow", SelectBillCodeLastShow);
 		getPd.put("InitBillCodeOptions", SelectBillCodeOptions.getSelectBillCodeOptions(null, SelectBillCodeFirstShow, SelectBillCodeLastShow));
-		mv.addObject("SystemDateTime", SystemDateTime);
+        mv.addObject("SystemDateTime", SystemDateTime.trim());
 		User user = (User) Jurisdiction.getSession().getAttribute(Const.SESSION_USERROL);
 		String DepartName = user.getDEPARTMENT_NAME();
 		mv.addObject("DepartName", DepartName);
@@ -175,8 +177,8 @@ public class StaffSummyController extends BaseController {
 		PageData getPd = this.getPageData();
 		//员工组
 		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
-		String strTypeCodeTramsfer = getWhileValueToTypeCodeTramsfer(SelectedTableNo);
-		String emplGroupType = DictsUtil.getEmplGroupType(SelectedTableNo);
+		String strTypeCodeTramsfer = Corresponding.getTypeCodeTransferFromTmplType(SelectedTableNo);
+		String emplGroupType = Corresponding.getUserGroupTypeFromTmplType(SelectedTableNo);
 		//单位
 		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
 		int departSelf = Common.getDepartSelf(departmentService);
@@ -186,6 +188,8 @@ public class StaffSummyController extends BaseController {
 		}
 		//账套
 		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
+		//当前区间
+		String SystemDateTime = getPd.getString("SystemDateTime");
 		
 		PageData getQueryFeildPd = new PageData();
 		//工资分的类型, 只有工资返回值
@@ -270,8 +274,8 @@ public class StaffSummyController extends BaseController {
 		PageData getPd = this.getPageData();
 		//员工组
 		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
-		String strTypeCodeTramsfer = getWhileValueToTypeCodeTramsfer(SelectedTableNo);
-		String emplGroupType = DictsUtil.getEmplGroupType(SelectedTableNo);
+		String strTypeCodeTramsfer = Corresponding.getTypeCodeTransferFromTmplType(SelectedTableNo);
+		String emplGroupType = Corresponding.getUserGroupTypeFromTmplType(SelectedTableNo);
 		TmplTypeInfo implTypeCode = getWhileValueToTypeCode(SelectedTableNo);
 		String TypeCodeSummyBill = implTypeCode.getTypeCodeSummyBill();
 		String TypeCodeDetail = implTypeCode.getTypeCodeDetail();
@@ -286,6 +290,8 @@ public class StaffSummyController extends BaseController {
 		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
 		//单号
 		String SelectedBillCode = getPd.getString("SelectedBillCode");
+		//当前区间
+		String SystemDateTime = getPd.getString("SystemDateTime");
 		
 		PageData getQueryFeildPd = new PageData();
 		//工资分的类型, 只有工资返回值
@@ -490,8 +496,16 @@ public class StaffSummyController extends BaseController {
 		commonBase.setCode(-1);
 		
 		PageData getPd = this.getPageData();
+		//当前区间
+		String SystemDateTime = getPd.getString("SystemDateTime");
+		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager);
+		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
+			commonBase.setCode(2);
+			commonBase.setMessage(mesDateTime);
+			return commonBase;
+		}
 		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
-		String strTypeCodeTramsfer = getWhileValueToTypeCodeTramsfer(SelectedTableNo);
+		String strTypeCodeTramsfer = Corresponding.getTypeCodeTransferFromTmplType(SelectedTableNo);
 		
 		Object DATA_ROWS = getPd.get("DataRows");
 		String json = DATA_ROWS.toString();  
@@ -501,7 +515,7 @@ public class StaffSummyController extends BaseController {
         for(PageData each : listData){
         	listBillCode.add(each.getString("BILL_CODE" + TmplUtil.keyExtra));
         }
-		String checkState = CheckState(QueryFeildString.tranferListValueToSqlInString(listBillCode));
+		String checkState = CheckState(QueryFeildString.tranferListValueToSqlInString(listBillCode), SystemDateTime);
 		if(checkState!=null && !checkState.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(checkState);
@@ -528,10 +542,18 @@ public class StaffSummyController extends BaseController {
 		commonBase.setCode(-1);
 		
 		PageData getPd = this.getPageData();
+		//当前区间
+		String SystemDateTime = getPd.getString("SystemDateTime");
+		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager);
+		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
+			commonBase.setCode(2);
+			commonBase.setMessage(mesDateTime);
+			return commonBase;
+		}
 		//员工组
 		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
-		String strTypeCodeTramsfer = getWhileValueToTypeCodeTramsfer(SelectedTableNo);
-		String emplGroupType = DictsUtil.getEmplGroupType(SelectedTableNo);
+		String strTypeCodeTramsfer = Corresponding.getTypeCodeTransferFromTmplType(SelectedTableNo);
+		String emplGroupType = Corresponding.getUserGroupTypeFromTmplType(SelectedTableNo);
 		TmplTypeInfo implTypeCode = getWhileValueToTypeCode(SelectedTableNo);
 		String TypeCodeSummyBill = implTypeCode.getTypeCodeSummyBill();
 		String TypeCodeSummyDetail = implTypeCode.getTypeCodeSummyDetail();
@@ -588,7 +610,7 @@ public class StaffSummyController extends BaseController {
 		}
 		retSetBillCodeFeild = QueryFeildString.extraSumField(retSetBillCodeFeild, SumFieldBill);
 		if(!SelectedBillCode.equals(SelectBillCodeFirstShow)){//if(listData!=null && listData.size()>0){//
-			String checkState = CheckState("'" + SelectedBillCode + "'");
+			String checkState = CheckState("'" + SelectedBillCode + "'", SystemDateTime);
 			if(checkState!=null && !checkState.trim().equals("")){
 				commonBase.setCode(2);
 				commonBase.setMessage(checkState);
@@ -817,7 +839,7 @@ public class StaffSummyController extends BaseController {
 	}
 	
 	//判断已传输或作废或删除
-	private String CheckState(String strSqlInBillCode) throws Exception{
+	private String CheckState(String strSqlInBillCode, String SystemDateTime) throws Exception{
 		String strRut = "";
 		
 		String QueryFeild = " and BILL_CODE in (" + strSqlInBillCode + ") ";
@@ -841,31 +863,6 @@ public class StaffSummyController extends BaseController {
 			which = value;
 		}
 		return which;
-	}
-
-	private String getWhileValueToTypeCodeTramsfer(String which) throws Exception{
-		String strReturn = "";
-		if(which.equals(TmplType.TB_STAFF_SUMMY_CONTRACT.getNameKey())){
-			//合同化
-			strReturn = TmplType.TB_STAFF_TRANSFER_CONTRACT.getNameKey();
-		}
-		if(which.equals(TmplType.TB_STAFF_SUMMY_MARKET.getNameKey())){
-			//市场化
-			strReturn = TmplType.TB_STAFF_TRANSFER_MARKET.getNameKey();
-		}
-		if(which.equals(TmplType.TB_STAFF_SUMMY_SYS_LABOR.getNameKey())){
-			//系统内劳务
-			strReturn = TmplType.TB_STAFF_TRANSFER_SYS_LABOR.getNameKey();
-		}
-		if(which.equals(TmplType.TB_STAFF_SUMMY_OPER_LABOR.getNameKey())){
-			//运行人员
-			strReturn = TmplType.TB_STAFF_TRANSFER_OPER_LABOR.getNameKey();
-		}
-		if(which.equals(TmplType.TB_STAFF_SUMMY_LABOR.getNameKey())){
-			//劳务派遣工资
-			strReturn = TmplType.TB_STAFF_TRANSFER_LABOR.getNameKey();
-		}
-		return strReturn;
 	}
 
 	private TmplTypeInfo getWhileValueToTypeCode(String which) throws Exception{

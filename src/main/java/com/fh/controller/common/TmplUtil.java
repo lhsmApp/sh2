@@ -378,25 +378,7 @@ public class TmplUtil {
 			}
 			jqGridColModelAdditionalColumns.append(" { ");
 			jqGridColModelAdditionalColumns.append(" name: '").append(AdditionalReportColumns).append("', ");
-			jqGridColModelAdditionalColumns.append(" label: '封存状态', ");
-
-			String strDicValue = Common.getDicValue(m_dicList, AdditionalReportColumns,//
-					tmplConfigDictService, dictionariesService, 
-					departmentService, userService, AdditionalReportColumns);
-			String strSelectValue = ":";
-			if (strDicValue != null && !strDicValue.trim().equals("")) {
-				strSelectValue += ";" + strDicValue;
-			}
-			// 选择
-			jqGridColModelAdditionalColumns.append(" edittype:'select', ");
-			jqGridColModelAdditionalColumns.append(" editoptions:{value:'" + strSelectValue + "'}, ");
-			// 翻译
-			jqGridColModelAdditionalColumns.append(" formatter: 'select', ");
-			jqGridColModelAdditionalColumns.append(" formatoptions: {value: '" + strDicValue + "'}, ");
-			// 查询
-			jqGridColModelAdditionalColumns.append(" stype: 'select', ");
-			jqGridColModelAdditionalColumns.append(" searchoptions: {value: ':[All];" + strDicValue + "'}, ");
-			
+			jqGridColModelAdditionalColumns.append(" label: 'FMIS凭证号', ");
 			jqGridColModelAdditionalColumns.append(" hidden: false, editable: false ");
 			jqGridColModelAdditionalColumns.append(" } ");
 		}

@@ -66,7 +66,7 @@ public class LaborQueryController extends BaseController {
 	String TableNameDetail = "TB_LABOR_DETAIL";
 
 	//页面显示数据的年月
-	String ssSystemDateTime = "";
+	//String ssSystemDateTime = "";
 	//界面查询字段
     List<String> QueryFeildList = Arrays.asList("BILL_OFF", "DEPT_CODE");
     //有权限导出表的部门
@@ -86,8 +86,8 @@ public class LaborQueryController extends BaseController {
 		ModelAndView mv = this.getModelAndView();
 		mv.setViewName("laborQuery/laborQuery/laborQuery_list");
 		//当前期间,取自tb_system_config的SystemDateTime字段
-		ssSystemDateTime = sysConfigManager.currentSection(getPd);
-		mv.addObject("SystemDateTime", ssSystemDateTime);
+		String ssSystemDateTime = sysConfigManager.currentSection(getPd);
+		mv.addObject("SystemDateTime", ssSystemDateTime.trim());
 		User user = (User) Jurisdiction.getSession().getAttribute(Const.SESSION_USERROL);
 		String DepartName = user.getDEPARTMENT_NAME();
 		mv.addObject("DepartName", DepartName);
@@ -232,7 +232,6 @@ public class LaborQueryController extends BaseController {
 		mv.setViewName("common/downExcel");
 		mv.addObject("local", "laborQuery");
 		mv.addObject("SelectedBusiDate", SelectedBusiDate);
-		mv.addObject("SystemDateTime", ssSystemDateTime);
 		mv.addObject("DepartTreeSource", DepartTreeSource);
 		mv.addObject("commonBaseCode", commonBase.getCode());
 		mv.addObject("commonMessage", commonBase.getMessage());

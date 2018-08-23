@@ -341,10 +341,6 @@ public class DataInputController extends BaseController {
 		commonBase.setCode(-1);
 
 		PageData getPd = this.getPageData();
-		Object DATA_ROWS = getPd.get("DataRows");
-		String json = DATA_ROWS.toString();  
-        JSONArray array = JSONArray.fromObject(json);  
-        List<PageData> listData = (List<PageData>) JSONArray.toCollection(array,PageData.class);
 		//当前区间
 		String SystemDateTime = getPd.getString("SystemDateTime");
 		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager);
@@ -353,7 +349,11 @@ public class DataInputController extends BaseController {
 			commonBase.setMessage(mesDateTime);
 			return commonBase;
 		}
-        
+		Object DATA_ROWS = getPd.get("DataRows");
+		String json = DATA_ROWS.toString();  
+        JSONArray array = JSONArray.fromObject(json);  
+        List<PageData> listData = (List<PageData>) JSONArray.toCollection(array,PageData.class);
+		
 		if(null != listData && listData.size() > 0){
 			for(PageData pdData : listData){
 				for(String strFeild : MustNotEditList){
@@ -384,11 +384,6 @@ public class DataInputController extends BaseController {
 		commonBase.setCode(-1);
 
 		PageData getPd = this.getPageData();
-		
-		Object DATA_ROWS = getPd.get("DataRows");
-		String json = DATA_ROWS.toString();  
-        JSONArray array = JSONArray.fromObject(json);  
-        List<PageData> listData = (List<PageData>) JSONArray.toCollection(array,PageData.class);
 		//当前区间
 		String SystemDateTime = getPd.getString("SystemDateTime");
 		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager);
@@ -397,6 +392,12 @@ public class DataInputController extends BaseController {
 			commonBase.setMessage(mesDateTime);
 			return commonBase;
 		}
+		
+		Object DATA_ROWS = getPd.get("DataRows");
+		String json = DATA_ROWS.toString();  
+        JSONArray array = JSONArray.fromObject(json);  
+        List<PageData> listData = (List<PageData>) JSONArray.toCollection(array,PageData.class);
+		
         if(null != listData && listData.size() > 0){
 			dataInputService.deleteAll(listData);
 			commonBase.setCode(0);
