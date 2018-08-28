@@ -1085,27 +1085,28 @@ public class StaffDetailController extends BaseController {
 												if(SAL_RANGE_dong_0==null){
 													SAL_RANGE_dong_0 = "";
 												}
-												if(SAL_RANGE_dong_0.equals(getSAL_RANGE)){
+												if(!SAL_RANGE_dong_0.equals(getSAL_RANGE)){
 										    	    continue;
-												}
-												//账套-新西气东输公司-9870 String CUST_COL7_xxqdsgs = "9870";
-												//企业特定员工分类-东部管道机关-PUT02 String USER_CATG_DBGDJG = "PUT02";
-												if(getCUST_COL7.equals(CUST_COL7_xxqdsgs)){
-													if(USER_CATG_DBGDJG==null){
-														USER_CATG_DBGDJG = "";
+												} else {
+													//账套-新西气东输公司-9870 String CUST_COL7_xxqdsgs = "9870";
+													//企业特定员工分类-东部管道机关-PUT02 String USER_CATG_DBGDJG = "PUT02";
+													if(getCUST_COL7.equals(CUST_COL7_xxqdsgs)){
+														if(USER_CATG_DBGDJG==null){
+															USER_CATG_DBGDJG = "";
+														}
+														if(!USER_CATG_DBGDJG.equals(getUSER_CATG)){
+												    	    continue;
+														}
 													}
-													if(USER_CATG_DBGDJG.equals(getUSER_CATG)){
-											    	    continue;
-													}
-												}
-												//账套-西气东输管道-9100 String CUST_COL7_xqdsgd = "9100";
-												//企业特定员工分类-西气东输管道机关-PUT04 String USER_CATG_XQDSGDJG = "PUT04";
-												if(getCUST_COL7.equals(CUST_COL7_xqdsgd)){
-													if(USER_CATG_XQDSGDJG==null){
-														USER_CATG_XQDSGDJG = "";
-													}
-													if(USER_CATG_XQDSGDJG.equals(getUSER_CATG)){
-											    	    continue;
+													//账套-西气东输管道-9100 String CUST_COL7_xqdsgd = "9100";
+													//企业特定员工分类-西气东输管道机关-PUT04 String USER_CATG_XQDSGDJG = "PUT04";
+													if(getCUST_COL7.equals(CUST_COL7_xqdsgd)){
+														if(USER_CATG_XQDSGDJG==null){
+															USER_CATG_XQDSGDJG = "";
+														}
+														if(!USER_CATG_XQDSGDJG.equals(getUSER_CATG)){
+												    	    continue;
+														}
 													}
 												}
 											}

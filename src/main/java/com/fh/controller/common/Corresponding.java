@@ -1,6 +1,5 @@
 package com.fh.controller.common;
 
-import com.fh.util.PageData;
 import com.fh.util.enums.BillNumType;
 import com.fh.util.enums.EmplGroupType;
 import com.fh.util.enums.PZTYPE;
@@ -17,6 +16,15 @@ import com.fh.util.enums.TmplType;
  *
  */
 public class Corresponding {
+	
+
+	public static String tb_staff_detail = "tb_staff_detail";
+	public static String tb_social_inc_detail = "tb_social_inc_detail";
+	public static String tb_house_fund_detail = "tb_house_fund_detail";
+	public static String tb_staff_summy_bill = "tb_staff_summy_bill";
+	public static String tb_social_inc_summy_bill = "tb_social_inc_summy_bill";
+	public static String tb_house_fund_summy_bill = "tb_house_fund_summy_bill";
+	
 	/**
 	 * 根据模板基本类型获取SysConfirmInfoBillType
 	 * 
@@ -202,7 +210,6 @@ public class Corresponding {
 		return emplGroupType;
 	}
 	public static String getTmplTypeTranferFromUserGroupType(String userGroup) throws Exception {
-		PageData pd = new PageData();
 		String retTmplTypeTranfer = "";// 数据库真实业务数据表
 		if (userGroup.equals(EmplGroupType.HTH.getNameKey())) {
 			retTmplTypeTranfer = TmplType.TB_STAFF_TRANSFER_CONTRACT.getNameKey();
@@ -216,6 +223,66 @@ public class Corresponding {
 			retTmplTypeTranfer = TmplType.TB_STAFF_TRANSFER_LABOR.getNameKey();
 		}
 		return retTmplTypeTranfer;
+	}
+	
+	/**
+	 * 根据前端业务表索引获取表名称
+	 * 
+	 * @param which
+	 * @return
+	 */
+	public static String getSumBillTableNameFromTmplType(String which) {
+		String tableCode = "";
+		if (which != null){
+			if(which.equals(TmplType.TB_STAFF_SUMMY_CONTRACT.getNameKey())
+					||which.equals(TmplType.TB_STAFF_SUMMY_MARKET.getNameKey())
+					||which.equals(TmplType.TB_STAFF_SUMMY_SYS_LABOR.getNameKey())
+					||which.equals(TmplType.TB_STAFF_SUMMY_OPER_LABOR.getNameKey())
+					||which.equals(TmplType.TB_STAFF_SUMMY_LABOR.getNameKey())) {
+				tableCode = "tb_staff_summy_bill";
+			} else if (which.equals(TmplType.TB_SOCIAL_INC_SUMMY.getNameKey())) {
+				tableCode = "tb_social_inc_summy_bill";
+			} else if (which.equals(TmplType.TB_HOUSE_FUND_SUMMY.getNameKey())) {
+				tableCode = "tb_house_fund_summy_bill";
+			}
+		}
+		return tableCode;
+	}
+	
+	public static String getSummyTableNameFromTmplType(String which) {
+		String tableCode = "";
+		if (which != null){
+			if(which.equals(TmplType.TB_STAFF_SUMMY_CONTRACT.getNameKey())
+					||which.equals(TmplType.TB_STAFF_SUMMY_MARKET.getNameKey())
+					||which.equals(TmplType.TB_STAFF_SUMMY_SYS_LABOR.getNameKey())
+					||which.equals(TmplType.TB_STAFF_SUMMY_OPER_LABOR.getNameKey())
+					||which.equals(TmplType.TB_STAFF_SUMMY_LABOR.getNameKey())) {
+				tableCode = "tb_staff_summy";
+			} else if (which.equals(TmplType.TB_SOCIAL_INC_SUMMY.getNameKey())) {
+				tableCode = "tb_social_inc_summy";
+			} else if (which.equals(TmplType.TB_HOUSE_FUND_SUMMY.getNameKey())) {
+				tableCode = "tb_house_fund_summy";
+			}
+		}
+		return tableCode;
+	}
+	
+	public static String getDetailTableNameFromTmplType(String which) {
+		String tableCode = "";
+		if (which != null){
+			if(which.equals(TmplType.TB_STAFF_SUMMY_CONTRACT.getNameKey())
+					||which.equals(TmplType.TB_STAFF_SUMMY_MARKET.getNameKey())
+					||which.equals(TmplType.TB_STAFF_SUMMY_SYS_LABOR.getNameKey())
+					||which.equals(TmplType.TB_STAFF_SUMMY_OPER_LABOR.getNameKey())
+					||which.equals(TmplType.TB_STAFF_SUMMY_LABOR.getNameKey())) {
+				tableCode = tb_staff_detail;
+			} else if (which.equals(TmplType.TB_SOCIAL_INC_SUMMY.getNameKey())) {
+				tableCode = tb_social_inc_detail;
+			} else if (which.equals(TmplType.TB_HOUSE_FUND_SUMMY.getNameKey())) {
+				tableCode = tb_house_fund_detail;
+			}
+		}
+		return tableCode;
 	}
 
 	/**

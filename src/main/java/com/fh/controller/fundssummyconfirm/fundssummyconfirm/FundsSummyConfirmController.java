@@ -12,7 +12,6 @@ import java.util.Map;
 
 import javax.annotation.Resource;
 import javax.xml.namespace.QName;
-import javax.xml.rpc.ServiceException;
 
 import org.apache.axis.client.Call;
 import org.apache.axis.client.Service;
@@ -44,7 +43,6 @@ import com.fh.util.date.DateFormatUtils;
 import com.fh.util.date.DateUtils;
 import com.fh.util.enums.BillState;
 import com.fh.util.enums.SysConfigKeyCode;
-import com.fh.util.enums.SysConfirmInfoBillType;
 import com.fh.util.enums.TmplType;
 
 import net.sf.json.JSONArray;
@@ -56,7 +54,6 @@ import com.fh.service.fundssummyconfirm.fundssummyconfirm.FundsSummyConfirmManag
 import com.fh.service.fhoa.department.impl.DepartmentService;
 import com.fh.service.sysConfig.sysconfig.SysConfigManager;
 import com.fh.service.sysConfirmInfo.sysConfirmInfo.impl.SysConfirmInfoService;
-import com.fh.service.sysDeptLtdTime.sysDeptLtdTime.impl.SysDeptLtdTimeService;
 import com.fh.service.sysStruMapping.sysStruMapping.impl.SysStruMappingService;
 import com.fh.service.sysTableMapping.sysTableMapping.impl.SysTableMappingService;
 import com.fh.service.system.dictionaries.impl.DictionariesService;
@@ -99,12 +96,6 @@ public class FundsSummyConfirmController extends BaseController {
 
 	//表名
 	String tb_sys_confirm_info = "tb_sys_confirm_info";
-	String tb_staff_detail = "tb_staff_detail";
-	String tb_social_inc_detail = "tb_social_inc_detail";
-	String tb_house_fund_detail = "tb_house_fund_detail";
-	String tb_staff_summy_bill = "tb_staff_summy_bill";
-	String tb_social_inc_summy_bill = "tb_social_inc_summy_bill";
-	String tb_house_fund_summy_bill = "tb_house_fund_summy_bill";
 
 	//当前期间,取自tb_system_config的SystemDateTime字段
 	//String SystemDateTime = "";
@@ -144,7 +135,13 @@ public class FundsSummyConfirmController extends BaseController {
 		//CUST_COL7 FMISACC 帐套字典
 		mv.addObject("FMISACC", DictsUtil.getDictsByParentCode(dictionariesService, "FMISACC"));
 		// *********************加载单位树  DEPT_CODE*******************************
-		String DepartmentSelectTreeSource=DictsUtil.getDepartmentSelectTreeSource(departmentService, DictsUtil.DepartShowAll);
+		String DepartmentSelectTreeSource=DictsUtil.getDepartmentSelectTreeSource(departmentService);
+		if(DepartmentSelectTreeSource.equals("0"))
+		{
+			getPd.put("departTreeSource", DepartmentSelectTreeSource);
+		} else {
+			getPd.put("departTreeSource", 1);
+		}
 		mv.addObject("zTreeNodes", DepartmentSelectTreeSource);
 		// ***********************************************************
 
@@ -171,6 +168,10 @@ public class FundsSummyConfirmController extends BaseController {
 		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
 		//单位
 		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
+		int departSelf = Common.getDepartSelf(departmentService);
+		if(departSelf == 1){
+			SelectedDepartCode = Jurisdiction.getCurrentDepartmentID();
+		}
 
 		String strShowCalModelDepaet = Jurisdiction.getCurrentDepartmentID();
 		if(SelectedDepartCode!=null && !SelectedDepartCode.trim().equals("") && !SelectedDepartCode.contains(",")){
@@ -208,6 +209,10 @@ public class FundsSummyConfirmController extends BaseController {
 		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
 		//单位
 		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
+		int departSelf = Common.getDepartSelf(departmentService);
+		if(departSelf == 1){
+			SelectedDepartCode = Jurisdiction.getCurrentDepartmentID();
+		}
 		//当前区间
 		String SystemDateTime = getPd.getString("SystemDateTime");
 
@@ -217,6 +222,8 @@ public class FundsSummyConfirmController extends BaseController {
 		getQueryFeildPd.put("CUST_COL7", SelectedCustCol7);
 		getQueryFeildPd.put("BUSI_DATE", SystemDateTime);
 		String QueryFeild = QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList);
+		List<String> AllDeptCode = Common.getAllDeptCode(departmentService, Jurisdiction.getCurrentDepartmentID());
+		QueryFeild += " and DEPT_CODE in (" + QueryFeildString.tranferListValueToSqlInString(AllDeptCode) + ") ";
 		if(!(SystemDateTime!=null && !SystemDateTime.trim().equals(""))){
 			QueryFeild += " and 1 != 1 ";
 		}
@@ -250,7 +257,7 @@ public class FundsSummyConfirmController extends BaseController {
 			getPd.put("FieldSelectKey", strFieldSelectKey);
 		}
 		//表名
-		String getTableNameSummy = getSummyBaseTableCode(SelectedTableNo);
+		String getTableNameSummy = Corresponding.getSumBillTableNameFromTmplType(SelectedTableNo);
 		String tableName = " (select s.*, IFNULL(cert.CERT_CODE, ' ') CERT_CODE from " + getTableNameSummy + " s left join tb_gl_cert cert on s.BILL_CODE = cert.BILL_CODE) t ";
 		getPd.put("TableName", tableName);
 		page.setPd(getPd);
@@ -324,7 +331,7 @@ public class FundsSummyConfirmController extends BaseController {
 		List<String> SumFieldDetail = implTypeCode.getSumFieldDetail();
 		String strBillCode = getPd.getString("DetailListBillCode");
 		
-		String detailTableName = getSummyDetailTableCode(SelectedTableNo);
+		String detailTableName = Corresponding.getSummyTableNameFromTmplType(SelectedTableNo);
 
 		PageData pdCode = new PageData();
 		pdCode.put("TableName", detailTableName);
@@ -390,7 +397,7 @@ public class FundsSummyConfirmController extends BaseController {
         List<PageData> listData = (List<PageData>) JSONArray.toCollection(array,PageData.class);
         PageData pdGet = listData.get(0);
 
-		String detailTableName = getImportDetailTableCode(SelectedTableNo);
+		String detailTableName = Corresponding.getDetailTableNameFromTmplType(SelectedTableNo);
 
 		PageData pdCode = new PageData();
 		String QueryFeild = QueryFeildString.getDetailQueryFeild(pdGet, SumFieldDetail, TmplUtil.keyExtra);
@@ -420,7 +427,6 @@ public class FundsSummyConfirmController extends BaseController {
 		
 		PageData getPd = this.getPageData();
 		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
-		String tmplType = DictsUtil.getTranferTmplType(SelectedTableNo);
 		//tab
 		String SelectedTabType = getPd.getString("SelectedTabType");
 		//当前区间
@@ -798,6 +804,8 @@ public class FundsSummyConfirmController extends BaseController {
 		//getQueryFeildPd.put("CUST_COL7", SelectedCustCol7);
 		getQueryFeildPd.put("BUSI_DATE", SystemDateTime);
 		String QueryFeild = QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList);
+		List<String> AllDeptCode = Common.getAllDeptCode(departmentService, Jurisdiction.getCurrentDepartmentID());
+		QueryFeild += " and DEPT_CODE in (" + QueryFeildString.tranferListValueToSqlInString(AllDeptCode) + ") ";
 		if(!(SystemDateTime!=null && !SystemDateTime.trim().equals(""))){
 			QueryFeild += " and 1 != 1 ";
 		}
@@ -816,11 +824,11 @@ public class FundsSummyConfirmController extends BaseController {
 		QueryFeild += " and BILL_CODE in (select bill_code FROM tb_sys_sealed_info WHERE state = '1' AND RPT_DUR = '" + SystemDateTime + "') ";
 		getPd.put("QueryFeild", QueryFeild);
 		
-		getPd.put("TableName", tb_staff_summy_bill);
+		getPd.put("TableName", Corresponding.tb_staff_summy_bill);
 		List<PageData> getListStaff = fundssummyconfirmService.getOperList(getPd);	//列出Betting列表
-		getPd.put("TableName", tb_social_inc_summy_bill);
+		getPd.put("TableName", Corresponding.tb_social_inc_summy_bill);
 		List<PageData> getListSocial = fundssummyconfirmService.getOperList(getPd);	//列出Betting列表
-		getPd.put("TableName", tb_house_fund_summy_bill);
+		getPd.put("TableName", Corresponding.tb_house_fund_summy_bill);
 		List<PageData> getListHouse = fundssummyconfirmService.getOperList(getPd);	//列出Betting列表
 		
 		List<SysConfirmInfo> listTransferConfirm = new ArrayList<SysConfirmInfo>();
@@ -1016,63 +1024,6 @@ public class FundsSummyConfirmController extends BaseController {
 			which = value;
 		}
 		return which;
-	}
-	/**
-	 * 根据前端业务表索引获取表名称
-	 * 
-	 * @param which
-	 * @return
-	 */
-	private String getSummyBaseTableCode(String which) {
-		String tableCode = "";
-		if (which != null){
-			if(which.equals(TmplType.TB_STAFF_SUMMY_CONTRACT.getNameKey())
-					||which.equals(TmplType.TB_STAFF_SUMMY_MARKET.getNameKey())
-					||which.equals(TmplType.TB_STAFF_SUMMY_SYS_LABOR.getNameKey())
-					||which.equals(TmplType.TB_STAFF_SUMMY_OPER_LABOR.getNameKey())
-					||which.equals(TmplType.TB_STAFF_SUMMY_LABOR.getNameKey())) {
-				tableCode = "tb_staff_summy_bill";
-			} else if (which.equals(TmplType.TB_SOCIAL_INC_SUMMY.getNameKey())) {
-				tableCode = "tb_social_inc_summy_bill";
-			} else if (which.equals(TmplType.TB_HOUSE_FUND_SUMMY.getNameKey())) {
-				tableCode = "tb_house_fund_summy_bill";
-			}
-		}
-		return tableCode;
-	}
-	private String getSummyDetailTableCode(String which) {
-		String tableCode = "";
-		if (which != null){
-			if(which.equals(TmplType.TB_STAFF_SUMMY_CONTRACT.getNameKey())
-					||which.equals(TmplType.TB_STAFF_SUMMY_MARKET.getNameKey())
-					||which.equals(TmplType.TB_STAFF_SUMMY_SYS_LABOR.getNameKey())
-					||which.equals(TmplType.TB_STAFF_SUMMY_OPER_LABOR.getNameKey())
-					||which.equals(TmplType.TB_STAFF_SUMMY_LABOR.getNameKey())) {
-				tableCode = "tb_staff_summy";
-			} else if (which.equals(TmplType.TB_SOCIAL_INC_SUMMY.getNameKey())) {
-				tableCode = "tb_social_inc_summy";
-			} else if (which.equals(TmplType.TB_HOUSE_FUND_SUMMY.getNameKey())) {
-				tableCode = "tb_house_fund_summy";
-			}
-		}
-		return tableCode;
-	}
-	private String getImportDetailTableCode(String which) {
-		String tableCode = "";
-		if (which != null){
-			if(which.equals(TmplType.TB_STAFF_SUMMY_CONTRACT.getNameKey())
-					||which.equals(TmplType.TB_STAFF_SUMMY_MARKET.getNameKey())
-					||which.equals(TmplType.TB_STAFF_SUMMY_SYS_LABOR.getNameKey())
-					||which.equals(TmplType.TB_STAFF_SUMMY_OPER_LABOR.getNameKey())
-					||which.equals(TmplType.TB_STAFF_SUMMY_LABOR.getNameKey())) {
-				tableCode = tb_staff_detail;
-			} else if (which.equals(TmplType.TB_SOCIAL_INC_SUMMY.getNameKey())) {
-				tableCode = tb_social_inc_detail;
-			} else if (which.equals(TmplType.TB_HOUSE_FUND_SUMMY.getNameKey())) {
-				tableCode = tb_house_fund_detail;
-			}
-		}
-		return tableCode;
 	}
 
 	private TmplTypeInfo getWhileValueToTypeCode(String which) throws Exception{
