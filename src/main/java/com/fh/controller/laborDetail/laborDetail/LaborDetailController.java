@@ -572,7 +572,7 @@ public class LaborDetailController extends BaseController {
 						// 解析excel，获取客户信息集合
 
 						uploadAndReadMap = testExcel.uploadAndRead(file, propertiesFileName, kyeName, sheetIndex,
-								titleAndAttribute, Map_HaveColumnsList, Map_SetColumnsList, DicList, false, false);
+								titleAndAttribute, Map_HaveColumnsList, Map_SetColumnsList, DicList, false, false, null);
 					} catch (Exception e) {
 						e.printStackTrace();
 						logger.error("读取Excel文件错误", e);
@@ -580,12 +580,16 @@ public class LaborDetailController extends BaseController {
 					}
 					boolean judgement = false;
 
-					Map<String, Object> returnError =  (Map<String, Object>) uploadAndReadMap.get(2);
+					Map<String, String> returnError =  (Map<String, String>) uploadAndReadMap.get(2);
 					if(returnError != null && returnError.size()>0){
-						strErrorMessage += "字典无此翻译： "; // \n
-						for (String k : returnError.keySet())  
-						{
-							strErrorMessage += k + " : " + returnError.get(k);
+						String strGet = "";
+						for (String k : returnError.keySet()) {
+							if(returnError.get(k)!=null && !returnError.get(k).trim().equals("")){
+								strGet += "人员编码" + k + " : " + returnError.get(k);
+							}
+						}
+						if(strGet!=null && !strGet.trim().equals("")){
+							strErrorMessage += "字典无此翻译： " + strGet; // \n
 						}
 					}
 

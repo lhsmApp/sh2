@@ -93,7 +93,8 @@ public class LeadingInExcelToPageData<T> {
             Map<String, String> titleAndAttribute,
             Map<String, TableColumns> map_HaveColumnsList,
     		Map<String, TmplConfigDetail> map_SetColumnsList, Map<String, Object> DicList,
-			Boolean bolIsDicSetSAL_RANGE, Boolean bolIsDicSetUSER_CATG) throws Exception{
+			Boolean bolIsDicSetSAL_RANGE, Boolean bolIsDicSetUSER_CATG, 
+			List<String> ImportNotHaveTransferList) throws Exception{
         
             String originalFilename=null;
             int i = 0;
@@ -108,7 +109,7 @@ public class LeadingInExcelToPageData<T> {
             
             String filePath = readPropertiesFilePathMethod( propertiesFileName, kyeName);
             File filePathname = this.upload(multipart, filePath, isExcel2003);
-            Map<Integer, Object> judgementVersion = judgementVersion(filePathname, sheetIndex, titleAndAttribute, map_HaveColumnsList, isExcel2003, map_SetColumnsList, DicList, bolIsDicSetSAL_RANGE, bolIsDicSetUSER_CATG);
+            Map<Integer, Object> judgementVersion = judgementVersion(filePathname, sheetIndex, titleAndAttribute, map_HaveColumnsList, isExcel2003, map_SetColumnsList, DicList, bolIsDicSetSAL_RANGE, bolIsDicSetUSER_CATG, ImportNotHaveTransferList);
         
         return judgementVersion;
     }
@@ -219,7 +220,8 @@ public class LeadingInExcelToPageData<T> {
     public Map<Integer, Object> judgementVersion(File filePathname,int sheetIndex,Map<String, String> titleAndAttribute,
     		Map<String, TableColumns> map_HaveColumnsList,boolean isExcel2003,
     		Map<String, TmplConfigDetail> map_SetColumnsList, Map<String, Object> DicList,
-			Boolean bolIsDicSetSAL_RANGE, Boolean bolIsDicSetUSER_CATG) throws Exception{
+			Boolean bolIsDicSetSAL_RANGE, Boolean bolIsDicSetUSER_CATG, 
+			List<String> ImportNotHaveTransferList) throws Exception{
         
         FileInputStream is=null;
         POIFSFileSystem fs=null;
@@ -249,7 +251,7 @@ public class LeadingInExcelToPageData<T> {
                 }
             }
         
-        return readExcelTitle(workbook,sheetIndex,titleAndAttribute,map_HaveColumnsList, map_SetColumnsList, DicList, bolIsDicSetSAL_RANGE, bolIsDicSetUSER_CATG);
+        return readExcelTitle(workbook,sheetIndex,titleAndAttribute,map_HaveColumnsList, map_SetColumnsList, DicList, bolIsDicSetSAL_RANGE, bolIsDicSetUSER_CATG, ImportNotHaveTransferList);
     }
 
     /**
@@ -264,7 +266,8 @@ public class LeadingInExcelToPageData<T> {
     private Map<Integer, Object> readExcelTitle(Workbook workbook,int sheetIndex,Map<String, String> titleAndAttribute,
     		Map<String, TableColumns> map_HaveColumnsList,
     		Map<String, TmplConfigDetail> map_SetColumnsList, Map<String, Object> DicList,
-			Boolean bolIsDicSetSAL_RANGE, Boolean bolIsDicSetUSER_CATG) throws Exception{
+			Boolean bolIsDicSetSAL_RANGE, Boolean bolIsDicSetUSER_CATG, 
+			List<String> ImportNotHaveTransferList) throws Exception{
 
         //得到第一个shell  
         Sheet sheet = workbook.getSheetAt(sheetIndex);
@@ -294,7 +297,7 @@ public class LeadingInExcelToPageData<T> {
             }
         }
 
-        return readExcelValue(workbook,sheet,attribute,map_HaveColumnsList, map_SetColumnsList, DicList, bolIsDicSetSAL_RANGE, bolIsDicSetUSER_CATG);
+        return readExcelValue(workbook,sheet,attribute,map_HaveColumnsList, map_SetColumnsList, DicList, bolIsDicSetSAL_RANGE, bolIsDicSetUSER_CATG, ImportNotHaveTransferList);
         
     }
     
@@ -311,7 +314,8 @@ public class LeadingInExcelToPageData<T> {
 	private Map<Integer, Object> readExcelValue(Workbook workbook,Sheet sheet,Map<Integer, String> attribute,
 			Map<String, TableColumns> map_HaveColumnsList,
 			Map<String, TmplConfigDetail> map_SetColumnsList, Map<String, Object> DicList,
-			Boolean bolIsDicSetSAL_RANGE, Boolean bolIsDicSetUSER_CATG) throws Exception{
+			Boolean bolIsDicSetSAL_RANGE, Boolean bolIsDicSetUSER_CATG, 
+			List<String> ImportNotHaveTransferList) throws Exception{
     	if(!(map_HaveColumnsList!=null && map_HaveColumnsList.size()>0)){
     		map_HaveColumnsList = new HashMap<String, TableColumns>();
     	}
@@ -323,7 +327,8 @@ public class LeadingInExcelToPageData<T> {
     	}
 
     	Map<Integer, Object> returnMap = new HashMap<Integer, Object>();
-    	Map<String, Object> returnError = new HashMap<String, Object>();
+    	Map<String, String> returnErrorCustomn = new HashMap<String, String>();
+    	Map<String, String> returnErrorMust = new HashMap<String, String>();
         List<PageData> info=new ArrayList<PageData>();
         FormulaEvaluator evaluator = workbook.getCreationHelper().createFormulaEvaluator(); 
         //获取标题行列数
@@ -344,6 +349,9 @@ public class LeadingInExcelToPageData<T> {
             // 2.标记
             boolean judge = true;
             PageData obj = new PageData();
+            String returnErrorUserCode = "";
+            String returnErrorCustomnMessage = "";
+            String returnErrorMustMessage = "";
             for (int columnIndex = 0; columnIndex < row.getLastCellNum(); columnIndex++) {//这里小于等于变成小于
                 Cell cell = row.getCell(columnIndex);
                 if(cell == null) continue;
@@ -432,7 +440,10 @@ public class LeadingInExcelToPageData<T> {
                 				}
             				}
             				if(!(getKey != null && !getKey.trim().equals(""))){
-            					returnError.put(itemCol.getCOL_NAME(), value);
+            					returnErrorCustomnMessage += itemCol.getCOL_NAME() + " : " + value + " ";
+            					if(ImportNotHaveTransferList!=null && ImportNotHaveTransferList.contains(COL_CODE)){
+                					returnErrorMustMessage += itemCol.getCOL_NAME() + " : " + value + " ";
+            					}
             				}
             				value = getKey;
             			}
@@ -451,12 +462,29 @@ public class LeadingInExcelToPageData<T> {
                     agge = "Y".equals(value) || "1".equals(value);
                 }
                 obj.put(COL_CODE, agge);
+
+            	if(COL_CODE.equals("USER_CODE")){
+                	returnErrorUserCode = value;
+                	String haveMustMessage = returnErrorMust.get(value);
+                	String haveCustomnMessage = returnErrorCustomn.get(value);
+                	if(haveMustMessage==null) haveMustMessage = "";
+                	if(haveCustomnMessage==null) haveCustomnMessage = "";
+                	returnErrorMustMessage = haveMustMessage + returnErrorMustMessage;
+                	returnErrorCustomnMessage = haveCustomnMessage + returnErrorCustomnMessage;
+            	}
             }
             if(judge)info.add(obj);
+            returnErrorCustomn.remove(returnErrorUserCode);
+            returnErrorCustomn.put(returnErrorUserCode, returnErrorCustomnMessage);
+            returnErrorMust.remove(returnErrorUserCode);
+            returnErrorMust.put(returnErrorUserCode, returnErrorMustMessage);
         }
         returnMap.put(1, info);
-        if(returnError!=null && returnError.size() > 0){
-            returnMap.put(2, returnError);
+        if(returnErrorCustomn!=null && returnErrorCustomn.size() > 0){
+            returnMap.put(2, returnErrorCustomn);
+        }
+        if(returnErrorMust!=null && returnErrorMust.size() > 0){
+            returnMap.put(3, returnErrorMust);
         }
         return returnMap;
     }

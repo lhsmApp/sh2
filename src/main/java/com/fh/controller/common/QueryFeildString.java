@@ -291,6 +291,12 @@ public class QueryFeildString {
 		return strReturn;
 	}
 	
+    //tb_sys_unlock_info表 DEL_STATE（融合系统删除状态为1）数据显示。为0不显示。
+	public static String getBillCodeNotInInvalidSysUnlockInfo(){
+		String strReturn = " and BILL_CODE not in (select BILL_CODE from tb_sys_unlock_info where DEL_STATE = '" + BillState.Invalid.getNameKey() + "') ";
+		return strReturn;
+	}
+	
     //单据没汇总
 	public static String getBillCodeNotSum(String tableNameSummy){
 		String strReturn = " and BILL_CODE not in (select BILL_CODE from " + tableNameSummy + ") ";

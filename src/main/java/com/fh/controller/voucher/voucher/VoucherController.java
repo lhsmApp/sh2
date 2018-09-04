@@ -28,6 +28,7 @@ import com.fh.controller.common.Common;
 import com.fh.controller.common.Corresponding;
 import com.fh.controller.common.DictsUtil;
 import com.fh.controller.common.GenerateTransferData;
+import com.fh.controller.common.Message;
 import com.fh.controller.common.QueryFeildString;
 import com.fh.controller.common.SelectBillCodeOptions;
 import com.fh.controller.common.TmplUtil;
@@ -280,6 +281,8 @@ public class VoucherController extends BaseController {
 		QueryFeild += QueryFeildString.getNotLockBillCode(sealTypeTransfer, SystemDateTime, SelectedCustCol7,
 				AllDeptCode + "," + SelectedDepartCode);
 		QueryFeild += " and DEPT_CODE in (" + QueryFeildString.tranferListValueToSqlInString(AllDeptCode) + ") ";
+
+		QueryFeild += getBillCodeQueryFeild(sealTypeTransfer);
 		// 工资无账套无数据
 		/*
 		 * if(!(SelectedCustCol7!=null && !SelectedCustCol7.trim().equals(""))){
@@ -395,6 +398,9 @@ public class VoucherController extends BaseController {
 		// String sealType = getSealType(which);// 接口封存类型对应的汇总接口类型
 		pd.put("BILL_TYPE_TRANSFER", sealTypeTransfer);// 接口封存类型
 		pd.put("VOUCHER_TYPE", voucherType);// 接口封存类型
+		if(voucherType.equals("1")){
+			pd.put("QueryFeild", getBillCodeQueryFeild(sealTypeTransfer));
+		}
 		// pd.put("BILL_TYPE", sealType);// 接口封存类型对应的汇总接口类型
 		pd.put("USER_GROP", Corresponding.getUserGroupTypeFromTmplType(which));
 		String strDeptCode = "";
@@ -663,8 +669,14 @@ public class VoucherController extends BaseController {
 			}
 			pdDetail.put("BILL_CODES", listBillCodes);
 			pdDetail.put("TABLE_CODE", tableCode);
+			pd.put("QueryFeild", getBillCodeQueryFeild(which));
 
 			List<PageData> listTransferDataDetail = voucherService.findSummyDetailListByBillCodes(pdDetail);
+			if(listBillCodes.size() != listTransferDataDetail.size()){
+				commonBase.setCode(-1);
+				commonBase.setMessage(Message.HavaNotSumOrDetail);
+				return commonBase;
+			}
 			addLineNumForTransferData(which, listTransferDataDetail);
 
 			String tableCodeOnFmis = DictsUtil.getTableCodeOnFmis(which, sysConfigManager);
@@ -1172,6 +1184,12 @@ public class VoucherController extends BaseController {
 		 * "TB_HOUSE_FUND_SUMMY"; } else { tableCode = "TB_STAFF_SUMMY"; }
 		 * return tableCode;
 		 */
+	}
+	
+	private String getBillCodeQueryFeild(String which){
+		String QueryFeild = " and BILL_CODE in (select BILL_CODE from " + Corresponding.getSummyTableNameFromTmplType(which) + ") ";
+		QueryFeild += " and BILL_CODE in (select BILL_CODE from " + Corresponding.getDetailTableNameFromTmplType(which) + ") ";
+		return QueryFeild;
 	}
 
 	/**

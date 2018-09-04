@@ -196,6 +196,7 @@ public class HouseFundSummyController extends BaseController {
 		QueryFeild += " and BILL_STATE = '" + BillState.Normal.getNameKey() + "' ";
 		QueryFeild += QueryFeildString.getNotReportBillCode(TypeCodeTransfer, SystemDateTime, getPdSelectedCustCol7, AllDeptCode + "," + getPdSelectedDepartCode);
 		QueryFeild += " and DEPT_CODE in (" + QueryFeildString.tranferListValueToSqlInString(AllDeptCode) + ") ";
+		QueryFeild += QueryFeildString.getBillCodeNotInInvalidSysUnlockInfo();
 		//工资无账套无数据
 		if(!(getPdSelectedCustCol7!=null && !getPdSelectedCustCol7.trim().equals(""))){
 			QueryFeild += " and 1 != 1 ";
@@ -281,6 +282,7 @@ public class HouseFundSummyController extends BaseController {
 		String QueryFeild = QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList);
 		if(!getPdSelectedBillCode.equals(SelectBillCodeFirstShow)){
 			QueryFeild += " and BILL_STATE = '" + BillState.Normal.getNameKey() + "' ";
+			QueryFeild += QueryFeildString.getBillCodeNotInInvalidSysUnlockInfo();
 			QueryFeild += QueryFeildString.getNotReportBillCode(TypeCodeTransfer, SystemDateTime, getPdSelectedCustCol7, AllDeptCode + "," + getPdSelectedDepartCode);
 		}
 		QueryFeild += " and DEPT_CODE in (" + QueryFeildString.tranferListValueToSqlInString(AllDeptCode) + ") ";
@@ -477,7 +479,7 @@ public class HouseFundSummyController extends BaseController {
 				return commonBase;
 			}
         }
-		String checkState = CheckState(QueryFeildString.tranferListValueToSqlInString(listBillCode), SystemDateTime);
+		String checkState = CheckState(QueryFeildString.tranferListValueToSqlInString(listBillCode), SystemDateTime, listBillCode.size());
 		if(checkState!=null && !checkState.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(checkState);
@@ -554,7 +556,7 @@ public class HouseFundSummyController extends BaseController {
 		}
 		retSetBillCodeFeild = QueryFeildString.extraSumField(retSetBillCodeFeild, SumFieldBill);
 		if(!SelectedBillCode.equals(SelectBillCodeFirstShow)){//if(listData!=null && listData.size()>0){//
-			String checkState = CheckState("'" + SelectedBillCode + "'", SystemDateTime);
+			String checkState = CheckState("'" + SelectedBillCode + "'", SystemDateTime, 1);
 			if(checkState!=null && !checkState.trim().equals("")){
 				commonBase.setCode(2);
 				commonBase.setMessage(checkState);
@@ -789,19 +791,25 @@ public class HouseFundSummyController extends BaseController {
 	}
 
 	//判断已传输或作废或删除
-	private String CheckState(String strSqlInBillCode, String SystemDateTime) throws Exception{
+	private String CheckState(String strSqlInBillCode, String SystemDateTime, int size) throws Exception{
 		String strRut = "";
 		
 		String QueryFeild = " and BILL_CODE in (" + strSqlInBillCode + ") ";
 		QueryFeild += " and BILL_STATE = '" + BillState.Normal.getNameKey() + "' ";
 		QueryFeild += " and BILL_CODE not in (SELECT bill_code FROM tb_sys_sealed_info WHERE state = '1') ";
+		QueryFeild += QueryFeildString.getBillCodeNotInInvalidSysUnlockInfo();
 		
 		PageData transferPd = new PageData();
 		transferPd.put("SystemDateTime", SystemDateTime);
 		transferPd.put("CanOperate", QueryFeild);
 		List<String> getCodeList = housefundsummyService.getBillCodeList(transferPd);
 		
-		if(!(getCodeList != null && getCodeList.size()>0)){
+		int getSize = 0;
+		if(getCodeList != null && getCodeList.size()>0){
+			 getSize = getCodeList.size();
+		}
+		
+		if(getSize != size){
 			strRut = Message.OperDataSumAlreadyChange;
 		}
 		return strRut;

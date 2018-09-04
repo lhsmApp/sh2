@@ -72,11 +72,13 @@
 	    var SelectedCustCol7 = '${SelectedCustCol7}';
 	    var SelectedBillCode = '${SelectedBillCode}';
 	    var SelectedTypeCode = '${SelectedTypeCode}';
+	    var SelectedBusiDate = '${SelectedBusiDate}';
 	    var DepartTreeSource = '${DepartTreeSource}';
 	    var ShowDataDepartCode = '${ShowDataDepartCode}';
 	    var ShowDataCustCol7 = '${ShowDataCustCol7}';
 	    var ShowDataBillCode = '${ShowDataBillCode}';
 	    var ShowDataTypeCode = '${ShowDataTypeCode}';
+	    var ShowDataBusiDate = '${ShowDataBusiDate}';
 	    var SalaryOrBonus = '${SalaryOrBonus}';
 	    var SystemDateTime = '${SystemDateTime}';
 	    var tipfiles = "请选择xls格式的文件";
@@ -85,9 +87,9 @@
 			$(top.hangge());
 			
 			document.getElementById("Form").action = local + "/readExcel.do?TABLE_CODE="+which+"&SelectedTableNo="+which
-                +'&SelectedDepartCode='+SelectedDepartCode+'&SelectedCustCol7='+SelectedCustCol7+'&SelectedBillCode='+SelectedBillCode+'&SelectedTypeCode='+SelectedTypeCode
+                +'&SelectedDepartCode='+SelectedDepartCode+'&SelectedCustCol7='+SelectedCustCol7+'&SelectedBillCode='+SelectedBillCode+'&SelectedTypeCode='+SelectedTypeCode+'&SelectedBusiDate='+SelectedBusiDate
                 +'&DepartTreeSource='+DepartTreeSource
-                +'&ShowDataDepartCode='+ShowDataDepartCode+'&ShowDataCustCol7='+ShowDataCustCol7+'&ShowDataBillCode='+ShowDataBillCode+'&ShowDataTypeCode='+ShowDataTypeCode
+                +'&ShowDataDepartCode='+ShowDataDepartCode+'&ShowDataCustCol7='+ShowDataCustCol7+'&ShowDataBillCode='+ShowDataBillCode+'&ShowDataTypeCode='+ShowDataTypeCode+'&ShowDataBusiDate='+ShowDataBusiDate
                 +'&SalaryOrBonus='+SalaryOrBonus
                 +'&SystemDateTime='+SystemDateTime;
 			

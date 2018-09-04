@@ -620,6 +620,9 @@
 				<if test="BILL_CODE!= null and BILL_CODE != ''">
 					and A.BILL_CODE = #{BILL_CODE}
 				</if>
+				<if test="QueryFeild!= null and QueryFeild != ''">
+					${QueryFeild}
+				</if>
 				<if test="BUSI_DATE!= null and BUSI_DATE != ''">
 					and BUSI_DATE = #{BUSI_DATE}
 				</if>
@@ -797,6 +800,10 @@
 				open="(" separator="," close=")">
 				#{item}
 			</foreach>
+			
+				<if test="QueryFeild!= null and QueryFeild != ''">
+					${QueryFeild}
+				</if>
 		</where>
 	</select>
 

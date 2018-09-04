@@ -53,7 +53,7 @@
 								    <span class="label label-xlg label-success arrowed-right">人工成本</span>
 									<!-- arrowed-in-right --> 
 									<span class="label label-xlg label-yellow arrowed-in arrowed-right"
-									    id="subTitle" style="margin-left: 2px;"> 在建工程信息维护</span> 
+									    id="subTitle" style="margin-left: 2px;"> 项目人员对照维护维护</span> 
                                     <span style="border-left: 1px solid #e2e2e2; margin: 0px 10px;">&nbsp;</span>
 								
 									<button id="btnQuery" class="btn btn-white btn-info btn-sm"
@@ -73,8 +73,23 @@
 								    <div class="widget-body">
 									    <div class="widget-main">
 										    <form class="form-inline">
-											    <span class="pull-left" style="margin-right: 5px;">
-											    	<div class="selectTree" id="selectTree" multiMode="true"
+											<span class="input-icon pull-left" style="margin-right: 5px;">
+												<input id="SelectedBusiDate" class="input-mask-date" type="text"
+												    placeholder="请输入业务区间"> 
+												<i class="ace-icon fa fa-calendar blue"></i>
+											</span>
+										    <!-- <span class="pull-left" style="margin-right: 5px;">
+												<select class="chosen-select form-control"
+													name="SelectedCustCol7" id="SelectedCustCol7"
+													style="vertical-align: top; height:32px;width: 150px;">
+													<option value="">请选择帐套</option>
+													<c:forEach items="${FMISACC}" var="each">
+														<option value="${each.DICT_CODE}">${each.NAME}</option>
+													</c:forEach>
+												</select>
+											</span> -->
+											    <span class="pull-left" style="margin-right: 5px;" <c:if test="${pd.departTreeSource=='0'}">hidden</c:if>>
+											    	<div class="selectTree" id="selectTree" multiMode="false"
 												        allSelectable="false" noGroup="false"></div>
 											        <input id="SelectedDepartCode" type="hidden"></input>
 											    </span>
@@ -136,21 +151,26 @@
         var gridBase_selector = "#jqGridBase";  
         var pagerBase_selector = "#jqGridBasePager";  
 
-    	//页面显示的数据的责任中心和账套信息，在tosearch()里赋值
-    	var ShowDataDepartCode = "";
+		//部门是否是最末层节点，是否显示
+		var DepartTreeSource;
 
-		//当前期间,取自tb_system_config的SystemDateTime字段
-	    var SystemDateTime = '';
+		//页面显示的数据的责任中心和账套信息，在tosearch()里赋值
+		var ShowDataBusiDate = "";
+		//var ShowDataCustCol7 = "";
+    	var ShowDataDepartCode = "";
 
 	    $(document).ready(function () {
 			$(top.hangge());//关闭加载状态
+			$('.input-mask-date').mask('999999');
 		    
 			//当前期间,取自tb_system_config的SystemDateTime字段
-		    SystemDateTime = '${SystemDateTime}';
+	        var SystemDateTime = '${SystemDateTime}';
+			$("#SelectedBusiDate").val(SystemDateTime);
 			//当前登录人所在二级单位
 		    var DepartName = '${DepartName}';
 		    $("#showDur").text('当前期间：' + SystemDateTime + ' 登录人责任中心：' + DepartName);
-		    //$("#showDept").text('当前单位：' + DepartName);
+			//部门是否是最末层节点，是否显示
+			DepartTreeSource = '${pd.departTreeSource}';
 
     		//resize to fit page size
     		$(window).on('resize.jqGrid', function () {
@@ -161,23 +181,66 @@
     		
     		$(gridBase_selector).jqGrid({
     			url: '<%=basePath%>glItemUser/getPageList.do?'
-    				+ 'SelectedDepartCode='+$("#SelectedDepartCode").val()
-    	            + '&SystemDateTime='+SystemDateTime,
+                +'SelectedDepartCode='+$("#SelectedDepartCode").val()
+                //+'&SelectedCustCol7='+$("#SelectedCustCol7").val()
+	            + '&SelectedBusiDate='+$("#SelectedBusiDate").val()
+                +'&DepartTreeSource='+DepartTreeSource,
     			datatype: "json",
-    			colModel: jqGridColModel,
+		        colModel: [
+						    { label: '期间', name: 'BUSI_DATE__', width: 90,hidden : true,editable: true},
+						    { label: '责任中心', name: 'DEPT_CODE__', width: 60,hidden : true,editable: true,},
+						    { label: '人员编码', name: 'USER_CODE__', width: 60,hidden : true,editable: true,},
+						    { label: '身份证号', name: 'STAFF_IDENT__', width: 60,hidden : true,editable: true,},
+						    
+						    { label: '期间', name: 'BUSI_DATE', width: 90,editable: false},
+						    { label: '员工编号', name: 'USER_CODE', width: 120, editable: true, edittype:'text', editoptions:{maxLength:'30'}, editrules:{required:true}},
+						    { label: '员工姓名', name: 'USER_NAME', width: 120, editable: true, edittype:'text', editoptions:{maxLength:'20'}},
+						    { label: '身份证号', name: 'STAFF_IDENT', width: 140, editable: true, edittype:'text', editoptions:{maxLength:'18'}, editrules:{required:true}},
+						    { label: '责任中心', name: 'DEPT_CODE', width: 140,editable: false, edittype: 'select',formatter:'select',formatoptions:{value:"${departmentStrSelect}"},editoptions:{value:"${departmentStrSelect}"},stype: 'select',searchoptions:{value:"${departmentStrAll}"}},
+						    { label: '所属二级单位', name: 'UNITS_CODE', width: 140,editable: true, editrules:{required:true},edittype: 'select',formatter:'select',formatoptions:{value:"${departmentStrSelect}"},editoptions:{value:"${departmentStrSelect}"},stype: 'select',searchoptions:{value:"${departmentStrAll}"}},
+						    { label: '在建工程项目编码1', name: 'ITEM1_CODE', width: 160, editable: true, edittype:'text', editoptions:{maxLength:'30'}},
+						    { label: '在建工程项目名称1', name: 'ITEM1_NAME', width: 160, editable: true, edittype:'text', editoptions:{maxLength:'30'}},
+						    { label: '项目概算1', name: 'ITEM1_BUD', width: 110, sorttype: 'number', align: 'right', searchrules: {number: true}, formatter: 'number',
+						    	editable: true, edittype:'text', editoptions:{maxlength:'16', number: true}
+						    },
+						    { label: '在建工程项目编码2', name: 'ITEM2_CODE', width: 160, editable: true, edittype:'text', editoptions:{maxLength:'30'}},
+						    { label: '在建工程项目名称2', name: 'ITEM2_NAME', width: 160, editable: true, edittype:'text', editoptions:{maxLength:'30'}},
+						    { label: '项目概算2', name: 'ITEM2_BUD', width: 110, sorttype: 'number', align: 'right', searchrules: {number: true}, formatter: 'number',
+						    	editable: true, edittype:'text', editoptions:{maxlength:'16', number: true}
+						    },
+						    { label: '在建工程项目编码3', name: 'ITEM3_CODE', width: 160, editable: true, edittype:'text', editoptions:{maxLength:'30'}},
+						    { label: '在建工程项目名称3', name: 'ITEM3_NAME', width: 160, editable: true, edittype:'text', editoptions:{maxLength:'30'}},
+						    { label: '项目概算3', name: 'ITEM3_BUD', width: 110, sorttype: 'number', align: 'right', searchrules: {number: true}, formatter: 'number',
+						    	editable: true, edittype:'text', editoptions:{maxlength:'16', number: true}
+						    },
+						    { label: '在建工程项目编码4', name: 'ITEM4_CODE', width: 160, editable: true, edittype:'text', editoptions:{maxLength:'30'}},
+						    { label: '在建工程项目名称4', name: 'ITEM4_NAME', width: 160, editable: true, edittype:'text', editoptions:{maxLength:'30'}},
+						    { label: '项目概算4', name: 'ITEM4_BUD', width: 110, sorttype: 'number', align: 'right', searchrules: {number: true}, formatter: 'number',
+						    	editable: true, edittype:'text', editoptions:{maxlength:'16', number: true}
+						    },
+						    { label: '在建工程项目编码5', name: 'ITEM5_CODE', width: 160, editable: true, edittype:'text', editoptions:{maxLength:'30'}},
+						    { label: '在建工程项目名称5', name: 'ITEM5_NAME', width: 160, editable: true, edittype:'text', editoptions:{maxLength:'30'}},
+						    { label: '项目概算5', name: 'ITEM5_BUD', width: 110, sorttype: 'number', align: 'right', searchrules: {number: true}, formatter: 'number',
+						    	editable: true, edittype:'text', editoptions:{maxlength:'16', number: true}
+						    }
+						],
     			reloadAfterSubmit: true, 
     			viewrecords: true, 
     			shrinkToFit: false,
-    			rowNum: 100,
-    			rowList: [100,200,500],
+    			rowNum: 0,
+    			//rowList: [100,200,500],
                 multiselect: true,
                 multiboxonly: true,
                 sortable: true,
     			altRows: true, //斑马条纹
     			editurl: '<%=basePath%>glItemUser/edit.do?'
-    				+ 'SelectedDepartCode='+$("#SelectedDepartCode").val()
-                    + '&ShowDataDepartCode='+ShowDataDepartCode
-    	            + '&SystemDateTime='+SystemDateTime,
+                    +'SelectedDepartCode='+$("#SelectedDepartCode").val()
+                //+'&SelectedCustCol7='+$("#SelectedCustCol7").val()
+	            + '&SelectedBusiDate='+$("#SelectedBusiDate").val()
+                +'&DepartTreeSource='+DepartTreeSource
+                +'&ShowDataDepartCode='+ShowDataDepartCode
+                //+'&ShowDataCustCol7='+ShowDataCustCol7
+                + '&ShowDataBusiDate='+ShowDataBusiDate,
     			
     			pager: pagerBase_selector,
     			footerrow: true,
@@ -426,10 +489,14 @@
     					top.jzts();
     					$.ajax({
     						type: "POST",
-    						url: '<%=basePath%>glItemUser/deleteAll.do?'
-    							+ 'SelectedDepartCode='+$("#SelectedDepartCode").val()
-    		                    +'&ShowDataDepartCode='+ShowDataDepartCode
-    		    	            + '&SystemDateTime='+SystemDateTime,
+    						url: '<%=basePath%>glItemUser/deleteAll.do??'
+    			                +'SelectedDepartCode='+$("#SelectedDepartCode").val()
+		                    //+'&SelectedCustCol7='+$("#SelectedCustCol7").val()
+		    	            + '&SelectedBusiDate='+$("#SelectedBusiDate").val()
+		                    +'&DepartTreeSource='+DepartTreeSource
+		                    +'&ShowDataDepartCode='+ShowDataDepartCode
+		                    //+'&ShowDataCustCol7='+ShowDataCustCol7
+		                    + '&ShowDataBusiDate='+ShowDataBusiDate,
     				    	data: {DataRows:JSON.stringify(listData)},
     						dataType:'json',
     						cache: false,
@@ -499,9 +566,13 @@
         				$.ajax({
         					type: "POST",
         					url: '<%=basePath%>glItemUser/updateAll.do?'
-        						+ 'SelectedDepartCode='+$("#SelectedDepartCode").val()
-        	                    +'&ShowDataDepartCode='+ShowDataDepartCode
-        	    	            + '&SystemDateTime='+SystemDateTime,
+        		                +'SelectedDepartCode='+$("#SelectedDepartCode").val()
+		                    //+'&SelectedCustCol7='+$("#SelectedCustCol7").val()
+		    	            + '&SelectedBusiDate='+$("#SelectedBusiDate").val()
+		                    +'&DepartTreeSource='+DepartTreeSource
+		                    +'&ShowDataDepartCode='+ShowDataDepartCode
+		                    //+'&ShowDataCustCol7='+ShowDataCustCol7
+		                    + '&ShowDataBusiDate='+ShowDataBusiDate,
         			    	data: {DataRows:JSON.stringify(listData)},
         					dataType:'json',
         					cache: false,
@@ -551,9 +622,13 @@
     	   diag.Drag=true;
     	   diag.Title ="EXCEL 导入到数据库";
     	   diag.URL = '<%=basePath%>glItemUser/goUploadExcel.do?'
-    		+ 'SelectedDepartCode='+$("#SelectedDepartCode").val()
-            + '&ShowDataDepartCode='+ShowDataDepartCode
-            + '&SystemDateTime='+SystemDateTime;
+               +'SelectedDepartCode='+$("#SelectedDepartCode").val()
+           //+'&SelectedCustCol7='+$("#SelectedCustCol7").val()
+           + '&SelectedBusiDate='+$("#SelectedBusiDate").val()
+           +'&DepartTreeSource='+DepartTreeSource
+           +'&ShowDataDepartCode='+ShowDataDepartCode
+           //+'&ShowDataCustCol7='+ShowDataCustCol7
+           + '&ShowDataBusiDate='+ShowDataBusiDate;
     	   diag.Width = 300;
     	   diag.Height = 150;
     	   diag.CancelEvent = function(){ //关闭事件
@@ -570,9 +645,13 @@
          */
         function exportItems(){
         	window.location.href='<%=basePath%>glItemUser/excel.do?'
-        		+ 'SelectedDepartCode='+$("#SelectedDepartCode").val()
-                + '&ShowDataDepartCode='+ShowDataDepartCode
-	            + '&SystemDateTime='+SystemDateTime;
+                +'SelectedDepartCode='+$("#SelectedDepartCode").val()
+            //+'&SelectedCustCol7='+$("#SelectedCustCol7").val()
+            + '&SelectedBusiDate='+$("#SelectedBusiDate").val()
+            +'&DepartTreeSource='+DepartTreeSource
+            +'&ShowDataDepartCode='+ShowDataDepartCode
+            //+'&ShowDataCustCol7='+ShowDataCustCol7
+            + '&ShowDataBusiDate='+ShowDataBusiDate;
         }
 
         /**
@@ -625,12 +704,16 @@
 	
 	    //检索
 	    function tosearch() {
+			ShowDataBusiDate = $("#SelectedBusiDate").val();
+			//ShowDataCustCol7 = $("#SelectedCustCol7").val();
 			ShowDataDepartCode = $("#SelectedDepartCode").val();
 			
 			$("#jqGrid").jqGrid('setGridParam',{  // 重新加载数据
 				url:'<%=basePath%>glItemUser/getPageList.do?'
-    				+ 'SelectedDepartCode='+$("#SelectedDepartCode").val()
-    	            + '&SystemDateTime='+SystemDateTime,
+	                +'SelectedDepartCode='+$("#SelectedDepartCode").val()
+                //+'&SelectedCustCol7='+$("#SelectedCustCol7").val()
+	            +'&SelectedBusiDate='+$("#SelectedBusiDate").val()
+                +'&DepartTreeSource='+DepartTreeSource,
 								datatype : 'json'
 							}).trigger("reloadGrid");
         }

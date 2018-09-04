@@ -21,6 +21,9 @@ public class Corresponding {
 	public static String tb_staff_detail = "tb_staff_detail";
 	public static String tb_social_inc_detail = "tb_social_inc_detail";
 	public static String tb_house_fund_detail = "tb_house_fund_detail";
+	public static String tb_staff_summy = "tb_staff_summy";
+	public static String tb_social_inc_summy = "tb_social_inc_summy";
+	public static String tb_house_fund_summy = "tb_house_fund_summy";
 	public static String tb_staff_summy_bill = "tb_staff_summy_bill";
 	public static String tb_social_inc_summy_bill = "tb_social_inc_summy_bill";
 	public static String tb_house_fund_summy_bill = "tb_house_fund_summy_bill";
@@ -234,16 +237,48 @@ public class Corresponding {
 	public static String getSumBillTableNameFromTmplType(String which) {
 		String tableCode = "";
 		if (which != null){
-			if(which.equals(TmplType.TB_STAFF_SUMMY_CONTRACT.getNameKey())
-					||which.equals(TmplType.TB_STAFF_SUMMY_MARKET.getNameKey())
-					||which.equals(TmplType.TB_STAFF_SUMMY_SYS_LABOR.getNameKey())
-					||which.equals(TmplType.TB_STAFF_SUMMY_OPER_LABOR.getNameKey())
-					||which.equals(TmplType.TB_STAFF_SUMMY_LABOR.getNameKey())) {
-				tableCode = "tb_staff_summy_bill";
-			} else if (which.equals(TmplType.TB_SOCIAL_INC_SUMMY.getNameKey())) {
-				tableCode = "tb_social_inc_summy_bill";
-			} else if (which.equals(TmplType.TB_HOUSE_FUND_SUMMY.getNameKey())) {
-				tableCode = "tb_house_fund_summy_bill";
+			if(which.equals(TmplType.TB_STAFF_DETAIL_CONTRACT.getNameKey())
+					//|| which.equals(TmplType.TB_STAFF_SUMMY_BILL_CONTRACT.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_SUMMY_CONTRACT.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_AUDIT_CONTRACT.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_TRANSFER_CONTRACT.getNameKey())
+					
+					||which.equals(TmplType.TB_STAFF_DETAIL_MARKET.getNameKey())
+					//|| which.equals(TmplType.TB_STAFF_SUMMY_BILL_MARKET.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_SUMMY_MARKET.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_AUDIT_MARKET.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_TRANSFER_MARKET.getNameKey())
+					
+					||which.equals(TmplType.TB_STAFF_DETAIL_SYS_LABOR.getNameKey())
+					//|| which.equals(TmplType.TB_STAFF_SUMMY_BILL_SYS_LABOR.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_SUMMY_SYS_LABOR.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_AUDIT_SYS_LABOR.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_TRANSFER_SYS_LABOR.getNameKey())
+					
+					||which.equals(TmplType.TB_STAFF_DETAIL_OPER_LABOR.getNameKey())
+					//|| which.equals(TmplType.TB_STAFF_SUMMY_BILL_OPER_LABOR.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_SUMMY_OPER_LABOR.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_AUDIT_OPER_LABOR.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_TRANSFER_OPER_LABOR.getNameKey())
+					
+					||which.equals(TmplType.TB_STAFF_DETAIL_LABOR.getNameKey())
+					//|| which.equals(TmplType.TB_STAFF_SUMMY_BILL_LABOR.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_SUMMY_LABOR.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_AUDIT_LABOR.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_TRANSFER_LABOR.getNameKey())) {
+				tableCode = tb_staff_summy_bill;
+			} else if (which.equals(TmplType.TB_SOCIAL_INC_DETAIL.getNameKey())
+					//|| which.equals(TmplType.TB_SOCIAL_INC_SUMMY_BILL.getNameKey())
+					|| which.equals(TmplType.TB_SOCIAL_INC_SUMMY.getNameKey())
+					|| which.equals(TmplType.TB_SOCIAL_INC_AUDIT.getNameKey())
+					|| which.equals(TmplType.TB_SOCIAL_INC_TRANSFER.getNameKey())) {
+				tableCode = tb_social_inc_summy_bill;
+			} else if (which.equals(TmplType.TB_HOUSE_FUND_DETAIL.getNameKey())
+					//|| which.equals(TmplType.TB_HOUSE_FUND_SUMMY_BILL.getNameKey())
+					|| which.equals(TmplType.TB_HOUSE_FUND_SUMMY.getNameKey())
+					|| which.equals(TmplType.TB_HOUSE_FUND_AUDIT.getNameKey())
+					|| which.equals(TmplType.TB_HOUSE_FUND_TRANSFER.getNameKey())) {
+				tableCode = tb_house_fund_summy_bill;
 			}
 		}
 		return tableCode;
@@ -252,16 +287,48 @@ public class Corresponding {
 	public static String getSummyTableNameFromTmplType(String which) {
 		String tableCode = "";
 		if (which != null){
-			if(which.equals(TmplType.TB_STAFF_SUMMY_CONTRACT.getNameKey())
-					||which.equals(TmplType.TB_STAFF_SUMMY_MARKET.getNameKey())
-					||which.equals(TmplType.TB_STAFF_SUMMY_SYS_LABOR.getNameKey())
-					||which.equals(TmplType.TB_STAFF_SUMMY_OPER_LABOR.getNameKey())
-					||which.equals(TmplType.TB_STAFF_SUMMY_LABOR.getNameKey())) {
-				tableCode = "tb_staff_summy";
-			} else if (which.equals(TmplType.TB_SOCIAL_INC_SUMMY.getNameKey())) {
-				tableCode = "tb_social_inc_summy";
-			} else if (which.equals(TmplType.TB_HOUSE_FUND_SUMMY.getNameKey())) {
-				tableCode = "tb_house_fund_summy";
+			if(which.equals(TmplType.TB_STAFF_DETAIL_CONTRACT.getNameKey())
+					//|| which.equals(TmplType.TB_STAFF_SUMMY_BILL_CONTRACT.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_SUMMY_CONTRACT.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_AUDIT_CONTRACT.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_TRANSFER_CONTRACT.getNameKey())
+					
+					||which.equals(TmplType.TB_STAFF_DETAIL_MARKET.getNameKey())
+					//|| which.equals(TmplType.TB_STAFF_SUMMY_BILL_MARKET.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_SUMMY_MARKET.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_AUDIT_MARKET.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_TRANSFER_MARKET.getNameKey())
+					
+					||which.equals(TmplType.TB_STAFF_DETAIL_SYS_LABOR.getNameKey())
+					//|| which.equals(TmplType.TB_STAFF_SUMMY_BILL_SYS_LABOR.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_SUMMY_SYS_LABOR.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_AUDIT_SYS_LABOR.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_TRANSFER_SYS_LABOR.getNameKey())
+					
+					||which.equals(TmplType.TB_STAFF_DETAIL_OPER_LABOR.getNameKey())
+					//|| which.equals(TmplType.TB_STAFF_SUMMY_BILL_OPER_LABOR.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_SUMMY_OPER_LABOR.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_AUDIT_OPER_LABOR.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_TRANSFER_OPER_LABOR.getNameKey())
+					
+					||which.equals(TmplType.TB_STAFF_DETAIL_LABOR.getNameKey())
+					//|| which.equals(TmplType.TB_STAFF_SUMMY_BILL_LABOR.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_SUMMY_LABOR.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_AUDIT_LABOR.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_TRANSFER_LABOR.getNameKey())) {
+				tableCode = tb_staff_summy;
+			} else if (which.equals(TmplType.TB_SOCIAL_INC_DETAIL.getNameKey())
+					//|| which.equals(TmplType.TB_SOCIAL_INC_SUMMY_BILL.getNameKey())
+					|| which.equals(TmplType.TB_SOCIAL_INC_SUMMY.getNameKey())
+					|| which.equals(TmplType.TB_SOCIAL_INC_AUDIT.getNameKey())
+					|| which.equals(TmplType.TB_SOCIAL_INC_TRANSFER.getNameKey())) {
+				tableCode = tb_social_inc_summy;
+			} else if (which.equals(TmplType.TB_HOUSE_FUND_DETAIL.getNameKey())
+					//|| which.equals(TmplType.TB_HOUSE_FUND_SUMMY_BILL.getNameKey())
+					|| which.equals(TmplType.TB_HOUSE_FUND_SUMMY.getNameKey())
+					|| which.equals(TmplType.TB_HOUSE_FUND_AUDIT.getNameKey())
+					|| which.equals(TmplType.TB_HOUSE_FUND_TRANSFER.getNameKey())) {
+				tableCode = tb_house_fund_summy;
 			}
 		}
 		return tableCode;
@@ -270,15 +337,47 @@ public class Corresponding {
 	public static String getDetailTableNameFromTmplType(String which) {
 		String tableCode = "";
 		if (which != null){
-			if(which.equals(TmplType.TB_STAFF_SUMMY_CONTRACT.getNameKey())
-					||which.equals(TmplType.TB_STAFF_SUMMY_MARKET.getNameKey())
-					||which.equals(TmplType.TB_STAFF_SUMMY_SYS_LABOR.getNameKey())
-					||which.equals(TmplType.TB_STAFF_SUMMY_OPER_LABOR.getNameKey())
-					||which.equals(TmplType.TB_STAFF_SUMMY_LABOR.getNameKey())) {
+			if(which.equals(TmplType.TB_STAFF_DETAIL_CONTRACT.getNameKey())
+					//|| which.equals(TmplType.TB_STAFF_SUMMY_BILL_CONTRACT.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_SUMMY_CONTRACT.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_AUDIT_CONTRACT.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_TRANSFER_CONTRACT.getNameKey())
+					
+					||which.equals(TmplType.TB_STAFF_DETAIL_MARKET.getNameKey())
+					//|| which.equals(TmplType.TB_STAFF_SUMMY_BILL_MARKET.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_SUMMY_MARKET.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_AUDIT_MARKET.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_TRANSFER_MARKET.getNameKey())
+					
+					||which.equals(TmplType.TB_STAFF_DETAIL_SYS_LABOR.getNameKey())
+					//|| which.equals(TmplType.TB_STAFF_SUMMY_BILL_SYS_LABOR.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_SUMMY_SYS_LABOR.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_AUDIT_SYS_LABOR.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_TRANSFER_SYS_LABOR.getNameKey())
+					
+					||which.equals(TmplType.TB_STAFF_DETAIL_OPER_LABOR.getNameKey())
+					//|| which.equals(TmplType.TB_STAFF_SUMMY_BILL_OPER_LABOR.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_SUMMY_OPER_LABOR.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_AUDIT_OPER_LABOR.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_TRANSFER_OPER_LABOR.getNameKey())
+					
+					||which.equals(TmplType.TB_STAFF_DETAIL_LABOR.getNameKey())
+					//|| which.equals(TmplType.TB_STAFF_SUMMY_BILL_LABOR.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_SUMMY_LABOR.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_AUDIT_LABOR.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_TRANSFER_LABOR.getNameKey())) {
 				tableCode = tb_staff_detail;
-			} else if (which.equals(TmplType.TB_SOCIAL_INC_SUMMY.getNameKey())) {
+			} else if (which.equals(TmplType.TB_SOCIAL_INC_DETAIL.getNameKey())
+					//|| which.equals(TmplType.TB_SOCIAL_INC_SUMMY_BILL.getNameKey())
+					|| which.equals(TmplType.TB_SOCIAL_INC_SUMMY.getNameKey())
+					|| which.equals(TmplType.TB_SOCIAL_INC_AUDIT.getNameKey())
+					|| which.equals(TmplType.TB_SOCIAL_INC_TRANSFER.getNameKey())) {
 				tableCode = tb_social_inc_detail;
-			} else if (which.equals(TmplType.TB_HOUSE_FUND_SUMMY.getNameKey())) {
+			} else if (which.equals(TmplType.TB_HOUSE_FUND_DETAIL.getNameKey())
+					//|| which.equals(TmplType.TB_HOUSE_FUND_SUMMY_BILL.getNameKey())
+					|| which.equals(TmplType.TB_HOUSE_FUND_SUMMY.getNameKey())
+					|| which.equals(TmplType.TB_HOUSE_FUND_AUDIT.getNameKey())
+					|| which.equals(TmplType.TB_HOUSE_FUND_TRANSFER.getNameKey())) {
 				tableCode = tb_house_fund_detail;
 			}
 		}

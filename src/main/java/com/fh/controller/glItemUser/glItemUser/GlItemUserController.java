@@ -5,6 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,11 +20,11 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 import com.fh.controller.base.BaseController;
-import com.fh.controller.common.CheckSystemDateTime;
 import com.fh.controller.common.Common;
 import com.fh.controller.common.DictsUtil;
 import com.fh.controller.common.Message;
 import com.fh.controller.common.QueryFeildString;
+import com.fh.controller.common.TmplUtil;
 import com.fh.entity.CommonBase;
 import com.fh.entity.JqPage;
 import com.fh.entity.Page;
@@ -36,7 +37,6 @@ import com.fh.util.Const;
 import com.fh.util.ObjectExcelView;
 import com.fh.util.PageData;
 import com.fh.util.SqlTools;
-import com.fh.util.enums.TmplType;
 import com.fh.util.Jurisdiction;
 import com.fh.util.excel.LeadingInExcelToPageData;
 import com.fh.util.excel.TransferSbcDbc;
@@ -83,43 +83,20 @@ public class GlItemUserController extends BaseController {
 	private UserManager userService;
 	
 	//表名
-	String TableNameDetail = "tb_house_fund_detail";
-	String TableNameSummy = "tb_house_fund_summy_BILL";
-	String TableNameBackup = "tb_house_fund_detail_backup";
-	//临时数据
-	String SelectBillCodeFirstShow = "临时数据";
-	String SelectBillCodeLastShow = "";
-	//枚举类型  1工资明细,2工资汇总,3公积金明细,4公积金汇总,5社保明细,6社保汇总,7工资接口,8公积金接口,9社保接口
-    String TypeCodeDetail = TmplType.TB_HOUSE_FUND_DETAIL.getNameKey();
-    String TypeCodeTransfer = TmplType.TB_HOUSE_FUND_TRANSFER.getNameKey();
+	String TableName = "TB_GL_ITEM_USER";
 
-	//页面显示数据的年月
-	//String SystemDateTime = "";
-    //
-	String AdditionalReportColumns = "";
-	//
-	private List<String> MustInputList = Arrays.asList("USER_CODE", "UNITS_CODE");
 	//界面查询字段
-    List<String> QueryFeildList = Arrays.asList("CUST_COL7", "DEPT_CODE");
-    //设置必定不用编辑的列            SERIAL_NO 设置字段类型是数字，但不管隐藏 或显示都必须保存的
-    List<String> MustNotEditList = Arrays.asList("SERIAL_NO", "BILL_CODE", "BUSI_DATE", "DEPT_CODE", "CUST_COL7");
-	// 查询表的主键字段，作为标准列，jqgrid添加带__列，mybaits获取带__列
-    List<String> keyListAdd = new ArrayList<String>();
-	List<String> keyListBase = getKeyListBase();
-	private List<String> getKeyListBase(){
-		List<String> list = new ArrayList<String>();
-		for(String strFeild : MustNotEditList){
-			if (!list.contains(strFeild)) {
-			    list.add(strFeild);
-			}
-		}
-		for(String strFeild : keyListAdd){
-			if (!list.contains(strFeild)) {
-				list.add(strFeild);
-			}
-		}
-		return list;
-	}
+    List<String> QueryFeildList = Arrays.asList("BUSI_DATE", "DEPT_CODE");
+    //设置必定不用编辑的列
+    List<String> MustNotEditList = Arrays.asList("BUSI_DATE", "DEPT_CODE");
+    // 查询表的主键字段，作为标准列，jqgrid添加带__列，mybaits获取带__列
+    List<String> keyListBase = Arrays.asList("BUSI_DATE", "DEPT_CODE", "USER_CODE", "STAFF_IDENT");
+	//导入必填项在字典里没翻译
+    List<String> ImportNotHaveTransferList = Arrays.asList("DEPT_CODE", "UNITS_CODE");
+    
+	Map<String, TableColumns> Map_HaveColumnsList = new LinkedHashMap<String, TableColumns>();
+	Map<String, TmplConfigDetail> Map_SetColumnsList = new LinkedHashMap<String, TmplConfigDetail>();
+	Map<String, Object> DicList = new HashMap<String, Object>();
 
 	/**列表
 	 * @param page
@@ -141,10 +118,54 @@ public class GlItemUserController extends BaseController {
 		String DepartName = user.getDEPARTMENT_NAME();
 		mv.addObject("DepartName", DepartName);
 		
+		//CUST_COL7 FMISACC 帐套字典
+		//mv.addObject("FMISACC", DictsUtil.getDictsByParentCode(dictionariesService, "FMISACC"));
 		// *********************加载单位树  DEPT_CODE*******************************
-		String DepartmentSelectTreeSource=DictsUtil.getDepartmentSelectTreeSource(departmentService, DictsUtil.DepartShowAll);
+		String DepartmentSelectTreeSource=DictsUtil.getDepartmentSelectTreeSource(departmentService);
+		if(DepartmentSelectTreeSource.equals("0"))
+		{
+			getPd.put("departTreeSource", DepartmentSelectTreeSource);
+		} else {
+			getPd.put("departTreeSource", 1);
+		}
 		mv.addObject("zTreeNodes", DepartmentSelectTreeSource);
 		// ***********************************************************
+		
+		String departmentValus = DictsUtil.getDepartmentValue(departmentService);
+		String departmentStringAll = ":[All];" + departmentValus;
+		String departmentStringSelect = ":;" + departmentValus;
+		mv.addObject("departmentStrAll", departmentStringAll);
+		mv.addObject("departmentStrSelect", departmentStringSelect);
+		
+		Map_HaveColumnsList = Common.GetHaveColumnsListByTableName(TableName, tmplconfigService);
+		
+		Map_SetColumnsList.put("BUSI_DATE", new TmplConfigDetail("BUSI_DATE", "期间", "1", false));
+		Map_SetColumnsList.put("USER_CODE", new TmplConfigDetail("USER_CODE", "员工编码", "1", false));
+		Map_SetColumnsList.put("USER_NAME", new TmplConfigDetail("USER_NAME", "员工姓名", "1", false));
+		Map_SetColumnsList.put("STAFF_IDENT", new TmplConfigDetail("STAFF_IDENT", "身份证号", "1", false));
+		TmplConfigDetail DEPT_CODE = new TmplConfigDetail("DEPT_CODE", "责任中心", "1", false);
+		DEPT_CODE.setDICT_TRANS("oa_department");
+		Map_SetColumnsList.put("DEPT_CODE", DEPT_CODE);
+		Common.getDicValue(DicList, DEPT_CODE.getDICT_TRANS(), tmplconfigdictService, dictionariesService, departmentService, userService, "");
+		TmplConfigDetail UNITS_CODE = new TmplConfigDetail("UNITS_CODE", "所属二级单位", "1", false);
+		UNITS_CODE.setDICT_TRANS("oa_department");
+		Map_SetColumnsList.put("UNITS_CODE", UNITS_CODE);
+		Common.getDicValue(DicList, UNITS_CODE.getDICT_TRANS(), tmplconfigdictService, dictionariesService, departmentService, userService, "");
+		Map_SetColumnsList.put("ITEM1_CODE", new TmplConfigDetail("ITEM1_CODE", "在建工程项目编码1", "1", false));
+		Map_SetColumnsList.put("ITEM1_NAME", new TmplConfigDetail("ITEM1_NAME", "在建工程项目名称1", "1", false));
+		Map_SetColumnsList.put("ITEM1_BUD", new TmplConfigDetail("ITEM1_BUD", "项目概算1", "1", true));
+		Map_SetColumnsList.put("ITEM2_CODE", new TmplConfigDetail("ITEM2_CODE", "在建工程项目编码2	", "1", false));
+		Map_SetColumnsList.put("ITEM2_NAME", new TmplConfigDetail("ITEM2_NAME", "在建工程项目名称2", "1", false));
+		Map_SetColumnsList.put("ITEM2_BUD", new TmplConfigDetail("ITEM2_BUD", "项目概算2", "1", true));
+		Map_SetColumnsList.put("ITEM3_CODE", new TmplConfigDetail("ITEM3_CODE", "在建工程项目编码3", "1", false));
+		Map_SetColumnsList.put("ITEM3_NAME", new TmplConfigDetail("ITEM3_NAME", "在建工程项目名称3", "1", false));
+		Map_SetColumnsList.put("ITEM3_BUD", new TmplConfigDetail("ITEM3_BUD", "项目概算3", "1", true));
+		Map_SetColumnsList.put("ITEM4_CODE", new TmplConfigDetail("ITEM4_CODE", "在建工程项目编码4", "1", false));
+		Map_SetColumnsList.put("ITEM4_NAME", new TmplConfigDetail("ITEM4_NAME", "在建工程项目名称4", "1", false));
+		Map_SetColumnsList.put("ITEM4_BUD", new TmplConfigDetail("ITEM4_BUD", "项目概算4", "1", true));
+		Map_SetColumnsList.put("ITEM5_CODE", new TmplConfigDetail("ITEM5_CODE", "在建工程项目编码5", "1", false));
+		Map_SetColumnsList.put("ITEM5_NAME", new TmplConfigDetail("ITEM5_NAME", "在建工程项目名称5", "1", false));
+		Map_SetColumnsList.put("ITEM5_BUD", new TmplConfigDetail("ITEM5_BUD", "项目概算5", "1", true));
 
 		mv.addObject("pd", getPd);
 		return mv;
@@ -160,26 +181,23 @@ public class GlItemUserController extends BaseController {
 		logBefore(logger, Jurisdiction.getUsername()+"列表GlItemUser");
 
 		PageData getPd = this.getPageData();
+		//业务区间
+		String SelectedBusiDate = getPd.getString("SelectedBusiDate");
+		//账套
+		//String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
 		//单位
 		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
-		//当前区间
-		String SystemDateTime = getPd.getString("SystemDateTime");
-
-		PageData getQueryFeildPd = new PageData();
-		getQueryFeildPd.put("DEPT_CODE", SelectedDepartCode);
-		String QueryFeild = QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList);
-		//if(!(SelectedDepartCode != null && !SelectedDepartCode.trim().equals(""))){
-		//	QueryFeild += " and 1 != 1 ";
-		//}
-		getPd.put("QueryFeild", QueryFeild);
+		int departSelf = Common.getDepartSelf(departmentService);
+		if(departSelf == 1){
+			SelectedDepartCode = Jurisdiction.getCurrentDepartmentID();
+		}
+		TransferPd(getPd, SelectedBusiDate, SelectedDepartCode);
 		
 		//多条件过滤条件
 		String filters = getPd.getString("filters");
 		if(null != filters && !"".equals(filters)){
 			getPd.put("filterWhereResult", SqlTools.constructWhere(filters,null));
 		}
-		//页面显示数据的年月
-		getPd.put("SystemDateTime", SystemDateTime);
 		page.setPd(getPd);
 		List<PageData> varList = glItemUserService.JqPage(page);	//列出Betting列表
 		int records = glItemUserService.countJqGridExtend(page);
@@ -205,35 +223,46 @@ public class GlItemUserController extends BaseController {
 		//if(!Jurisdiction.buttonJurisdiction(menuUrl, "edit")){return null;} //校验权限
 
 		PageData getPd = this.getPageData();
+		//当前区间
+		String SelectedBusiDate = getPd.getString("SelectedBusiDate");
+		String ShowDataBusiDate = getPd.getString("ShowDataBusiDate");
+		//账套
+		//String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
+		//String ShowDataCustCol7 = getPd.getString("ShowDataCustCol7");
 		//单位
 		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
 		String ShowDataDepartCode = getPd.getString("ShowDataDepartCode");
+		int departSelf = Common.getDepartSelf(departmentService);
+		if(departSelf == 1){
+			SelectedDepartCode = Jurisdiction.getCurrentDepartmentID();
+			ShowDataDepartCode = Jurisdiction.getCurrentDepartmentID();
+		}
 		//操作
 		String oper = getPd.getString("oper");
-		//当前区间
-		String SystemDateTime = getPd.getString("SystemDateTime");
-		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager, false);
-		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
-			commonBase.setCode(2);
-			commonBase.setMessage(mesDateTime);
-			return commonBase;
-		}
 
-		//判断选择为必须选择的
-		String strGetCheckMustSelected = CheckMustSelectedAndSame(SelectedDepartCode, ShowDataDepartCode, "1");
-		if(strGetCheckMustSelected!=null && !strGetCheckMustSelected.trim().equals("")){
-			//commonBase.setCode(2);
-			//commonBase.setMessage(strGetCheckMustSelected);
-			//return commonBase;
-		}
-
-		//必定不用编辑的列  MustNotEditList Arrays.asList("BUSI_DATE");//, "DEPT_CODE"
-		if(oper.equals("add")){
-			getPd.put("BUSI_DATE", SystemDateTime);
-		}
-		
 		List<PageData> listData = new ArrayList<PageData>();
-		listData.add(getPd);
+		if(oper.equals("add")){
+			//判断选择为必须选择的
+			String strGetCheckMustSelected = CheckMustSelectedAndSame(SelectedBusiDate, ShowDataBusiDate, 
+					SelectedDepartCode, ShowDataDepartCode);
+			if(strGetCheckMustSelected!=null && !strGetCheckMustSelected.trim().equals("")){
+				commonBase.setCode(2);
+				commonBase.setMessage(strGetCheckMustSelected);
+				return commonBase;
+			}
+			//MustNotEditList = Arrays.asList("BUSI_DATE", "BILL_OFF", "DEPT_CODE");
+			getPd.put("BUSI_DATE", SelectedBusiDate);
+			//getPd.put("BILL_OFF", SelectedCustCol7);
+			getPd.put("DEPT_CODE", SelectedDepartCode);
+			Common.setModelDefault(getPd, Map_HaveColumnsList, Map_SetColumnsList, MustNotEditList);
+			listData.add(getPd);
+		} else {
+			for(String strFeild : MustNotEditList){
+				getPd.put(strFeild, getPd.get(strFeild + TmplUtil.keyExtra));
+			}
+			Common.setModelDefault(getPd, Map_HaveColumnsList, Map_SetColumnsList, MustNotEditList);
+			listData.add(getPd);
+		}
 		String checkState = CheckState(listData);
 		if(checkState!=null && !checkState.trim().equals("")){
 			commonBase.setCode(2);
@@ -257,25 +286,6 @@ public class GlItemUserController extends BaseController {
 		commonBase.setCode(-1);
 
 		PageData getPd = this.getPageData();
-		//单位
-		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
-		String ShowDataDepartCode = getPd.getString("ShowDataDepartCode");
-		//当前区间
-		String SystemDateTime = getPd.getString("SystemDateTime");
-		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager, false);
-		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
-			commonBase.setCode(2);
-			commonBase.setMessage(mesDateTime);
-			return commonBase;
-		}
-
-		//判断选择为必须选择的
-		String strGetCheckMustSelected = CheckMustSelectedAndSame(SelectedDepartCode, ShowDataDepartCode, "1");
-		if(strGetCheckMustSelected!=null && !strGetCheckMustSelected.trim().equals("")){
-			//commonBase.setCode(2);
-			//commonBase.setMessage(strGetCheckMustSelected);
-			//return commonBase;
-		}
 		
 		Object DATA_ROWS = getPd.get("DataRows");
 		String json = DATA_ROWS.toString();  
@@ -283,6 +293,12 @@ public class GlItemUserController extends BaseController {
         List<PageData> listData = (List<PageData>) JSONArray.toCollection(array,PageData.class);
 
 		if(null != listData && listData.size() > 0){
+			for(PageData pdData : listData){
+				for(String strFeild : MustNotEditList){
+					pdData.put(strFeild, pdData.get(strFeild + TmplUtil.keyExtra));
+				}
+				Common.setModelDefault(pdData, Map_HaveColumnsList, Map_SetColumnsList, MustNotEditList);
+			}
 			String checkState = CheckState(listData);
 			if(checkState!=null && !checkState.trim().equals("")){
 				commonBase.setCode(2);
@@ -307,26 +323,7 @@ public class GlItemUserController extends BaseController {
 		commonBase.setCode(-1);
 
 		PageData getPd = this.getPageData();
-		//单位
-		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
-		String ShowDataDepartCode = getPd.getString("ShowDataDepartCode");
-		//当前区间
-		String SystemDateTime = getPd.getString("SystemDateTime");
-		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager, false);
-		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
-			commonBase.setCode(2);
-			commonBase.setMessage(mesDateTime);
-			return commonBase;
-		}
-		
-		//判断选择为必须选择的
-		String strGetCheckMustSelected = CheckMustSelectedAndSame(SelectedDepartCode, ShowDataDepartCode, "1");
-		if(strGetCheckMustSelected!=null && !strGetCheckMustSelected.trim().equals("")){
-			//commonBase.setCode(2);
-			//commonBase.setMessage(strGetCheckMustSelected);
-			//return commonBase;
-		}
-		
+
 		Object DATA_ROWS = getPd.get("DataRows");
 		String json = DATA_ROWS.toString();  
         JSONArray array = JSONArray.fromObject(json);  
@@ -348,30 +345,38 @@ public class GlItemUserController extends BaseController {
 	    commonBase.setCode(-1);
 	    
 		PageData getPd = this.getPageData();
+		//当前区间
+		String SelectedBusiDate = getPd.getString("SelectedBusiDate");
+		String ShowDataBusiDate = getPd.getString("ShowDataBusiDate");
+		//账套
+		//String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
+		//String ShowDataCustCol7 = getPd.getString("ShowDataCustCol7");
 		//单位
 		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
 		String ShowDataDepartCode = getPd.getString("ShowDataDepartCode");
-		//当前区间
-		String SystemDateTime = getPd.getString("SystemDateTime");
-		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager, false);
-		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
-			commonBase.setCode(2);
-			commonBase.setMessage(mesDateTime);
+		int departSelf = Common.getDepartSelf(departmentService);
+		if(departSelf == 1){
+			SelectedDepartCode = Jurisdiction.getCurrentDepartmentID();
+			ShowDataDepartCode = Jurisdiction.getCurrentDepartmentID();
 		}
 
 		//判断选择为必须选择的
-		String strGetCheckMustSelected = CheckMustSelectedAndSame(SelectedDepartCode, ShowDataDepartCode, "1");
+		String strGetCheckMustSelected = CheckMustSelectedAndSame(SelectedBusiDate, ShowDataBusiDate, 
+				SelectedDepartCode, ShowDataDepartCode);
 		if(strGetCheckMustSelected!=null && !strGetCheckMustSelected.trim().equals("")){
-			//commonBase.setCode(2);
-			//commonBase.setMessage(strGetCheckMustSelected);
+			commonBase.setCode(2);
+			commonBase.setMessage(strGetCheckMustSelected);
 		}
-		
+
 		ModelAndView mv = this.getModelAndView();
 		mv.setViewName("common/uploadExcel");
 		mv.addObject("local", "glItemUser");
+		mv.addObject("SelectedBusiDate", SelectedBusiDate);
+		mv.addObject("ShowDataBusiDate", ShowDataBusiDate);
+		//mv.addObject("SelectedCustCol7", SelectedCustCol7);
+		//mv.addObject("ShowDataCustCol7", ShowDataCustCol7);
 		mv.addObject("SelectedDepartCode", SelectedDepartCode);
 		mv.addObject("ShowDataDepartCode", ShowDataDepartCode);
-		mv.addObject("SystemDateTime", SystemDateTime);
 		mv.addObject("commonBaseCode", commonBase.getCode());
 		mv.addObject("commonMessage", commonBase.getMessage());
 		return mv;
@@ -384,36 +389,37 @@ public class GlItemUserController extends BaseController {
 	 */   
 	@SuppressWarnings({ "unchecked" })
 	@RequestMapping(value = "/readExcel")
-	//public @ResponseBody CommonBase readExcel(@RequestParam(value="excel",required=false) MultipartFile file) throws Exception{
 	public ModelAndView readExcel(@RequestParam(value="excel",required=false) MultipartFile file) throws Exception{
 		CommonBase commonBase = new CommonBase();
 		commonBase.setCode(-1);
-		//if(!Jurisdiction.buttonJurisdiction(menuUrl, "add")){return null;}//校验权限
 		
 		String strErrorMessage = "";
 
 		PageData getPd = this.getPageData();
+		//当前区间
+		String SelectedBusiDate = getPd.getString("SelectedBusiDate");
+		String ShowDataBusiDate = getPd.getString("ShowDataBusiDate");
+		//账套
+		//String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
+		//String ShowDataCustCol7 = getPd.getString("ShowDataCustCol7");
 		//单位
 		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
 		String ShowDataDepartCode = getPd.getString("ShowDataDepartCode");
-		//当前区间
-		String SystemDateTime = getPd.getString("SystemDateTime");
-		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager, false);
-		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
-			commonBase.setCode(2);
-			commonBase.setMessage(mesDateTime);
+		int departSelf = Common.getDepartSelf(departmentService);
+		if(departSelf == 1){
+			SelectedDepartCode = Jurisdiction.getCurrentDepartmentID();
+			ShowDataDepartCode = Jurisdiction.getCurrentDepartmentID();
 		}
+
+		//判断选择为必须选择的
+		String strGetCheckMustSelected = CheckMustSelectedAndSame(SelectedBusiDate, ShowDataBusiDate, 
+				SelectedDepartCode, ShowDataDepartCode);
+		if(strGetCheckMustSelected!=null && !strGetCheckMustSelected.trim().equals("")){
+			commonBase.setCode(2);
+			commonBase.setMessage(strGetCheckMustSelected);
+		}
+		
 		if(commonBase.getCode()==-1){
-			//判断选择为必须选择的
-			String strGetCheckMustSelected = CheckMustSelectedAndSame(SelectedDepartCode, ShowDataDepartCode, "1");
-			//if(strGetCheckMustSelected!=null && !strGetCheckMustSelected.trim().equals("")){
-			//	commonBase.setCode(2);
-			//	commonBase.setMessage(strGetCheckMustSelected);
-			//} else {
-							Map<String, TmplConfigDetail> map_SetColumnsList = null;//Common.GetSetColumnsList(TypeCodeDetail, SelectedDepartCode, SelectedCustCol7, tmplconfigService);
-							Map<String, TableColumns> map_HaveColumnsList = Common.GetHaveColumnsList(TypeCodeDetail, tmplconfigService);
-							Map<String, Object> DicList = null;//Common.GetDicList(TypeCodeDetail, SelectedDepartCode, SelectedCustCol7, tmplconfigService, tmplconfigdictService, dictionariesService, departmentService, userService, AdditionalReportColumns);
-							
 							// 局部变量
 							LeadingInExcelToPageData<PageData> testExcel = null;
 							Map<Integer, Object> uploadAndReadMap = null;
@@ -428,8 +434,8 @@ public class GlItemUserController extends BaseController {
 								titleAndAttribute = new LinkedHashMap<String, String>();
 									
 								//配置表设置列
-								if(map_SetColumnsList != null && map_SetColumnsList.size() > 0){
-									for (TmplConfigDetail col : map_SetColumnsList.values()) {
+								if(Map_SetColumnsList != null && Map_SetColumnsList.size() > 0){
+									for (TmplConfigDetail col : Map_SetColumnsList.values()) {
 										titleAndAttribute.put(TransferSbcDbc.ToDBC(col.getCOL_NAME()), col.getCOL_CODE());
 									}
 								}
@@ -439,7 +445,7 @@ public class GlItemUserController extends BaseController {
 								// 解析excel，获取客户信息集合
 
 								uploadAndReadMap = testExcel.uploadAndRead(file, propertiesFileName, kyeName, sheetIndex,
-										titleAndAttribute, map_HaveColumnsList, map_SetColumnsList, DicList, false, false);
+										titleAndAttribute, Map_HaveColumnsList, Map_SetColumnsList, DicList, false, false, ImportNotHaveTransferList);
 							} catch (Exception e) {
 								e.printStackTrace();
 								logger.error("读取Excel文件错误", e);
@@ -447,14 +453,8 @@ public class GlItemUserController extends BaseController {
 							}
 							boolean judgement = false;
 
-							Map<String, Object> returnError =  (Map<String, Object>) uploadAndReadMap.get(2);
-							if(returnError != null && returnError.size()>0){
-								strErrorMessage += "字典无此翻译： "; // \n
-								for (String k : returnError.keySet())  
-								{
-									strErrorMessage += k + " : " + returnError.get(k);
-								}
-							}
+							Map<String, String> returnErrorCostomn =  (Map<String, String>) uploadAndReadMap.get(2);
+							Map<String, String> returnErrorMust =  (Map<String, String>) uploadAndReadMap.get(3);
 
 							List<PageData> listUploadAndRead = (List<PageData>) uploadAndReadMap.get(1);
 							List<PageData> listAdd = new ArrayList<PageData>();
@@ -465,23 +465,46 @@ public class GlItemUserController extends BaseController {
 								List<String> sbRet = new ArrayList<String>();
 								int listSize = listUploadAndRead.size();
 								if(listSize > 0){
+									List<String> sbRetFeild = new ArrayList<String>();
+									String strRetUserCode = "";
+									String sbRetMust = "";
 									for(int i=0; i<listSize; i++){
 										PageData pdAdd = listUploadAndRead.get(i);
 										String getUSER_CODE = (String) pdAdd.get("USER_CODE");
-										if(getUSER_CODE!=null && !getUSER_CODE.trim().equals("")){
-											
-											String getBUSI_DATE = (String) pdAdd.get("BUSI_DATE");
-											String getDEPT_CODE = (String) pdAdd.get("DEPT_CODE");
-											String getUNITS_CODE = (String) pdAdd.get("UNITS_CODE");
-											if(!(getBUSI_DATE!=null && !getBUSI_DATE.trim().equals(""))){
-												pdAdd.put("BUSI_DATE", SystemDateTime);
-												getBUSI_DATE = SystemDateTime;
+									    if(!(getUSER_CODE!=null && !getUSER_CODE.trim().equals(""))){
+									    	strRetUserCode = "导入人员编码不能为空！";
+									    	break;
+									    } else {
+											String getMustMessage = returnErrorMust.get(getUSER_CODE);
+											String getCustomnMessage = returnErrorCostomn.get(getUSER_CODE);
+											if(getMustMessage!=null && !getMustMessage.trim().equals("")){
+												sbRetMust += "人员编码" + getUSER_CODE + "：" + getMustMessage + " ";
 											}
-											if(!SystemDateTime.equals(getBUSI_DATE)){
+											if(getCustomnMessage!=null && !getCustomnMessage.trim().equals("")){
+												strErrorMessage += "人员编码" + getUSER_CODE + "：" + getCustomnMessage + " ";
+											}
+
+											String getBUSI_DATE = (String) pdAdd.get("BUSI_DATE");
+											if(!(getBUSI_DATE!=null && !getBUSI_DATE.trim().equals(""))){
+												pdAdd.put("BUSI_DATE", SelectedBusiDate);
+												getBUSI_DATE = SelectedBusiDate;
+											}
+											if(!SelectedBusiDate.equals(getBUSI_DATE)){
 												if(!sbRet.contains("导入区间和当前区间必须一致！")){
 													sbRet.add("导入区间和当前区间必须一致！");
 												}
 											}
+											/*String getBILL_OFF = (String) pdAdd.get("BILL_OFF");
+											if(!(getBILL_OFF!=null && !getBILL_OFF.trim().equals(""))){
+												pdAdd.put("BILL_OFF", SelectedCustCol7);
+												getBILL_OFF = SelectedCustCol7;
+											}
+											if(!SelectedCustCol7.equals(getBILL_OFF)){
+												if(!sbRet.contains("导入账套和当前账套必须一致！")){
+													sbRet.add("导入账套和当前账套必须一致！");
+												}
+											}*/
+											String getDEPT_CODE = (String) pdAdd.get("DEPT_CODE");
 											if(!(getDEPT_CODE!=null && !getDEPT_CODE.trim().equals(""))){
 												pdAdd.put("DEPT_CODE", SelectedDepartCode);
 												getDEPT_CODE = SelectedDepartCode;
@@ -491,61 +514,39 @@ public class GlItemUserController extends BaseController {
 													sbRet.add("导入单位和当前单位必须一致！");
 												}
 											}
-										    if(!(getUSER_CODE!=null && !getUSER_CODE.trim().equals(""))){
-												if(!sbRet.contains("人员编码不能为空！")){
-													sbRet.add("人员编码不能为空！");
-												}
-											}
+											String getUNITS_CODE = (String) pdAdd.get("UNITS_CODE");
 											if(!(getUNITS_CODE!=null && !getUNITS_CODE.trim().equals(""))){
 												if(!sbRet.contains("所属二级单位不能为空！")){
 													sbRet.add("所属二级单位不能为空！");
 												}
 											}
-											String getESTB_DEPT = (String) pdAdd.get("ESTB_DEPT");
-											if(!(getESTB_DEPT!=null && !getESTB_DEPT.trim().equals(""))){
-												pdAdd.put("ESTB_DEPT", SelectedDepartCode);
-											}
-										    String getUSER_GROP = (String) pdAdd.get("USER_GROP");
-										    if(!(getUSER_GROP!=null && !getUSER_GROP.trim().equals(""))){
-												if(!sbRet.contains("员工组不能为空！")){
-													sbRet.add("员工组不能为空！");
-												}
-									        }
-											//Common.setModelDefault(pdAdd, map_HaveColumnsList, map_SetColumnsList);
-											//pdAdd.put("CanOperate", strHelpful);
-											//pdAdd.put("TableName", TableNameBackup);
+											Common.setModelDefault(pdAdd, Map_HaveColumnsList, Map_SetColumnsList, MustNotEditList);
 											listAdd.add(pdAdd);
 										}
 									}
-									if(sbRet.size()>0){
-										StringBuilder sbTitle = new StringBuilder();
-										for(String str : sbRet){
-											sbTitle.append(str + "  "); // \n
-										}
+									if(strRetUserCode!=null && !strRetUserCode.trim().equals("")){
 										commonBase.setCode(2);
-										commonBase.setMessage(sbTitle.toString());
+										commonBase.setMessage(strRetUserCode);
 									} else {
-										if(!(listAdd!=null && listAdd.size()>0)){
-											commonBase.setCode(2);
-											commonBase.setMessage("请导入符合条件的数据！");
+										if(sbRetMust!=null && !sbRetMust.trim().equals("")){
+											commonBase.setCode(3);
+											commonBase.setMessage("字典无此翻译, 不能导入： " + sbRetMust);
 										} else {
-											//commonBase = CalculationUpdateDatabase(true, commonBase, strErrorMessage, SelectedDepartCode, SelectedCustCol7, listAdd, strHelpful);
-											
-											/*String strFieldSelectKey = QueryFeildString.getFieldSelectKey(keyListBase, TmplUtil.keyExtra);
-											String sqlRetSelect = Common.GetRetSelectColoumns(map_HaveColumnsList, TypeCodeDetail, TableNameBackup, SelectedDepartCode, strFieldSelectKey, tmplconfigService);
-													
-											List<PageData> dataCalculation = glItemUserService.getDataCalculation(TableNameBackup, sqlRetSelect, listAdd);
-											if(dataCalculation!=null){
-												for(PageData each : dataCalculation){
-													each.put("SERIAL_NO", "");
-													Common.setModelDefault(each, map_HaveColumnsList, map_SetColumnsList);
-													each.put("CanOperate", strHelpful);
+											if(sbRetFeild.size()>0){
+												StringBuilder sbTitle = new StringBuilder();
+												for(String str : sbRetFeild){
+													sbTitle.append(str + "  "); // \n
+												}
+												commonBase.setCode(3);
+												commonBase.setMessage(sbTitle.toString());
+											} else {
+												if(!(listAdd!=null && listAdd.size()>0)){
+													commonBase.setCode(2);
+													commonBase.setMessage("无可处理的数据！");
+												} else {
+													glItemUserService.batchUpdateDatabase(listAdd);
 												}
 											}
-											//此处执行集合添加 
-											glItemUserService.batchUpdateDatabase(dataCalculation);
-											commonBase.setCode(0);
-											commonBase.setMessage(strErrorMessage);*/
 										}
 									}
 							    }
@@ -553,14 +554,16 @@ public class GlItemUserController extends BaseController {
 								commonBase.setCode(-1);
 							    commonBase.setMessage("TranslateUtil");
 						    }
-			//}
 		}
 		ModelAndView mv = this.getModelAndView();
 		mv.setViewName("common/uploadExcel");
 		mv.addObject("local", "glItemUser");
+		mv.addObject("SelectedBusiDate", SelectedBusiDate);
+		mv.addObject("ShowDataBusiDate", ShowDataBusiDate);
+		//mv.addObject("SelectedCustCol7", SelectedCustCol7);
+		//mv.addObject("ShowDataCustCol7", ShowDataCustCol7);
 		mv.addObject("SelectedDepartCode", SelectedDepartCode);
 		mv.addObject("ShowDataDepartCode", ShowDataDepartCode);
-		mv.addObject("SystemDateTime", SystemDateTime);
 		mv.addObject("commonBaseCode", commonBase.getCode());
 		mv.addObject("commonMessage", commonBase.getMessage());
 		return mv;
@@ -571,27 +574,26 @@ public class GlItemUserController extends BaseController {
 	 * @throws Exception
 	 */
 	@RequestMapping(value="/downExcel")
-	//public void downExcel(HttpServletResponse response)throws Exception{
 	public ModelAndView downExcel(JqPage page) throws Exception{
 		PageData getPd = this.getPageData();
+		//当前区间
+		String SelectedBusiDate = getPd.getString("SelectedBusiDate");
+		String ShowDataBusiDate = getPd.getString("ShowDataBusiDate");
+		//账套
+		//String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
+		//String ShowDataCustCol7 = getPd.getString("ShowDataCustCol7");
 		//单位
 		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
+		String ShowDataDepartCode = getPd.getString("ShowDataDepartCode");
 		int departSelf = Common.getDepartSelf(departmentService);
 		if(departSelf == 1){
 			SelectedDepartCode = Jurisdiction.getCurrentDepartmentID();
+			ShowDataDepartCode = Jurisdiction.getCurrentDepartmentID();
 		}
-		//账套
-		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
-		Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(TypeCodeDetail, SelectedDepartCode, SelectedCustCol7, tmplconfigService);
-
-		PageData transferPd = this.getPageData();
+		TransferPd(getPd, SelectedBusiDate, SelectedDepartCode);
 		//页面显示数据的二级单位
-		transferPd.put("SelectedDepartCode", SelectedDepartCode);
-		//账套
-		transferPd.put("SelectedCustCol7", SelectedCustCol7);
-		//页面显示数据的二级单位
-		List<PageData> varOList = glItemUserService.exportModel(transferPd);
-		return export(SelectedDepartCode, SelectedCustCol7, varOList, "GlItemUser", map_SetColumnsList); //公积金明细
+		List<PageData> varOList = glItemUserService.exportModel(getPd);
+		return export(varOList, "GlItemUser"); //公积金明细
 	}
 	
 	 /**导出到excel
@@ -601,52 +603,62 @@ public class GlItemUserController extends BaseController {
 	@RequestMapping(value="/excel")
 	public ModelAndView exportExcel(JqPage page) throws Exception{
 		logBefore(logger, Jurisdiction.getUsername()+"导出GlItemUser到excel");
-		//if(!Jurisdiction.buttonJurisdiction(menuUrl, "cha")){return null;}
 	    
 		PageData getPd = this.getPageData();
+		//当前区间
+		String SelectedBusiDate = getPd.getString("SelectedBusiDate");
+		String ShowDataBusiDate = getPd.getString("ShowDataBusiDate");
+		//账套
+		//String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
+		//String ShowDataCustCol7 = getPd.getString("ShowDataCustCol7");
 		//单位
 		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
+		String ShowDataDepartCode = getPd.getString("ShowDataDepartCode");
 		int departSelf = Common.getDepartSelf(departmentService);
 		if(departSelf == 1){
 			SelectedDepartCode = Jurisdiction.getCurrentDepartmentID();
+			ShowDataDepartCode = Jurisdiction.getCurrentDepartmentID();
 		}
-		//账套
-		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
-		//单号
-		String SelectedBillCode = getPd.getString("SelectedBillCode");
-		//当前区间
-		String SystemDateTime = getPd.getString("SystemDateTime");
-
-		Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(TypeCodeDetail, SelectedDepartCode, SelectedCustCol7, tmplconfigService);
-
-		//页面显示数据的年月
-		getPd.put("SystemDateTime", SystemDateTime);
-		//账套
-		getPd.put("SelectedCustCol7", SelectedCustCol7);
-		//页面显示数据的二级单位
-		getPd.put("SelectedDepartCode", SelectedDepartCode);
-
-		String strBillCode = QueryFeildString.getQueryFeildBillCodeDetail(SelectedBillCode, SelectBillCodeFirstShow);
-		getPd.put("CheckBillCode", strBillCode);
+		TransferPd(getPd, SelectedBusiDate, SelectedDepartCode);
 		
 		page.setPd(getPd);
 		List<PageData> varOList = glItemUserService.exportList(page);
-		return export(SelectedDepartCode, SelectedCustCol7, varOList, "", map_SetColumnsList);
+		return export(varOList, "");
+	}
+	
+	private void TransferPd(PageData getPd, String SelectedBusiDate, String SelectedDepartCode) 
+			throws Exception{
+		PageData getQueryFeildPd = new PageData();
+		getQueryFeildPd.put("BUSI_DATE", SelectedBusiDate);
+		getQueryFeildPd.put("DEPT_CODE", SelectedDepartCode);
+		//getQueryFeildPd.put("BILL_OFF", SelectedCustCol7);
+		String QueryFeild = QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList);
+		if(!(SelectedDepartCode != null && !SelectedDepartCode.trim().equals(""))){
+			QueryFeild += " and 1 != 1 ";
+		}
+		//if(!(SelectedCustCol7 != null && !SelectedCustCol7.trim().equals(""))){
+		//	QueryFeild += " and 1 != 1 ";
+		//}
+		if(!(SelectedBusiDate!=null && !SelectedBusiDate.trim().equals(""))){
+			QueryFeild += " and 1 != 1 ";
+		}
+		getPd.put("QueryFeild", QueryFeild);
+		
+		String strFieldSelectKey = QueryFeildString.getFieldSelectKey(keyListBase, TmplUtil.keyExtra);
+		if(null != strFieldSelectKey && !"".equals(strFieldSelectKey.trim())){
+			getPd.put("FieldSelectKey", strFieldSelectKey);
+		}
 	}
 	
 	@SuppressWarnings("unchecked")
-	private ModelAndView export(String SelectedDepartCode, String SelectedCustCol7, 
-			List<PageData> varOList, String ExcelName, Map<String, TmplConfigDetail> map_SetColumnsList) throws Exception{
-		Map<String, Object> DicList = Common.GetDicList(TypeCodeDetail, SelectedDepartCode, SelectedCustCol7, 
-				tmplconfigService, tmplconfigdictService, dictionariesService, departmentService, userService, AdditionalReportColumns);
-		
+	private ModelAndView export(List<PageData> varOList, String ExcelName) throws Exception{
 		ModelAndView mv = new ModelAndView();
 		Map<String,Object> dataMap = new LinkedHashMap<String,Object>();
 		dataMap.put("filename", ExcelName);
 		List<String> titles = new ArrayList<String>();
 		List<PageData> varList = new ArrayList<PageData>();
-		if(map_SetColumnsList != null && map_SetColumnsList.size() > 0){
-		    for (TmplConfigDetail col : map_SetColumnsList.values()) {
+		if(Map_SetColumnsList != null && Map_SetColumnsList.size() > 0){
+		    for (TmplConfigDetail col : Map_SetColumnsList.values()) {
 				if(col.getCOL_HIDE().equals("1")){
 					titles.add(col.getCOL_NAME());
 				}
@@ -655,7 +667,7 @@ public class GlItemUserController extends BaseController {
 				for(int i=0;i<varOList.size();i++){
 					PageData vpd = new PageData();
 					int j = 1;
-					for (TmplConfigDetail col : map_SetColumnsList.values()) {
+					for (TmplConfigDetail col : Map_SetColumnsList.values()) {
 						if(col.getCOL_HIDE().equals("1")){
 						String trans = col.getDICT_TRANS();
 						Object getCellValue = varOList.get(i).get(col.getCOL_CODE().toUpperCase());
@@ -665,7 +677,19 @@ public class GlItemUserController extends BaseController {
 							value = dicAdd.getOrDefault(getCellValue, "");
 							vpd.put("var" + j, value);
 						} else {
-							vpd.put("var" + j, getCellValue.toString());
+					    	if(getCellValue != null && !getCellValue.toString().trim().equals("")){
+					    		if(col.getIsNum()){
+							    	vpd.put("var" + j, getCellValue.toString());
+					    		} else {
+							    	vpd.put("var" + j, getCellValue.toString());
+					    		}
+					    	} else {
+					    		if(col.getIsNum()){
+							    	vpd.put("var" + j, "0.00");
+					    		} else {
+							    	vpd.put("var" + j, " ");
+					    		}
+					    	}
 						}
 						j++;
 						}
@@ -681,18 +705,6 @@ public class GlItemUserController extends BaseController {
 		return mv;
 	}
 	
-	private String CheckMustSelectedAndSame(String DEPT_CODE, String ShowDataDepartCode, String DepartTreeSource) throws Exception{
-		String strRut = "";
-		if(!(DEPT_CODE != null && !DEPT_CODE.trim().equals(""))){
-			strRut += "查询条件中的责任中心不能为空！";
-		} else {
-		    if(!String.valueOf(0).equals(DepartTreeSource) && !DEPT_CODE.equals(ShowDataDepartCode)){
-				strRut += "查询条件中所选责任中心与页面显示数据责任中心不一致，请单击查询再进行操作！";
-		    }
-		}
-		return strRut;
-	}
-	
 	private String CheckState(List<PageData> listData) throws Exception{
 		String strRet = "";
 		List<PageData> repeatList = glItemUserService.getRepeatList(listData);
@@ -700,6 +712,40 @@ public class GlItemUserController extends BaseController {
 			strRet = Message.HaveRepeatRecord;
 		}
 		return strRet;
+	}
+	
+	private String CheckMustSelectedAndSame(String BusiDate, String ShowDataBusiDate, 
+			String DEPT_CODE, String ShowDataDepartCode) throws Exception{
+		String strRut = "";
+		//if(!(CUST_COL7 != null && !CUST_COL7.trim().equals(""))){
+		//	strRut += "查询条件中的账套必须选择！";
+		//} else {
+		//    if(!CUST_COL7.equals(ShowDataCustCol7)){
+		//		strRut += "查询条件中所选账套与页面显示数据账套不一致，请单击查询再进行操作！";
+		//    }
+		//}
+		if(!(BusiDate != null && !BusiDate.trim().equals(""))){
+			strRut += "查询条件中的区间必须填写！";
+		} else {
+		    if(!BusiDate.equals(ShowDataBusiDate)){
+				strRut += "查询条件中填写区间与页面显示数据区间不一致，请单击查询再进行操作！";
+		    }
+		}
+		if(!(DEPT_CODE != null && !DEPT_CODE.trim().equals(""))){
+			strRut += "查询条件中的责任中心不能为空！";
+		} else {
+		    if(!DEPT_CODE.equals(ShowDataDepartCode)){
+				strRut += "查询条件中所选责任中心与页面显示数据责任中心不一致，请单击查询再进行操作！";
+		    }
+		}
+		if(!(DEPT_CODE != null && !DEPT_CODE.trim().equals(""))){
+			strRut += "查询条件中的责任中心不能为空！";
+		} else {
+		    if(!DEPT_CODE.equals(ShowDataDepartCode)){
+				strRut += "查询条件中所选责任中心与页面显示数据责任中心不一致，请单击查询再进行操作！";
+		    }
+		}
+		return strRut;
 	}
 	
 	@InitBinder

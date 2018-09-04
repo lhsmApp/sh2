@@ -29,6 +29,7 @@ public class Message {
 	public static String NotHaveConfirmData = "没有已确认数据，请到【汇总单据确认】功能确认相关数据！";
 	public static String SetValue = "勾选记录已设置值信息，请删除后再删除此记录！！";
 	public static String HavaNotHavaChangeCols = "存在未对应的数据列，请点击【查询】按钮！";
+	public static String HavaNotSumOrDetail = "操作的数据没有明细信息，请刷新！";
 	
 	public static String GetHelpfulDetailFalue = "获取可操作的数据的条件失败，请联系管理员！";
 	public static String ReportTypeIsNull = "上报类型为空！，请联系管理员！";

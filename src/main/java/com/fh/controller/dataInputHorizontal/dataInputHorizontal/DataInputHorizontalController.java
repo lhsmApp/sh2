@@ -578,7 +578,7 @@ public class DataInputHorizontalController extends BaseController {
 						// 解析excel，获取客户信息集合
 
 						uploadAndReadMap = testExcel.uploadAndRead(file, propertiesFileName, kyeName, sheetIndex,
-								titleAndAttribute, null, null, null, false, false);
+								titleAndAttribute, null, null, null, false, false, null);
 					} catch (Exception e) {
 						e.printStackTrace();
 						logger.error("读取Excel文件错误", e);
