@@ -116,4 +116,16 @@
 		</where>
 		limit 1
 	</select>
+
+    
+	<!-- 获取汇总要用数据 -->
+	<select id="getSumUseList" parameterType="pd" resultType="pd">
+		select * 
+		from <include refid="tableName"></include>
+		<where>
+		    <if test="QueryFeild!= null and QueryFeild != ''">
+		        ${QueryFeild}
+		    </if>
+		</where>
+	</select>
 </mapper>

@@ -218,7 +218,8 @@ public class FundsConfirmInfoController extends BaseController {
 		String SelectedTypeCode = getPd.getString("SelectedTypeCode");
 		
 		String strCondition = " and DEPARTMENT_CODE in (select DEPT_CODE from tb_sys_dept_mapping where BILL_OFF = '" + SelectedCustCol7 +"' and TYPE_CODE = '" + SelectedTypeCode +"' ";
-		if(!Jurisdiction.getCurrentDepartmentID().equals(DictsUtil.DepartShowAll)){
+		if(!Jurisdiction.getCurrentDepartmentID().equals(DictsUtil.DepartShowAll_01001)
+				&& !Jurisdiction.getCurrentDepartmentID().equals(DictsUtil.DepartShowAll_00)){
 			strCondition += "                               and DEPT_CODE = '" + Jurisdiction.getCurrentDepartmentID() +"' ";
 		}
 		strCondition += "                               ) ";

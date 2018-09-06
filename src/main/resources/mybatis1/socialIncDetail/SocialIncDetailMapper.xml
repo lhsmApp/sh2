@@ -128,39 +128,4 @@
 		</foreach>
 	</update>
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	<!-- 获取汇总里的明细 -->
-	<select id="getDetailList" parameterType="pd" resultType="pd">
-		select * 
-		from <include refid="tableNameDetail"></include>
-		<where>
-	        ${QueryFeild}
-		</where>
-	</select>
-	
-	<!-- 获取汇总数据 -->
-	<select id="getSum" parameterType="pd" resultType="pd">
-        select 
-            ${SelectFeild}
-		from <include refid="tableNameDetail"></include>
-		where BUSI_DATE = '${SystemDateTime}'
-	    ${QueryFeild}
-		<if test="GroupbyFeild!= null and GroupbyFeild != ''">
-	        group by ${GroupbyFeild}
-	    </if>
-    </select>
-	
 </mapper>

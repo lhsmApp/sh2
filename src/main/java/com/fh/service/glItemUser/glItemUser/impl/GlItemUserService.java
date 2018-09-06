@@ -77,5 +77,15 @@ public class GlItemUserService implements GlItemUserManager{
 	public List<PageData> exportModel(PageData pd)throws Exception{
 		return (List<PageData>)dao.findForList("GlItemUserMapper.exportModel", pd);
 	}
+
+	
+	/**获取汇总要用数据
+	 * @param page
+	 * @throws Exception
+	 */
+	@SuppressWarnings("unchecked")
+	public List<PageData> getSumUseList(PageData pd)throws Exception{
+		return (List<PageData>)dao.findForList("GlItemUserMapper.getSumUseList", pd);
+	}
 }
 

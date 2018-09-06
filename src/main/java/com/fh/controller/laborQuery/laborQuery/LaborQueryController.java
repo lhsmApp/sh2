@@ -197,7 +197,8 @@ public class LaborQueryController extends BaseController {
 	    
 		List<Dictionaries> dicList = new ArrayList<Dictionaries>();
 		String DepartTreeSource = "";
-		if(DictsUtil.DepartShowAll.equals(Jurisdiction.getCurrentDepartmentID())){
+		if(DictsUtil.DepartShowAll_01001.equals(Jurisdiction.getCurrentDepartmentID())
+				|| DictsUtil.DepartShowAll_00.equals(Jurisdiction.getCurrentDepartmentID())){
 			DepartTreeSource = "1";
 			Dictionaries itemAll = new Dictionaries();
 			itemAll.setDICT_CODE("ALL");
@@ -259,7 +260,8 @@ public class LaborQueryController extends BaseController {
 		String WhereSql = " and BUSI_DATE = '" + SelectedBusiDate + "' ";
 		WhereSql += " and BILL_OFF = '" + SelectedCustCol7 + "' ";
 
-		if(DictsUtil.DepartShowAll.equals(Jurisdiction.getCurrentDepartmentID())){
+		if(DictsUtil.DepartShowAll_01001.equals(Jurisdiction.getCurrentDepartmentID())
+				|| DictsUtil.DepartShowAll_00.equals(Jurisdiction.getCurrentDepartmentID())){
 			if(!(SelectedDepartCode!=null && !SelectedDepartCode.equals(""))){
 				WhereSql += " and 1 != 1 ";
 			} else {
@@ -269,7 +271,8 @@ public class LaborQueryController extends BaseController {
 					List<String> listDeptSqlNotIn = new ArrayList<String>();
 					for(String strDeptCode : DepartCanExportTable){
 						if(strDeptCode!=null && !strDeptCode.trim().equals("")
-								&& !strDeptCode.equals(DictsUtil.DepartShowAll)){
+								&& !strDeptCode.equals(DictsUtil.DepartShowAll_01001)
+								&& !strDeptCode.equals(DictsUtil.DepartShowAll_00)){
 							listDeptSqlNotIn.add(strDeptCode);
 						}
 					}

@@ -559,47 +559,16 @@ public class Common {
 		pd.put("InsertVale", InsertVale);
 		pd.put("InsertLogVale", InsertLogVale);
 	}
-	//IsNumFeildButMustInput 设置字段类型是数字，但不管隐藏 或显示都必须保存的
-	public static void setModelDefault(PageData pd, List<TableColumns> tableColumns, 
-			List<SysStruMapping> getSysStruMappingList)
+
+	//
+	public static PageData copyPdToOther(PageData pd, Map<String, TableColumns> haveColumnsList)
 			throws ClassNotFoundException {
-		String InsertField = "";
-		String InsertVale = "";
-		String InsertLogVale = "";
-	    for (TableColumns column : tableColumns) {
-	    	String column_name = column.getColumn_name().toUpperCase();
-	    	String data_type = column.getData_type().toUpperCase();
-	    	SysStruMapping struMapping = new SysStruMapping();
-	    	for(SysStruMapping str : getSysStruMappingList){
-	    		if(column_name.equals(str.getCOL_MAPPING_CODE().toUpperCase())){
-	    			struMapping = str;
-	    		}
-	    	}
-	    	int intHide = 0;
-	    	if(struMapping != null && struMapping.getCOL_MAPPING_CODE()!=null 
-	    			&& !struMapping.getCOL_MAPPING_CODE().trim().equals("")){
-				intHide = Integer.parseInt(struMapping.getCOL_HIDE());
-	    	} else {
-	    		intHide = 1;//显示
-	    	}
-			// 0隐藏 1显示, intHide != 1 隐藏
-			if(!(IsNumFeild(data_type) && intHide != 1)){
-				Object value = pd.get(column_name);
-				if(value != null && value.toString() != null && !value.toString().trim().equals("")){
-					if(InsertField!=null && !InsertField.trim().equals("")){
-						InsertField += ",";
-						InsertVale += ",";
-						InsertLogVale += ",";
-					}
-					InsertField += column_name;
-					InsertVale += "'" + value.toString() + "'";
-					InsertLogVale += "''" + value.toString() + "''";
-				}
-			}
+		PageData RetItem = new PageData();
+	    for (TableColumns col : haveColumnsList.values()) {
+	    	String column_name = col.getColumn_name().toUpperCase();
+	    	RetItem.put(column_name, pd.get(column_name));
 		}
-		pd.put("InsertField", InsertField);
-		pd.put("InsertVale", InsertVale);
-		pd.put("InsertLogVale", InsertLogVale);
+		return RetItem;
 	}
 	
 	public static int getDepartSelf(DepartmentManager departmentService) throws Exception{

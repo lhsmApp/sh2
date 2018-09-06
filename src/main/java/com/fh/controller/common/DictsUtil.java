@@ -44,7 +44,8 @@ public class DictsUtil {
 	
 	public static String Id = "id";
 	//机关编码
-	public static String DepartShowAll = "01001";
+	public static String DepartShowAll_01001 = "01001";
+	public static String DepartShowAll_00 = "00";
 	
 	public static List<Dictionaries> getDictsByParentBianma(DictionariesManager dictionariesService,
 			String parentBianma) throws Exception {
@@ -156,7 +157,7 @@ public class DictsUtil {
 		String orgCode = Tools.readTxtFile(Const.ORG_CODE); 
 		String [] orgInfo=orgCode.split(",");
 		
-		if(curUserDepartCode.equals(DepartShowAll)){//机关
+		if(curUserDepartCode.equals(DepartShowAll_01001) || curUserDepartCode.equals(DepartShowAll_00)){//机关
 			parentDepartCode=orgInfo[0];
 			parentDepartName=orgInfo[1];
 		}
@@ -191,7 +192,7 @@ public class DictsUtil {
 		String orgCode = Tools.readTxtFile(Const.ORG_CODE); 
 		String [] orgInfo=orgCode.split(",");
 		
-		if(curUserDepartCode.equals(DepartShowAll)){//机关
+		if(curUserDepartCode.equals(DepartShowAll_01001) || curUserDepartCode.equals(DepartShowAll_00)){//机关
 			parentDepartCode=orgInfo[0];
 			parentDepartName=orgInfo[1];
 		}

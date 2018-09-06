@@ -92,7 +92,7 @@ public class SysLogRecController extends BaseController {
 		mv.addObject("typeCodeStrSelect", typeCodeStringSelect);
 
 		// *********************加载单位树  DEPT_CODE*******************************
-		String DepartmentSelectTreeSource=DictsUtil.getDepartmentSelectTreeSource(departmentService, DictsUtil.DepartShowAll);
+		String DepartmentSelectTreeSource=DictsUtil.getDepartmentSelectTreeSource(departmentService, DictsUtil.DepartShowAll_01001);
 		mv.addObject("zTreeNodes", DepartmentSelectTreeSource);
 		// ***********************************************************
 		String departmentValus = DictsUtil.getDepartmentValue(departmentService);

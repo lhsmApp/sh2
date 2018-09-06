@@ -562,7 +562,8 @@ public class DetailImportQueryController extends BaseController {
 
 		List<Dictionaries> dicList = new ArrayList<Dictionaries>();
 		String DepartTreeSource = "";
-		if(DictsUtil.DepartShowAll.equals(Jurisdiction.getCurrentDepartmentID())){
+		if(DictsUtil.DepartShowAll_01001.equals(Jurisdiction.getCurrentDepartmentID())
+				|| DictsUtil.DepartShowAll_00.equals(Jurisdiction.getCurrentDepartmentID())){
 			DepartTreeSource = "1";
 			Dictionaries itemAll = new Dictionaries();
 			itemAll.setDICT_CODE("ALL");
@@ -648,7 +649,8 @@ public class DetailImportQueryController extends BaseController {
 				WhereSql += " and USER_GROP in (" + strGroupIsExportData + ") ";
 			}
 		}
-		if(DictsUtil.DepartShowAll.equals(Jurisdiction.getCurrentDepartmentID())){
+		if(DictsUtil.DepartShowAll_01001.equals(Jurisdiction.getCurrentDepartmentID())
+				|| DictsUtil.DepartShowAll_00.equals(Jurisdiction.getCurrentDepartmentID())){
 			if(!(SelectedDepartCode!=null && !SelectedDepartCode.equals(""))){
 				WhereSql += " and 1 != 1 ";
 			} else {
@@ -658,7 +660,8 @@ public class DetailImportQueryController extends BaseController {
 					List<String> listDeptSqlNotIn = new ArrayList<String>();
 					for(String strDeptCode : DepartCanExportTable){
 						if(strDeptCode!=null && !strDeptCode.trim().equals("")
-								&& !strDeptCode.equals(DictsUtil.DepartShowAll)){
+								&& !strDeptCode.equals(DictsUtil.DepartShowAll_01001)
+								&& !strDeptCode.equals(DictsUtil.DepartShowAll_00)){
 							listDeptSqlNotIn.add(strDeptCode);
 						}
 					}
@@ -719,13 +722,16 @@ public class DetailImportQueryController extends BaseController {
 		//个税字段，
 		String TableFeildSalaryTax = "";//"ACCRD_TAX";
 		String TableFeildBonusSelf = "CUST_COL14";
-		//String TableFeildBonusTax = "CUST_COL10";
+		String TableFeildBonusTax = "";//"CUST_COL10";
+        PageData BonusTax = new PageData();
+        BonusTax.put("KEY_CODE", SysConfigKeyCode.BonusIncomeTax);
+        TableFeildBonusTax = sysConfigManager.getSysConfigByKey(BonusTax);
         PageData SalaryTax = new PageData();
         SalaryTax.put("KEY_CODE", SysConfigKeyCode.IndividualIncomeTax);
         TableFeildSalaryTax = sysConfigManager.getSysConfigByKey(SalaryTax);
 		
 		if(SalaryOrBonus.equals(StaffDataType1.Salary.getNameKey())){
-			//WhereSql += " and (GROSS_PAY != 0 || " + TableFeildSalaryTax + " != 0) ";
+			WhereSql += " and (GROSS_PAY != 0 || " + TableFeildSalaryTax + " != 0) ";
 			String SelectGroupFeild = " USER_CODE, USER_NAME, STAFF_IDENT, DEPT_CODE, "//USER_GROP, 
 					+ " sum(GROSS_PAY) GROSS_PAY, "
 					+ " sum(ENDW_INS) ENDW_INS, "
@@ -740,9 +746,10 @@ public class DetailImportQueryController extends BaseController {
 			getPd.put("SelectGroupFeild", SelectGroupFeild);
 		}
         if(SalaryOrBonus.equals(StaffDataType1.Bonus.getNameKey())){
-			//WhereSql += " and (" + TableFeildBonusSelf + " != 0 || " + TableFeildBonusTax + " != 0) ";
+			WhereSql += " and (" + TableFeildBonusSelf + " != 0 || " + TableFeildBonusTax + " != 0) ";
 			String SelectGroupFeild = " USER_CODE, USER_NAME, STAFF_IDENT, DEPT_CODE, "//USER_GROP, 
-					+ " sum(" + TableFeildBonusSelf + ") " + TableFeildBonusSelf + " ";
+					+ " sum(" + TableFeildBonusSelf + ") " + TableFeildBonusSelf + ", "
+					+ " sum(" + TableFeildBonusTax + ") " + TableFeildBonusTax + " ";
 			//if(SelectedDepartCode.equals("HOME")){
 				SelectGroupFeild += ", UNITS_CODE ";
 			//}
@@ -794,7 +801,7 @@ public class DetailImportQueryController extends BaseController {
 		
 		String strGetDicSelectedDepartCode = SelectedDepartCode;
 		if(SelectedDepartCode != null && (SelectedDepartCode.equals("ALL") || SelectedDepartCode.equals("HOME"))){
-			strGetDicSelectedDepartCode = DictsUtil.DepartShowAll;
+			strGetDicSelectedDepartCode = DictsUtil.DepartShowAll_01001;
 		}
 		Map<String, Object> DicList = Common.GetDicList(SelectedTableNo, strGetDicSelectedDepartCode, SelectedCustCol7, 
 				tmplconfigService, tmplconfigdictService, dictionariesService, departmentService, userService, AdditionalReportColumns);
@@ -836,6 +843,7 @@ public class DetailImportQueryController extends BaseController {
 		}
         if(SalaryOrBonus.equals(StaffDataType1.Bonus.getNameKey())){
 			map_SetColumnsList.put(TableFeildBonusSelf, new TmplConfigDetail(TableFeildBonusSelf, "全年一次性奖金额", "1", true));
+			map_SetColumnsList.put(TableFeildBonusTax, new TmplConfigDetail(TableFeildBonusTax, "税额", "1", true));
 			map_SetColumnsList.put("免税所得", new TmplConfigDetail("免税所得", "免税所得", "1", true));
 			map_SetColumnsList.put("允许扣除的税费", new TmplConfigDetail("允许扣除的税费", "允许扣除的税费", "1", true));
 			map_SetColumnsList.put("商业健康保险费", new TmplConfigDetail("商业健康保险费", "商业健康保险费", "1", true));

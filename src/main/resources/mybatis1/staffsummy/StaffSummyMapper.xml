@@ -16,6 +16,9 @@
 	<sql id="tableNameDetail">
 		tb_staff_summy
 	</sql>
+	<sql id="tableNameItem">
+	    TB_ITEM_STAFF_DETAIL
+	</sql>
 	
 	<!-- 获取单号下拉列表数据源 -->
 	<select id="getBillCodeList" parameterType="pd" resultType="String">
@@ -102,6 +105,10 @@
 		        <include refid="tableNameDetail"></include>
 		        where BILL_CODE = #{item.BILL_CODE__}
 	            ${item.CanOperateDetail};
+		        <!-- delete from  
+		        <include refid="tableNameItem"></include>
+		        where BILL_CODE = #{item.BILL_CODE__}
+	            ${item.CanOperateDetail}; -->
 		    </foreach>
 		</if>
 		<foreach item="item" index="index" collection="SaveBill" open=" " separator=" " close=" ">
@@ -112,6 +119,12 @@
 		    insert into ${item.TableName}
 		    (${item.InsertField}) values (${item.InsertVale});
 		</foreach>
+		<!-- <if test="SaveItem != null">
+		    <foreach item="item" index="index" collection="SaveItem" open=" " separator=" " close=" ">
+		        insert into ${item.TableName}
+		        (${item.InsertField}) values (${item.InsertVale});
+		    </foreach>
+		</if> -->
 		<if test="DetailSetBillCode != null">
 		    <foreach item="item" index="index" collection="DetailSetBillCode" open=" " separator=" " close=" ">
 		        update tb_staff_detail

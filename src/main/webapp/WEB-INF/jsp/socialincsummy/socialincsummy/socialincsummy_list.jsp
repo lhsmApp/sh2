@@ -289,20 +289,16 @@
 			                colModel: detailColModel,
 			                page: 1,
 			                width: '100%',
-			                //height: '100%',
 			                rowNum: 0,	
 			                pager: "#" + childGridPagerID,
 							pgbuttons: false, // 分页按钮是否显示 
 							pginput: false, // 是否允许输入分页页数 
 			                viewrecords: true,
 			                recordpos: "left", // 记录数显示位置 
-			                
 			    			shrinkToFit: false,
 			    			altRows: true, //斑马条纹
+			    			scroll: 1,
 			                
-			    			//footerrow: true,
-			    			//userDataOnFooter: true,
-
 			    			subGrid: true,
 			    			subGridOptions: {
 			    				plusicon : "ace-icon fa fa-plus center bigger-110 blue",
@@ -311,7 +307,20 @@
 			                },
 			                subGridRowExpanded: showSecondChildGrid,
 
-			    			scroll: 1,
+			/*//footerrow: true,
+			//userDataOnFooter: true,
+			grouping: true,
+			groupingView: {
+				groupField: ['ITEM_CODE'],
+				groupOrder: ['asc'],
+				groupColumnShow: [true],
+				groupText: ['<b>{0}</b>'],
+				groupSummary: [true],
+				groupSummaryPos: ['footer'], //header
+				groupCollapse: false,
+                plusicon : 'fa fa-chevron-down bigger-110',
+				minusicon : 'fa fa-chevron-up bigger-110'
+			},*/
 			                
 			    			loadComplete : function() {
 			    				var table = this;

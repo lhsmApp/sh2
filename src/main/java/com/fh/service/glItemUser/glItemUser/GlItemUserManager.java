@@ -51,5 +51,12 @@ public interface GlItemUserManager{
 	 * @throws Exception
 	 */
 	public List<PageData> exportModel(PageData pd)throws Exception;
+
+	
+	/**获取汇总要用数据
+	 * @param page
+	 * @throws Exception
+	 */
+	public List<PageData> getSumUseList(PageData pd)throws Exception;
 }
 

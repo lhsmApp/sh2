@@ -70,7 +70,7 @@ public class GlZrzxFxController extends BaseController {
 		mv.addObject("FMISACC", DictsUtil.getDictsByParentCode(dictionariesService, "FMISACC"));
 
 		// *********************加载单位树*******************************
-		String departTreeSource = DictsUtil.getDepartmentSelectTreeSource(departmentService, DictsUtil.DepartShowAll);
+		String departTreeSource = DictsUtil.getDepartmentSelectTreeSource(departmentService, DictsUtil.DepartShowAll_01001);
 		mv.addObject("zTreeNodes", departTreeSource);
 		// ***********************************************************
 		// LINE_NO fx 分线

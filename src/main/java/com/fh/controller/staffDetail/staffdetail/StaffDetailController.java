@@ -991,12 +991,16 @@ public class StaffDetailController extends BaseController {
 								
 								Boolean bolIsDicSetSAL_RANGE = false;
 								Boolean bolIsDicSetUSER_CATG = false;
-							    if((CurrentDepartCode!=null && CurrentDepartCode.equals(DictsUtil.DepartShowAll))
-							    		&& (emplGroupType.equals(YXRY))
-										&& (SelectedDepartCode!=null && SelectedDepartCode.equals(DictsUtil.DepartShowAll))){
+							    if((CurrentDepartCode!=null && CurrentDepartCode.equals(DictsUtil.DepartShowAll_01001)
+							    		&& emplGroupType.equals(YXRY)
+										&& SelectedDepartCode!=null && SelectedDepartCode.equals(DictsUtil.DepartShowAll_01001))
+										|| 
+										(CurrentDepartCode!=null && CurrentDepartCode.equals(DictsUtil.DepartShowAll_00)
+							    		&& emplGroupType.equals(YXRY)
+										&& SelectedDepartCode!=null && SelectedDepartCode.equals(DictsUtil.DepartShowAll_00))){
 							    	bolIsDicSetSAL_RANGE = true;
 							    }
-							    if((CurrentDepartCode!=null && CurrentDepartCode.equals(DictsUtil.DepartShowAll))
+							    if((CurrentDepartCode!=null && (CurrentDepartCode.equals(DictsUtil.DepartShowAll_01001) || CurrentDepartCode.equals(DictsUtil.DepartShowAll_00)))
 							    		&& (emplGroupType.equals(YXRY))
 										&& (SelectedDepartCode.equals(DEPT_CODE_0100107) || SelectedDepartCode.equals(DEPT_CODE_0100108) || SelectedDepartCode.equals(DEPT_CODE_0100106) || SelectedDepartCode.equals(DEPT_CODE_0100109))){
 							    	//LWPQ.equals(getUSER_GROP) && (USER_CATG_GDJLW.equals(getUSER_CATG) || USER_CATG_hbytgslw.equals(getUSER_CATG))
@@ -1074,9 +1078,13 @@ public class StaffDetailController extends BaseController {
 													sbRetFeild.add("企业特定员工分类不能为空！");
 												}
 											}
-										    if((CurrentDepartCode!=null && CurrentDepartCode.equals(DictsUtil.DepartShowAll))
-										    		&& (emplGroupType.equals(YXRY))
-													&& (SelectedDepartCode!=null && SelectedDepartCode.equals(DictsUtil.DepartShowAll))){
+										    if((CurrentDepartCode!=null && CurrentDepartCode.equals(DictsUtil.DepartShowAll_01001)
+										    		&& emplGroupType.equals(YXRY)
+													&& SelectedDepartCode!=null && SelectedDepartCode.equals(DictsUtil.DepartShowAll_01001))
+													||
+													(CurrentDepartCode!=null && CurrentDepartCode.equals(DictsUtil.DepartShowAll_00)
+										    		&& emplGroupType.equals(YXRY)
+													&& SelectedDepartCode!=null && SelectedDepartCode.equals(DictsUtil.DepartShowAll_00))){
 										    	if(YXRY.equals(getUSER_GROP)){
 										    	    continue;
 										    	}
@@ -1085,7 +1093,7 @@ public class StaffDetailController extends BaseController {
 												    getUSER_GROP = YXRY;
 										    	}
 										    }
-										    if((CurrentDepartCode!=null && CurrentDepartCode.equals(DictsUtil.DepartShowAll))
+										    if((CurrentDepartCode!=null && (CurrentDepartCode.equals(DictsUtil.DepartShowAll_01001) || CurrentDepartCode.equals(DictsUtil.DepartShowAll_00)))
 										    		&& (emplGroupType.equals(YXRY))
 													&& (SelectedDepartCode.equals(DEPT_CODE_0100107) || SelectedDepartCode.equals(DEPT_CODE_0100108) || SelectedDepartCode.equals(DEPT_CODE_0100106) || SelectedDepartCode.equals(DEPT_CODE_0100109))){
 										    	if(YXRY.equals(getUSER_GROP)){
@@ -1109,9 +1117,13 @@ public class StaffDetailController extends BaseController {
 											String SCH = EmplGroupType.SCH.getNameKey();
 											String HTH = EmplGroupType.HTH.getNameKey();
 											String XTNLW = EmplGroupType.XTNLW.getNameKey();
-											if((CurrentDepartCode!=null && CurrentDepartCode.equals(DictsUtil.DepartShowAll))
-													&& (SelectedDepartCode!=null && SelectedDepartCode.equals(DictsUtil.DepartShowAll))
-													&& (emplGroupType.equals(SCH) || emplGroupType.equals(HTH) || emplGroupType.equals(XTNLW))){
+											if((CurrentDepartCode!=null && CurrentDepartCode.equals(DictsUtil.DepartShowAll_01001)
+													&& SelectedDepartCode!=null && SelectedDepartCode.equals(DictsUtil.DepartShowAll_01001)
+													&& (emplGroupType.equals(SCH) || emplGroupType.equals(HTH) || emplGroupType.equals(XTNLW)))
+													||
+													(CurrentDepartCode!=null && CurrentDepartCode.equals(DictsUtil.DepartShowAll_00)
+													&& SelectedDepartCode!=null && SelectedDepartCode.equals(DictsUtil.DepartShowAll_00)
+													&& (emplGroupType.equals(SCH) || emplGroupType.equals(HTH) || emplGroupType.equals(XTNLW)))){
 												//账套-新西气东输公司-9870
 												String CUST_COL7_xxqdsgs = "9870";
 												//企业特定员工分类-东部管道机关-PUT02
