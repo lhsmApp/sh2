@@ -510,8 +510,8 @@ public class GlItemUserController extends BaseController {
 												getDEPT_CODE = SelectedDepartCode;
 											}
 											if(!SelectedDepartCode.equals(getDEPT_CODE)){
-												if(!sbRet.contains("导入单位和当前单位必须一致！")){
-													sbRet.add("导入单位和当前单位必须一致！");
+												if(!sbRet.contains("导入责任中心和当前责任中心必须一致！")){
+													sbRet.add("导入责任中心和当前责任中心必须一致！");
 												}
 											}
 											String getUNITS_CODE = (String) pdAdd.get("UNITS_CODE");
@@ -545,6 +545,8 @@ public class GlItemUserController extends BaseController {
 													commonBase.setMessage("无可处理的数据！");
 												} else {
 													glItemUserService.batchUpdateDatabase(listAdd);
+													commonBase.setCode(0);
+										    		commonBase.setMessage(strErrorMessage);
 												}
 											}
 										}
