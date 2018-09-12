@@ -24,8 +24,7 @@
 		COL_FORMULA,
 		CAL_ORDER,
 		NUM_DGT,
-		DEC_PRECISION,
-		ITEM_ALLOC
+		DEC_PRECISION
 	</sql>
 	<!-- 字段 -->
 	<sql id="FieldTmpl">
@@ -40,8 +39,7 @@
 		COL_HIDE,
 		COL_SUM,
 		COL_AVE,
-		COL_TRANSFER,
-		ITEM_ALLOC
+		COL_TRANSFER
 	</sql>
 
 	<!-- 字段 -->
@@ -61,8 +59,7 @@
 		COL_FORMULA,
 		CAL_ORDER,
 		NUM_DGT,
-		DEC_PRECISION,
-		ITEM_ALLOC
+		DEC_PRECISION
 	</sql>
 
 	<sql id="FieldColumns">
@@ -81,8 +78,7 @@
 		COL_FORMULA,
 		CAL_ORDER,
 		NUM_DGT,
-		DEC_PRECISION,
-		ITEM_ALLOC
+		DEC_PRECISION
 	</sql>
 
 	<!-- 新增 -->
@@ -253,7 +249,6 @@
 		a.CAL_ORDER,
 		a.NUM_DGT,
 		a.DEC_PRECISION,
-		a.ITEM_ALLOC,
 		b.NAME DNAME,
 		c.TABLE_NAME,
 		d.DICT_NAME
@@ -354,6 +349,23 @@
 		AND
 		table_name = #{pd.TABLE_CODE}
 	</select>
+	
+    <!-- 修改 -->
+	<insert id="updateItem" parameterType="pd">
+		update <include refid="tableName"></include>
+		set COL_NAME = #{COL_NAME}, 
+		    DISP_ORDER = #{DISP_ORDER}, 
+		    DICT_TRANS =#{DICT_TRANS}, 
+		    COL_HIDE = #{COL_HIDE}, 
+			COL_SUM = #{COL_SUM}, 
+			COL_AVE =#{COL_AVE}, 
+			COL_TRANSFER =#{COL_TRANSFER} 
+		where RPT_DUR = #{RPT_DUR}
+		and DEPT_CODE = #{DEPT_CODE}
+		and TABLE_CODE = #{TABLE_CODE}
+		and BILL_OFF = #{BILL_OFF}
+		and COL_CODE = #{COL_CODE}
+	</insert>
 
 	<!-- 新增 -->
 	<insert id="updateAll" parameterType="pd">
@@ -369,8 +381,7 @@
 				<trim prefix="(" suffix=")" suffixOverrides=",">
 					#{item.RPT_DUR},#{item.BILL_OFF},#{item.DEPT_CODE},#{item.TABLE_CODE},
 					#{item.COL_CODE},#{item.COL_NAME},#{item.DISP_ORDER},#{item.DICT_TRANS},
-					#{item.COL_HIDE},#{item.COL_SUM},#{item.COL_AVE},#{item.COL_TRANSFER},
-					#{item.ITEM_ALLOC}
+					#{item.COL_HIDE},#{item.COL_SUM},#{item.COL_AVE},#{item.COL_TRANSFER}
 					<!-- <include refid="FieldValue"></include> -->
 				</trim>
 			</if>
@@ -405,7 +416,7 @@
 				SELECT RPT_DUR,BILL_OFF,#{item} AS 'DEPT_CODE',
 				TABLE_CODE,COL_CODE,COL_NAME,DISP_ORDER,DICT_TRANS,
 				COL_HIDE,COL_SUM,COL_AVE,COL_TRANSFER,COL_FORMULA,
-				CAL_ORDER,NUM_DGT,DEC_PRECISION,ITEM_ALLOC
+				CAL_ORDER,NUM_DGT,DEC_PRECISION
 				FROM tb_tmpl_config_detail WHERE DEPT_CODE=#{DEPT_CODE} AND
 				TABLE_CODE=#{TABLE_CODE}
 			</if>
@@ -423,7 +434,7 @@
 		SELECT #{NEXT_RPT_DUR} as RPT_DUR,BILL_OFF,DEPT_CODE,
 		TABLE_CODE,COL_CODE,COL_NAME,DISP_ORDER,DICT_TRANS,
 		COL_HIDE,COL_SUM,COL_AVE,COL_TRANSFER,COL_FORMULA,
-		CAL_ORDER,NUM_DGT,DEC_PRECISION,ITEM_ALLOC
+		CAL_ORDER,NUM_DGT,DEC_PRECISION
 		FROM tb_tmpl_config_detail WHERE RPT_DUR=#{CUR_RPT_DUR}
 	</insert>
 

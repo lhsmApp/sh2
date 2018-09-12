@@ -39,7 +39,9 @@ import com.fh.entity.PageResult;
 import com.fh.entity.SysSealed;
 import com.fh.entity.TableColumns;
 import com.fh.entity.TmplConfigDetail;
+import com.fh.entity.TmplTypeInfo;
 import com.fh.entity.system.User;
+import com.fh.service.detailimportcommon.detailimportcommon.impl.DetailImportCommonService;
 import com.fh.service.fhoa.department.DepartmentManager;
 import com.fh.service.glZrzxFx.glZrzxFx.GlZrzxFxManager;
 import com.fh.service.sysConfig.sysconfig.SysConfigManager;
@@ -85,6 +87,9 @@ public class VoucherController extends BaseController {
 	@Resource(name = "voucherService")
 	private VoucherManager voucherService;
 
+	@Resource(name="detailimportcommonService")
+	private DetailImportCommonService detailimportcommonService;
+
 	@Resource(name = "departmentService")
 	private DepartmentManager departmentService;
 
@@ -124,6 +129,9 @@ public class VoucherController extends BaseController {
 	String SystemDateTime = "";
 	// 临时数据
 	String SelectBillCodeFirstShow = "全部凭证单据";
+
+	//默认的which值
+	String DefaultWhile = TmplType.TB_STAFF_TRANSFER_CONTRACT.getNameKey();
 
 	/**
 	 * 列表
@@ -564,6 +572,35 @@ public class VoucherController extends BaseController {
 		return commonBase;
 	}
 
+
+	/**明细显示结构
+	 * @param
+	 * @throws Exception
+	 */
+	@RequestMapping(value="/getFirstDetailColModel")
+	public @ResponseBody CommonBase getFirstDetailColModel() throws Exception{
+		logBefore(logger, Jurisdiction.getUsername()+"getFirstDetailColModel");
+		CommonBase commonBase = new CommonBase(); 
+		commonBase.setCode(-1);
+
+		PageData getPd = this.getPageData();
+		String DEPT_CODE = (String) getPd.get("DataDeptCode");
+		String CUST_COL7 = (String) getPd.get("DataCustCol7");
+		String strBillCode = getPd.getString("DetailListBillCode");
+		String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("SelectedTableNo"), DefaultWhile);
+		TmplTypeInfo implTypeCode = Corresponding.getWhileValueToTypeCode(SelectedTableNo, sysConfigManager);
+		String TypeCodeSummyDetail = implTypeCode.getTypeCodeSummyDetail();
+		String TypeCodeDetail = implTypeCode.getTypeCodeDetail();
+		List<String> SumFieldDetail = implTypeCode.getSumFieldDetail();
+
+			TmplUtil tmpl = new TmplUtil(tmplconfigService, tmplConfigDictService, dictionariesService, 
+					departmentService,userService,SumFieldDetail, null, null, null);
+			String detailColModel = tmpl.generateStructureNoEdit(TypeCodeSummyDetail, DEPT_CODE, CUST_COL7);
+			commonBase.setCode(0);
+			commonBase.setMessage(detailColModel);
+
+		return commonBase;
+	}
 	/**
 	 * 明细数据
 	 * 
@@ -572,14 +609,17 @@ public class VoucherController extends BaseController {
 	 */
 	@RequestMapping(value = "/getFirstDetailList")
 	public @ResponseBody PageResult<PageData> getFirstDetailList() throws Exception {
-		PageData pd = this.getPageData();
-		String which = pd.getString("TABLE_CODE");
-		String tableCode = getTableCode(which);
-		pd.put("TABLE_CODE", tableCode);
+		PageData pdCode = new PageData();
+		String SelectedTableNo = Corresponding.getWhileValue(pdCode.getString("TABLE_CODE"), DefaultWhile);
+		String strBillCode = pdCode.getString("BILL_CODE");
 
-		List<PageData> varList = voucherService.findSummyDetailList(pd);
 		PageResult<PageData> result = new PageResult<PageData>();
-		result.setRows(varList);
+			PageData pd = this.getPageData();
+			String which = pd.getString("TABLE_CODE");
+			String tableCode = getTableCode(which);
+			pd.put("TABLE_CODE", tableCode);
+			List<PageData> varList = voucherService.findSummyDetailList(pd);
+			result.setRows(varList);
 
 		return result;
 	}
@@ -659,24 +699,29 @@ public class VoucherController extends BaseController {
 		List<PageData> listTransferData = (List<PageData>) JSONArray.toCollection(array, PageData.class);// 过时方法
 		if (null != listTransferData && listTransferData.size() > 0) {
 			/********************** 生成传输数据 ************************/
-			String which = pd.getString("TABLE_CODE");
+			String which = Corresponding.getWhileValue(pd.getString("TABLE_CODE"), DefaultWhile);
 			String tableCode = getTableCode(which);
-
+			
 			PageData pdDetail = new PageData();
 			List<String> listBillCodes = new ArrayList<String>();
 			for (PageData pdItem : listTransferData) {
 				listBillCodes.add(pdItem.getString("BILL_CODE"));
 			}
 			pdDetail.put("BILL_CODES", listBillCodes);
-			pdDetail.put("TABLE_CODE", tableCode);
-			pd.put("QueryFeild", getBillCodeQueryFeild(which));
-
-			List<PageData> listTransferDataDetail = voucherService.findSummyDetailListByBillCodes(pdDetail);
-			if(listBillCodes.size() != listTransferDataDetail.size()){
+			String tableCodeSummyBill = Corresponding.getSumBillTableNameFromTmplType(which);
+			pdDetail.put("TABLE_CODE", tableCodeSummyBill);
+			pdDetail.put("QueryFeild", getBillCodeQueryFeild(which));
+			List<PageData> listCheckData = voucherService.findSummyDetailListByBillCodes(pdDetail);
+			if(listBillCodes.size() != listCheckData.size()){
 				commonBase.setCode(-1);
 				commonBase.setMessage(Message.HavaNotSumOrDetail);
 				return commonBase;
 			}
+
+			pdDetail.put("TABLE_CODE", tableCode);
+			pdDetail.put("QueryFeild", "");
+			List<PageData> listTransferDataDetail = voucherService.findSummyDetailListByBillCodes(pdDetail);
+			
 			addLineNumForTransferData(which, listTransferDataDetail);
 
 			String tableCodeOnFmis = DictsUtil.getTableCodeOnFmis(which, sysConfigManager);

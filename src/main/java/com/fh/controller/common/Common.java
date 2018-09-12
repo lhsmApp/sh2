@@ -10,6 +10,7 @@ import com.fh.entity.TableColumns;
 import com.fh.entity.TmplConfigDetail;
 import com.fh.entity.system.Department;
 import com.fh.entity.system.Dictionaries;
+import com.fh.service.detailimportcommon.detailimportcommon.impl.DetailImportCommonService;
 import com.fh.service.fhoa.department.DepartmentManager;
 import com.fh.service.sysStruMapping.sysStruMapping.impl.SysStruMappingService;
 import com.fh.service.system.dictionaries.DictionariesManager;
@@ -21,7 +22,6 @@ import com.fh.util.PageData;
 import com.fh.util.Tools;
 import com.fh.util.enums.BillState;
 import com.fh.util.enums.DurState;
-import com.fh.util.enums.StaffDataType1;
 
 import net.sf.json.JSONArray;
 
@@ -478,8 +478,8 @@ public class Common {
 	
 	public static Boolean IsNumFeild(String Data_type){
 		Boolean bol = false;
-		if(Data_type.trim().equals("DECIMAL") || Data_type.trim().equals("DOUBLE")
-		    || Data_type.trim().equals("INT") || Data_type.trim().equals("FLOAT")){
+		if(Data_type.toUpperCase().trim().equals("DECIMAL") || Data_type.toUpperCase().trim().equals("DOUBLE")
+		    || Data_type.toUpperCase().trim().equals("INT") || Data_type.toUpperCase().trim().equals("FLOAT")){
 				bol = true;
 		}
 		return bol;
@@ -494,7 +494,9 @@ public class Common {
 		return bol;
 	}
 
-	public static String getSumFeildSelect(List<String> GroupbyFeild, List<TableColumns> tableDetailColumns, String keyExtra){
+	public static String getSumFeildSelect(List<String> GroupbyFeild, 
+			List<TableColumns> tableDetailColumns, List<String> IsNumNotSumFeild, 
+			String keyExtra){
 		String SelectFeild = "";
 		if(GroupbyFeild != null){
 			for(String feild : GroupbyFeild){
@@ -506,8 +508,9 @@ public class Common {
 		}
 		if(tableDetailColumns != null && tableDetailColumns.size() > 0){
 			for(TableColumns col : tableDetailColumns){
-				if(Common.IsNumFeild(col.getData_type())){
-					String getCOL_CODE = col.getColumn_name();
+				String getCOL_CODE = col.getColumn_name();
+				if(Common.IsNumFeild(col.getData_type())
+						&& !IsNumNotSumFeild.contains(getCOL_CODE)){
 					if(GroupbyFeild == null || (GroupbyFeild != null && !GroupbyFeild.contains(getCOL_CODE))){
 						if(SelectFeild!=null && !SelectFeild.trim().equals("")){
 							SelectFeild += ", ";
@@ -558,6 +561,27 @@ public class Common {
 		pd.put("InsertField", InsertField);
 		pd.put("InsertVale", InsertVale);
 		pd.put("InsertLogVale", InsertLogVale);
+	}
+	
+	public static void setSumDetailSave(PageData bill, Map<String, TableColumns> haveColumnsList, 
+			String strSumFieldDetail,
+			List<String> IsNumNotSumFeild, List<String> SumFieldDetail)
+			throws ClassNotFoundException {
+        //汇总明细
+		String IntoSumDetailField = strSumFieldDetail;
+		String FromItemDetailField = strSumFieldDetail;
+	    for (TableColumns col : haveColumnsList.values()) {
+	    	String column_name = col.getColumn_name().toUpperCase();
+	    	String data_type = col.getData_type().toUpperCase();
+			if(Common.IsNumFeild(data_type) 
+					&& !IsNumNotSumFeild.contains(column_name)
+					&& !SumFieldDetail.contains(column_name)){
+					IntoSumDetailField += ", " + column_name + " ";
+					FromItemDetailField += ", sum(" + column_name + ") " + column_name + " ";
+			}
+		}
+		bill.put("IntoSumDetailField", IntoSumDetailField);
+		bill.put("FromItemDetailField", FromItemDetailField);
 	}
 
 	//

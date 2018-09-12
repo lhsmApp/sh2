@@ -72,18 +72,21 @@
     	</if>
 	</select>
 	<select id="exportSumList" parameterType="jqPage" resultType="pd">
-		<!-- SELECT t.* , ${pd.SelectAddFeild}
-        FROM (  -->
+		SELECT t.* , ${pd.SelectAddFeild}
+        FROM ( 
               select ${pd.SelectGroupFeild} 
 		      from ${pd.TableName}
 		      <where>
 		          ${pd.WhereSql} 
 		      </where>
 		      group by ${pd.GroupByFeild} 
-		      order by USER_CODE
-		      LIMIT 0, 1000000
-		      
-		<!--       ) t
-		${pd.LeftJoin} -->
+		      ) t, 
+		      (select ${pd.SelectLeftJoinFeild}
+		           from ${pd.TableName} 
+		           <where>
+		               ${pd.WhereSql} 
+		           </where>
+		           ) a 
+        where a.STAFF_IDENT = t.STAFF_IDENT 
 	</select>
 </mapper>

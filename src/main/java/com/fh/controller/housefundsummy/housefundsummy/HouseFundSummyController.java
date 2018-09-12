@@ -21,8 +21,8 @@ import com.fh.controller.base.BaseController;
 import com.fh.controller.common.BillCodeUtil;
 import com.fh.controller.common.CheckSystemDateTime;
 import com.fh.controller.common.Common;
+import com.fh.controller.common.Corresponding;
 import com.fh.controller.common.DictsUtil;
-import com.fh.controller.common.ItemAlloc;
 import com.fh.controller.common.Message;
 import com.fh.controller.common.QueryFeildString;
 import com.fh.controller.common.SelectBillCodeOptions;
@@ -98,7 +98,7 @@ public class HouseFundSummyController extends BaseController {
 	String TableNameBase = "tb_house_fund_summy_bill";
 	String TableNameFirstDetail = "tb_house_fund_summy";
 	String TableNameSecondDetail = "tb_house_fund_detail";
-	//String TableNameFirstItem = "TB_ITEM_house_fund_detail";
+	String TableNameFirstItem = "TB_ITEM_house_fund_detail";
 	//枚举类型  1工资明细,2工资汇总,3公积金明细,4公积金汇总,5社保明细,6社保汇总,7工资接口,8公积金接口,9社保接口
 	String TypeCodeDetail = TmplType.TB_HOUSE_FUND_DETAIL.getNameKey();
 	String TypeCodeSummyBill = TmplType.TB_HOUSE_FUND_SUMMY.getNameKey();
@@ -114,14 +114,17 @@ public class HouseFundSummyController extends BaseController {
 	// 查询表的主键字段，作为标准列，jqgrid添加带__列，mybaits获取带__列
 	private List<String> keyListBase = Arrays.asList("BILL_CODE", "BUSI_DATE", "DEPT_CODE", "CUST_COL7");
     //汇总字段
-	List<String> SumFieldBill = Arrays.asList("BILL_CODE", "BUSI_DATE", "DEPT_CODE", "CUST_COL7");
     List<String> SumFieldDetail = new ArrayList<String>();//Arrays.asList("BUSI_DATE", "DEPT_CODE", "USER_CATG", "USER_GROP", "CUST_COL7", "UNITS_CODE", "ORG_UNIT");
     //界面查询字段
     List<String> QueryFeildList = Arrays.asList("DEPT_CODE", "CUST_COL7");
 	//修改导入明细获取字段
 	List<String> DetailSerialNoFeild = Arrays.asList("SERIAL_NO");
 	//
-	//List<String> DetailUserCodeFeild = Arrays.asList("USER_CODE");
+	List<String> DetailUserCodeFeild = Arrays.asList("USER_CODE");
+    //设置必定不用编辑的列            SERIAL_NO 设置字段类型是数字，但不管隐藏 或显示都必须保存的, 还有汇总要排除
+    List<String> FirstItemMustNotEditList = Arrays.asList("SERIAL_NO", "BILL_CODE", "BUSI_DATE", "DEPT_CODE", "CUST_COL7");
+    //设置必定不用项目分摊的数值列            SERIAL_NO 设置字段类型是数字，但不用项目分摊
+    List<String> MustNotItemAllocList = Arrays.asList("SERIAL_NO");
 	//另加的列、配置模板之外的列 
     //目前只能这么设置，改设置改的地方多
 	String AdditionalReportColumn = "";//ReportState
@@ -139,7 +142,7 @@ public class HouseFundSummyController extends BaseController {
 		pdSysConfig.put("KEY_CODE", SysConfigKeyCode.HouseFundGRPCond);
 		String strSumFieldToString = sysConfigManager.getSysConfigByKey(pdSysConfig);
 		List<String> listSumFieldDetail = QueryFeildString.tranferStringToList(strSumFieldToString);
-		listSumFieldDetail = QueryFeildString.extraSumField(listSumFieldDetail, SumFieldBill);
+		listSumFieldDetail = QueryFeildString.extraSumField(listSumFieldDetail, Corresponding.SumFieldBillSocHou);
 		SumFieldDetail = listSumFieldDetail;
 		
 		PageData getPd = this.getPageData();
@@ -363,17 +366,17 @@ public class HouseFundSummyController extends BaseController {
 		logBefore(logger, Jurisdiction.getUsername()+"getFirstDetailColModel");
 		CommonBase commonBase = new CommonBase();
 		commonBase.setCode(-1);
-		
+
 		PageData getPd = this.getPageData();
 		String DEPT_CODE = (String) getPd.get("DataDeptCode");
 		String CUST_COL7 = (String) getPd.get("DataCustCol7");
-		TmplUtil tmpl = new TmplUtil(tmplconfigService, tmplconfigdictService, dictionariesService, 
-				departmentService,userService, SumFieldDetail, null, null, null);
-		String detailColModel = tmpl.generateStructureNoEdit(TypeCodeSummyDetail, DEPT_CODE, CUST_COL7);
-		
-		commonBase.setCode(0);
-		commonBase.setMessage(detailColModel);
-		
+		String strBillCode = getPd.getString("DetailListBillCode");
+			TmplUtil tmpl = new TmplUtil(tmplconfigService, tmplconfigdictService, dictionariesService, 
+					departmentService,userService, SumFieldDetail, null, null, null);
+			String detailColModel = tmpl.generateStructureNoEdit(TypeCodeSummyDetail, DEPT_CODE, CUST_COL7);
+			commonBase.setCode(0);
+			commonBase.setMessage(detailColModel);
+			
 		return commonBase;
 	}
 	/**明细数据
@@ -386,16 +389,17 @@ public class HouseFundSummyController extends BaseController {
 		PageData getPd = this.getPageData();
 		String strBillCode = getPd.getString("DetailListBillCode");
 
-		PageData pdCode = new PageData();
-		pdCode.put("BILL_CODE", strBillCode);
-		String strFieldSelectKey = QueryFeildString.getFieldSelectKey(SumFieldDetail, TmplUtil.keyExtra);
-		if(null != strFieldSelectKey && !"".equals(strFieldSelectKey.trim())){
-			pdCode.put("FieldSelectKey", strFieldSelectKey);
-		}
-		List<PageData> varList = housefundsummyService.findSummyDetailList(pdCode);	//列出Betting列表
 		PageResult<PageData> result = new PageResult<PageData>();
-		result.setRows(varList);
-		
+
+			PageData pdCode = new PageData();
+			pdCode.put("BILL_CODE", strBillCode);
+			String strFieldSelectKey = QueryFeildString.getFieldSelectKey(SumFieldDetail, TmplUtil.keyExtra);
+			if(null != strFieldSelectKey && !"".equals(strFieldSelectKey.trim())){
+				pdCode.put("FieldSelectKey", strFieldSelectKey);
+			}
+			List<PageData> varList = housefundsummyService.findSummyDetailList(pdCode);	//列出Betting列表
+			result.setRows(varList);
+
 		return result;
 	}
 
@@ -540,13 +544,8 @@ public class HouseFundSummyController extends BaseController {
 			return commonBase;
 		}
 
-		String strSumFieldBill = QueryFeildString.tranferListStringToGroupbyString(SumFieldBill);
+		String strSumFieldBill = QueryFeildString.tranferListStringToGroupbyString(Corresponding.SumFieldBillSocHou);
 		String strSumFieldDetail = QueryFeildString.tranferListStringToGroupbyString(SumFieldDetail);
-
-		//Object DATA_ROWS = getPd.get("DataRows");
-		//String json = DATA_ROWS.toString();  
-        //JSONArray array = JSONArray.fromObject(json);  
-        //List<PageData> listData = (List<PageData>) JSONArray.toCollection(array,PageData.class);
 
 		Map<String, TableColumns> map_HaveColumnsListSummyBill = Common.GetHaveColumnsList(TypeCodeSummyBill, tmplconfigService);
 		Map<String, TableColumns> map_HaveColumnsListSummyDetail = Common.GetHaveColumnsList(TypeCodeSummyDetail, tmplconfigService);
@@ -562,7 +561,7 @@ public class HouseFundSummyController extends BaseController {
 		for(String strfeild : DetailSerialNoFeild){
 			retSetBillCodeFeild.add(strfeild);
 		}
-		retSetBillCodeFeild = QueryFeildString.extraSumField(retSetBillCodeFeild, SumFieldBill);
+		retSetBillCodeFeild = QueryFeildString.extraSumField(retSetBillCodeFeild, Corresponding.SumFieldBillSocHou);
 		if(!SelectedBillCode.equals(SelectBillCodeFirstShow)){//if(listData!=null && listData.size()>0){//
 			String checkState = CheckState("'" + SelectedBillCode + "'", SystemDateTime, 1);
 			if(checkState!=null && !checkState.trim().equals("")){
@@ -573,9 +572,6 @@ public class HouseFundSummyController extends BaseController {
 			bolDeleteSummy = true;
 			List<String> listBillCode = new ArrayList<String>(); 
 			listBillCode.add(SelectedBillCode);
-			//for(PageData each : listData){
-			//	listBillCode.add(each.getString("BILL_CODE" + TmplUtil.keyExtra));
-			//}
 			QueryFeild += " and BILL_CODE in (" + QueryFeildString.tranferListValueToSqlInString(listBillCode) + ") ";
 			QueryFeild += QueryFeildString.getNotReportBillCode(TypeCodeTransfer, SystemDateTime, SelectedCustCol7, AllDeptCode + "," + SelectedDepartCode);
 			QueryFeild += QueryFeildString.getBillCodeNotInSumInvalidDetail(TableNameBase);
@@ -599,20 +595,17 @@ public class HouseFundSummyController extends BaseController {
 			pdSetBillCode.put("SystemDateTime", SystemDateTime);
 			pdSetBillCode.put("QueryFeild", QueryFeild);
 			pdSetBillCode.put("TableName", TableNameSecondDetail);
-			String SelectFeildSetBillCode = QueryFeildString.tranferListStringToKeyString(retSetBillCodeFeild, TmplUtil.keyExtra);
+			String SelectFeildSetBillCode = QueryFeildString.tranferListStringToKeyString(retSetBillCodeFeild, TmplUtil.keyExtra, true);
 			pdSetBillCode.put("SelectFeild", SelectFeildSetBillCode);
 			getDetailSetBillCode = detailimportcommonService.getSum(pdSetBillCode);
 		}
 
-		//List<PageData> getSetItemUser = ItemAlloc.getSetItemUser(SystemDateTime, QueryFeild, TableNameSecondDetail, 
-		//		DetailSerialNoFeild, DetailUserCodeFeild, SumFieldBill, detailimportcommonService);
-		
 		PageData pdDetail = new PageData();
 		pdDetail.put("SystemDateTime", SystemDateTime);
 		pdDetail.put("QueryFeild", QueryFeild);
 		pdDetail.put("TableName", TableNameSecondDetail);
 		pdDetail.put("GroupbyFeild", strSumFieldDetail);
-		String SelectFeildDetail = Common.getSumFeildSelect(SumFieldDetail, tableDetailColumns, TmplUtil.keyExtra);
+		String SelectFeildDetail = Common.getSumFeildSelect(SumFieldDetail, tableDetailColumns, FirstItemMustNotEditList, TmplUtil.keyExtra);
 		pdDetail.put("SelectFeild", SelectFeildDetail);
 		List<PageData> getSaveDetail = detailimportcommonService.getSum(pdDetail);
 		//TableName CanOperate
@@ -622,7 +615,7 @@ public class HouseFundSummyController extends BaseController {
 		pdBill.put("QueryFeild", QueryFeild);
 		pdBill.put("TableName", TableNameSecondDetail);
 		pdBill.put("GroupbyFeild", strSumFieldBill);
-		String SelectFeildBill = Common.getSumFeildSelect(SumFieldBill, tableDetailColumns, TmplUtil.keyExtra);
+		String SelectFeildBill = Common.getSumFeildSelect(Corresponding.SumFieldBillSocHou, tableDetailColumns, FirstItemMustNotEditList, TmplUtil.keyExtra);
 		pdBill.put("SelectFeild", SelectFeildBill);
 		List<PageData> getSaveBill = detailimportcommonService.getSum(pdBill);
 		//TableName CanOperate
@@ -636,6 +629,7 @@ public class HouseFundSummyController extends BaseController {
 		if(bolDeleteSummy){//删除添加
 			for(PageData bill : getSaveBill){
 				String strDepartCode = bill.getString("DEPT_CODE" + TmplUtil.keyExtra);
+				String strBillCode = bill.getString("BILL_CODE" + TmplUtil.keyExtra);
 				if(strGetSetItemDeptCode!=null && !strGetSetItemDeptCode.trim().equals("")){
 					strGetSetItemDeptCode += ",";
 				}
@@ -721,9 +715,8 @@ public class HouseFundSummyController extends BaseController {
                 //添加未设置字段默认值
     			Common.setModelDefault(bill, map_HaveColumnsListSummyBill, map_SetColumnsListBill, null);
 			}
-			getSaveDetail = getListTo(getSaveBill, getSaveDetail, SumFieldBill);
-			getDetailSetBillCode = getListTo(getSaveBill, getDetailSetBillCode, SumFieldBill);
-			//getSetItemUser = getListTo(getSaveBill, getSetItemUser, SumFieldBill);
+			getSaveDetail = getListTo(getSaveBill, getSaveDetail, Corresponding.SumFieldBillSocHou);
+			getDetailSetBillCode = getListTo(getSaveBill, getDetailSetBillCode, Corresponding.SumFieldBillSocHou);
 			
 			//未匹配的单号和没有单号的记录
 			for(PageData detail : getSaveDetail){
@@ -756,13 +749,6 @@ public class HouseFundSummyController extends BaseController {
 					commonBase.setMessage(Message.SetSumCodeError);
 				}
 			}
-			/*for(PageData setBillode : getSetItemUser){
-				Object getBILL_CODE = setBillode.get("BILL_CODE");
-				if(!(getBILL_CODE != null && !getBILL_CODE.toString().trim().equals(""))){
-					commonBase.setCode(2);
-					commonBase.setMessage(Message.SetSumCodeError);
-				}
-			}*/
 			
 			//单号没变化，pdBillNum为null，不更新数据库单号
 		    if(getNum == billNum){
@@ -771,12 +757,7 @@ public class HouseFundSummyController extends BaseController {
 				pdBillNum.put("BILL_NUMBER", billNum);
 			}
 		}
-
-		/*List<PageData> getSaveItem = new ArrayList<PageData>();
-        if(commonBase.getCode() == -1 && getSetItemUser!=null && getSetItemUser.size()>0){
-        	ItemAlloc.getSaveItem(getSaveItem, SystemDateTime, strGetSetItemDeptCode, glItemUserService,
-        			TypeCodeDetail, tmplconfigService, getSetItemUser, SelectedCustCol7, TableNameFirstItem);
-        }*/
+		
         if(commonBase.getCode() == -1){
         	Map<String, Object> map = new HashMap<String, Object>();
             if(pdBillNum!=null && pdBillNum.size()>0){
@@ -787,9 +768,6 @@ public class HouseFundSummyController extends BaseController {
             }
         	map.put("SaveBill", getSaveBill);
         	map.put("SaveDetail", getSaveDetail);
-        	/*if(getSaveItem!=null && getSaveItem.size()>0){
-            	map.put("SaveItem", getSaveItem);
-        	}*/
             if(!bolDeleteSummy){
             	map.put("DetailSetBillCode", getDetailSetBillCode);
             }
@@ -801,17 +779,17 @@ public class HouseFundSummyController extends BaseController {
 	
 	private List<PageData> getListTo(List<PageData> listBill, List<PageData> listDetail, List<String> SumFieldBillAll){
 	    if(listBill!=null && listBill.size()>0 && listDetail!=null && listDetail.size()>0 && SumFieldBillAll!=null){
-	    	List<String> SumFieldBill = new ArrayList<String>();
+	    	List<String> listSumFieldBill = new ArrayList<String>();
 	    	for(String feild : SumFieldBillAll){
 	    		if(!feild.equals("BILL_CODE")){
-	    			SumFieldBill.add(feild);
+	    			listSumFieldBill.add(feild);
 	    		}
 	    	}
 			for(PageData bill : listBill){
 				String getbillCode = bill.getString("BILL_CODE");
 				for(PageData detail : listDetail){
 					Boolean bol = true;
-					for(String field : SumFieldBill){
+					for(String field : listSumFieldBill){
 						String strBill = (String) bill.get(field);
 						if(strBill == null) strBill = "";
 						String strDetail = (String) detail.get(field);

@@ -470,6 +470,9 @@ public class GlItemUserController extends BaseController {
 									String sbRetMust = "";
 									for(int i=0; i<listSize; i++){
 										PageData pdAdd = listUploadAndRead.get(i);
+										if(pdAdd.size() <= 0){
+											continue;
+										}
 										String getUSER_CODE = (String) pdAdd.get("USER_CODE");
 									    if(!(getUSER_CODE!=null && !getUSER_CODE.trim().equals(""))){
 									    	strRetUserCode = "导入人员编码不能为空！";

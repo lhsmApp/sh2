@@ -259,7 +259,8 @@
 				url: '<%=basePath%>socialincsummy/getFirstDetailColModel.do?'
 		            +'SelectedCustCol7='+$("#SelectedCustCol7").val()
 		            +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
-    	            + '&SystemDateTime='+SystemDateTime,
+    	            + '&SystemDateTime='+SystemDateTime
+    	            +'&DetailListBillCode='+BILL_CODE,
 		    	data: {DataDeptCode:DEPT_CODE,DataCustCol7:CUST_COL7},
 				dataType:'json',
 				cache: false,
@@ -282,56 +283,41 @@
 			            // add a table and pager HTML elements to the parent grid row - we will render the child grid here
 			            $('#' + parentRowID).append('<table id=' + childGridID + '></table><div id=' + childGridPagerID + ' class=scroll></div>');
 
-			            $("#" + childGridID).jqGrid({
-			                url: childGridURL,
-			                mtype: "GET",
-			                datatype: "json",
-			                colModel: detailColModel,
-			                page: 1,
-			                width: '100%',
-			                rowNum: 0,	
-			                pager: "#" + childGridPagerID,
-							pgbuttons: false, // 分页按钮是否显示 
-							pginput: false, // 是否允许输入分页页数 
-			                viewrecords: true,
-			                recordpos: "left", // 记录数显示位置 
-			    			shrinkToFit: false,
-			    			altRows: true, //斑马条纹
-			    			scroll: 1,
-			                
-			    			subGrid: true,
-			    			subGridOptions: {
-			    				plusicon : "ace-icon fa fa-plus center bigger-110 blue",
-			    				minusicon  : "ace-icon fa fa-minus center bigger-110 blue",
-			    				openicon : "ace-icon fa fa-chevron-right center orange"
-			                },
-			                subGridRowExpanded: showSecondChildGrid,
-
-			/*//footerrow: true,
-			//userDataOnFooter: true,
-			grouping: true,
-			groupingView: {
-				groupField: ['ITEM_CODE'],
-				groupOrder: ['asc'],
-				groupColumnShow: [true],
-				groupText: ['<b>{0}</b>'],
-				groupSummary: [true],
-				groupSummaryPos: ['footer'], //header
-				groupCollapse: false,
-                plusicon : 'fa fa-chevron-down bigger-110',
-				minusicon : 'fa fa-chevron-up bigger-110'
-			},*/
-			                
-			    			loadComplete : function() {
-			    				var table = this;
-			    				setTimeout(function(){
-			    					styleCheckbox(table);
-			    					updateActionIcons(table);
-			    					updatePagerIcons(table);
-			    					enableTooltips(table);
-			    				}, 0);
-			    			},
-			            });
+				            $("#" + childGridID).jqGrid({
+				                url: childGridURL,
+				                mtype: "GET",
+				                datatype: "json",
+				                colModel: detailColModel,
+				                page: 1,
+				                width: '100%',
+				                rowNum: 0,	
+				                pager: "#" + childGridPagerID,
+								pgbuttons: false, // 分页按钮是否显示 
+								pginput: false, // 是否允许输入分页页数 
+				                viewrecords: true,
+				                recordpos: "left", // 记录数显示位置 
+				    			shrinkToFit: false,
+				    			altRows: true, //斑马条纹
+				    			scroll: 1,
+				                
+				    			subGrid: true,
+				    			subGridOptions: {
+				    				plusicon : "ace-icon fa fa-plus center bigger-110 blue",
+				    				minusicon  : "ace-icon fa fa-minus center bigger-110 blue",
+				    				openicon : "ace-icon fa fa-chevron-right center orange"
+				                },
+				                subGridRowExpanded: showSecondChildGrid,
+				                
+				    			loadComplete : function() {
+				    				var table = this;
+				    				setTimeout(function(){
+				    					styleCheckbox(table);
+				    					updateActionIcons(table);
+				    					updatePagerIcons(table);
+				    					enableTooltips(table);
+				    				}, 0);
+				    			},
+				            });
 					}else{
 						$(top.hangge());//关闭加载状态
 						$("#subTitle").tips({

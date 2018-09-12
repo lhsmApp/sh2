@@ -194,8 +194,7 @@
 				{ label: '列显示', name: 'COL_HIDE', width: 80, editable: true,align:'center',edittype:"checkbox",editoptions: {value:"1:0"},unformat: aceSwitch,formatter: customFmatterState},                   
 				{ label: '列汇总', name: 'COL_SUM', width: 80, editable: true,align:'center',edittype:"checkbox",editoptions: {value:"1:0"},unformat: aceSwitch,formatter: customFmatterState},                   
 				{ label: '列平均值', name: 'COL_AVE', width: 80, editable: true,align:'center',edittype:"checkbox",editoptions: {value:"1:0"},unformat: aceSwitch,formatter: customFmatterState},
-				{ label: '是否传输', name: 'COL_TRANSFER', width: 80, editable: true,align:'center',edittype:"checkbox",editoptions: {value:"1:0"},unformat: aceSwitch,formatter: customFmatterState},
-				{ label: '是否项目分摊', name: 'ITEM_ALLOC', width: 80, editable: true,align:'center',edittype:"checkbox",editoptions: {value:"1:0"},unformat: aceSwitch,formatter: customFmatterState}
+				{ label: '是否传输', name: 'COL_TRANSFER', width: 80, editable: true,align:'center',edittype:"checkbox",editoptions: {value:"1:0"},unformat: aceSwitch,formatter: customFmatterState}
 			],
 			reloadAfterSubmit: true, 
 			//viewrecords: true, // show the current page, data rang and total records on the toolbar
@@ -219,7 +218,9 @@
             rownumWidth: 35, // the width of the row numbers columns			
 	        ondblClickRow: dbClickRow,//双击表格编辑
 	        //editurl: '<%=basePath%>tmplconfig/edit.do?',
-	        editurl: '',
+	        //editurl: '',
+			
+			editurl: '<%=basePath%>tmplconfig/edit.do?',
 		});
 		
 		$(window).triggerHandler('resize.jqGrid');//trigger window resize to make the grid get the correct size
@@ -502,14 +503,73 @@
 	
 	var lastSelection;
 	function dbClickRow(rowId, rowIndex, colnumIndex, event){ 
-		//if (rowId && rowId !== lastSelection) {
+		/*//if (rowId && rowId !== lastSelection) {
               var grid = $("#jqGrid");
               //grid.jqGrid('saveRow',lastSelection);
               grid.jqGrid('saveRow',lastSelection,false, 'clientArray');
               grid.jqGrid('restoreRow',lastSelection);
               grid.jqGrid('editRow',rowId, {keys: true} );
               lastSelection = rowId;
-        //}
+        //}*/
+            var grid = $("#jqGrid");
+	        grid.restoreRow(lastSelection);
+	        grid.editRow(rowId, {
+	        	keys:true, //keys:true 这里按[enter]保存  
+	            restoreAfterError: false,  
+	        	oneditfunc: function(rowId){  
+	                console.log(rowId);  
+	            },  
+	            successfunc: function(response){
+	                console.log(response);  
+			        var responseJSON = JSON.parse(response.responseText);
+					if(responseJSON.code==0){
+						grid.trigger("reloadGrid");  
+						$(top.hangge());//关闭加载状态
+						$("#subTitle").tips({
+							side:3,
+				            msg:'保存成功',
+				            bg:'#009933',
+				            time:3
+				        });
+						lastSelection = rowId;
+						return [true,"",""];
+					}//else{
+			        //   grid.jqGrid('editRow',lastSelection);
+					//	$(top.hangge());//关闭加载状态
+					//	$("#subTitle").tips({
+					//		side:3,
+				    //        msg:'保存失败,'+response.responseJSON.message,
+				    //        bg:'#cc0033',
+				    //        time:3
+				    //    });
+					//}
+	            },  
+	            errorfunc: function(rowId, response){
+			        var responseJSON = JSON.parse(response.responseText);
+		            grid.jqGrid('editRow',lastSelection);
+					$(top.hangge());//关闭加载状态
+					if(response.statusText == "success"){
+						if(responseJSON.code != 0){
+					        grid.jqGrid('editRow',lastSelection);
+							$(top.hangge());//关闭加载状态
+							$("#subTitle").tips({
+								side:3,
+						        msg:'保存失败:'+responseJSON.message,
+						        bg:'#cc0033',
+						        time:3
+						    });
+						}
+					} else {
+						$("#subTitle").tips({
+							side:3,
+				            msg:'保存出错:'+responseJSON.message,
+				            bg:'#cc0033',
+				            time:3
+				        });
+					}
+	            }  
+	        });
+	        lastSelection = rowId;
 	}
  	</script>
 </body>

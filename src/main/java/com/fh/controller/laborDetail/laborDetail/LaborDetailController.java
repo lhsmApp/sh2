@@ -604,6 +604,9 @@ public class LaborDetailController extends BaseController {
 						if(listSize > 0){
 							for(int i=0;i<listSize;i++){
 								PageData pdAdd = listUploadAndRead.get(i);
+								if(pdAdd.size() <= 0){
+									continue;
+								}
 								//String getUSER_CODE = (String) pdAdd.get("USER_CODE");
 								//if(getUSER_CODE!=null && !getUSER_CODE.trim().equals("")){
 								String getUSER_NAME = (String) pdAdd.get("USER_NAME");

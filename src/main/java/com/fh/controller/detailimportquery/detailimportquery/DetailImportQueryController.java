@@ -105,7 +105,7 @@ public class DetailImportQueryController extends BaseController {
 
 		PageData getPd = this.getPageData();
 		//员工组
-		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("SelectedTableNo"), DefaultWhile);
 
 		ModelAndView mv = this.getModelAndView();
 		mv.setViewName("detailimportquery/detailimportquery/detailimportquery_list");
@@ -199,7 +199,7 @@ public class DetailImportQueryController extends BaseController {
 		
 		PageData getPd = this.getPageData();
 		//员工组
-		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("SelectedTableNo"), DefaultWhile);
 		String emplGroupType = Corresponding.getUserGroupTypeFromTmplType(SelectedTableNo);
 		//单位
 		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
@@ -213,8 +213,8 @@ public class DetailImportQueryController extends BaseController {
 		String SelectedBusiDate = getPd.getString("SelectedBusiDate");
 		List<String> AllDeptCode = Common.getAllDeptCode(departmentService, Jurisdiction.getCurrentDepartmentID());
 		
-		String tableNameDetail = getDetailTableCode(SelectedTableNo);
-		String TableNameSummy = getSummyBillTableCode(SelectedTableNo);
+		String tableNameDetail = Corresponding.getDetailTableNameFromTmplType(SelectedTableNo);
+		String TableNameSummy = Corresponding.getSumBillTableNameFromTmplType(SelectedTableNo);
 		
 		PageData getQueryFeildPd = new PageData();
 		getQueryFeildPd.put("USER_GROP", emplGroupType);
@@ -258,7 +258,7 @@ public class DetailImportQueryController extends BaseController {
 		
 		PageData getPd = this.getPageData();
 		//员工组
-		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("SelectedTableNo"), DefaultWhile);
 		//单位
 		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
 		int departSelf = Common.getDepartSelf(departmentService);
@@ -288,7 +288,7 @@ public class DetailImportQueryController extends BaseController {
 
 		PageData getPd = this.getPageData();
 		//员工组
-		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("SelectedTableNo"), DefaultWhile);
 		//账套
 		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
 		//单位
@@ -321,58 +321,10 @@ public class DetailImportQueryController extends BaseController {
 		
 		return result;
 	}
-
-	private String getWhileValue(String value){
-        String which = DefaultWhile;
-		if(value != null && !value.trim().equals("")){
-			which = value;
-		}
-		return which;
-	}
-	/**
-	 * 根据前端业务表索引获取表名称
-	 * 
-	 * @param which
-	 * @return
-	 */
-	private String getDetailTableCode(String which) {
-		String tableCode = "";
-		if (which != null){
-			if(which.equals(TmplType.TB_STAFF_DETAIL_CONTRACT.getNameKey())
-					||which.equals(TmplType.TB_STAFF_DETAIL_MARKET.getNameKey())
-					||which.equals(TmplType.TB_STAFF_DETAIL_SYS_LABOR.getNameKey())
-					||which.equals(TmplType.TB_STAFF_DETAIL_OPER_LABOR.getNameKey())
-					||which.equals(TmplType.TB_STAFF_DETAIL_LABOR.getNameKey())) {
-				tableCode = "tb_staff_detail";
-			} else if (which.equals(TmplType.TB_SOCIAL_INC_DETAIL.getNameKey())) {
-				tableCode = "tb_social_inc_detail";
-			} else if (which.equals(TmplType.TB_HOUSE_FUND_DETAIL.getNameKey())) {
-				tableCode = "tb_house_fund_detail";
-			}
-		}
-		return tableCode;
-	}
-	private String getSummyBillTableCode(String which) {
-		String tableCode = "";
-		if (which != null){
-			if(which.equals(TmplType.TB_STAFF_DETAIL_CONTRACT.getNameKey())
-					||which.equals(TmplType.TB_STAFF_DETAIL_MARKET.getNameKey())
-					||which.equals(TmplType.TB_STAFF_DETAIL_SYS_LABOR.getNameKey())
-					||which.equals(TmplType.TB_STAFF_DETAIL_OPER_LABOR.getNameKey())
-					||which.equals(TmplType.TB_STAFF_DETAIL_LABOR.getNameKey())) {
-				tableCode = "tb_staff_summy_bill";
-			} else if (which.equals(TmplType.TB_SOCIAL_INC_DETAIL.getNameKey())) {
-				tableCode = "tb_social_inc_summy_bill";
-			} else if (which.equals(TmplType.TB_HOUSE_FUND_DETAIL.getNameKey())) {
-				tableCode = "tb_house_fund_summy_bill";
-			}
-		}
-		return tableCode;
-	}
 	
 	private PageData setPutPd(PageData getPd, Boolean bolBillCodeUse) throws Exception{
 		//员工组
-		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("SelectedTableNo"), DefaultWhile);
 		String emplGroupType = Corresponding.getUserGroupTypeFromTmplType(SelectedTableNo);
 		//单位
 		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
@@ -388,8 +340,8 @@ public class DetailImportQueryController extends BaseController {
 		String SelectedBillCode = getPd.getString("SelectedBillCode");
 		List<String> AllDeptCode = Common.getAllDeptCode(departmentService, Jurisdiction.getCurrentDepartmentID());
 		
-		String tableNameDetail = getDetailTableCode(SelectedTableNo);
-		String TableNameSummy = getSummyBillTableCode(SelectedTableNo);
+		String tableNameDetail = Corresponding.getDetailTableNameFromTmplType(SelectedTableNo);
+		String TableNameSummy = Corresponding.getSumBillTableNameFromTmplType(SelectedTableNo);
 		
 		PageData getQueryFeildPd = new PageData();
 		getQueryFeildPd.put("USER_GROP", emplGroupType);
@@ -435,7 +387,7 @@ public class DetailImportQueryController extends BaseController {
 
 		PageData getPd = this.getPageData();
 		//员工组
-		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("SelectedTableNo"), DefaultWhile);
 		String emplGroupType = Corresponding.getUserGroupTypeFromTmplType(SelectedTableNo);
 		//日期
 		String SelectedBusiDate = getPd.getString("SelectedBusiDate");
@@ -445,16 +397,21 @@ public class DetailImportQueryController extends BaseController {
 		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
 		List<String> AllDeptCode = Common.getAllDeptCode(departmentService, Jurisdiction.getCurrentDepartmentID());
 		
-		String tableNameDetail = getDetailTableCode(SelectedTableNo);
-		String TableNameSummy = getSummyBillTableCode(SelectedTableNo);
+		String tableNameDetail = Corresponding.getDetailTableNameFromTmplType(SelectedTableNo);
+		String TableNameSummy = Corresponding.getSumBillTableNameFromTmplType(SelectedTableNo);
 		
 		PageData getQueryFeildPd = new PageData();
 		getQueryFeildPd.put("USER_GROP", emplGroupType);
+		getQueryFeildPd.put("DEPT_CODE", SelectedDepartCode);
+		getQueryFeildPd.put("CUST_COL7", SelectedCustCol7);
 		getQueryFeildPd.put("BUSI_DATE", SelectedBusiDate);
 		String QueryFeild = QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList);
 		QueryFeild += QueryFeildString.getBillCodeNotInSumInvalidDetail(TableNameSummy);
 		QueryFeild += " and DEPT_CODE in (" + QueryFeildString.tranferListValueToSqlInString(AllDeptCode) + ") ";
 		if(!(SelectedBusiDate!=null && !SelectedBusiDate.trim().equals(""))){
+			QueryFeild += " and 1 != 1 ";
+		}
+		if(!(SelectedCustCol7!=null && !SelectedCustCol7.trim().equals(""))){
 			QueryFeild += " and 1 != 1 ";
 		}
 		getPd.put("QueryFeild", QueryFeild);
@@ -476,7 +433,7 @@ public class DetailImportQueryController extends BaseController {
 
 		/*PageData getPd = this.getPageData();
 		//员工组
-		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("SelectedTableNo"));
 		//账套
 		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
 		//单位
@@ -548,7 +505,7 @@ public class DetailImportQueryController extends BaseController {
 	    
 		PageData getPd = this.getPageData();
 		//员工组
-		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("SelectedTableNo"), DefaultWhile);
 		//日期
 		String SelectedBusiDate = getPd.getString("SelectedBusiDate");
 		//工资或奖金枚举编码
@@ -619,9 +576,9 @@ public class DetailImportQueryController extends BaseController {
 	public ModelAndView exportExcel(JqPage page) throws Exception{
 		PageData getPd = this.getPageData();
 		//员工组
-		String SelectedTableNo = getWhileValue(getPd.getString("DownSelectedTableNo"));
+		String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("DownSelectedTableNo"), DefaultWhile);
 		//String emplGroupType = Corresponding.getUserGroupTypeFromTmplType(SelectedTableNo);
-		String TableName = getDetailTableCode(SelectedTableNo);
+		String TableName = Corresponding.getDetailTableNameFromTmplType(SelectedTableNo);
 		//日期
 		String SelectedBusiDate = getPd.getString("DownSelectedBusiDate");
 		//账套
@@ -630,8 +587,6 @@ public class DetailImportQueryController extends BaseController {
 		String SelectedDepartCode = getPd.getString("DownSelectedDepartCode");
 		//工资或奖金枚举编码
 		String SalaryOrBonus = getPd.getString("DownSalaryOrBonus");
-		
-		List<PageData> varOList = new ArrayList<PageData>();
 		
 		String WhereSql = " and BUSI_DATE = '" + SelectedBusiDate + "' ";
 		WhereSql += " and CUST_COL7 = '" + SelectedCustCol7 + "' ";
@@ -716,7 +671,7 @@ public class DetailImportQueryController extends BaseController {
 				WhereSql += " and UNITS_CODE not in (" + strUnitsNotExportData + ") ";
 			}
 		}
-		WhereSql += QueryFeildString.getBillCodeNotInSumInvalidDetail(getSummyBillTableCode(SelectedTableNo));
+		WhereSql += QueryFeildString.getBillCodeNotInSumInvalidDetail(Corresponding.getSumBillTableNameFromTmplType(SelectedTableNo));
 		WhereSql += QueryFeildString.getBillConfirm();
 
 		//个税字段，
@@ -732,7 +687,8 @@ public class DetailImportQueryController extends BaseController {
 		
 		if(SalaryOrBonus.equals(StaffDataType1.Salary.getNameKey())){
 			WhereSql += " and (GROSS_PAY != 0 || " + TableFeildSalaryTax + " != 0) ";
-			String SelectGroupFeild = " USER_CODE, USER_NAME, STAFF_IDENT, DEPT_CODE, "//USER_GROP, 
+			//String SelectGroupFeild = " USER_CODE, USER_NAME, STAFF_IDENT, DEPT_CODE, "
+			String SelectGroupFeild = " STAFF_IDENT, "
 					+ " sum(GROSS_PAY) GROSS_PAY, "
 					+ " sum(ENDW_INS) ENDW_INS, "
 					+ " sum(MED_INS + CASD_INS) MED_INS, "
@@ -740,64 +696,28 @@ public class DetailImportQueryController extends BaseController {
 					+ " sum(HOUSE_FUND) HOUSE_FUND, "
 					+ " sum(KID_ALLE) KID_ALLE, "
 					+ " sum(SUP_PESN) SUP_PESN, sum(" + TableFeildSalaryTax + ") " + TableFeildSalaryTax + " ";
-			//if(SelectedDepartCode.equals("HOME")){
-				SelectGroupFeild += ", UNITS_CODE ";
-			//}
+				//SelectGroupFeild += ", UNITS_CODE ";
 			getPd.put("SelectGroupFeild", SelectGroupFeild);
 		}
         if(SalaryOrBonus.equals(StaffDataType1.Bonus.getNameKey())){
 			WhereSql += " and (" + TableFeildBonusSelf + " != 0 || " + TableFeildBonusTax + " != 0) ";
-			String SelectGroupFeild = " USER_CODE, USER_NAME, STAFF_IDENT, DEPT_CODE, "//USER_GROP, 
+			//String SelectGroupFeild = " USER_CODE, USER_NAME, STAFF_IDENT, DEPT_CODE, "
+			String SelectGroupFeild = " STAFF_IDENT, "
 					+ " sum(" + TableFeildBonusSelf + ") " + TableFeildBonusSelf + ", "
 					+ " sum(" + TableFeildBonusTax + ") " + TableFeildBonusTax + " ";
-			//if(SelectedDepartCode.equals("HOME")){
-				SelectGroupFeild += ", UNITS_CODE ";
-			//}
+				//SelectGroupFeild += ", UNITS_CODE ";
 			getPd.put("SelectGroupFeild", SelectGroupFeild);
         }
-		//getPd.put("SelectAddFeild", " IFNULL(a.USER_NAME, ' ') USER_NAME, IFNULL(a.STAFF_IDENT, ' ') STAFF_IDENT ");
-		String strGroupByFeild = " USER_CODE, USER_NAME, STAFF_IDENT, DEPT_CODE ";
-		//if(SelectedDepartCode.equals("HOME")){
-			strGroupByFeild += ", UNITS_CODE ";
-		//}
-		getPd.put("GroupByFeild", strGroupByFeild);//, USER_GROP
+		getPd.put("SelectAddFeild", " IFNULL(a.USER_CODE, ' ') USER_CODE, IFNULL(a.USER_NAME, ' ') USER_NAME, IFNULL(a.UNITS_CODE, ' ') UNITS_CODE, IFNULL(a.SAL_RANGE, ' ') SAL_RANGE ");
+		getPd.put("SelectLeftJoinFeild", " USER_CODE, USER_NAME, UNITS_CODE, STAFF_IDENT, SAL_RANGE ");
+		//String strGroupByFeild = " USER_CODE, USER_NAME, STAFF_IDENT, DEPT_CODE ";
+		String strGroupByFeild = " STAFF_IDENT ";
+			//strGroupByFeild += ", UNITS_CODE ";
+		getPd.put("GroupByFeild", strGroupByFeild);
 		getPd.put("WhereSql", WhereSql);
 		getPd.put("TableName", TableName);
-		//getPd.put("LeftJoin", " left join " + TableName + " a on a.USER_CODE = t.USER_CODE and a.DEPT_CODE = t.DEPT_CODE ");// and a.USER_GROP = t.USER_GROP
-		//(SELECT DISTINCT USER_CODE, DEPT_CODE, USER_NAME, STAFF_IDENT FROM tb_staff_detail)
         page.setPd(getPd);
-		List<PageData> varOListvarOList = detailimportqueryService.exportSumList(page);
-		if(varOListvarOList!=null && varOListvarOList.size()>0){
-			//List<Dictionaries> listUserCode_DeptCode_UserGrop = new ArrayList<Dictionaries>();
-			for(PageData each : varOListvarOList){
-			//	String UserCode = each.getString("USER_CODE");
-			//	String DeptCode = each.getString("DEPT_CODE");
-			//	//String UserGrop = each.getString("USER_GROP");
-				Boolean bolHave = false;
-			//	if(listUserCode_DeptCode_UserGrop==null) listUserCode_DeptCode_UserGrop = new ArrayList<Dictionaries>();
-			//	for(Dictionaries eachHave : listUserCode_DeptCode_UserGrop){
-			//		if(eachHave.getDICT_CODE().equals(UserCode) 
-			//				&& eachHave.getNAME().equals(DeptCode)){
-			//				//&& eachHave.getNAME_EN().equals(UserGrop)
-			//			bolHave = true;
-			//		}
-			//	}
-				if(!bolHave){
-					varOList.add(each);
-					//Dictionaries addHave = new Dictionaries();
-					//addHave.setDICT_CODE(UserCode);
-					//addHave.setNAME(DeptCode);
-					////addHave.setNAME_EN(UserGrop);
-					//listUserCode_DeptCode_UserGrop.add(addHave);
-				}
-			}
-		}
-		if(varOList!=null && varOList.size()>0){
-			for(PageData each : varOList){
-				each.put("CERT_TYPE", "居民身份证");
-				each.put("TAX_BURDENS", "自行负担");
-			}
-		}
+		List<PageData> getAllList = detailimportqueryService.exportSumList(page);
 		
 		String strGetDicSelectedDepartCode = SelectedDepartCode;
 		if(SelectedDepartCode != null && (SelectedDepartCode.equals("ALL") || SelectedDepartCode.equals("HOME"))){
@@ -815,13 +735,19 @@ public class DetailImportQueryController extends BaseController {
 		map_SetColumnsList.put("CERT_TYPE", new TmplConfigDetail("CERT_TYPE", "证件类型", "1", false));
 		map_SetColumnsList.put("STAFF_IDENT", new TmplConfigDetail("STAFF_IDENT", "证件号码", "1", false));
 		map_SetColumnsList.put("TAX_BURDENS", new TmplConfigDetail("TAX_BURDENS", "税款负担方式", "1", false));
-		//if(SelectedDepartCode.equals("HOME")){
-			String strUNITS_CODE = "UNITS_CODE";
-			TmplConfigDetail tmplGetDic = map_GetDicSetColumnsList.get(strUNITS_CODE);
-			TmplConfigDetail tmplPut = new TmplConfigDetail(strUNITS_CODE, "所属二级单位", "1", false);
-			tmplPut.setDICT_TRANS(tmplGetDic.getDICT_TRANS());
-			map_SetColumnsList.put(strUNITS_CODE, tmplPut);
-		//}
+		
+		String strUNITS_CODE = "UNITS_CODE";
+		TmplConfigDetail tmplGetDic = map_GetDicSetColumnsList.get(strUNITS_CODE);
+		TmplConfigDetail tmplPut = new TmplConfigDetail(strUNITS_CODE, "所属二级单位", "1", false);
+		tmplPut.setDICT_TRANS(tmplGetDic.getDICT_TRANS());
+		map_SetColumnsList.put(strUNITS_CODE, tmplPut);
+
+		String strSAL_RANGE = "SAL_RANGE";
+		TmplConfigDetail tmplGetDicSAL_RANGE = map_GetDicSetColumnsList.get(strSAL_RANGE);
+		TmplConfigDetail tmplPutSAL_RANGE = new TmplConfigDetail(strSAL_RANGE, "工资范围", "1", false);
+		tmplPutSAL_RANGE.setDICT_TRANS(tmplGetDicSAL_RANGE.getDICT_TRANS());
+		map_SetColumnsList.put(strSAL_RANGE, tmplPutSAL_RANGE);
+		
 		if(SalaryOrBonus.equals(StaffDataType1.Salary.getNameKey())){
 			map_SetColumnsList.put("GROSS_PAY", new TmplConfigDetail("GROSS_PAY", "收入额", "1", true));
 			map_SetColumnsList.put(TableFeildSalaryTax, new TmplConfigDetail(TableFeildSalaryTax, "税额", "1", true));
@@ -900,14 +826,25 @@ public class DetailImportQueryController extends BaseController {
 					titles.add(col.getCOL_NAME());
 				}
 			}
-			if(varOList!=null && varOList.size()>0){
-				for(int i=0;i<varOList.size();i++){
+		    
+			if(getAllList!=null && getAllList.size()>0){
+				List<String> listSTAFF_IDENT = new ArrayList<String>();
+				for(int i=0;i<getAllList.size();i++){
+					String STAFF_IDENT = getAllList.get(i).getString("STAFF_IDENT");
+	                if(listSTAFF_IDENT.contains(STAFF_IDENT.toUpperCase())){
+	                	continue;
+	                }
+					listSTAFF_IDENT.add(STAFF_IDENT.toUpperCase());
+					
+					getAllList.get(i).put("CERT_TYPE", "居民身份证");
+					getAllList.get(i).put("TAX_BURDENS", "自行负担");
+					
 					PageData vpd = new PageData();
 					int j = 1;
 					for (TmplConfigDetail col : map_SetColumnsList.values()) {
 						if(col.getCOL_HIDE().equals("1")){
 						    String trans = col.getDICT_TRANS();
-						    Object getCellValue = varOList.get(i).get(col.getCOL_CODE().toUpperCase());
+						    Object getCellValue = getAllList.get(i).get(col.getCOL_CODE().toUpperCase());
 						    if(getCellValue==null) getCellValue = "";
 						    if(trans != null && !trans.trim().equals("")){
 							    String value = "";

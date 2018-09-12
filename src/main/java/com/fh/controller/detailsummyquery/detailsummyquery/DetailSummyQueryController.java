@@ -34,11 +34,11 @@ import com.fh.util.PageData;
 import com.fh.util.SqlTools;
 import com.fh.util.Jurisdiction;
 import com.fh.util.enums.BillState;
-import com.fh.util.enums.SysConfigKeyCode;
 import com.fh.util.enums.TmplType;
 
 import net.sf.json.JSONArray;
 
+import com.fh.service.detailimportcommon.detailimportcommon.impl.DetailImportCommonService;
 import com.fh.service.detailsummyquery.detailsummyquery.DetailSummyQueryManager;
 import com.fh.service.fhoa.department.impl.DepartmentService;
 import com.fh.service.sysConfig.sysconfig.SysConfigManager;
@@ -60,6 +60,8 @@ public class DetailSummyQueryController extends BaseController {
 	String menuUrl = "detailsummyquery/list.do"; //菜单地址(权限用)
 	@Resource(name="detailsummyqueryService")
 	private DetailSummyQueryManager detailsummyqueryryService;
+	@Resource(name="detailimportcommonService")
+	private DetailImportCommonService detailimportcommonService;
 	@Resource(name="tmplconfigService")
 	private TmplConfigService tmplconfigService;
 	@Resource(name="tmplconfigdictService")
@@ -95,7 +97,7 @@ public class DetailSummyQueryController extends BaseController {
 
 		PageData getPd = this.getPageData();
 		//员工组
-		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("SelectedTableNo"), DefaultWhile);
 
 		ModelAndView mv = this.getModelAndView();
 		mv.setViewName("detailsummyquery/detailsummyquery/detailsummyquery_list");
@@ -136,7 +138,7 @@ public class DetailSummyQueryController extends BaseController {
 		
 		PageData getPd = this.getPageData();
 		//员工组
-		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("SelectedTableNo"), DefaultWhile);
 		String emplGroupType = Corresponding.getUserGroupTypeFromTmplType(SelectedTableNo);
 		//单位
 		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
@@ -150,7 +152,7 @@ public class DetailSummyQueryController extends BaseController {
 		String SelectedBusiDate = getPd.getString("SelectedBusiDate");
 		List<String> AllDeptCode = Common.getAllDeptCode(departmentService, Jurisdiction.getCurrentDepartmentID());
 
-		String tableNameSummy = getSummyBaseTableCode(SelectedTableNo);
+		String tableNameSummy = Corresponding.getSumBillTableNameFromTmplType(SelectedTableNo);
 		
 		PageData getQueryFeildPd = new PageData();
 		getQueryFeildPd.put("USER_GROP", emplGroupType);
@@ -197,7 +199,7 @@ public class DetailSummyQueryController extends BaseController {
 		
 		PageData getPd = this.getPageData();
 		//员工组
-		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("SelectedTableNo"), DefaultWhile);
 		//单位
 		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
 		//账套
@@ -227,7 +229,7 @@ public class DetailSummyQueryController extends BaseController {
 
 		PageData getPd = this.getPageData();
 		//员工组
-		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("SelectedTableNo"), DefaultWhile);
 		//单位
 		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
 		//账套
@@ -235,7 +237,7 @@ public class DetailSummyQueryController extends BaseController {
 		
 		PageData pdTransfer = setTransferPd(getPd);
 		//表名
-		String tableNameSummy = getSummyBaseTableCode(SelectedTableNo);
+		String tableNameSummy = Corresponding.getSumBillTableNameFromTmplType(SelectedTableNo);
 		pdTransfer.put("TableName", tableNameSummy);
 		page.setPd(pdTransfer);
 		
@@ -273,23 +275,24 @@ public class DetailSummyQueryController extends BaseController {
 		logBefore(logger, Jurisdiction.getUsername()+"getFirstDetailColModel");
 		CommonBase commonBase = new CommonBase();
 		commonBase.setCode(-1);
-
+		
 		PageData getPd = this.getPageData();
 		//员工组 必须执行，用来设置汇总和传输上报类型
-		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
-		TmplTypeInfo implTypeCode = getWhileValueToTypeCode(SelectedTableNo);
+		String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("SelectedTableNo"), DefaultWhile);
+		TmplTypeInfo implTypeCode = Corresponding.getWhileValueToTypeCode(SelectedTableNo, sysConfigManager);
 		String TypeCodeSummyDetail = implTypeCode.getTypeCodeSummyDetail();
+		String TypeCodeDetail = implTypeCode.getTypeCodeDetail();
 		List<String> SumFieldDetail = implTypeCode.getSumFieldDetail();
 		String DEPT_CODE = (String) getPd.get("DataDeptCode");
 		String CUST_COL7 = (String) getPd.get("DataCustCol7");
-		
+		String strBillCode = getPd.getString("DetailListBillCode");
+
 		TmplUtil tmpl = new TmplUtil(tmplconfigService, tmplconfigdictService, dictionariesService, 
 				departmentService,userService,SumFieldDetail, null, null, null);
 		String detailColModel = tmpl.generateStructureNoEdit(TypeCodeSummyDetail, DEPT_CODE, CUST_COL7);
-		
 		commonBase.setCode(0);
 		commonBase.setMessage(detailColModel);
-		
+
 		return commonBase;
 	}
 
@@ -303,13 +306,14 @@ public class DetailSummyQueryController extends BaseController {
 
 		PageData getPd = this.getPageData();
 		//员工组 必须执行，用来设置汇总和传输上报类型
-		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
-		TmplTypeInfo implTypeCode = getWhileValueToTypeCode(SelectedTableNo);
+		String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("SelectedTableNo"), DefaultWhile);
+		TmplTypeInfo implTypeCode = Corresponding.getWhileValueToTypeCode(SelectedTableNo, sysConfigManager);
 		List<String> SumFieldDetail = implTypeCode.getSumFieldDetail();
 		String strBillCode = getPd.getString("DetailListBillCode");
 		
-		String detailTableName = getSummyDetailTableCode(SelectedTableNo);
-
+		String detailTableName = Corresponding.getSummyTableNameFromTmplType(SelectedTableNo);
+		
+		PageResult<PageData> result = new PageResult<PageData>();
 		PageData pdCode = new PageData();
 		pdCode.put("TableName", detailTableName);
 		pdCode.put("BILL_CODE", strBillCode);
@@ -318,7 +322,6 @@ public class DetailSummyQueryController extends BaseController {
 			pdCode.put("FieldSelectKey", strFieldSelectKey);
 		}
 		List<PageData> varList = detailsummyqueryryService.getFirstDetailList(pdCode);	//列出Betting列表
-		PageResult<PageData> result = new PageResult<PageData>();
 		result.setRows(varList);
 		
 		return result;
@@ -336,8 +339,8 @@ public class DetailSummyQueryController extends BaseController {
 
 		PageData getPd = this.getPageData();
 		//员工组 必须执行，用来设置汇总和传输上报类型
-		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
-		TmplTypeInfo implTypeCode = getWhileValueToTypeCode(SelectedTableNo);
+		String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("SelectedTableNo"), DefaultWhile);
+		TmplTypeInfo implTypeCode = Corresponding.getWhileValueToTypeCode(SelectedTableNo, sysConfigManager);
 		String TypeCodeDetail = implTypeCode.getTypeCodeDetail();
 		
 		String DEPT_CODE = (String) getPd.get("DataDeptCode");
@@ -364,8 +367,8 @@ public class DetailSummyQueryController extends BaseController {
 
 		PageData getPd = this.getPageData();
 		//员工组 必须执行，用来设置汇总和传输上报类型
-		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
-		TmplTypeInfo implTypeCode = getWhileValueToTypeCode(SelectedTableNo);
+		String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("SelectedTableNo"), DefaultWhile);
+		TmplTypeInfo implTypeCode = Corresponding.getWhileValueToTypeCode(SelectedTableNo, sysConfigManager);
 		List<String> SumFieldDetail = implTypeCode.getSumFieldDetail();
 		
 		Object DATA_ROWS = getPd.get("DataRows");
@@ -374,7 +377,7 @@ public class DetailSummyQueryController extends BaseController {
         List<PageData> listData = (List<PageData>) JSONArray.toCollection(array,PageData.class);
         PageData pdGet = listData.get(0);
 
-		String detailTableName = getImportDetailTableCode(SelectedTableNo);
+		String detailTableName = Corresponding.getDetailTableNameFromTmplType(SelectedTableNo);
 
 		PageData pdCode = new PageData();
 		String QueryFeild = QueryFeildString.getDetailQueryFeild(pdGet, SumFieldDetail, TmplUtil.keyExtra);
@@ -403,7 +406,7 @@ public class DetailSummyQueryController extends BaseController {
 
 		PageData getPd = this.getPageData();
 		//员工组
-		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("SelectedTableNo"), DefaultWhile);
 		//单位
 		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
 		//账套
@@ -418,7 +421,7 @@ public class DetailSummyQueryController extends BaseController {
 		Map<String, Object> DicList = Common.GetDicList(SelectedTableNo, strShowCalModelDepaet, SelectedCustCol7, 
 				tmplconfigService, tmplconfigdictService, dictionariesService, departmentService, userService, "");
 
-		String tableNameSummy = getSummyDetailTableCode(SelectedTableNo);
+		String tableNameSummy = Corresponding.getSummyTableNameFromTmplType(SelectedTableNo);
 		PageData pdTransfer = setTransferPd(getPd);
 		//表名
 		pdTransfer.put("TableName", tableNameSummy);
@@ -470,74 +473,9 @@ public class DetailSummyQueryController extends BaseController {
 		return mv;
 	}
 	
-	private String getWhileValue(String value){
-        String which = DefaultWhile;
-		if(value != null && !value.trim().equals("")){
-			which = value;
-		}
-		return which;
-	}
-	/**
-	 * 根据前端业务表索引获取表名称
-	 * 
-	 * @param which
-	 * @return
-	 */
-	private String getSummyBaseTableCode(String which) {
-		String tableCode = "";
-		if (which != null){
-			if(which.equals(TmplType.TB_STAFF_SUMMY_CONTRACT.getNameKey())
-					||which.equals(TmplType.TB_STAFF_SUMMY_MARKET.getNameKey())
-					||which.equals(TmplType.TB_STAFF_SUMMY_SYS_LABOR.getNameKey())
-					||which.equals(TmplType.TB_STAFF_SUMMY_OPER_LABOR.getNameKey())
-					||which.equals(TmplType.TB_STAFF_SUMMY_LABOR.getNameKey())) {
-				tableCode = "tb_staff_summy_bill";
-			} else if (which.equals(TmplType.TB_SOCIAL_INC_SUMMY.getNameKey())) {
-				tableCode = "tb_social_inc_summy_bill";
-			} else if (which.equals(TmplType.TB_HOUSE_FUND_SUMMY.getNameKey())) {
-				tableCode = "tb_house_fund_summy_bill";
-			}
-		}
-		return tableCode;
-	}
-	private String getSummyDetailTableCode(String which) {
-		String tableCode = "";
-		if (which != null){
-			if(which.equals(TmplType.TB_STAFF_SUMMY_CONTRACT.getNameKey())
-					||which.equals(TmplType.TB_STAFF_SUMMY_MARKET.getNameKey())
-					||which.equals(TmplType.TB_STAFF_SUMMY_SYS_LABOR.getNameKey())
-					||which.equals(TmplType.TB_STAFF_SUMMY_OPER_LABOR.getNameKey())
-					||which.equals(TmplType.TB_STAFF_SUMMY_LABOR.getNameKey())) {
-				tableCode = "tb_staff_summy";
-			} else if (which.equals(TmplType.TB_SOCIAL_INC_SUMMY.getNameKey())) {
-				tableCode = "tb_social_inc_summy";
-			} else if (which.equals(TmplType.TB_HOUSE_FUND_SUMMY.getNameKey())) {
-				tableCode = "tb_house_fund_summy";
-			}
-		}
-		return tableCode;
-	}
-	private String getImportDetailTableCode(String which) {
-		String tableCode = "";
-		if (which != null){
-			if(which.equals(TmplType.TB_STAFF_SUMMY_CONTRACT.getNameKey())
-					||which.equals(TmplType.TB_STAFF_SUMMY_MARKET.getNameKey())
-					||which.equals(TmplType.TB_STAFF_SUMMY_SYS_LABOR.getNameKey())
-					||which.equals(TmplType.TB_STAFF_SUMMY_OPER_LABOR.getNameKey())
-					||which.equals(TmplType.TB_STAFF_SUMMY_LABOR.getNameKey())) {
-				tableCode = "tb_staff_detail";
-			} else if (which.equals(TmplType.TB_SOCIAL_INC_SUMMY.getNameKey())) {
-				tableCode = "tb_social_inc_detail";
-			} else if (which.equals(TmplType.TB_HOUSE_FUND_SUMMY.getNameKey())) {
-				tableCode = "tb_house_fund_detail";
-			}
-		}
-		return tableCode;
-	}
-	
 	private PageData setTransferPd(PageData getPd) throws Exception{
 		//员工组
-		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("SelectedTableNo"), DefaultWhile);
 		String emplGroupType = Corresponding.getUserGroupTypeFromTmplType(SelectedTableNo);
 		//单位
 		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
@@ -585,127 +523,6 @@ public class DetailSummyQueryController extends BaseController {
 		return getPd;
 	}
 
-	private TmplTypeInfo getWhileValueToTypeCode(String which) throws Exception{
-		TmplTypeInfo retItem = new TmplTypeInfo();
-		//枚举类型 TmplType
-		//1、合同化、市场化、运行人员、系统内运行按6列汇总：业务日期、组织机构、帐套、员工组、所属二级单位、组织单元文本、企业特定员工分类、工资范围编码
-		//2、劳务派遣运行按4列汇总：                                                      业务日期、组织机构、帐套、员工组、所属二级单位、组织单元文本retItem
-		List<String> SumFieldBillStaff = Arrays.asList("BILL_CODE", "BUSI_DATE", "DEPT_CODE", "CUST_COL7", "USER_GROP");
-		List<String> SumFieldBillSocial = Arrays.asList("BILL_CODE", "BUSI_DATE", "DEPT_CODE", "CUST_COL7");
-		if(which.equals(TmplType.TB_STAFF_SUMMY_CONTRACT.getNameKey())){
-			//合同化
-			retItem.setTypeCodeDetail(TmplType.TB_STAFF_DETAIL_CONTRACT.getNameKey());
-			retItem.setTypeCodeSummyBill(TmplType.TB_STAFF_SUMMY_CONTRACT.getNameKey());
-			retItem.setTypeCodeSummyDetail(TmplType.TB_STAFF_SUMMY_CONTRACT.getNameKey());
-			//1、合同化、市场化、运行人员、系统内运行按6列汇总：业务日期、组织机构、帐套、员工组、所属二级单位、组织单元文本、企业特定员工分类、工资范围编码
-			//2、劳务派遣运行按4列汇总：                                                      业务日期、组织机构、帐套、员工组、所属二级单位、组织单元文本
-		    //SumField = Arrays.asList("BUSI_DATE", "DEPT_CODE", "CUST_COL7", "USER_GROP", "UNITS_CODE", "ORG_UNIT", "USER_CATG", "SAL_RANGE");
-		    //SumFieldToString = QueryFeildString.tranferListStringToGroupbyString(SumField);
-			
-			PageData pdSysConfig = new PageData();
-			pdSysConfig.put("KEY_CODE", SysConfigKeyCode.ContractGRPCond);
-			String strSumFieldDetail = sysConfigManager.getSysConfigByKey(pdSysConfig);
-			List<String> listSumFieldDetail = QueryFeildString.tranferStringToList(strSumFieldDetail);
-			listSumFieldDetail = QueryFeildString.extraSumField(listSumFieldDetail, SumFieldBillStaff);
-			retItem.setSumFieldDetail(listSumFieldDetail);
-		}
-		if(which.equals(TmplType.TB_STAFF_SUMMY_MARKET.getNameKey())){
-			//市场化
-			retItem.setTypeCodeDetail(TmplType.TB_STAFF_DETAIL_MARKET.getNameKey());
-			retItem.setTypeCodeSummyBill(TmplType.TB_STAFF_SUMMY_MARKET.getNameKey());
-			retItem.setTypeCodeSummyDetail(TmplType.TB_STAFF_SUMMY_MARKET.getNameKey());
-			//1、合同化、市场化、运行人员、系统内运行按6列汇总：业务日期、组织机构、帐套、员工组、所属二级单位、组织单元文本、企业特定员工分类、工资范围编码
-			//2、劳务派遣运行按4列汇总：                                                      业务日期、组织机构、帐套、员工组、所属二级单位、组织单元文本
-		    //SumField = Arrays.asList("BUSI_DATE", "DEPT_CODE", "CUST_COL7", "USER_GROP", "UNITS_CODE", "ORG_UNIT", "USER_CATG", "SAL_RANGE");
-		    //SumFieldToString = QueryFeildString.tranferListStringToGroupbyString(SumField);
-			
-			PageData pdSysConfig = new PageData();
-			pdSysConfig.put("KEY_CODE", SysConfigKeyCode.MarketGRPCond);
-			String strSumFieldDetail = sysConfigManager.getSysConfigByKey(pdSysConfig);
-			List<String> listSumFieldDetail = QueryFeildString.tranferStringToList(strSumFieldDetail);
-			listSumFieldDetail = QueryFeildString.extraSumField(listSumFieldDetail, SumFieldBillStaff);
-			retItem.setSumFieldDetail(listSumFieldDetail);
-		}
-		if(which.equals(TmplType.TB_STAFF_SUMMY_SYS_LABOR.getNameKey())){
-			//系统内劳务
-			retItem.setTypeCodeDetail(TmplType.TB_STAFF_DETAIL_SYS_LABOR.getNameKey());
-			retItem.setTypeCodeSummyBill(TmplType.TB_STAFF_SUMMY_SYS_LABOR.getNameKey());
-			retItem.setTypeCodeSummyDetail(TmplType.TB_STAFF_SUMMY_SYS_LABOR.getNameKey());
-			//1、合同化、市场化、运行人员、系统内运行按6列汇总：业务日期、组织机构、帐套、员工组、所属二级单位、组织单元文本、企业特定员工分类、工资范围编码
-			//2、劳务派遣运行按4列汇总：                                                      业务日期、组织机构、帐套、员工组、所属二级单位、组织单元文本
-		    //SumField = Arrays.asList("BUSI_DATE", "DEPT_CODE", "CUST_COL7", "USER_GROP", "UNITS_CODE", "ORG_UNIT", "USER_CATG", "SAL_RANGE");
-		    //SumFieldToString = QueryFeildString.tranferListStringToGroupbyString(SumField);
-			
-			PageData pdSysConfig = new PageData();
-			pdSysConfig.put("KEY_CODE", SysConfigKeyCode.SysLaborGRPCond);
-			String strSumFieldDetail = sysConfigManager.getSysConfigByKey(pdSysConfig);
-			List<String> listSumFieldDetail = QueryFeildString.tranferStringToList(strSumFieldDetail);
-			listSumFieldDetail = QueryFeildString.extraSumField(listSumFieldDetail, SumFieldBillStaff);
-			retItem.setSumFieldDetail(listSumFieldDetail);
-		}
-		if(which.equals(TmplType.TB_STAFF_SUMMY_OPER_LABOR.getNameKey())){
-			//运行人员
-			retItem.setTypeCodeDetail(TmplType.TB_STAFF_DETAIL_OPER_LABOR.getNameKey());
-			retItem.setTypeCodeSummyBill(TmplType.TB_STAFF_SUMMY_OPER_LABOR.getNameKey());
-			retItem.setTypeCodeSummyDetail(TmplType.TB_STAFF_SUMMY_OPER_LABOR.getNameKey());
-			//1、合同化、市场化、运行人员、系统内运行按6列汇总：业务日期、组织机构、帐套、员工组、所属二级单位、组织单元文本、企业特定员工分类、工资范围编码
-			//2、劳务派遣运行按4列汇总：                                                      业务日期、组织机构、帐套、员工组、所属二级单位、组织单元文本
-		    //SumField = Arrays.asList("BUSI_DATE", "DEPT_CODE", "CUST_COL7", "USER_GROP", "UNITS_CODE", "ORG_UNIT", "USER_CATG", "SAL_RANGE");
-		    //SumFieldToString = QueryFeildString.tranferListStringToGroupbyString(SumField);
-			
-			PageData pdSysConfig = new PageData();
-			pdSysConfig.put("KEY_CODE", SysConfigKeyCode.OperLaborGRPCond);
-			String strSumFieldDetail = sysConfigManager.getSysConfigByKey(pdSysConfig);
-			List<String> listSumFieldDetail = QueryFeildString.tranferStringToList(strSumFieldDetail);
-			listSumFieldDetail = QueryFeildString.extraSumField(listSumFieldDetail, SumFieldBillStaff);
-			retItem.setSumFieldDetail(listSumFieldDetail);
-		}
-		if(which.equals(TmplType.TB_STAFF_SUMMY_LABOR.getNameKey())){
-			//劳务派遣工资
-			retItem.setTypeCodeDetail(TmplType.TB_STAFF_DETAIL_LABOR.getNameKey());
-			retItem.setTypeCodeSummyBill(TmplType.TB_STAFF_SUMMY_LABOR.getNameKey());
-			retItem.setTypeCodeSummyDetail(TmplType.TB_STAFF_SUMMY_LABOR.getNameKey());
-			//1、合同化、市场化、运行人员、系统内运行按6列汇总：业务日期、组织机构、帐套、员工组、所属二级单位、组织单元文本、企业特定员工分类、工资范围编码
-			//2、劳务派遣运行按4列汇总：                                                      业务日期、组织机构、帐套、员工组、所属二级单位、组织单元文本
-		    //SumField = Arrays.asList("BUSI_DATE", "DEPT_CODE", "CUST_COL7", "USER_GROP", "UNITS_CODE", "ORG_UNIT");
-		    //SumFieldToString = QueryFeildString.tranferListStringToGroupbyString(SumField);
-			
-			PageData pdSysConfig = new PageData();
-			pdSysConfig.put("KEY_CODE", SysConfigKeyCode.LaborGRPCond);
-			String strSumFieldDetail = sysConfigManager.getSysConfigByKey(pdSysConfig);
-			List<String> listSumFieldDetail = QueryFeildString.tranferStringToList(strSumFieldDetail);
-			listSumFieldDetail = QueryFeildString.extraSumField(listSumFieldDetail, SumFieldBillStaff);
-			retItem.setSumFieldDetail(listSumFieldDetail);
-		}
-		if(which.equals(TmplType.TB_SOCIAL_INC_SUMMY.getNameKey())){
-			//劳务派遣工资
-			retItem.setTypeCodeDetail(TmplType.TB_SOCIAL_INC_DETAIL.getNameKey());
-			retItem.setTypeCodeSummyBill(TmplType.TB_SOCIAL_INC_SUMMY.getNameKey());
-			retItem.setTypeCodeSummyDetail(TmplType.TB_SOCIAL_INC_SUMMY.getNameKey());
-
-			PageData pdSysConfig = new PageData();
-			pdSysConfig.put("KEY_CODE", SysConfigKeyCode.SocialIncGRPCond);
-			String strSumFieldDetail = sysConfigManager.getSysConfigByKey(pdSysConfig);
-			List<String> listSumFieldDetail = QueryFeildString.tranferStringToList(strSumFieldDetail);
-			listSumFieldDetail = QueryFeildString.extraSumField(listSumFieldDetail, SumFieldBillSocial);
-			retItem.setSumFieldDetail(listSumFieldDetail);
-		}
-		if(which.equals(TmplType.TB_HOUSE_FUND_SUMMY.getNameKey())){
-			//劳务派遣工资
-			retItem.setTypeCodeDetail(TmplType.TB_HOUSE_FUND_DETAIL.getNameKey());
-			retItem.setTypeCodeSummyBill(TmplType.TB_HOUSE_FUND_SUMMY.getNameKey());
-			retItem.setTypeCodeSummyDetail(TmplType.TB_HOUSE_FUND_SUMMY.getNameKey());
-
-			PageData pdSysConfig = new PageData();
-			pdSysConfig.put("KEY_CODE", SysConfigKeyCode.HouseFundGRPCond);
-			String strSumFieldDetail = sysConfigManager.getSysConfigByKey(pdSysConfig);
-			List<String> listSumFieldDetail = QueryFeildString.tranferStringToList(strSumFieldDetail);
-			listSumFieldDetail = QueryFeildString.extraSumField(listSumFieldDetail, SumFieldBillSocial);
-			retItem.setSumFieldDetail(listSumFieldDetail);
-		}
-		return retItem;
-	}
-	
 	@InitBinder
 	public void initBinder(WebDataBinder binder){
 		DateFormat format = new SimpleDateFormat("yyyy-MM-dd");

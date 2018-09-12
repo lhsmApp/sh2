@@ -111,6 +111,8 @@ public class FinanceAccountsController extends BaseController {
     //List<String> keyListBase = new ArrayList<String>();
     //查询的所有可操作的责任中心
     //List<String> AllDeptCode = new ArrayList<String>();
+    //设置必定不用汇总的数值列            SERIAL_NO 设置字段类型是数字，但不用汇总
+    List<String> MustNotSumList = Arrays.asList("SERIAL_NO");
 	
 	/**列表
 	 * @param page
@@ -126,7 +128,7 @@ public class FinanceAccountsController extends BaseController {
 
 		PageData getPd = this.getPageData();
 		//员工组
-		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("SelectedTableNo"), DefaultWhile);
 		TmplTypeInfo implTypeCode = getWhileValueToTypeCode(SelectedTableNo);
 		List<String> keyListBase = implTypeCode.getKeyListBase();
 
@@ -181,7 +183,7 @@ public class FinanceAccountsController extends BaseController {
 
 		PageData getPd = this.getPageData();
 		//员工组
-		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("SelectedTableNo"), DefaultWhile);
 		String emplGroupType = Corresponding.getUserGroupTypeFromTmplType(SelectedTableNo);
 		//单位
 		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
@@ -234,7 +236,7 @@ public class FinanceAccountsController extends BaseController {
 		
 		//获取明细汇总信息
 		List<TableColumns> tableDetailColumns = tmplconfigService.getTableColumns(detailTableName);
-		String detailSelectFeild = Common.getSumFeildSelect(keyListBase, tableDetailColumns, TmplUtil.keyExtra);
+		String detailSelectFeild = Common.getSumFeildSelect(keyListBase, tableDetailColumns, MustNotSumList, TmplUtil.keyExtra);
 		getPd.put("SelectFeild", detailSelectFeild);
 		//表名
 		getPd.put("TableName", detailTableName);
@@ -259,7 +261,7 @@ public class FinanceAccountsController extends BaseController {
 
 		//获取对账汇总信息
 		List<TableColumns> tableAuditeColumns = tmplconfigService.getTableColumns(auditeTableName);
-		String auditeSelectFeild = Common.getSumFeildSelect(keyListBase, tableAuditeColumns, TmplUtil.keyExtra);
+		String auditeSelectFeild = Common.getSumFeildSelect(keyListBase, tableAuditeColumns, MustNotSumList, TmplUtil.keyExtra);
 		getPd.put("SelectFeild", auditeSelectFeild);
 		//表名
 		getPd.put("TableName", auditeTableName);
@@ -300,7 +302,7 @@ public class FinanceAccountsController extends BaseController {
 
 		PageData getPd = this.getPageData();
 		//员工组
-		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("SelectedTableNo"), DefaultWhile);
 		String emplGroupType = Corresponding.getUserGroupTypeFromTmplType(SelectedTableNo);
 		String SelectedTabType = getPd.getString("SelectedTabType");
 		
@@ -344,7 +346,7 @@ public class FinanceAccountsController extends BaseController {
 
 		PageData getPd = this.getPageData();
 		//员工组
-		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("SelectedTableNo"), DefaultWhile);
 		String emplGroupType = Corresponding.getUserGroupTypeFromTmplType(SelectedTableNo);
 		String SelectedTabType = getPd.getString("SelectedTabType");
 		////单位
@@ -491,14 +493,6 @@ public class FinanceAccountsController extends BaseController {
 		ObjectExcelView erv = new ObjectExcelView();
 		mv = new ModelAndView(erv,dataMap); 
 		return mv;
-	}
-
-	private String getWhileValue(String value) throws Exception{
-        String which = DefaultWhile;
-		if(value != null && !value.trim().equals("")){
-			which = value;
-		}
-		return which;
 	}
 
 	private TmplTypeInfo getWhileValueToTypeCode(String which) throws Exception{

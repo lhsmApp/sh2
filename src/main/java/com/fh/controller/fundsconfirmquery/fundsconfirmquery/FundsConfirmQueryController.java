@@ -106,7 +106,7 @@ public class FundsConfirmQueryController extends BaseController {
 
 		PageData getPd = this.getPageData();
 		//员工组
-		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("SelectedTableNo"), DefaultWhile);
 
 		ModelAndView mv = this.getModelAndView();
 		mv.setViewName("fundsconfirmquery/fundsconfirmquery/fundsconfirmquery_list");
@@ -140,7 +140,7 @@ public class FundsConfirmQueryController extends BaseController {
 		
 		PageData getPd = this.getPageData();
 		//员工组
-		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("SelectedTableNo"), DefaultWhile);
 		//tab
 		String SelectedTabType = getPd.getString("SelectedTabType");
 		//账套
@@ -176,7 +176,7 @@ public class FundsConfirmQueryController extends BaseController {
 
 		PageData getPd = this.getPageData();
 		//员工组
-		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("SelectedTableNo"), DefaultWhile);
 		String emplGroupType = Corresponding.getUserGroupTypeFromTmplType(SelectedTableNo);
 		//tab
 		String SelectedTabType = getPd.getString("SelectedTabType");
@@ -269,7 +269,7 @@ public class FundsConfirmQueryController extends BaseController {
 
 		PageData getPd = this.getPageData();
 		//员工组 必须执行，用来设置汇总和传输上报类型
-		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("SelectedTableNo"), DefaultWhile);
 		TmplTypeInfo implTypeCode = getWhileValueToTypeCode(SelectedTableNo);
 		String TypeCodeSummyDetail = implTypeCode.getTypeCodeSummyDetail();
 		List<String> SumFieldDetail = implTypeCode.getSumFieldDetail();
@@ -296,7 +296,7 @@ public class FundsConfirmQueryController extends BaseController {
 
 		PageData getPd = this.getPageData();
 		//员工组 必须执行，用来设置汇总和传输上报类型
-		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("SelectedTableNo"), DefaultWhile);
 		TmplTypeInfo implTypeCode = getWhileValueToTypeCode(SelectedTableNo);
 		List<String> SumFieldDetail = implTypeCode.getSumFieldDetail();
 		String strBillCode = getPd.getString("DetailListBillCode");
@@ -329,7 +329,7 @@ public class FundsConfirmQueryController extends BaseController {
 
 		PageData getPd = this.getPageData();
 		//员工组 必须执行，用来设置汇总和传输上报类型
-		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("SelectedTableNo"), DefaultWhile);
 		TmplTypeInfo implTypeCode = getWhileValueToTypeCode(SelectedTableNo);
 		String TypeCodeDetail = implTypeCode.getTypeCodeDetail();
 		
@@ -357,7 +357,7 @@ public class FundsConfirmQueryController extends BaseController {
 
 		PageData getPd = this.getPageData();
 		//员工组 必须执行，用来设置汇总和传输上报类型
-		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("SelectedTableNo"), DefaultWhile);
 		TmplTypeInfo implTypeCode = getWhileValueToTypeCode(SelectedTableNo);
 		List<String> SumFieldDetail = implTypeCode.getSumFieldDetail();
 		
@@ -395,7 +395,7 @@ public class FundsConfirmQueryController extends BaseController {
 
 		/*PageData getPd = this.getPageData();
 		//员工组
-		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("SelectedTableNo"));
 		//单位
 		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
 		//账套
@@ -461,14 +461,6 @@ public class FundsConfirmQueryController extends BaseController {
 		mv = new ModelAndView(erv,dataMap); */
 		ModelAndView mv = new ModelAndView();
 		return mv;
-	}
-	
-	private String getWhileValue(String value){
-        String which = DefaultWhile;
-		if(value != null && !value.trim().equals("")){
-			which = value;
-		}
-		return which;
 	}
 	/**
 	 * 根据前端业务表索引获取表名称
