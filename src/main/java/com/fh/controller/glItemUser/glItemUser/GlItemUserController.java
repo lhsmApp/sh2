@@ -258,11 +258,9 @@ public class GlItemUserController extends BaseController {
 		}
 		//操作
 		String oper = getPd.getString("oper");
-		Boolean bolAdd = false;
 
 		List<PageData> listData = new ArrayList<PageData>();
 		if(oper.equals("add")){
-			bolAdd = true;
 			//判断选择为必须选择的
 			String strGetCheckMustSelected = CheckMustSelectedAndSame(SelectedBusiDate, ShowDataBusiDate, 
 					SelectedDepartCode, ShowDataDepartCode);
@@ -281,14 +279,13 @@ public class GlItemUserController extends BaseController {
 			}
 			listData.add(getPd);
 		} else {
-			bolAdd = false;
 			for(String strFeild : MustNotEditList){
 				getPd.put(strFeild, getPd.get(strFeild + TmplUtil.keyExtra));
 			}
 			Common.setModelDefault(getPd, Map_HaveColumnsList, Map_SetColumnsList, MustNotEditList);
 			listData.add(getPd);
 		}
-		String checkState = CheckState(listData, bolAdd);
+		String checkState = CheckState(listData);
 		if(checkState!=null && !checkState.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(checkState);
@@ -324,7 +321,7 @@ public class GlItemUserController extends BaseController {
 				}
 				Common.setModelDefault(pdData, Map_HaveColumnsList, Map_SetColumnsList, MustNotEditList);
 			}
-			String checkState = CheckState(listData, false);
+			String checkState = CheckState(listData);
 			if(checkState!=null && !checkState.trim().equals("")){
 				commonBase.setCode(2);
 				commonBase.setMessage(checkState);
@@ -574,7 +571,7 @@ public class GlItemUserController extends BaseController {
 													commonBase.setCode(2);
 													commonBase.setMessage("无可处理的数据！");
 												} else {
-													String checkState = CheckState(listAdd, true);
+													String checkState = CheckState(listAdd);
 													if(checkState!=null && !checkState.trim().equals("")){
 														commonBase.setCode(2);
 														commonBase.setMessage(checkState);
@@ -743,7 +740,7 @@ public class GlItemUserController extends BaseController {
 		return mv;
 	}
 	
-	private String CheckState(List<PageData> listData, Boolean bolAdd) throws Exception{
+	private String CheckState(List<PageData> listData) throws Exception{
 		String strRet = "";
 		List<PageData> repeatList = glItemUserService.getRepeatList(listData);
 		if(repeatList!=null && repeatList.size()>0){

@@ -208,7 +208,6 @@ public class ItemAlloc {
 						BigDecimal douValueLast = douGetValue;
 						for(int i=0; i<listAddSaveItem.size(); i++){
 							PageData pdSaveItem = listAddSaveItem.get(i);
-							String ITEM_CODE = pdSaveItem.getString("ITEM_CODE").toString();
 							BigDecimal douGetBud = new BigDecimal(pdSaveItem.get("GlItemUserItemBud").toString());
 							BigDecimal douItemAdd = new BigDecimal(0);
 							if(!(douItemBudSum.compareTo(new BigDecimal(0)) == 0 || douGetValue.compareTo(new BigDecimal(0)) == 0)){
