@@ -67,7 +67,7 @@ public class FundsConfirmInfoQueryController extends BaseController {
 
 		PageData getPd = this.getPageData();
 		//员工组
-		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("SelectedTableNo"), DefaultWhile);
 
 		ModelAndView mv = this.getModelAndView();
 		mv.setViewName("fundsconfirminfoquery/fundsconfirminfoquery/fundsconfirminfoquery_list");
@@ -155,7 +155,7 @@ public class FundsConfirmInfoQueryController extends BaseController {
 
 		PageData getPd = this.getPageData();
 		//员工组
-		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("SelectedTableNo"), DefaultWhile);
 		//tab
 		String SelectedTabType = getPd.getString("SelectedTabType");
 		//业务区间
@@ -241,14 +241,6 @@ public class FundsConfirmInfoQueryController extends BaseController {
 		result.setPage(page.getPage());
 		
 		return result;
-	}
-	
-	private String getWhileValue(String value){
-        String which = DefaultWhile;
-		if(value != null && !value.trim().equals("")){
-			which = value;
-		}
-		return which;
 	}
 	
 	@InitBinder

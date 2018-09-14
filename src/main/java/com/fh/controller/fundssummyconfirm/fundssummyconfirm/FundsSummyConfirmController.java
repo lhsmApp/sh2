@@ -108,6 +108,8 @@ public class FundsSummyConfirmController extends BaseController {
 
 	//界面查询字段
     List<String> QueryFeildList = Arrays.asList("USER_GROP", "CUST_COL7", "DEPT_CODE", "BUSI_DATE");
+    //设置分组时不求和字段            SERIAL_NO 设置字段类型是数字，但不用求和
+    List<String> jqGridGroupNotSumFeild = Arrays.asList("SERIAL_NO");
     
 
 	/**列表
@@ -121,7 +123,7 @@ public class FundsSummyConfirmController extends BaseController {
 
 		PageData getPd = this.getPageData();
 		//员工组
-		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("SelectedTableNo"), DefaultWhile);
 
 		ModelAndView mv = this.getModelAndView();
 		mv.setViewName("fundssummyconfirm/fundssummyconfirm/fundssummyconfirm_list");
@@ -161,7 +163,7 @@ public class FundsSummyConfirmController extends BaseController {
 		
 		PageData getPd = this.getPageData();
 		//员工组
-		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("SelectedTableNo"), DefaultWhile);
 		//tab
 		String SelectedTabType = getPd.getString("SelectedTabType");
 		//账套
@@ -182,7 +184,7 @@ public class FundsSummyConfirmController extends BaseController {
 			AdditionalCertCodeColumns = "CERT_CODE";
 		}
 		TmplUtil tmpl = new TmplUtil(tmplconfigService, tmplconfigdictService, dictionariesService, 
-				departmentService,userService, keyListBase, null, AdditionalCertCodeColumns, null);
+				departmentService,userService, keyListBase, null, AdditionalCertCodeColumns, null, jqGridGroupNotSumFeild);
 		String jqGridColModel = tmpl.generateStructureNoEdit(SelectedTableNo, strShowCalModelDepaet, SelectedCustCol7);
 
 		commonBase.setCode(0);
@@ -201,7 +203,7 @@ public class FundsSummyConfirmController extends BaseController {
 
 		PageData getPd = this.getPageData();
 		//员工组
-		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("SelectedTableNo"), DefaultWhile);
 		String emplGroupType = Corresponding.getUserGroupTypeFromTmplType(SelectedTableNo);
 		//tab
 		String SelectedTabType = getPd.getString("SelectedTabType");
@@ -299,7 +301,7 @@ public class FundsSummyConfirmController extends BaseController {
 
 		PageData getPd = this.getPageData();
 		//员工组 必须执行，用来设置汇总和传输上报类型
-		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("SelectedTableNo"), DefaultWhile);
 		TmplTypeInfo implTypeCode = getWhileValueToTypeCode(SelectedTableNo);
 		String TypeCodeSummyDetail = implTypeCode.getTypeCodeSummyDetail();
 		List<String> SumFieldDetail = implTypeCode.getSumFieldDetail();
@@ -307,7 +309,7 @@ public class FundsSummyConfirmController extends BaseController {
 		String CUST_COL7 = (String) getPd.get("DataCustCol7");
 		
 		TmplUtil tmpl = new TmplUtil(tmplconfigService, tmplconfigdictService, dictionariesService, 
-				departmentService,userService,SumFieldDetail, null, null, null);
+				departmentService,userService,SumFieldDetail, null, null, null, jqGridGroupNotSumFeild);
 		String detailColModel = tmpl.generateStructureNoEdit(TypeCodeSummyDetail, DEPT_CODE, CUST_COL7);
 		
 		commonBase.setCode(0);
@@ -326,7 +328,7 @@ public class FundsSummyConfirmController extends BaseController {
 
 		PageData getPd = this.getPageData();
 		//员工组 必须执行，用来设置汇总和传输上报类型
-		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("SelectedTableNo"), DefaultWhile);
 		TmplTypeInfo implTypeCode = getWhileValueToTypeCode(SelectedTableNo);
 		List<String> SumFieldDetail = implTypeCode.getSumFieldDetail();
 		String strBillCode = getPd.getString("DetailListBillCode");
@@ -359,7 +361,7 @@ public class FundsSummyConfirmController extends BaseController {
 
 		PageData getPd = this.getPageData();
 		//员工组 必须执行，用来设置汇总和传输上报类型
-		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("SelectedTableNo"), DefaultWhile);
 		TmplTypeInfo implTypeCode = getWhileValueToTypeCode(SelectedTableNo);
 		String TypeCodeDetail = implTypeCode.getTypeCodeDetail();
 		
@@ -387,7 +389,7 @@ public class FundsSummyConfirmController extends BaseController {
 
 		PageData getPd = this.getPageData();
 		//员工组 必须执行，用来设置汇总和传输上报类型
-		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("SelectedTableNo"), DefaultWhile);
 		TmplTypeInfo implTypeCode = getWhileValueToTypeCode(SelectedTableNo);
 		List<String> SumFieldDetail = implTypeCode.getSumFieldDetail();
 		
@@ -426,7 +428,7 @@ public class FundsSummyConfirmController extends BaseController {
 		commonBase.setCode(-1);
 		
 		PageData getPd = this.getPageData();
-		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("SelectedTableNo"), DefaultWhile);
 		//tab
 		String SelectedTabType = getPd.getString("SelectedTabType");
 		//当前区间
@@ -550,7 +552,7 @@ public class FundsSummyConfirmController extends BaseController {
 		commonBase.setCode(-1);
 		
 		PageData getPd = this.getPageData();
-		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("SelectedTableNo"), DefaultWhile);
 		//tab
 		String SelectedTabType = getPd.getString("SelectedTabType");
 		//当前区间
@@ -608,7 +610,7 @@ public class FundsSummyConfirmController extends BaseController {
 		
 		/*PageData getPd = this.getPageData();
 		//员工组
-		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("SelectedTableNo"));
 		String emplGroupType = Corresponding.getUserGroupTypeFromTmplType(SelectedTableNo);
 		String tmplType = DictsUtil.getTranferTmplType(SelectedTableNo);
 		//账套
@@ -781,7 +783,7 @@ public class FundsSummyConfirmController extends BaseController {
 		
 		PageData getPd = this.getPageData();
 		//员工组
-		//String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		//String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("SelectedTableNo"));
 		//String emplGroupType = Corresponding.getUserGroupTypeFromTmplType(SelectedTableNo);
 		//String tmplType = DictsUtil.getTranferTmplType(SelectedTableNo);
 		//账套
@@ -1016,14 +1018,6 @@ public class FundsSummyConfirmController extends BaseController {
 			}
 		}
 		return strRut;
-	}
-	
-	private String getWhileValue(String value){
-        String which = DefaultWhile;
-		if(value != null && !value.trim().equals("")){
-			which = value;
-		}
-		return which;
 	}
 
 	private TmplTypeInfo getWhileValueToTypeCode(String which) throws Exception{

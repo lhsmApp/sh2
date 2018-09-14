@@ -346,7 +346,10 @@ public class QueryFeildString {
 	public static List<Integer> getListIntegerFromListPageData(List<PageData> pdList, String strFeild, String strFeildExtra){//
 		List<Integer> listString = new ArrayList<Integer>();
 		for(PageData val : pdList){
-			listString.add(Integer.valueOf((String) val.get(strFeild + strFeildExtra)));
+			Object obj = val.get(strFeild + strFeildExtra);
+			if(obj!=null && !obj.toString().trim().equals("")){
+				listString.add(Integer.valueOf((String) obj));
+			}
 		}
 		return listString;
 	}
@@ -382,13 +385,19 @@ public class QueryFeildString {
 		return ret.toString();
 	}
 
-	public static String tranferListStringToKeyString(List<String> listField, String keyExtra){
+	public static String tranferListStringToKeyString(List<String> listField, String keyExtra, Boolean bolRetTwoFeild){
 		StringBuilder ret = new StringBuilder();
 		for(String field : listField){
+			if(bolRetTwoFeild){
+				if(!ret.toString().trim().equals("")){
+					ret.append(",");
+				}
+				ret.append(field);
+			}
 			if(!ret.toString().trim().equals("")){
 				ret.append(",");
 			}
-			ret.append(field).append(", ").append(field).append(" ").append(field + keyExtra);
+			ret.append(field).append(" ").append(field + keyExtra);
 		}
 		return ret.toString();
 	}

@@ -194,7 +194,7 @@
 						    { label: '期间', name: 'BUSI_DATE', width: 90,editable: false},
 						    { formoptions:{ rowpos:1, colpos:1}, label: '员工编号', name: 'USER_CODE', width: 120, editable: true, edittype:'text', editoptions:{maxLength:'30'}, editrules:{required:true}},
 						    { formoptions:{ rowpos:1, colpos:2}, label: '员工姓名', name: 'USER_NAME', width: 120, editable: true, edittype:'text', editoptions:{maxLength:'20'}},
-						    { formoptions:{ rowpos:2, colpos:1}, label: '身份证号', name: 'STAFF_IDENT', width: 140, editable: true, edittype:'text', editoptions:{maxLength:'18'}, editrules:{required:true}},
+						    { formoptions:{ rowpos:2, colpos:1}, label: '身份证号', name: 'STAFF_IDENT', width: 140, editable: true, edittype:'text', editoptions:{maxLength:'18'}},
 						    { label: '责任中心', name: 'DEPT_CODE', width: 140,editable: false, edittype: 'select',formatter:'select',formatoptions:{value:"${departmentStrSelect}"},editoptions:{value:"${departmentStrSelect}"},stype: 'select',searchoptions:{value:"${departmentStrAll}"}},
 						    { formoptions:{ rowpos:2, colpos:2}, label: '所属二级单位', name: 'UNITS_CODE', width: 140,editable: true, editrules:{required:true},edittype: 'select',formatter:'select',formatoptions:{value:"${departmentStrSelect}"},editoptions:{value:"${departmentStrSelect}"},stype: 'select',searchoptions:{value:"${departmentStrAll}"}},
 						    { formoptions:{ rowpos:3, colpos:1}, label: '在建工程项目编码1', name: 'ITEM1_CODE', width: 160, editable: true, edittype:'text', editoptions:{maxLength:'30'}},
@@ -220,6 +220,31 @@
 						    { formoptions:{ rowpos:7, colpos:1}, label: '在建工程项目编码5', name: 'ITEM5_CODE', width: 160, editable: true, edittype:'text', editoptions:{maxLength:'30'}},
 						    { formoptions:{ rowpos:7, colpos:2}, label: '在建工程项目名称5', name: 'ITEM5_NAME', width: 160, editable: true, edittype:'text', editoptions:{maxLength:'30'}},
 						    { formoptions:{ rowpos:7, colpos:3}, label: '项目概算5', name: 'ITEM5_BUD', width: 110, sorttype: 'number', align: 'right', searchrules: {number: true}, formatter: 'number',
+						    	editable: true, edittype:'text', editoptions:{maxlength:'16', number: true}
+						    },
+						    { formoptions:{ rowpos:8, colpos:1}, label: '在建工程项目编码6', name: 'ITEM6_CODE', width: 160, editable: true, edittype:'text', editoptions:{maxLength:'30'}},
+						    { formoptions:{ rowpos:8, colpos:2}, label: '在建工程项目名称6', name: 'ITEM6_NAME', width: 160, editable: true, edittype:'text', editoptions:{maxLength:'30'}},
+						    { formoptions:{ rowpos:8, colpos:3}, label: '项目概算6', name: 'ITEM6_BUD', width: 110, sorttype: 'number', align: 'right', searchrules: {number: true}, formatter: 'number',
+						    	editable: true, edittype:'text', editoptions:{maxlength:'16', number: true}
+						    },
+						    { formoptions:{ rowpos:9, colpos:1}, label: '在建工程项目编码7', name: 'ITEM7_CODE', width: 160, editable: true, edittype:'text', editoptions:{maxLength:'30'}},
+						    { formoptions:{ rowpos:9, colpos:2}, label: '在建工程项目名称7', name: 'ITEM7_NAME', width: 160, editable: true, edittype:'text', editoptions:{maxLength:'30'}},
+						    { formoptions:{ rowpos:9, colpos:3}, label: '项目概算7', name: 'ITEM7_BUD', width: 110, sorttype: 'number', align: 'right', searchrules: {number: true}, formatter: 'number',
+						    	editable: true, edittype:'text', editoptions:{maxlength:'16', number: true}
+						    },
+						    { formoptions:{ rowpos:10, colpos:1}, label: '在建工程项目编码8', name: 'ITEM8_CODE', width: 160, editable: true, edittype:'text', editoptions:{maxLength:'30'}},
+						    { formoptions:{ rowpos:10, colpos:2}, label: '在建工程项目名称8', name: 'ITEM8_NAME', width: 160, editable: true, edittype:'text', editoptions:{maxLength:'30'}},
+						    { formoptions:{ rowpos:10, colpos:3}, label: '项目概算8', name: 'ITEM8_BUD', width: 110, sorttype: 'number', align: 'right', searchrules: {number: true}, formatter: 'number',
+						    	editable: true, edittype:'text', editoptions:{maxlength:'16', number: true}
+						    },
+						    { formoptions:{ rowpos:11, colpos:1}, label: '在建工程项目编码9', name: 'ITEM9_CODE', width: 160, editable: true, edittype:'text', editoptions:{maxLength:'30'}},
+						    { formoptions:{ rowpos:11, colpos:2}, label: '在建工程项目名称9', name: 'ITEM9_NAME', width: 160, editable: true, edittype:'text', editoptions:{maxLength:'30'}},
+						    { formoptions:{ rowpos:11, colpos:3}, label: '项目概算9', name: 'ITEM9_BUD', width: 110, sorttype: 'number', align: 'right', searchrules: {number: true}, formatter: 'number',
+						    	editable: true, edittype:'text', editoptions:{maxlength:'16', number: true}
+						    },
+						    { formoptions:{ rowpos:12, colpos:1}, label: '在建工程项目编码10', name: 'ITEM10_CODE', width: 160, editable: true, edittype:'text', editoptions:{maxLength:'30'}},
+						    { formoptions:{ rowpos:12, colpos:2}, label: '在建工程项目名称10', name: 'ITEM10_NAME', width: 160, editable: true, edittype:'text', editoptions:{maxLength:'30'}},
+						    { formoptions:{ rowpos:12, colpos:3}, label: '项目概算10', name: 'ITEM10_BUD', width: 110, sorttype: 'number', align: 'right', searchrules: {number: true}, formatter: 'number',
 						    	editable: true, edittype:'text', editoptions:{maxlength:'16', number: true}
 						    },
 

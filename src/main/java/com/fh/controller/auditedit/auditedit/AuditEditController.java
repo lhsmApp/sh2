@@ -117,6 +117,8 @@ public class AuditEditController extends BaseController {
 		}
 		return list;
 	}
+    //设置分组时不求和字段            SERIAL_NO 设置字段类型是数字，但不用求和
+    List<String> jqGridGroupNotSumFeild = Arrays.asList("SERIAL_NO");
 	
 	//String getPageListSelectedCustCol7 = "";
 	//String getPageListSelectedDepartCode = "";
@@ -134,7 +136,7 @@ public class AuditEditController extends BaseController {
 		
 		PageData getPd = this.getPageData();
 		//员工组
-		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("SelectedTableNo"), DefaultWhile);
 		ModelAndView mv = this.getModelAndView();
 		mv.setViewName("auditedit/auditedit/auditedit_list");
 		//当前期间,取自tb_system_config的SystemDateTime字段
@@ -164,7 +166,7 @@ public class AuditEditController extends BaseController {
 		List<String> MustNotEditList = getMustNotEditList(SelectedTableNo);
 		List<String> keyListBase = getKeyListBase(MustNotEditList);
 		TmplUtil tmpl = new TmplUtil(tmplconfigService, tmplconfigdictService, dictionariesService, 
-				departmentService,userService, keyListBase, null, null, MustInputList);
+				departmentService,userService, keyListBase, null, null, MustInputList, jqGridGroupNotSumFeild);
 		//String jqGridColModel = tmpl.generateStructure(SelectedTableNo, UserDepartCode, 3, MustNotEditList);
 		
 		//SqlUserdata = tmpl.getSqlUserdata();
@@ -192,7 +194,7 @@ public class AuditEditController extends BaseController {
 		
 		PageData getPd = this.getPageData();
 		//员工组
-		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("SelectedTableNo"), DefaultWhile);
 		String emplGroupType = Corresponding.getUserGroupTypeFromTmplType(SelectedTableNo);
 		String tableNameAudit = getAuditTableCode(SelectedTableNo);
 		//单位
@@ -279,7 +281,7 @@ public class AuditEditController extends BaseController {
 
 		PageData getPd = this.getPageData();
 		//员工组
-		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("SelectedTableNo"), DefaultWhile);
 		String emplGroupType = Corresponding.getUserGroupTypeFromTmplType(SelectedTableNo);
 		String tableName = getAuditTableCode(SelectedTableNo);
 		//单位
@@ -371,7 +373,7 @@ public class AuditEditController extends BaseController {
 
 		PageData getPd = this.getPageData();
 		//员工组
-		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("SelectedTableNo"), DefaultWhile);
 		String emplGroupType = Corresponding.getUserGroupTypeFromTmplType(SelectedTableNo);
 		String tableName = getAuditTableCode(SelectedTableNo);
 		//单位
@@ -460,7 +462,7 @@ public class AuditEditController extends BaseController {
 
 		PageData getPd = this.getPageData();
 		//员工组
-		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("SelectedTableNo"), DefaultWhile);
 		String emplGroupType = Corresponding.getUserGroupTypeFromTmplType(SelectedTableNo);
 		String tableName = getAuditTableCode(SelectedTableNo);
 		//单位
@@ -529,7 +531,7 @@ public class AuditEditController extends BaseController {
 	    
 		PageData getPd = this.getPageData();
 		//员工组
-		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("SelectedTableNo"), DefaultWhile);
 		String emplGroupType = Corresponding.getUserGroupTypeFromTmplType(SelectedTableNo);
 		//单位
 		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
@@ -592,7 +594,7 @@ public class AuditEditController extends BaseController {
 	    
 		PageData getPd = this.getPageData();
 		//员工组
-		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("SelectedTableNo"), DefaultWhile);
 		String emplGroupType = Corresponding.getUserGroupTypeFromTmplType(SelectedTableNo);
 		//单位
 		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
@@ -816,7 +818,7 @@ public class AuditEditController extends BaseController {
 	public ModelAndView downExcel(JqPage page) throws Exception{
 		PageData getPd = this.getPageData();
 		//员工组
-		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("SelectedTableNo"), DefaultWhile);
 		String emplGroupType = Corresponding.getUserGroupTypeFromTmplType(SelectedTableNo);
 		String tableName = getAuditTableCode(SelectedTableNo);
 		//单位
@@ -868,7 +870,7 @@ public class AuditEditController extends BaseController {
 		//if(!Jurisdiction.buttonJurisdiction(menuUrl, "cha")){return null;}
 		PageData getPd = this.getPageData();
 		//员工组
-		String SelectedTableNo = getWhileValue(getPd.getString("SelectedTableNo"));
+		String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("SelectedTableNo"), DefaultWhile);
 		String emplGroupType = Corresponding.getUserGroupTypeFromTmplType(SelectedTableNo);
 		String tableName = getAuditTableCode(SelectedTableNo);
 		//单位
@@ -953,14 +955,6 @@ public class AuditEditController extends BaseController {
 		ObjectExcelView erv = new ObjectExcelView();
 		mv = new ModelAndView(erv,dataMap); 
 		return mv;
-	}
-	
-	private String getWhileValue(String value){
-        String which = DefaultWhile;
-		if(value != null && !value.trim().equals("")){
-			which = value;
-		}
-		return which;
 	}
 	
 	private List<String> getMustNotEditList(String which){

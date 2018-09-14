@@ -90,7 +90,7 @@ public class GlItemUserController extends BaseController {
     //设置必定不用编辑的列
     List<String> MustNotEditList = Arrays.asList("BUSI_DATE", "DEPT_CODE");
     // 查询表的主键字段，作为标准列，jqgrid添加带__列，mybaits获取带__列
-    List<String> keyListBase = Arrays.asList("BUSI_DATE", "DEPT_CODE", "USER_CODE", "STAFF_IDENT");
+    List<String> keyListBase = Arrays.asList("BUSI_DATE", "DEPT_CODE", "USER_CODE");
 	//导入必填项在字典里没翻译
     List<String> ImportNotHaveTransferList = Arrays.asList("DEPT_CODE", "UNITS_CODE");
     
@@ -167,6 +167,25 @@ public class GlItemUserController extends BaseController {
 		Map_SetColumnsList.put("ITEM5_NAME", new TmplConfigDetail("ITEM5_NAME", "在建工程项目名称5", "1", false));
 		Map_SetColumnsList.put("ITEM5_BUD", new TmplConfigDetail("ITEM5_BUD", "项目概算5", "1", true));
 
+		Map_SetColumnsList.put("ITEM6_CODE", new TmplConfigDetail("ITEM6_CODE", "在建工程项目编码6", "1", false));
+		Map_SetColumnsList.put("ITEM6_NAME", new TmplConfigDetail("ITEM6_NAME", "在建工程项目名称6", "1", false));
+		Map_SetColumnsList.put("ITEM6_BUD", new TmplConfigDetail("ITEM6_BUD", "项目概算6", "1", true));
+
+		Map_SetColumnsList.put("ITEM7_CODE", new TmplConfigDetail("ITEM7_CODE", "在建工程项目编码7", "1", false));
+		Map_SetColumnsList.put("ITEM7_NAME", new TmplConfigDetail("ITEM7_NAME", "在建工程项目名称7", "1", false));
+		Map_SetColumnsList.put("ITEM7_BUD", new TmplConfigDetail("ITEM7_BUD", "项目概算7", "1", true));
+
+		Map_SetColumnsList.put("ITEM8_CODE", new TmplConfigDetail("ITEM8_CODE", "在建工程项目编码8", "1", false));
+		Map_SetColumnsList.put("ITEM8_NAME", new TmplConfigDetail("ITEM8_NAME", "在建工程项目名称8", "1", false));
+		Map_SetColumnsList.put("ITEM8_BUD", new TmplConfigDetail("ITEM8_BUD", "项目概算8", "1", true));
+
+		Map_SetColumnsList.put("ITEM9_CODE", new TmplConfigDetail("ITEM9_CODE", "在建工程项目编码9", "1", false));
+		Map_SetColumnsList.put("ITEM9_NAME", new TmplConfigDetail("ITEM9_NAME", "在建工程项目名称9", "1", false));
+		Map_SetColumnsList.put("ITEM9_BUD", new TmplConfigDetail("ITEM9_BUD", "项目概算9", "1", true));
+
+		Map_SetColumnsList.put("ITEM10_CODE", new TmplConfigDetail("ITEM10_CODE", "在建工程项目编码10", "1", false));
+		Map_SetColumnsList.put("ITEM10_NAME", new TmplConfigDetail("ITEM10_NAME", "在建工程项目名称10", "1", false));
+		Map_SetColumnsList.put("ITEM10_BUD", new TmplConfigDetail("ITEM10_BUD", "项目概算10", "1", true));
 		mv.addObject("pd", getPd);
 		return mv;
 	}
@@ -239,9 +258,11 @@ public class GlItemUserController extends BaseController {
 		}
 		//操作
 		String oper = getPd.getString("oper");
+		Boolean bolAdd = false;
 
 		List<PageData> listData = new ArrayList<PageData>();
 		if(oper.equals("add")){
+			bolAdd = true;
 			//判断选择为必须选择的
 			String strGetCheckMustSelected = CheckMustSelectedAndSame(SelectedBusiDate, ShowDataBusiDate, 
 					SelectedDepartCode, ShowDataDepartCode);
@@ -255,15 +276,19 @@ public class GlItemUserController extends BaseController {
 			//getPd.put("BILL_OFF", SelectedCustCol7);
 			getPd.put("DEPT_CODE", SelectedDepartCode);
 			Common.setModelDefault(getPd, Map_HaveColumnsList, Map_SetColumnsList, MustNotEditList);
+			for(String strFeild : keyListBase){
+				getPd.put(strFeild + TmplUtil.keyExtra, "");
+			}
 			listData.add(getPd);
 		} else {
+			bolAdd = false;
 			for(String strFeild : MustNotEditList){
 				getPd.put(strFeild, getPd.get(strFeild + TmplUtil.keyExtra));
 			}
 			Common.setModelDefault(getPd, Map_HaveColumnsList, Map_SetColumnsList, MustNotEditList);
 			listData.add(getPd);
 		}
-		String checkState = CheckState(listData);
+		String checkState = CheckState(listData, bolAdd);
 		if(checkState!=null && !checkState.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(checkState);
@@ -299,7 +324,7 @@ public class GlItemUserController extends BaseController {
 				}
 				Common.setModelDefault(pdData, Map_HaveColumnsList, Map_SetColumnsList, MustNotEditList);
 			}
-			String checkState = CheckState(listData);
+			String checkState = CheckState(listData, false);
 			if(checkState!=null && !checkState.trim().equals("")){
 				commonBase.setCode(2);
 				commonBase.setMessage(checkState);
@@ -462,7 +487,6 @@ public class GlItemUserController extends BaseController {
 								judgement = true;
 							}
 							if (judgement) {
-								List<String> sbRet = new ArrayList<String>();
 								int listSize = listUploadAndRead.size();
 								if(listSize > 0){
 									List<String> sbRetFeild = new ArrayList<String>();
@@ -470,6 +494,9 @@ public class GlItemUserController extends BaseController {
 									String sbRetMust = "";
 									for(int i=0; i<listSize; i++){
 										PageData pdAdd = listUploadAndRead.get(i);
+										if(pdAdd.size() <= 0){
+											continue;
+										}
 										String getUSER_CODE = (String) pdAdd.get("USER_CODE");
 									    if(!(getUSER_CODE!=null && !getUSER_CODE.trim().equals(""))){
 									    	strRetUserCode = "导入人员编码不能为空！";
@@ -490,8 +517,8 @@ public class GlItemUserController extends BaseController {
 												getBUSI_DATE = SelectedBusiDate;
 											}
 											if(!SelectedBusiDate.equals(getBUSI_DATE)){
-												if(!sbRet.contains("导入区间和当前区间必须一致！")){
-													sbRet.add("导入区间和当前区间必须一致！");
+												if(!sbRetFeild.contains("导入区间和当前区间必须一致！")){
+													sbRetFeild.add("导入区间和当前区间必须一致！");
 												}
 											}
 											/*String getBILL_OFF = (String) pdAdd.get("BILL_OFF");
@@ -500,8 +527,8 @@ public class GlItemUserController extends BaseController {
 												getBILL_OFF = SelectedCustCol7;
 											}
 											if(!SelectedCustCol7.equals(getBILL_OFF)){
-												if(!sbRet.contains("导入账套和当前账套必须一致！")){
-													sbRet.add("导入账套和当前账套必须一致！");
+												if(!sbRetFeild.contains("导入账套和当前账套必须一致！")){
+													sbRetFeild.add("导入账套和当前账套必须一致！");
 												}
 											}*/
 											String getDEPT_CODE = (String) pdAdd.get("DEPT_CODE");
@@ -510,17 +537,20 @@ public class GlItemUserController extends BaseController {
 												getDEPT_CODE = SelectedDepartCode;
 											}
 											if(!SelectedDepartCode.equals(getDEPT_CODE)){
-												if(!sbRet.contains("导入责任中心和当前责任中心必须一致！")){
-													sbRet.add("导入责任中心和当前责任中心必须一致！");
+												if(!sbRetFeild.contains("导入责任中心和当前责任中心必须一致！")){
+													sbRetFeild.add("导入责任中心和当前责任中心必须一致！");
 												}
 											}
 											String getUNITS_CODE = (String) pdAdd.get("UNITS_CODE");
 											if(!(getUNITS_CODE!=null && !getUNITS_CODE.trim().equals(""))){
-												if(!sbRet.contains("所属二级单位不能为空！")){
-													sbRet.add("所属二级单位不能为空！");
+												if(!sbRetFeild.contains("所属二级单位不能为空！")){
+													sbRetFeild.add("所属二级单位不能为空！");
 												}
 											}
 											Common.setModelDefault(pdAdd, Map_HaveColumnsList, Map_SetColumnsList, MustNotEditList);
+											for(String strFeild : keyListBase){
+												pdAdd.put(strFeild + TmplUtil.keyExtra, "");
+											}
 											listAdd.add(pdAdd);
 										}
 									}
@@ -544,9 +574,15 @@ public class GlItemUserController extends BaseController {
 													commonBase.setCode(2);
 													commonBase.setMessage("无可处理的数据！");
 												} else {
-													glItemUserService.batchUpdateDatabase(listAdd);
-													commonBase.setCode(0);
-										    		commonBase.setMessage(strErrorMessage);
+													String checkState = CheckState(listAdd, true);
+													if(checkState!=null && !checkState.trim().equals("")){
+														commonBase.setCode(2);
+														commonBase.setMessage(checkState);
+													} else {
+														glItemUserService.batchUpdateDatabase(listAdd);
+														commonBase.setCode(0);
+											    		commonBase.setMessage(strErrorMessage);
+													}
 												}
 											}
 										}
@@ -707,7 +743,7 @@ public class GlItemUserController extends BaseController {
 		return mv;
 	}
 	
-	private String CheckState(List<PageData> listData) throws Exception{
+	private String CheckState(List<PageData> listData, Boolean bolAdd) throws Exception{
 		String strRet = "";
 		List<PageData> repeatList = glItemUserService.getRepeatList(listData);
 		if(repeatList!=null && repeatList.size()>0){

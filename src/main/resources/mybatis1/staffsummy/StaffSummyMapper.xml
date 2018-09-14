@@ -19,6 +19,9 @@
 	<sql id="tableNameItem">
 	    TB_ITEM_STAFF_DETAIL
 	</sql>
+	<sql id="tableNameInfo">
+	    TB_ITEM_INFO
+	</sql>
 	
 	<!-- 获取单号下拉列表数据源 -->
 	<select id="getBillCodeList" parameterType="pd" resultType="String">
@@ -105,26 +108,45 @@
 		        <include refid="tableNameDetail"></include>
 		        where BILL_CODE = #{item.BILL_CODE__}
 	            ${item.CanOperateDetail};
-		        <!-- delete from  
+		        delete from  
 		        <include refid="tableNameItem"></include>
 		        where BILL_CODE = #{item.BILL_CODE__}
-	            ${item.CanOperateDetail}; -->
+	            ${item.CanOperateDetail};<!--  -->
+		        delete from  
+		        <include refid="tableNameInfo"></include>
+		        where BILL_CODE = #{item.BILL_CODE__}
+	            ${item.CanOperateDetail};<!--  --><!--  -->
 		    </foreach>
 		</if>
+		<foreach item="item" index="index" collection="SaveItem" open=" " separator=" " close=" ">
+		    insert into ${item.TableName}
+		    (${item.InsertField}) values (${item.InsertVale});
+		</foreach><!--  -->
 		<foreach item="item" index="index" collection="SaveBill" open=" " separator=" " close=" ">
 		    insert into ${item.TableName}
 		    (${item.InsertField}) values (${item.InsertVale});
+		    
+		    insert into ${item.IntoSumDetailTableName}
+		    (${item.IntoSumDetailField}) 
+		    (select ${item.FromItemDetailField}
+		     from ${item.FromItemDetailTableName}
+		     <where>
+		         ${item.FromItemDetailWhere}
+		     </where>
+		     ${item.FromItemDetailGroupBy});
 		</foreach>
-		<foreach item="item" index="index" collection="SaveDetail" open=" " separator=" " close=" ">
+		<if test="SaveItemInfo != null">
+		    <foreach item="item" index="index" collection="SaveItemInfo" open=" " separator=" " close=" ">
+		        insert into <include refid="tableNameInfo"></include>
+		        (SERIAL_NO, BILL_CODE, BUSI_DATE, USER_CODE, DEPT_CODE, ITEM_CODE, ITEM_BL)
+		        values
+		        (#{item.SERIAL_NO}, #{item.BILL_CODE}, #{item.BUSI_DATE}, #{item.USER_CODE}, #{item.DEPT_CODE}, #{item.ITEM_CODE}, #{item.ITEM_BL});
+		    </foreach>
+		</if>
+		<!-- <foreach item="item" index="index" collection="SaveDetail" open=" " separator=" " close=" ">
 		    insert into ${item.TableName}
 		    (${item.InsertField}) values (${item.InsertVale});
-		</foreach>
-		<!-- <if test="SaveItem != null">
-		    <foreach item="item" index="index" collection="SaveItem" open=" " separator=" " close=" ">
-		        insert into ${item.TableName}
-		        (${item.InsertField}) values (${item.InsertVale});
-		    </foreach>
-		</if> -->
+		</foreach> -->
 		<if test="DetailSetBillCode != null">
 		    <foreach item="item" index="index" collection="DetailSetBillCode" open=" " separator=" " close=" ">
 		        update tb_staff_detail

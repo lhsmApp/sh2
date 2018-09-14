@@ -863,65 +863,140 @@
     	console.log(DEPT_CODE);
     	console.log(CUST_COL7);
     	
-        var childGridID = parentRowID + "_table";
-        var childGridPagerID = parentRowID + "_pager";
-        // send the parent row primary key to the server so that we know which grid to show
-        var childGridURL = '<%=basePath%>voucher/getFirstDetailList.do?'
-        	+'TABLE_CODE='+which
-            +'&BILL_CODE='+BILL_CODE;
-        //childGridURL = childGridURL + "&parentRowID=" + encodeURIComponent(parentRowKey)
+        var detailColModel = "[]";
+		$.ajax({
+			type: "GET",
+			url: '<%=basePath%>voucher/getFirstDetailColModel.do?SelectedTableNo='+which+'&DetailListBillCode='+BILL_CODE,
+	    	data: {DataDeptCode:DEPT_CODE,DataCustCol7:CUST_COL7},
+			dataType:'json',
+			cache: false,
+			success: function(response){
+				var showDetailCheck = response.code;
+				if(showDetailCheck==8 || showDetailCheck==9){
+					$(top.hangge());//关闭加载状态
+					detailColModel = response.message;
+		            detailColModel = eval(detailColModel);
+    	
+                    var childGridID = parentRowID + "_table";
+                    var childGridPagerID = parentRowID + "_pager";
+                    // send the parent row primary key to the server so that we know which grid to show
+                    var childGridURL = '<%=basePath%>voucher/getFirstDetailList.do?'
+                        +'TABLE_CODE='+which
+                        +'&BILL_CODE='+BILL_CODE;
+                    //childGridURL = childGridURL + "&parentRowID=" + encodeURIComponent(parentRowKey)
 
-        // add a table and pager HTML elements to the parent grid row - we will render the child grid here
-        $('#' + parentRowID).append('<table id=' + childGridID + '></table><div id=' + childGridPagerID + ' class=scroll></div>');
+                    // add a table and pager HTML elements to the parent grid row - we will render the child grid here
+                    $('#' + parentRowID).append('<table id=' + childGridID + '></table><div id=' + childGridPagerID + ' class=scroll></div>');
 
-        $("#" + childGridID).jqGrid({
-            url: childGridURL,
-            mtype: "GET",
-            datatype: "json",
-            colModel: jqGridColModel,
-            page: 1,
-            width: '100%',
-            //height: '100%',
-            rowNum: 0,	
-            //pager: "#" + childGridPagerID,
-			pgbuttons: false, // 分页按钮是否显示 
-			pginput: false, // 是否允许输入分页页数 
-            viewrecords: false,
-            recordpos: "left", // 记录数显示位置 
-            
-			shrinkToFit: false,
-			autowidth:false,
-			altRows: true, //斑马条纹
-            
-			//footerrow: true,
-			//userDataOnFooter: true,
+	    			if(showDetailCheck==8){
+	                    $("#" + childGridID).jqGrid({
+	                        url: childGridURL,
+	                        mtype: "GET",
+	                        datatype: "json",
+	                        colModel: detailColModel,
+	                        page: 1,
+	                        width: '100%',
+	                        //height: '100%',
+	                        rowNum: 0,	
+	                        //pager: "#" + childGridPagerID,
+				            pgbuttons: false, // 分页按钮是否显示 
+				            pginput: false, // 是否允许输入分页页数 
+				            viewrecords: false,
+				            recordpos: "left", // 记录数显示位置 
+	            
+				            shrinkToFit: false,
+				            autowidth:false,
+				            altRows: true, //斑马条纹
+				            scroll: 1,
 
-			subGrid: true,
-			subGridOptions: {
-				plusicon : "ace-icon fa fa-plus center bigger-110 blue",
-				minusicon  : "ace-icon fa fa-minus center bigger-110 blue",
-				openicon : "ace-icon fa fa-chevron-right center orange"
-            },
-            subGridRowExpanded: showSecondChildGrid,
+	                        grouping: true,
+	                        groupingView: {
+	                            groupField: ['ITEM_CODE'],
+	                          	groupOrder: ['asc'],
+	                            groupColumnShow: [true],
+	                            groupText: ['<b>{0}</b>'],
+	                            groupSummary: [true],
+	                            groupSummaryPos: ['footer'], //header
+	                            groupCollapse: false,
+	                            plusicon : 'fa fa-chevron-down bigger-110',
+	                            minusicon : 'fa fa-chevron-up bigger-110'
+	                        },
+	            
+				            loadComplete : function() {
+				                var table = this;
+				                setTimeout(function(){
+				                    styleCheckbox(table);
+				                    updateActionIcons(table);
+				                    updatePagerIcons(table);
+				                    enableTooltips(table);
+				                }, 0);
+				            },
+				        });
+	    			} else {
+	                    $("#" + childGridID).jqGrid({
+	                        url: childGridURL,
+	                        mtype: "GET",
+	                        datatype: "json",
+	                        colModel: detailColModel,
+	                        page: 1,
+	                        width: '100%',
+	                        //height: '100%',
+	                        rowNum: 0,	
+	                        //pager: "#" + childGridPagerID,
+				            pgbuttons: false, // 分页按钮是否显示 
+				            pginput: false, // 是否允许输入分页页数 
+				            viewrecords: false,
+				            recordpos: "left", // 记录数显示位置 
+	            
+				            shrinkToFit: false,
+				            autowidth:false,
+				            altRows: true, //斑马条纹
+				            scroll: 1,
 
-			scroll: 1,
-            
-			loadComplete : function() {
-				var table = this;
-				setTimeout(function(){
-					styleCheckbox(table);
-					updateActionIcons(table);
-					updatePagerIcons(table);
-					enableTooltips(table);
-				}, 0);
-			},
+				            subGrid: true,
+				            subGridOptions: {
+				                plusicon : "ace-icon fa fa-plus center bigger-110 blue",
+				                minusicon  : "ace-icon fa fa-minus center bigger-110 blue",
+				                openicon : "ace-icon fa fa-chevron-right center orange"
+				                    },
+				            subGridRowExpanded: showSecondChildGrid,
+	            
+				            loadComplete : function() {
+				                var table = this;
+				                setTimeout(function(){
+				                    styleCheckbox(table);
+				                    updateActionIcons(table);
+				                    updatePagerIcons(table);
+				                    enableTooltips(table);
+				                }, 0);
+				            },
+				        });
+	    			}
+                    if(tabIndex=="1"||tabIndex=="3"){
+                        jQuery("#" + childGridID).hideCol(['CERT_CODE','REVCERT_CODE']);
+                    }else{
+                        jQuery("#" + childGridID).showCol(['CERT_CODE','REVCERT_CODE']);
+                    }
+                }else{
+                    $(top.hangge());//关闭加载状态
+                    $("#subTitle").tips({
+                        side:3,
+                        msg:'获取结构失败：'+response.message,
+                        bg:'#cc0033',
+                        time:3
+	                });
+                }
+	        },
+            error: function(response) {
+                $(top.hangge());//关闭加载状态
+                $("#subTitle").tips({
+                    side:3,
+                    msg:'获取结构出错:'+response.responseJSON.message,
+                    bg:'#cc0033',
+                    time:3
+                });
+            }
         });
-        if(tabIndex=="1"||tabIndex=="3"){
-        	jQuery("#" + childGridID).hideCol(['CERT_CODE','REVCERT_CODE']);
-        }else{
-        	jQuery("#" + childGridID).showCol(['CERT_CODE','REVCERT_CODE']);
-        }
-        
     };
 	
 	//显示明细信息

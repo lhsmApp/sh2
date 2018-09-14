@@ -369,10 +369,10 @@ public class LeadingInExcelToPageData<T> {
                     	value = bolValue.toString().trim();
                         break;  
                     case Cell.CELL_TYPE_NUMERIC:  
-                    	if(COL_CODE.equals("USER_CODE")){
-                        	Number numValue = cellValue.getNumberValue();  
-                        	BigDecimal db = new BigDecimal(numValue.toString());
-                        	value = db.toPlainString().trim();
+                    	if(COL_CODE.equals("USER_CODE") || COL_CODE.equals("BUSI_DATE")){
+                    		cell.setCellType(Cell.CELL_TYPE_STRING);
+    						String temp = cell.getStringCellValue();
+    						value = temp.trim();
                     	} else {
                         	Number numValue = cellValue.getNumberValue();  
                         	value = numValue.toString().trim();

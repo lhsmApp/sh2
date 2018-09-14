@@ -41,6 +41,12 @@ public interface TmplConfigManager{
 	 */
 	public void edit(PageData pd)throws Exception;
 	
+	/**修改
+	 * @param pd
+	 * @throws Exception
+	 */
+	public void updateItem(PageData pd)throws Exception;
+	
 	/**列表
 	 * @param page
 	 * @throws Exception

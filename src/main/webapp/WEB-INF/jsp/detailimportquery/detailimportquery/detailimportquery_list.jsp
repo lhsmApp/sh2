@@ -57,7 +57,7 @@
                         <span style="border-left: 1px solid #e2e2e2; margin: 0px 10px;">&nbsp;</span>
 								
 						<button id="btnQuery" class="btn btn-white btn-info btn-sm"
-							onclick="showQueryCondi($('#jqGridBase'),null,true)">
+							onclick="showQueryCondi($('#jqGridBase'), gridHeight)">
 							<i class="ace-icon fa fa-chevron-down bigger-120 blue"></i> <span>隐藏查询</span>
 						</button>
 						
@@ -137,8 +137,22 @@
 
 					<div class="row">
 						<div class="col-xs-12">
-						    <table id="jqGridBase"></table>
-						    <div id="jqGridBasePager"></div>
+							<div class="tabbable">
+								<ul class="nav nav-tabs padding-18">
+									<li class="active"><a data-toggle="tab"
+										href="#detailList"> <i
+											class="green ace-icon fa fa-user bigger-120"></i> 明细信息
+									</a></li>
+
+									<li><a data-toggle="tab" href="#projList"> <i
+											class="orange ace-icon fa fa-rss bigger-120"></i> 项目信息
+									</a></li>
+								</ul>
+								<div class="tab-content no-border ">
+						            <table id="jqGridBase"></table>
+						            <div id="jqGridBasePager"></div>
+								</div>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -188,6 +202,8 @@
         var pagerBase_selector = "#jqGridBasePager";  
 
         var which;
+    	var tabIndex=1;
+    	var gridHeight;
         //有权限导出表的部门
         var bolCanExportTable;
         //单号下拉列表
@@ -279,6 +295,22 @@
 					window.location.href="<%=basePath%>detailimportquery/list.do?SelectedTableNo="+which;
 				//}
 			});
+			
+			//tab页切换
+			$('.nav-tabs li').on('click', function(e){
+				if($(this).hasClass('active')) return;
+				var target = $(this).find('a');
+				
+				if(target.attr('href')=='#detailList'){
+					tabIndex=1;
+					$(gridBase_selector).jqGrid('GridUnload'); 
+					SetStructure();
+				}else if(target.attr('href')=='#projList'){
+					tabIndex=2;
+					$(gridBase_selector).jqGrid('GridUnload'); 
+					SetStructure();
+				}
+			});
 		});  
 		
 		/**
@@ -326,7 +358,8 @@
             +'&SelectedBusiDate='+$("#SelectedBusiDate").val()
             +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
             +'&SelectedCustCol7='+$("#SelectedCustCol7").val()
-            +'&SelectedBillCode='+$("#SelectedBillCode").val();
+            +'&SelectedBillCode='+$("#SelectedBillCode").val()
+            +'&SelectedtabIndex='+tabIndex;
 	    }
 	
 	    //加载单位树
@@ -399,38 +432,95 @@
 			//resize to fit page size
 			$(window).on('resize.jqGrid', function () {
 				$(gridBase_selector).jqGrid( 'setGridWidth', $(".page-content").width());
-				resizeGridHeight($(gridBase_selector),null,true);
+				gridHeight=236;
+				resizeGridHeight($(gridBase_selector),gridHeight);
+				//resizeGridHeight($(gridBase_selector),null,true);
 		    });
 			
-			$(gridBase_selector).jqGrid({
-				url: '<%=basePath%>detailimportquery/getPageList.do?SelectedTableNo='+which
-	                 +'&SelectedBusiDate='+$("#SelectedBusiDate").val()
-	                 +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
-	                 +'&SelectedCustCol7='+$("#SelectedCustCol7").val()
-	                 +'&SelectedBillCode='+$("#SelectedBillCode").val(),
-				datatype: "json",
-				colModel: jqGridColModel,
-				viewrecords: true, 
-				shrinkToFit: false,
-				rowNum: 100,
-				rowList: [100,200,500],
-	            sortable: true,
-				altRows: true, //斑马条纹
-				
-				pager: pagerBase_selector,
-				footerrow: true,
-				userDataOnFooter: true,
-				
-				loadComplete : function() {
-					var table = this;
-					setTimeout(function(){
-						styleCheckbox(table);
-						updateActionIcons(table);
-						updatePagerIcons(table);
-						enableTooltips(table);
-					}, 0);
-				},
-			});
+			if(tabIndex==1){
+				$(gridBase_selector).jqGrid({
+					url: '<%=basePath%>detailimportquery/getPageList.do?SelectedTableNo='+which
+		                 +'&SelectedBusiDate='+$("#SelectedBusiDate").val()
+		                 +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
+		                 +'&SelectedCustCol7='+$("#SelectedCustCol7").val()
+		                 +'&SelectedBillCode='+$("#SelectedBillCode").val()
+		                 +'&SelectedtabIndex='+tabIndex,
+					datatype: "json",
+					colModel: jqGridColModel,
+					viewrecords: true, 
+					shrinkToFit: false,
+					rowNum: 100,
+					rowList: [100,200,500],
+		            sortable: true,
+					altRows: true, //斑马条纹
+					
+					pager: pagerBase_selector,
+					footerrow: true,
+					userDataOnFooter: true,
+					
+					loadComplete : function() {
+						var table = this;
+						setTimeout(function(){
+							styleCheckbox(table);
+							updateActionIcons(table);
+							updatePagerIcons(table);
+							enableTooltips(table);
+						}, 0);
+					},
+				});
+			}
+			
+			if(tabIndex==2){
+				$(gridBase_selector).jqGrid({
+					url: '<%=basePath%>detailimportquery/getPageList.do?SelectedTableNo='+which
+		                 +'&SelectedBusiDate='+$("#SelectedBusiDate").val()
+		                 +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
+		                 +'&SelectedCustCol7='+$("#SelectedCustCol7").val()
+		                 +'&SelectedBillCode='+$("#SelectedBillCode").val()
+		                 +'&SelectedtabIndex='+tabIndex,
+			        mtype: "GET",
+					datatype: "json",
+					colModel: jqGridColModel,
+	                page: 1,
+					rowNum: 0,
+					pager: pagerBase_selector,
+					pgbuttons: false, // 分页按钮是否显示 
+					pginput: false, // 是否允许输入分页页数 
+	                viewrecords: true,
+					shrinkToFit: false,
+					altRows: true, //斑马条纹
+	    			scroll: 1,
+	                sortable: true,
+	                sortname: 'ITEM_CODE',
+	    			sortorder: 'asc',
+					
+					footerrow: true,
+					userDataOnFooter: true,
+					
+	                grouping: true,
+                    groupingView: {
+                        groupField: ['ITEM_CODE'],
+                      	groupOrder: ['asc'],
+                        groupColumnShow: [true],
+                        groupText: ['<b>{0}</b>'],
+                        groupSummary: [true],
+                        groupSummaryPos: ['footer'], //header
+                        groupCollapse: false,
+                        plusicon : 'fa fa-chevron-down bigger-110',
+                        minusicon : 'fa fa-chevron-up bigger-110'
+                    },/**/
+					
+					loadComplete : function() {
+						var table = this;
+						setTimeout(function(){
+							styleCheckbox(table);
+							updateActionIcons(table);
+							updatePagerIcons(table);
+							enableTooltips(table);
+						}, 0);
+					},
+				});
+			}
 		    
 			$(window).triggerHandler('resize.jqGrid');//trigger window resize to make the grid get the correct size
 			

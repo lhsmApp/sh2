@@ -53,6 +53,8 @@ public class TmplUtil {
 	public Map<String, Object> getDicList() {
 		return m_dicList;
 	}
+	//界面分组 数值型但不求和字段
+	private List<String> jqGridGroupNotSumFeild = new ArrayList<String>();
 	
 	//表结构  
 	//private Map<String, TableColumns> map_HaveColumnsList = new LinkedHashMap<String, TableColumns>();
@@ -80,13 +82,15 @@ public class TmplUtil {
 		this.userService=userService;
 		this.jqGridGroupColumn = new ArrayList<String>();
 		InitJqGridGroupColumnShow();
+		//界面分组 数值型但不求和字段
+		this.jqGridGroupNotSumFeild = new ArrayList<String>();
 		this.AdditionalReportColumns = "";
 	}
 
 	public TmplUtil(TmplConfigManager tmplconfigService, TmplConfigDictManager tmplConfigDictService,
 			DictionariesManager dictionariesService, DepartmentManager departmentService,UserManager userService,
 			List<String> keyList, List<String> jqGridGroupColumn, String AdditionalReportColumns,
-			List<String> MustInputList) {
+			List<String> MustInputList, List<String> jqGridGroupNotSumFeild) {
 		TmplUtil.tmplconfigService = tmplconfigService;
 		this.tmplConfigDictService = tmplConfigDictService;
 		this.dictionariesService = dictionariesService;
@@ -95,6 +99,8 @@ public class TmplUtil {
 		this.keyList = keyList;
 		this.jqGridGroupColumn = jqGridGroupColumn;
 		InitJqGridGroupColumnShow();
+		//界面分组 数值型但不求和字段
+		this.jqGridGroupNotSumFeild = jqGridGroupNotSumFeild;
 		this.AdditionalReportColumns = AdditionalReportColumns;
 		this.MustInputList = MustInputList;
 		
@@ -215,23 +221,6 @@ public class TmplUtil {
 							}
 						}
 					}
-					//if (notedit != null && !notedit.trim().equals("")) {
-					//	jqGridColModelCustom.append(notedit).append(", ");
-					//}
-					//if(editable){
-					//	jqGridColModelCustom.append(" formoptions:{ rowpos:" + row + ", colpos:" + col + " }, ");
-					//	col++;
-					//	if (col > columnCount) {
-					//		row++;
-					//		col = 1;
-					//	}
-					//} else {
-						
-					//}
-					/*
-					 * if(i < m_columnsList.size() -1){
-					 * jqGridColModel.append(","); }
-					 */
 					// 底行显示的求和与平均值字段
 					// 1汇总 0不汇总,默认0
 					if (Integer.parseInt(m_columnsList.get(i).getCOL_SUM()) == 1) {
@@ -240,7 +229,6 @@ public class TmplUtil {
 						}
 						m_sqlUserdata.append(" sum(" + getCOL_CODE + ") "
 								+ getCOL_CODE);
-						jqGridColModelCustom.append(" summaryType:'sum', summaryTpl:'<b>sum:{0}</b>', ");
 					}
 					// 0不计算 1计算 默认0
 					else if (Integer.parseInt(m_columnsList.get(i).getCOL_AVE()) == 1) {
@@ -249,7 +237,6 @@ public class TmplUtil {
 						}
 						m_sqlUserdata.append(" round(avg(" + getCOL_CODE + "), 2) "
 								+ m_columnsList.get(i).getCOL_CODE());
-						jqGridColModelCustom.append(" summaryType:'avg', summaryTpl:'<b>avg:{0}</b>', ");
 					}
 					// 配置表中的表头显示
 					jqGridColModelCustom.append(" label: '").append(m_columnsList.get(i).getCOL_NAME()).append("' ");
@@ -303,8 +290,6 @@ public class TmplUtil {
 		Map<String, Map<String, Object>> list = new LinkedHashMap<String, Map<String, Object>>();
 
 		for (TableColumns col : columns) {
-			//表结构
-			//map_HaveColumnsList.put(col.getColumn_name(), col);
 
 			Map<String, Object> MapAdd = new LinkedHashMap<String, Object>();
 
@@ -313,14 +298,6 @@ public class TmplUtil {
 			//StringBuilder model_notedit = new StringBuilder();
 			//Boolean editable = null;
 
-			// 设置必定不用编辑的列
-			//if (MustNotEditFeildList.contains(col.getColumn_name())) {
-			//	model_notedit.append(" editable: true, editrules: {edithidden: false} ");
-			//	editable = false;
-			//} else {
-			//	model_notedit.append(" editable: true ");
-			//	editable = true;
-			//}
 			int intLength = Common.getColumnLength(col.getColumn_type(), col.getData_type());
 			if (col.getData_type() != null && Common.IsNumFeild(col.getData_type())) {
 				model_name.append(" width: '150', ");
@@ -345,8 +322,6 @@ public class TmplUtil {
 
 			MapAdd.put("name", model_name.toString());
 			MapAdd.put("edittype", model_edittype.toString());
-			//MapAdd.put("notedit", model_notedit.toString());
-			//MapAdd.put("editable", editable);
 			list.put(col.getColumn_name(), MapAdd);
 		}
 
@@ -370,6 +345,8 @@ public class TmplUtil {
 		//map_HaveColumnsList = new LinkedHashMap<String, TableColumns>();
 		// 前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
 		//map_SetColumnsList = new LinkedHashMap<String, TmplConfigDetail>();
+
+		Boolean bolGroupTotalShow = false;
 		
 		StringBuilder jqGridColModelAdditionalColumns = new StringBuilder();
 		if(AdditionalReportColumns != null && !AdditionalReportColumns.trim().equals("")){
@@ -379,6 +356,10 @@ public class TmplUtil {
 			jqGridColModelAdditionalColumns.append(" { ");
 			jqGridColModelAdditionalColumns.append(" name: '").append(AdditionalReportColumns).append("', ");
 			jqGridColModelAdditionalColumns.append(" label: 'FMIS凭证号', ");
+		    if(!bolGroupTotalShow){
+		    	jqGridColModelAdditionalColumns.append(" summaryType:'count', summaryTpl:'<b>({0})total</b>', ");
+			    bolGroupTotalShow = true;
+		    }
 			jqGridColModelAdditionalColumns.append(" hidden: false, editable: false ");
 			jqGridColModelAdditionalColumns.append(" } ");
 		}
@@ -402,6 +383,7 @@ public class TmplUtil {
 				if (listColModelAll.containsKey(m_columnsList.get(i).getCOL_CODE().toUpperCase())) {
 					Map<String, Object> itemColModel = listColModelAll.get(m_columnsList.get(i).getCOL_CODE());
 					String name = (String) itemColModel.get("name");
+					String group = (String) itemColModel.get("group");
 					if (name != null && !name.trim().equals("")) {
 						if (jqGridColModelCustom!=null && !jqGridColModelCustom.toString().trim().equals("")) {
 							jqGridColModelCustom.append(", ");
@@ -411,6 +393,7 @@ public class TmplUtil {
 					} else {
 						continue;
 					}
+					
 					// 配置表中的字典
 					if (m_columnsList.get(i).getDICT_TRANS() != null
 							&& !m_columnsList.get(i).getDICT_TRANS().trim().equals("")) {
@@ -445,6 +428,11 @@ public class TmplUtil {
 								}
 							}
 						}
+					} else {
+					    if(!bolGroupTotalShow){
+					    	jqGridColModelCustom.append(" summaryType:'count', summaryTpl:'<b>({0})total</b>', ");
+						    bolGroupTotalShow = true;
+					    }
 					}
 					// 底行显示的求和与平均值字段
 					// 1汇总 0不汇总,默认0
@@ -454,7 +442,7 @@ public class TmplUtil {
 						}
 					    m_sqlUserdata.append(" sum(" + m_columnsList.get(i).getCOL_CODE() + ") "
 								+ m_columnsList.get(i).getCOL_CODE());
-						jqGridColModelCustom.append(" summaryType:'sum', summaryTpl:'<b>sum:{0}</b>', ");
+						jqGridColModelCustom.append(" summaryType:'sum', summaryTpl:'<b>{0}</b>', ");
 					}
 					// 0不计算 1计算 默认0
 					else if (Integer.parseInt(m_columnsList.get(i).getCOL_AVE()) == 1) {
@@ -463,7 +451,11 @@ public class TmplUtil {
 						}
 						m_sqlUserdata.append(" round(avg(" + m_columnsList.get(i).getCOL_CODE() + "), 2) "
 								+ m_columnsList.get(i).getCOL_CODE());
-						jqGridColModelCustom.append(" summaryType:'avg', summaryTpl:'<b>avg:{0}</b>', ");
+						jqGridColModelCustom.append(" summaryType:'avg', summaryTpl:'<b>{0}</b>', ");
+					} else {
+						if(!jqGridGroupNotSumFeild.contains(m_columnsList.get(i).getCOL_CODE())){
+							jqGridColModelCustom.append(group);
+						}
 					}
 					// 配置表中的表头显示
 					jqGridColModelCustom.append(" label: '").append(m_columnsList.get(i).getCOL_NAME()).append("' ");
@@ -518,7 +510,8 @@ public class TmplUtil {
 		//map_HaveColumnsList = new LinkedHashMap<String, TableColumns>();
 		// 前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
 		//map_SetColumnsList = new LinkedHashMap<String, TmplConfigDetail>();
-		
+
+		Boolean bolGroupTotalShow = false;
 
 		// 用语句查询出数据库表的所有字段及其属性；拼接成jqgrid全部列
 		List<TableColumns> tableColumns = tmplconfigService.getTableColumns(tableCode);
@@ -534,6 +527,7 @@ public class TmplUtil {
 				if (listColModelAll.containsKey(m_columnsList.get(i).getString("COL_MAPPING_CODE").toUpperCase())) {
 					Map<String, Object> itemColModel = listColModelAll.get(m_columnsList.get(i).getString("COL_MAPPING_CODE"));
 					String name = (String) itemColModel.get("name");
+					String group = (String) itemColModel.get("group");
 					if (name != null && !name.trim().equals("")) {
 						if (jqGridColModelCustom!=null && !jqGridColModelCustom.toString().trim().equals("")) {
 							jqGridColModelCustom.append(", ");
@@ -577,6 +571,11 @@ public class TmplUtil {
 								}
 							}
 						}
+					} else {
+					    if(!bolGroupTotalShow){
+					    	jqGridColModelCustom.append(" summaryType:'count', summaryTpl:'<b>({0})total</b>', ");
+						    bolGroupTotalShow = true;
+					    }
 					}
 					// 底行显示的求和与平均值字段
 					// 1汇总 0不汇总,默认0
@@ -586,7 +585,7 @@ public class TmplUtil {
 						}
 					    m_sqlUserdata.append(" sum(" + m_columnsList.get(i).getString("COL_MAPPING_CODE") + ") "
 								+ m_columnsList.get(i).getString("COL_MAPPING_CODE"));
-						jqGridColModelCustom.append(" summaryType:'sum', summaryTpl:'<b>sum:{0}</b>', ");
+						jqGridColModelCustom.append(" summaryType:'sum', summaryTpl:'<b>{0}</b>', ");
 					}
 					// 0不计算 1计算 默认0
 					else if (Integer.parseInt(m_columnsList.get(i).getString("COL_AVE")) == 1) {
@@ -595,7 +594,11 @@ public class TmplUtil {
 						}
 						m_sqlUserdata.append(" round(avg(" + m_columnsList.get(i).getString("COL_MAPPING_CODE") + "), 2) "
 								+ m_columnsList.get(i).getString("COL_MAPPING_CODE"));
-						jqGridColModelCustom.append(" summaryType:'avg', summaryTpl:'<b>avg:{0}</b>', ");
+						jqGridColModelCustom.append(" summaryType:'avg', summaryTpl:'<b>{0}</b>', ");
+					} else {
+						if(!jqGridGroupNotSumFeild.contains(m_columnsList.get(i).getString("COL_MAPPING_CODE"))){
+							jqGridColModelCustom.append(group);
+						}
 					}
 					// 配置表中的表头显示
 					jqGridColModelCustom.append(" label: '").append(m_columnsList.get(i).getString("COL_MAPPING_NAME")).append("' ");
@@ -641,18 +644,17 @@ public class TmplUtil {
 		Map<String, Map<String, Object>> list = new LinkedHashMap<String, Map<String, Object>>();
 
 		for (TableColumns col : columns) {
-			//表结构
-			//map_HaveColumnsList.put(col.getColumn_name(), col);
-			
 			
 			Map<String, Object> MapAdd = new LinkedHashMap<String, Object>();
 
 			StringBuilder model_name = new StringBuilder();
+			StringBuilder model_group = new StringBuilder();
 
 			int intLength = Common.getColumnLength(col.getColumn_type(), col.getData_type());
 			if (col.getData_type() != null && Common.IsNumFeild(col.getData_type())) {
 				model_name.append(" width: '150', ");
-				model_name.append(" align: 'right', search: false, sorttype: 'number', formatter: 'number',summaryTpl: 'sum: {0}', summaryType: 'sum', ");
+				model_name.append(" align: 'right', search: false, sorttype: 'number', formatter: 'number', ");
+				model_group.append(" summaryTpl: '<b>{0}</b>', summaryType: 'sum', ");
 			} else {
 				if (intLength > 50) {
 					model_name.append(" width: '200', ");
@@ -662,6 +664,7 @@ public class TmplUtil {
 			}
 			model_name.append(" name: '" + col.getColumn_name() + "' ");
 			MapAdd.put("name", model_name.toString());
+			MapAdd.put("group", model_group.toString());
 			list.put(col.getColumn_name(), MapAdd);
 		}
 		return list;

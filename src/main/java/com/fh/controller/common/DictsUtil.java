@@ -18,7 +18,6 @@ import com.fh.util.Jurisdiction;
 import com.fh.util.PageData;
 import com.fh.util.StringUtil;
 import com.fh.util.Tools;
-import com.fh.util.enums.EmplGroupType;
 import com.fh.util.enums.TmplType;
 
 import net.sf.json.JSONArray;

@@ -128,6 +128,8 @@ public class HouseFundDetailController extends BaseController {
 		}
 		return list;
 	}
+    //设置分组时不求和字段            SERIAL_NO 设置字段类型是数字，但不用求和
+    List<String> jqGridGroupNotSumFeild = Arrays.asList("SERIAL_NO");
 
 	/**列表
 	 * @param page
@@ -234,7 +236,7 @@ public class HouseFundDetailController extends BaseController {
 		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
 		
 		TmplUtil tmpl = new TmplUtil(tmplconfigService, tmplconfigdictService, dictionariesService, 
-				departmentService,userService, keyListBase, null, AdditionalReportColumns, MustInputList);
+				departmentService,userService, keyListBase, null, AdditionalReportColumns, MustInputList, jqGridGroupNotSumFeild);
 		String jqGridColModel = tmpl.generateStructure(TypeCodeDetail, SelectedDepartCode, SelectedCustCol7, 3, MustNotEditList);
 		
 		commonBase.setCode(0);
@@ -399,15 +401,13 @@ public class HouseFundDetailController extends BaseController {
 			}
 			List<PageData> listData = new ArrayList<PageData>();
 			listData.add(getPd);
-			if(SelectedBillCode.equals(SelectBillCodeFirstShow)){
-				String checkState = CheckState(SelectedBillCode, SystemDateTime,
-						SelectedCustCol7, SelectedDepartCode, listData, "SERIAL_NO", TmplUtil.keyExtra);
-				if(checkState!=null && !checkState.trim().equals("")){
-					commonBase.setCode(2);
-					commonBase.setMessage(checkState);
-					return commonBase;
-				}
-			} 
+			String checkState = CheckState(SelectedBillCode, SystemDateTime,
+					SelectedCustCol7, SelectedDepartCode, listData, "SERIAL_NO", TmplUtil.keyExtra);
+			if(checkState!=null && !checkState.trim().equals("")){
+				commonBase.setCode(2);
+				commonBase.setMessage(checkState);
+				return commonBase;
+			}
 			commonBase = CalculationUpdateDatabase(true, commonBase, "", SelectedDepartCode, SelectedCustCol7, listData, strHelpful);
 		} else {
 			Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(TypeCodeDetail, SelectedDepartCode, SelectedCustCol7, tmplconfigService);
@@ -913,6 +913,9 @@ public class HouseFundDetailController extends BaseController {
 									String sbRetMust = "";
 									for(int i=0; i<listSize; i++){
 										PageData pdAdd = listUploadAndRead.get(i);
+										if(pdAdd.size() <= 0){
+											continue;
+										}
 										String getUSER_CODE = (String) pdAdd.get("USER_CODE");
 									    if(!(getUSER_CODE!=null && !getUSER_CODE.trim().equals(""))){
 									    	strRetUserCode = "导入人员编码不能为空！";
@@ -1245,6 +1248,7 @@ public class HouseFundDetailController extends BaseController {
 	        if(pdList!=null && pdList.size()>0){
 	        	List<Integer> listStringSerialNo = QueryFeildString.getListIntegerFromListPageData(pdList, strFeild, strFeildExtra);
 				String strSqlInSerialNo = QueryFeildString.tranferListIntegerToGroupbyString(listStringSerialNo);
+				String strSERIAL_NO_IN = (strSqlInSerialNo!=null && !strSqlInSerialNo.trim().equals("")) ? strSqlInSerialNo : "''";
 	    		PageData transferPd = new PageData();
 	    		PageData getQueryFeildPd = new PageData();
 	    		getQueryFeildPd.put("DEPT_CODE", SelectedDepartCode);
@@ -1257,7 +1261,7 @@ public class HouseFundDetailController extends BaseController {
 	    			QueryFeild += " and 1 != 1 ";
 	    		}
 	    		QueryFeild += " and BILL_CODE like ' %' ";
-	    		QueryFeild += " and SERIAL_NO in (" + strSqlInSerialNo + ") ";
+	    		QueryFeild += " and SERIAL_NO in (" + strSERIAL_NO_IN + ") ";
 	    		transferPd.put("QueryFeild", QueryFeild);
 	    		
 	    		//页面显示数据的年月
@@ -1302,6 +1306,9 @@ public class HouseFundDetailController extends BaseController {
 		    if(!BILL_CODE.equals(ShowDataBillCode)){
 				strRut += "查询条件中所选单号与页面显示数据单号不一致，请单击查询再进行操作！";
 		    }
+			if(!BILL_CODE.equals(SelectBillCodeFirstShow)){
+				strRut += "已汇总记录不能再进行操作！";
+			}
 		}
 		return strRut;
 	}

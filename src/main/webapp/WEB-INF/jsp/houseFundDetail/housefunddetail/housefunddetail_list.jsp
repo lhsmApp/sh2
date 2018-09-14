@@ -745,7 +745,7 @@
     		});
     	    
     		$(window).triggerHandler('resize.jqGrid');//trigger window resize to make the grid get the correct size
-    		
+
     		$(gridBase_selector).navGrid(pagerBase_selector, 
     					{
     			            //navbar options

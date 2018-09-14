@@ -12,6 +12,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.fh.controller.base.BaseController;
 import com.fh.controller.common.DictsUtil;
+import com.fh.controller.common.TmplUtil;
 import com.fh.entity.CommonBase;
 import com.fh.entity.Page;
 import com.fh.entity.PageResult;
@@ -168,6 +169,27 @@ public class TmplConfigController extends BaseController {
 		}
 		result.setRows(temporaryList);*/
 		return result;
+	}
+
+	/**修改
+	 * @param
+	 * @throws Exception
+	 */
+	@RequestMapping(value="/edit")
+	public @ResponseBody CommonBase edit() throws Exception{
+		CommonBase commonBase = new CommonBase();
+		commonBase.setCode(-1);
+		logBefore(logger, Jurisdiction.getUsername()+"修改SysTableMapping");
+
+		PageData getPd = this.getPageData();
+		//操作
+		String oper = getPd.getString("oper");
+
+		if(oper.equals("edit")){
+			tmplconfigService.updateItem(getPd);
+			commonBase.setCode(0);
+		}
+		return commonBase;
 	}
 
 	/**

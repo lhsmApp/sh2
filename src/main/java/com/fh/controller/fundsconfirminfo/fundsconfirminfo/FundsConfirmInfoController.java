@@ -18,7 +18,6 @@ import com.fh.controller.base.BaseController;
 import com.fh.controller.common.DictsUtil;
 import com.fh.controller.common.QueryFeildString;
 import com.fh.controller.common.SelectBillCodeOptions;
-import com.fh.entity.CertParmConfig;
 import com.fh.entity.CommonBase;
 import com.fh.entity.JqPage;
 import com.fh.entity.Page;
@@ -29,7 +28,6 @@ import com.fh.util.PageData;
 import com.fh.util.SqlTools;
 import com.fh.util.enums.FundsConfirmInfoState;
 import com.fh.util.enums.SysConfirmInfoBillType;
-import com.fh.util.enums.SysConfirmInfoBillTypeStart;
 
 import com.fh.util.Jurisdiction;
 import com.fh.service.fundsconfirminfo.fundsconfirminfo.FundsConfirmInfoManager;

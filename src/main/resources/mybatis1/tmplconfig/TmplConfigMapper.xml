@@ -354,6 +354,23 @@
 		AND
 		table_name = #{pd.TABLE_CODE}
 	</select>
+	
+    <!-- 修改 -->
+	<insert id="updateItem" parameterType="pd">
+		update <include refid="tableName"></include>
+		set COL_NAME = #{COL_NAME}, 
+		    DISP_ORDER = #{DISP_ORDER}, 
+		    DICT_TRANS =#{DICT_TRANS}, 
+		    COL_HIDE = #{COL_HIDE}, 
+			COL_SUM = #{COL_SUM}, 
+			COL_AVE =#{COL_AVE}, 
+			COL_TRANSFER =#{COL_TRANSFER} 
+		where RPT_DUR = #{RPT_DUR}
+		and DEPT_CODE = #{DEPT_CODE}
+		and TABLE_CODE = #{TABLE_CODE}
+		and BILL_OFF = #{BILL_OFF}
+		and COL_CODE = #{COL_CODE}
+	</insert>
 
 	<!-- 新增 -->
 	<insert id="updateAll" parameterType="pd">

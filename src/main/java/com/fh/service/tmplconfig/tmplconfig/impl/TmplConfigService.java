@@ -56,6 +56,14 @@ public class TmplConfigService implements TmplConfigManager{
 		dao.update("TmplConfigMapper.edit", pd);
 	}
 	
+	/**修改
+	 * @param pd
+	 * @throws Exception
+	 */
+	public void updateItem(PageData pd)throws Exception{
+		dao.update("TmplConfigMapper.updateItem", pd);
+	}
+	
 	/**列表
 	 * @param page
 	 * @throws Exception
