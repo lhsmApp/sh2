@@ -702,9 +702,9 @@ public class HouseFundSummyController extends BaseController {
 		} else {//设置单号，直接添加
 			/***************获取最大单号及更新最大单号********************/
 		    String billNumType = BillNumType.ZFGJ;
-			String month = DateUtil.getMonth();
+			String monthSystemDateTime = SystemDateTime;
 			pdBillNum.put("BILL_CODE", billNumType);
-			pdBillNum.put("BILL_DATE", month);
+			pdBillNum.put("BILL_DATE", monthSystemDateTime);
 			PageData pdBillNumResult=sysbillnumService.findById(pdBillNum);
 			if(pdBillNumResult == null){
 				pdBillNumResult = new PageData();
@@ -732,7 +732,7 @@ public class HouseFundSummyController extends BaseController {
 				
 				billNum++;
         		bill.put("SERIAL_NO", "");
-				String getBILL_CODE = BillCodeUtil.getBillCode(billNumType, month, billNum);
+				String getBILL_CODE = BillCodeUtil.getBillCode(billNumType, monthSystemDateTime, billNum);
 				bill.put("BILL_CODE", getBILL_CODE);
 				bill.put("BILL_STATE", BillState.Normal.getNameKey());
         		User user = (User) Jurisdiction.getSession().getAttribute(Const.SESSION_USERROL);

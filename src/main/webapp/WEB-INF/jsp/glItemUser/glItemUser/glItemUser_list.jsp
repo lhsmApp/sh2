@@ -53,7 +53,7 @@
 								    <span class="label label-xlg label-success arrowed-right">人工成本</span>
 									<!-- arrowed-in-right --> 
 									<span class="label label-xlg label-yellow arrowed-in arrowed-right"
-									    id="subTitle" style="margin-left: 2px;"> 项目人员对照维护维护</span> 
+									    id="subTitle" style="margin-left: 2px;"> 项目人员维护</span> 
                                     <span style="border-left: 1px solid #e2e2e2; margin: 0px 10px;">&nbsp;</span>
 								
 									<button id="btnQuery" class="btn btn-white btn-info btn-sm"
@@ -191,12 +191,11 @@
                 +'&DepartTreeSource='+DepartTreeSource,
     			datatype: "json",
 		        colModel: [
-						    { label: '期间', name: 'BUSI_DATE', width: 90,editable: false},
 						    { formoptions:{ rowpos:1, colpos:1}, label: '员工编号', name: 'USER_CODE', width: 120, editable: true, edittype:'text', editoptions:{maxLength:'30'}, editrules:{required:true}},
 						    { formoptions:{ rowpos:1, colpos:2}, label: '员工姓名', name: 'USER_NAME', width: 120, editable: true, edittype:'text', editoptions:{maxLength:'20'}},
 						    { formoptions:{ rowpos:2, colpos:1}, label: '身份证号', name: 'STAFF_IDENT', width: 140, editable: true, edittype:'text', editoptions:{maxLength:'18'}},
-						    { label: '责任中心', name: 'DEPT_CODE', width: 140,editable: false, edittype: 'select',formatter:'select',formatoptions:{value:"${departmentStrSelect}"},editoptions:{value:"${departmentStrSelect}"},stype: 'select',searchoptions:{value:"${departmentStrAll}"}},
 						    { formoptions:{ rowpos:2, colpos:2}, label: '所属二级单位', name: 'UNITS_CODE', width: 140,editable: true, editrules:{required:true},edittype: 'select',formatter:'select',formatoptions:{value:"${departmentStrSelect}"},editoptions:{value:"${departmentStrSelect}"},stype: 'select',searchoptions:{value:"${departmentStrAll}"}},
+						    
 						    { formoptions:{ rowpos:3, colpos:1}, label: '在建工程项目编码1', name: 'ITEM1_CODE', width: 160, editable: true, edittype:'text', editoptions:{maxLength:'30'}},
 						    { formoptions:{ rowpos:3, colpos:2}, label: '在建工程项目名称1', name: 'ITEM1_NAME', width: 160, editable: true, edittype:'text', editoptions:{maxLength:'30'}},
 						    { formoptions:{ rowpos:3, colpos:3}, label: '项目概算1', name: 'ITEM1_BUD', width: 110, sorttype: 'number', align: 'right', searchrules: {number: true}, formatter: 'number',
@@ -407,6 +406,7 @@
     			             title : "导出",
     			             cursor : "pointer"
     			         });
+    		//tosearch();
 		});
 	
 	    //双击编辑行
