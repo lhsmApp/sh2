@@ -101,7 +101,6 @@ public class BusidateController extends BaseController {
 		commonBase.setCode(-1);
 		logBefore(logger, Jurisdiction.getUsername() + "修改SysConfig");
 		// if(!Jurisdiction.buttonJurisdiction(menuUrl, "edit")){return null;}
-		PageData pd = this.getPageData();
 		// String busiDate=pd.getString("BUSI_DATE");
 		// 设置期间
 		PageData pdConfig = new PageData();
@@ -109,34 +108,36 @@ public class BusidateController extends BaseController {
 		String busiDate = sysConfigManager.getSysConfigByKey(pdConfig);
 		Date dtCur = DateUtils.string2Date(busiDate);
 		String nextBusidate = DateUtils.addMothToDate(1, dtCur, DateFormatUtils.DATE_MONTH_FORMAT);
-		sysConfigManager.updateBusidate(nextBusidate);// 变更业务区间
+		
+		PageData pd = this.getPageData();
+		pd.put("KEY_VALUE", nextBusidate);
+		pd.put("NEXT_RPT_DUR", nextBusidate);
+		pd.put("CUR_RPT_DUR", busiDate);
+
 		String hasTmpl = tmplconfigService.findByRptDur(nextBusidate);
 		if (StringUtil.isEmpty(hasTmpl)) {
-			pd.put("NEXT_RPT_DUR", nextBusidate);
-			pd.put("CUR_RPT_DUR", busiDate);
-			tmplconfigService.insertBatchNextRptDur(pd);// 根据区间批量生成配置信息
+			pd.put("CopyRptDur", true);
 		}
-		
 		String hasTmplStruMapping = tmplconfigService.findStruMappingByRptDurSpecial(nextBusidate);
 		if (StringUtil.isEmpty(hasTmplStruMapping)) {
-			pd.put("NEXT_RPT_DUR", nextBusidate);
-			pd.put("CUR_RPT_DUR", busiDate);
-			tmplconfigService.insertStruMappingBatchNextRptDur(pd);// 根据区间批量生成配置信息
+			pd.put("CopyStruMapping", true);
 		}
 		
 		String hasTmplTableMapping = tmplconfigService.findTableMappingByRptDurSpecial(nextBusidate);
 		if (StringUtil.isEmpty(hasTmplTableMapping)) {
-			pd.put("NEXT_RPT_DUR", nextBusidate);
-			pd.put("CUR_RPT_DUR", busiDate);
-			tmplconfigService.insertTableMappingBatchNextRptDur(pd);// 根据区间批量生成配置信息
+			pd.put("CopyTableMapping", true);
 		}
 		
 		String hasCertParm = tmplconfigService.findCertParmByRptDurSpecial(nextBusidate);
 		if (StringUtil.isEmpty(hasCertParm)) {
-			pd.put("NEXT_RPT_DUR", nextBusidate);
-			pd.put("CUR_RPT_DUR", busiDate);
-			tmplconfigService.insertCertParmBatchNextRptDur(pd);// 根据区间批量生成配置信息
+			pd.put("CopyCertParm", true);
 		}
+		String hasGlItemUser = tmplconfigService.findGlItemUser(nextBusidate);
+		if (StringUtil.isEmpty(hasGlItemUser)) {
+			pd.put("CopyGlItemUser", true);
+		}
+		tmplconfigService.updateBusidate(pd);// 变更业务区间
+		
 		commonBase.setCode(0);
 		commonBase.setMessage(nextBusidate);
 
@@ -163,7 +164,10 @@ public class BusidateController extends BaseController {
 		// if(!Jurisdiction.buttonJurisdiction(menuUrl, "edit")){return null;}
 		PageData pd = this.getPageData();
 		String busiDate = pd.getString("BUSI_DATE");
-		sysConfigManager.updateBusidate(busiDate);
+
+		pd.put("KEY_VALUE", busiDate);
+
+		tmplconfigService.updateBusidate(pd);
 		commonBase.setCode(0);
 
 		/**

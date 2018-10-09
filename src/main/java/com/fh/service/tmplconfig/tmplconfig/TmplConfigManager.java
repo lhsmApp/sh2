@@ -2,10 +2,11 @@ package com.fh.service.tmplconfig.tmplconfig;
 
 import java.util.List;
 
-import com.fh.entity.JqGridModel;
+import com.fh.entity.JqPage;
 import com.fh.entity.Page;
 import com.fh.entity.TableColumns;
 import com.fh.entity.TmplConfigDetail;
+import com.fh.entity.TmplInputTips;
 import com.fh.util.PageData;
 
 /** 
@@ -46,12 +47,6 @@ public interface TmplConfigManager{
 	 * @throws Exception
 	 */
 	public void updateItem(PageData pd)throws Exception;
-	
-	/**列表
-	 * @param page
-	 * @throws Exception
-	 */
-	public List<PageData> list(Page page)throws Exception;
 	
 	/**列表(全部)
 	 * @param pd
@@ -133,7 +128,7 @@ public interface TmplConfigManager{
 	 * @param pd
 	 * @throws Exception
 	 */
-	public void insertBatchNextRptDur(PageData pd) throws Exception;
+	//public void insertBatchNextRptDur(PageData pd) throws Exception;
 	
 	/**通过期间获取数据，判断是否已经生成过模板配置信息 
 	 * @param pd
@@ -168,26 +163,59 @@ public interface TmplConfigManager{
 	 */
 	public String findCertParmByRptDurSpecial(String nextRptDur)throws Exception;
 	
-	/**
-	 * 根据区间批量生成配置信息
+	/**通过期间获取数据，判断是否已经生成过参数配置信息 
 	 * @param pd
 	 * @throws Exception
 	 */
-	public void insertStruMappingBatchNextRptDur(PageData pd) throws Exception;
+	public String findGlItemUser(String nextRptDur)throws Exception;
+	
+	/**
+	 * 更新业务期间 
+	 * @param pd
+	 * @throws Exception
+	 */
+	public void updateBusidate(PageData pd) throws Exception;
 	
 	/**
 	 * 根据区间批量生成配置信息
 	 * @param pd
 	 * @throws Exception
 	 */
-	public void insertTableMappingBatchNextRptDur(PageData pd) throws Exception;
+	//public void insertStruMappingBatchNextRptDur(PageData pd) throws Exception;
+	
+	/**
+	 * 根据区间批量生成配置信息
+	 * @param pd
+	 * @throws Exception
+	 */
+	//public void insertTableMappingBatchNextRptDur(PageData pd) throws Exception;
 	
 	/**
 	 * 根据区间批量生成参数配置信息
 	 * @param pd
 	 * @throws Exception
 	 */
-	public void insertCertParmBatchNextRptDur(PageData pd) throws Exception;
+	//public void insertCertParmBatchNextRptDur(PageData pd) throws Exception;
+	/**********************************************************************************/
+
+	/**********************************导入校验********************************************/
+	/**列表
+	 * @param page
+	 * @throws Exception
+	 */
+	public List<PageData> JqPageTmplInputTips(JqPage page)throws Exception;
+	
+	/**
+	 * @param pd
+	 * @throws Exception
+	 */
+	public void saveTmplInputTips(List<PageData> list)throws Exception;
+
+	/**
+	 * @param page
+	 * @throws Exception
+	 */
+	public List<TmplInputTips> getCheckTmplInputTips(PageData pd)throws Exception;
 	/**********************************************************************************/
 }
 

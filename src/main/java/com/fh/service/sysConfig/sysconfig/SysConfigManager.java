@@ -36,7 +36,7 @@ public interface SysConfigManager{
 	 * @param pd
 	 * @throws Exception
 	 */
-	public void updateBusidate(String busiDate)throws Exception;
+	//public void updateBusidate(String busiDate)throws Exception;
 	
 	/**列表
 	 * @param page

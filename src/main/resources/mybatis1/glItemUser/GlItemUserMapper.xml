@@ -56,21 +56,31 @@
 		from <include refid="tableName"></include>
         <where>
 		<foreach item="item" index="index" collection="list" open=" " separator=" or " close=" ">
-            ((BUSI_DATE = #{item.BUSI_DATE} and DEPT_CODE = #{item.DEPT_CODE} and USER_CODE = #{item.USER_CODE})
-             and (BUSI_DATE != #{item.BUSI_DATE__} or DEPT_CODE != #{item.DEPT_CODE__} or USER_CODE != #{item.USER_CODE__}))
+            ((BUSI_DATE = #{item.BUSI_DATE} and BILL_OFF = #{item.BILL_OFF} and USER_CODE = #{item.USER_CODE})<!-- and DEPT_CODE = #{item.DEPT_CODE} -->
+             and (BUSI_DATE != #{item.BUSI_DATE__} or BILL_OFF != #{item.BILL_OFF__} or USER_CODE != #{item.USER_CODE__}))<!-- or DEPT_CODE != #{item.DEPT_CODE__} -->
 		</foreach>
 		</where>
 	</select>
-	
+		
 	<update id="batchDelAndIns" parameterType="pd">
 		delete from
 		<include refid="tableName"></include>
 		where
 		<foreach item="item" index="index" collection="list" open=" (" separator=" or " close=") ">
 		    BUSI_DATE = #{item.BUSI_DATE__} 
-		    and DEPT_CODE = #{item.DEPT_CODE__}
+		    and BILL_OFF = #{item.BILL_OFF__}
+		    <!-- and DEPT_CODE = #{item.DEPT_CODE__} -->
 		    and USER_CODE = #{item.USER_CODE__}
-		    <!-- and STAFF_IDENT = #{item.STAFF_IDENT__} -->
+		</foreach>;
+		
+		delete from
+		<include refid="tableName"></include>
+		where
+		<foreach item="item" index="index" collection="list" open=" (" separator=" or " close=") ">
+		    BUSI_DATE = #{item.BUSI_DATE} 
+		    and BILL_OFF = #{item.BILL_OFF}
+		    <!-- and DEPT_CODE = #{item.DEPT_CODE} -->
+		    and USER_CODE = #{item.USER_CODE}
 		</foreach>;
 		
 		<foreach item="item" index="index" collection="list" open=" " separator=" " close=" ">
@@ -86,9 +96,9 @@
 		where
 		<foreach item="item" index="index" collection="list" open=" (" separator=" or " close=") ">
 		    BUSI_DATE = #{item.BUSI_DATE__} 
-		    and DEPT_CODE = #{item.DEPT_CODE__}
+		    and BILL_OFF = #{item.BILL_OFF__}
+		    <!-- and DEPT_CODE = #{item.DEPT_CODE__} -->
 		    and USER_CODE = #{item.USER_CODE__}
-		    <!-- and STAFF_IDENT = #{item.STAFF_IDENT__} -->
 		</foreach>
 	</delete>
 	

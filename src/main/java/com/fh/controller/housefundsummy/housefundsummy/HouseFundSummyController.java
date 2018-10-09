@@ -621,6 +621,11 @@ public class HouseFundSummyController extends BaseController {
 
 		List<PageData> getSetItemUser = ItemAlloc.getSetItemUser(SystemDateTime, QueryFeild, TableNameSecondDetail, 
 				DetailSerialNoFeild, DetailUserCodeFeild, Corresponding.SumFieldBillSocHou, detailimportcommonService);
+		if(!(getSetItemUser!=null && getSetItemUser.size()>0)){
+			commonBase.setCode(2);
+			commonBase.setMessage(Message.NotHaveOperateData);
+			return commonBase;
+		}
 		
 		/*PageData pdDetail = new PageData();
 		pdDetail.put("SystemDateTime", SystemDateTime);

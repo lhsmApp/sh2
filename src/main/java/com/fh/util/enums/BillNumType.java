@@ -24,5 +24,8 @@ public class BillNumType {
 	public static final String YLTQ = "YLTQ";// 8补充医疗提取凭证
 	public static final String NJFF = "NJFF";// 9企业年金发放凭证
 	public static final String PGTZ = "PGTZ";// 10评估调整凭证
+	public static final String SGRQ = "SGRQ";// 11深港天然气
+	public static final String SGFY = "SGFY";// 12深港社保劳务及管理费
+	public static final String SGDX = "SGDX";// 13深港社保费用及抵消往来
 	
 }

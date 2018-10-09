@@ -53,16 +53,6 @@
 		where
 		KEY_CODE = #{KEY_CODE__}
 	</update>
-	
-	<!-- 更新业务期间 -->
-	<update id="updateBusidate" parameterType="String">
-		update
-		<include refid="tableName"></include>
-		set
-		KEY_VALUE = #{KEY_VALUE}
-		where
-		KEY_CODE = "SystemDataTime"
-	</update>
 
 	<!-- 通过ID获取数据 -->
 	<select id="findById" parameterType="pd" resultType="pd">

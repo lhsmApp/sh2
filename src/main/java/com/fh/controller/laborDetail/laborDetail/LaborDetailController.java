@@ -572,7 +572,7 @@ public class LaborDetailController extends BaseController {
 						// 解析excel，获取客户信息集合
 
 						uploadAndReadMap = testExcel.uploadAndRead(file, propertiesFileName, kyeName, sheetIndex,
-								titleAndAttribute, Map_HaveColumnsList, Map_SetColumnsList, DicList, false, false, null);
+								titleAndAttribute, Map_HaveColumnsList, Map_SetColumnsList, DicList, false, false, null, null);
 					} catch (Exception e) {
 						e.printStackTrace();
 						logger.error("读取Excel文件错误", e);

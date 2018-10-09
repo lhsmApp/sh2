@@ -34,6 +34,7 @@ import org.springframework.web.multipart.commons.CommonsMultipartFile;
 
 import com.fh.entity.TableColumns;
 import com.fh.entity.TmplConfigDetail;
+import com.fh.entity.TmplInputTips;
 import com.fh.util.PageData;
 import com.fh.util.base.StochasticUtil;
 import com.fh.util.enums.EmplGroupType;
@@ -94,7 +95,7 @@ public class LeadingInExcelToPageData<T> {
             Map<String, TableColumns> map_HaveColumnsList,
     		Map<String, TmplConfigDetail> map_SetColumnsList, Map<String, Object> DicList,
 			Boolean bolIsDicSetSAL_RANGE, Boolean bolIsDicSetUSER_CATG, 
-			List<String> ImportNotHaveTransferList) throws Exception{
+			Map<String, TmplInputTips> TmplInputTipsList, List<String> ImportNotHaveTransferList) throws Exception{
         
             String originalFilename=null;
             int i = 0;
@@ -109,7 +110,8 @@ public class LeadingInExcelToPageData<T> {
             
             String filePath = readPropertiesFilePathMethod( propertiesFileName, kyeName);
             File filePathname = this.upload(multipart, filePath, isExcel2003);
-            Map<Integer, Object> judgementVersion = judgementVersion(filePathname, sheetIndex, titleAndAttribute, map_HaveColumnsList, isExcel2003, map_SetColumnsList, DicList, bolIsDicSetSAL_RANGE, bolIsDicSetUSER_CATG, ImportNotHaveTransferList);
+            Map<Integer, Object> judgementVersion = judgementVersion(filePathname, sheetIndex, titleAndAttribute, map_HaveColumnsList, 
+            		isExcel2003, map_SetColumnsList, DicList, bolIsDicSetSAL_RANGE, bolIsDicSetUSER_CATG, TmplInputTipsList, ImportNotHaveTransferList);
         
         return judgementVersion;
     }
@@ -221,7 +223,7 @@ public class LeadingInExcelToPageData<T> {
     		Map<String, TableColumns> map_HaveColumnsList,boolean isExcel2003,
     		Map<String, TmplConfigDetail> map_SetColumnsList, Map<String, Object> DicList,
 			Boolean bolIsDicSetSAL_RANGE, Boolean bolIsDicSetUSER_CATG, 
-			List<String> ImportNotHaveTransferList) throws Exception{
+			Map<String, TmplInputTips> TmplInputTipsList, List<String> ImportNotHaveTransferList) throws Exception{
         
         FileInputStream is=null;
         POIFSFileSystem fs=null;
@@ -251,7 +253,8 @@ public class LeadingInExcelToPageData<T> {
                 }
             }
         
-        return readExcelTitle(workbook,sheetIndex,titleAndAttribute,map_HaveColumnsList, map_SetColumnsList, DicList, bolIsDicSetSAL_RANGE, bolIsDicSetUSER_CATG, ImportNotHaveTransferList);
+        return readExcelTitle(workbook,sheetIndex,titleAndAttribute,map_HaveColumnsList, map_SetColumnsList, DicList, bolIsDicSetSAL_RANGE, 
+        		bolIsDicSetUSER_CATG, TmplInputTipsList, ImportNotHaveTransferList);
     }
 
     /**
@@ -267,7 +270,7 @@ public class LeadingInExcelToPageData<T> {
     		Map<String, TableColumns> map_HaveColumnsList,
     		Map<String, TmplConfigDetail> map_SetColumnsList, Map<String, Object> DicList,
 			Boolean bolIsDicSetSAL_RANGE, Boolean bolIsDicSetUSER_CATG, 
-			List<String> ImportNotHaveTransferList) throws Exception{
+			Map<String, TmplInputTips> TmplInputTipsList, List<String> ImportNotHaveTransferList) throws Exception{
 
         //得到第一个shell  
         Sheet sheet = workbook.getSheetAt(sheetIndex);
@@ -297,7 +300,8 @@ public class LeadingInExcelToPageData<T> {
             }
         }
 
-        return readExcelValue(workbook,sheet,attribute,map_HaveColumnsList, map_SetColumnsList, DicList, bolIsDicSetSAL_RANGE, bolIsDicSetUSER_CATG, ImportNotHaveTransferList);
+        return readExcelValue(workbook,sheet,attribute,map_HaveColumnsList, map_SetColumnsList, DicList, 
+        		bolIsDicSetSAL_RANGE, bolIsDicSetUSER_CATG, TmplInputTipsList, ImportNotHaveTransferList);
         
     }
     
@@ -311,6 +315,208 @@ public class LeadingInExcelToPageData<T> {
      * @throws Exception
      */
     @SuppressWarnings("unchecked")
+	private Map<Integer, Object> readExcelValue(Workbook workbook,Sheet sheet,Map<Integer, String> attribute,
+			Map<String, TableColumns> map_HaveColumnsList,
+			Map<String, TmplConfigDetail> map_SetColumnsList, Map<String, Object> DicList,
+			Boolean bolIsDicSetSAL_RANGE, Boolean bolIsDicSetUSER_CATG, 
+			Map<String, TmplInputTips> TmplInputTipsList, List<String> ImportNotHaveTransferList) throws Exception{
+    	if(!(map_HaveColumnsList!=null && map_HaveColumnsList.size()>0)){
+    		map_HaveColumnsList = new HashMap<String, TableColumns>();
+    	}
+    	if(!(map_SetColumnsList!=null && map_SetColumnsList.size()>0)){
+    		map_SetColumnsList = new HashMap<String, TmplConfigDetail>();
+    	}
+    	if(!(DicList!=null && DicList.size()>0)){
+    		DicList = new HashMap<String, Object>();
+    	}
+
+    	Map<Integer, Object> returnMap = new HashMap<Integer, Object>();
+    	Map<String, String> returnErrorCustomn = new HashMap<String, String>();
+    	Map<String, String> returnErrorMust = new HashMap<String, String>();
+    	Boolean bolError = false;
+    	Boolean bolCust = false;
+        List<PageData> info=new ArrayList<PageData>();
+        FormulaEvaluator evaluator = workbook.getCreationHelper().createFormulaEvaluator(); 
+        //获取标题行列数
+        //int titleCellNum = sheet.getRow(0).getLastCellNum();
+        // 获取值
+        int LastRowNum = sheet.getLastRowNum();
+        for (int rowIndex = 1; rowIndex <= LastRowNum; rowIndex++) {
+            Row row = sheet.getRow(rowIndex);
+            if(row == null) continue;  
+//            logger.debug("第--" + rowIndex);
+            
+            ////    1.若当前行的列数不等于标题行列数就放弃整行数据(若想放弃此功能注释4个步骤即可)
+            //int lastCellNum = row.getLastCellNum();
+            //if(titleCellNum !=  lastCellNum){
+            //    continue;
+            //}
+            
+            // 2.标记
+            boolean judge = true;
+            PageData obj = new PageData();
+            String returnErrorUserCode = "";
+            String returnErrorCustomnMessage = "";
+            String returnErrorMustMessage = "";
+            for (int columnIndex = 0; columnIndex < row.getLastCellNum(); columnIndex++) {//这里小于等于变成小于
+                Cell cell = row.getCell(columnIndex);
+                if(cell == null) continue;
+                
+                //处理单元格中值得类型
+                CellValue cellValue = evaluator.evaluate(cell);   
+                if(cellValue == null) continue;  
+
+                String COL_CODE = attribute.get(Integer.valueOf(columnIndex));
+
+                String value = ""; //cellValue == null ? "" : cellValue.formatAsString()
+                switch (cellValue.getCellType()) {  
+                    case Cell.CELL_TYPE_BOOLEAN:  
+                    	Boolean bolValue = cellValue.getBooleanValue();  
+                    	value = bolValue.toString().trim();
+                        break;  
+                    case Cell.CELL_TYPE_NUMERIC:  
+                    	if(COL_CODE.equals("USER_CODE") || COL_CODE.equals("BUSI_DATE")){
+                    		cell.setCellType(Cell.CELL_TYPE_STRING);
+    						String temp = cell.getStringCellValue();
+    						value = temp.trim();
+                    	} else {
+                        	Number numValue = cellValue.getNumberValue();  
+                        	value = numValue.toString().trim();
+                    	}
+                        break;  
+                    case Cell.CELL_TYPE_STRING:  
+                    	value = cellValue.getStringValue().trim();  
+                        break;  
+                    case Cell.CELL_TYPE_BLANK:  
+                        break;  
+                    case Cell.CELL_TYPE_ERROR:  
+                        break;  
+                    case Cell.CELL_TYPE_FORMULA:   
+                        break;  
+                }
+                
+                // 3.单元格中的值等于null或等于"" 就放弃整行数据
+                if(!(value != null && !value.trim().equals(""))){
+                	continue;
+                }
+                
+    			if(map_SetColumnsList != null && map_SetColumnsList.size() > 0){
+    				TmplConfigDetail itemCol = map_SetColumnsList.get(COL_CODE);
+    				if(itemCol != null){
+            			String trans = itemCol.getDICT_TRANS();
+            			if(trans != null && !trans.trim().equals("")){
+            				Map<String, String> dicAdd = (Map<String, String>) DicList.getOrDefault(trans, new HashMap<String, String>());
+                            String getKey = "";
+                            String getExtraKayUSER_CATG = "";
+                            String gsjs = "公司结算";
+							//企业特定员工分类-管道局劳务-PUT05
+							String USER_CATG_GDJLW = "管道局劳务";
+							//企业特定员工分类-华北油田公司劳务-PUT06
+							String USER_CATG_hbytlw = "华北油田劳务";
+							String USER_CATG_hbytgslw = "华北油田公司劳务";
+
+                            String getExtraKayUSER_GROP = "";
+							String USER_GROP_LWYG = "劳务用工";
+							
+							String transValue = value.replace(" ", "").replace("(", "").replace(")", "").replace("（", "").replace("）", "");
+                            
+            				for (Map.Entry<String, String> dic :dicAdd.entrySet())  {
+            					if(value.equals(dic.getValue().toString())){
+            						getKey = dic.getKey();
+                                }
+            					if((transValue.equals(USER_CATG_GDJLW + gsjs) && USER_CATG_GDJLW.equals(dic.getValue().toString()))
+            							|| (transValue.equals(USER_CATG_hbytlw + gsjs) && USER_CATG_hbytgslw.equals(dic.getValue().toString()))){
+            						getExtraKayUSER_CATG = dic.getKey();
+            					}
+            			    }  
+            				if(!(getKey != null && !getKey.trim().equals(""))){
+                				if((bolIsDicSetUSER_CATG || bolIsDicSetSAL_RANGE)){
+                					if(USER_GROP_LWYG.equals(value)){
+                						getExtraKayUSER_GROP = EmplGroupType.LWPQ.getNameKey();
+                					}
+                					if(COL_CODE.equals("USER_GROP")){
+                    					getKey = getExtraKayUSER_GROP;
+                					}
+                				}
+                				if((bolIsDicSetUSER_CATG)){// && LWPQ.equals(getUSER_GROP)
+                					if(COL_CODE.equals("USER_CATG")){
+        								//企业特定员工分类       管道局劳务（公司结算）      华北油田劳务（公司结算）
+                    					getKey = getExtraKayUSER_CATG;
+                					}
+                				}
+            				}
+            				if(!(getKey != null && !getKey.trim().equals(""))){
+            					if(TmplInputTipsList!=null && TmplInputTipsList.size()>0){
+                					TmplInputTips inputTips = TmplInputTipsList.get(COL_CODE);
+                					if(inputTips!=null){
+                    					String inputTipsDICT_TRANS = "";
+                    					if(inputTips!=null && inputTips.getDICT_TRANS()!=null && !inputTips.getDICT_TRANS().trim().equals("")){
+                    						inputTipsDICT_TRANS = inputTips.getDICT_TRANS().trim();
+                    					}
+                    					if(String.valueOf(1).equals(inputTipsDICT_TRANS)){
+                            				returnErrorMustMessage += inputTips.getDIC_PREFIX() + itemCol.getCOL_NAME() + " : " + value + inputTips.getDIC_SUFFIX() + " ";
+                            				bolError = true;
+                    					} else {
+                        					returnErrorCustomnMessage += inputTips.getDIC_PREFIX() + itemCol.getCOL_NAME() + " : " + value + inputTips.getDIC_SUFFIX() + " ";
+                        					bolCust = true;
+                    					}
+                					} else {
+                    					returnErrorCustomnMessage += itemCol.getCOL_NAME() + " : " + value + " ";
+                    					bolCust = true;
+                					}
+            					} else {
+                					returnErrorCustomnMessage += itemCol.getCOL_NAME() + " : " + value + " ";
+                					bolCust = true;
+                					if(ImportNotHaveTransferList!=null && ImportNotHaveTransferList.contains(COL_CODE)){
+                    					returnErrorMustMessage += itemCol.getCOL_NAME() + " : " + value + " ";
+                    					bolError = true;
+                					}
+            					}
+            				}
+            				value = getKey;
+            			}
+    				}
+    			}
+    			TableColumns fieldTable = (TableColumns) map_HaveColumnsList.get(COL_CODE);
+    			String fieldType = "";
+    			if(fieldTable!=null && fieldTable.getData_type()!=null){
+    				fieldType = fieldTable.getData_type();
+    			}
+				
+                Object agge = value;
+                if (fieldType.toUpperCase().equals(Date.class.getName().toUpperCase())) {
+                    agge = new SimpleDateFormat(format).parse(value);
+                } else if (fieldType.toUpperCase().equals(Boolean.class.getName().toUpperCase())) {
+                    agge = "Y".equals(value) || "1".equals(value);
+                }
+                obj.put(COL_CODE, agge);
+
+            	if(COL_CODE.equals("USER_CODE")){
+                	returnErrorUserCode = value;
+                	String haveMustMessage = returnErrorMust.get(returnErrorUserCode);
+                	if(haveMustMessage==null) haveMustMessage = "";
+                	returnErrorMustMessage = haveMustMessage + returnErrorMustMessage;
+                	String haveCustomnMessage = returnErrorCustomn.get(value);
+                	if(haveCustomnMessage==null) haveCustomnMessage = "";
+                	returnErrorCustomnMessage = haveCustomnMessage + returnErrorCustomnMessage;
+            	}
+            }
+            if(judge)info.add(obj);
+            returnErrorCustomn.remove(returnErrorUserCode);
+            returnErrorCustomn.put(returnErrorUserCode, returnErrorCustomnMessage);
+            returnErrorMust.remove(returnErrorUserCode);
+            returnErrorMust.put(returnErrorUserCode, returnErrorMustMessage);
+        }
+        returnMap.put(1, info);
+        if(bolCust){
+            returnMap.put(2, returnErrorCustomn);
+        }
+        if(bolError){
+            returnMap.put(3, returnErrorMust);
+        }
+        return returnMap;
+    }
+    /*
 	private Map<Integer, Object> readExcelValue(Workbook workbook,Sheet sheet,Map<Integer, String> attribute,
 			Map<String, TableColumns> map_HaveColumnsList,
 			Map<String, TmplConfigDetail> map_SetColumnsList, Map<String, Object> DicList,
@@ -487,7 +693,7 @@ public class LeadingInExcelToPageData<T> {
             returnMap.put(3, returnErrorMust);
         }
         return returnMap;
-    }
+    }*/
     
     /**
      * 功能:处理单元格中值得类型

@@ -61,7 +61,6 @@ import com.fh.service.certParmConfig.certParmConfig.impl.CertParmConfigService;
 import com.fh.service.fhoa.department.impl.DepartmentService;
 import com.fh.service.sysConfig.sysconfig.SysConfigManager;
 import com.fh.service.sysConfirmInfo.sysConfirmInfo.impl.SysConfirmInfoService;
-import com.fh.service.sysDeptLtdTime.sysDeptLtdTime.impl.SysDeptLtdTimeService;
 import com.fh.service.sysDeptMapping.sysDeptMapping.impl.SysDeptMappingService;
 import com.fh.service.sysStruMapping.sysStruMapping.impl.SysStruMappingService;
 import com.fh.service.sysTableMapping.sysTableMapping.impl.SysTableMappingService;
@@ -543,7 +542,7 @@ public class FundsSelfSummyController extends BaseController {
 			commonBase.setMessage(checkState);
 			//return commonBase;
 		}
-		if(SelectedTypeCode.equals(PZTYPE.GFZYJF.getNameKey())){
+		if(SelectedTypeCode.equals(PZTYPE.GFZYJF)){
 			//是否存在未确认责任中心
 			String strMessage = "";
 			

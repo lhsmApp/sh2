@@ -1,13 +1,16 @@
 package com.fh.controller.common;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.fh.entity.CommonBase;
 import com.fh.entity.SysStruMapping;
 import com.fh.entity.TableColumns;
 import com.fh.entity.TmplConfigDetail;
+import com.fh.entity.TmplInputTips;
 import com.fh.entity.system.Department;
 import com.fh.entity.system.Dictionaries;
 import com.fh.service.detailimportcommon.detailimportcommon.impl.DetailImportCommonService;
@@ -149,6 +152,34 @@ public class Common {
 			}
 		}
 		return m_DicList;
+	}
+
+	public static Map<String, TmplInputTips> GetCheckTmplInputTips(String tableNo, String SystemDateTime, String billOff, String departCode,
+			TmplConfigManager tmplconfigService) throws Exception{
+		Map<String, TmplInputTips> m_retList = new LinkedHashMap<String, TmplInputTips>();
+		String tableCodeTmpl = getTableCodeTmpl(tableNo, tmplconfigService);
+
+		PageData pd=new PageData();
+		pd.put("ShowStruTableCode", tableCodeTmpl);
+		pd.put("ShowStruBillOff", billOff);
+		pd.put("ShowStruRptDur", SystemDateTime);
+		
+		String strShowDepartCode = Common.getShowColumnDepart(tableCodeTmpl, billOff, departCode, tmplconfigService);
+		pd.put("ShowStruDepartCode", strShowDepartCode);
+
+		pd.put("SelectedDepartCode", departCode);
+		List<TmplInputTips> m_columnsList = tmplconfigService.getCheckTmplInputTips(pd);
+		if (!(m_columnsList != null && m_columnsList.size() > 0)) {
+			String rootDeptCode=Tools.readTxtFile(Const.ROOT_DEPT_CODE);
+			pd.put("SelectedDepartCode", rootDeptCode);
+			m_columnsList = tmplconfigService.getCheckTmplInputTips(pd);
+		}
+		if (m_columnsList != null && m_columnsList.size() > 0) {
+			for (int i = 0; i < m_columnsList.size(); i++) {
+				m_retList.put(m_columnsList.get(i).getCOL_CODE().trim().toUpperCase(), m_columnsList.get(i));
+			}
+		}
+		return m_retList;
 	}
 
 	public static Map<String, TableColumns> GetHaveColumnsList(String tableNo, TmplConfigManager tmplconfigService) throws Exception{
@@ -369,6 +400,28 @@ public class Common {
 		}
 		return m_columnsList;
 	}
+	public static String getShowColumnDepart(String tableCode, String SelectedCustCol7, String departCode, TmplConfigManager tmplconfigService) throws Exception{
+		String strSetDeptCode = "";
+		
+		TmplConfigDetail item = new TmplConfigDetail();
+		item.setDEPT_CODE(departCode);
+		item.setTABLE_CODE(tableCode);
+		item.setBILL_OFF(SelectedCustCol7);
+		// 前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
+		List<TmplConfigDetail> m_columnsList = tmplconfigService.listNeed(item);
+		if(m_columnsList!=null && m_columnsList.size()>0){
+			strSetDeptCode = departCode;
+		} else {
+			String rootDeptCode=Tools.readTxtFile(Const.ROOT_DEPT_CODE);
+			item.setDEPT_CODE(rootDeptCode);
+			// 前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
+			m_columnsList = tmplconfigService.listNeed(item);
+			if(m_columnsList!=null && m_columnsList.size()>0){
+				strSetDeptCode = rootDeptCode;
+			}
+		}
+		return strSetDeptCode;
+	}
 
 	/**
 	 * 根据帐套、凭证类型、业务期间、表名称获取tb_sys_stru_mapping的结构信息
@@ -465,6 +518,86 @@ public class Common {
 			m_dicList.put(dicName, dicAdd);
 		}
 		return ret.toString();
+	}
+	
+	public static String checkDicContainsValue(String[] listCOL_COND, String strDICT_TRANS_DETAIL,
+			Map<String, Object> DicList,
+			String strColName, String strPre, String strPus,
+			String TmplInputTipsNotHaveDic) {
+		String strRet = "";
+		if(strDICT_TRANS_DETAIL!=null && !strDICT_TRANS_DETAIL.trim().equals("")
+				&& listCOL_COND!=null && listCOL_COND.length>0){
+			Map<String, String> dicAdd = (Map<String, String>) DicList.getOrDefault(strDICT_TRANS_DETAIL, new HashMap<String, String>());
+			if(dicAdd!=null && dicAdd.size()>0){
+				for(int i=0; i<listCOL_COND.length; i++){
+					String strCOL_COND = listCOL_COND[i];
+					if(!dicAdd.containsKey(strCOL_COND)){
+						strRet += strPre + strColName + ":" + strCOL_COND + strPus + " ";
+					}
+				}
+			} else {
+				strRet = TmplInputTipsNotHaveDic;
+			}
+		}
+		return strRet;
+	}
+	
+	public static void checkTmplInputTipsListAll(Map<String, TmplInputTips> TmplInputTipsListAll,
+			Map<String, TmplInputTips> TmplInputTipsListDic,
+			Map<String, TmplInputTips> TmplInputTipsListNull,
+			Map<String, Object> DicList, CommonBase commonBase) {
+        if(TmplInputTipsListAll!=null && TmplInputTipsListAll.size()>0){
+        	for(String key : TmplInputTipsListAll.keySet()){
+				TmplInputTips tip = TmplInputTipsListAll.get(key);
+				String getDICT_TRANS = tip.getDICT_TRANS();
+				String getCOL_NULL = tip.getCOL_NULL();
+				String getCOL_COND = tip.getCOL_COND();
+				String getCOL_MAPPING = tip.getCOL_MAPPING();
+				if(String.valueOf(1).equals(getDICT_TRANS)){
+					TmplInputTipsListDic.put(key, tip);
+				}
+				if(String.valueOf(1).equals(getCOL_NULL)){
+					TmplInputTipsListNull.put(key, tip);
+				}
+				if(getCOL_COND!=null && !getCOL_COND.trim().equals("")){
+					String[] listCOL_COND = getCOL_COND.replace(" ", "").replace("，", ",").split(",");
+					if(listCOL_COND!=null && listCOL_COND.length>0){
+						TmplInputTipsListNull.put(key, tip);
+						String strDICT_TRANS_DETAIL = tip.getDICT_TRANS_DETAIL();
+						String strColName = tip.getCOL_NAME();
+						
+						String strCOND_PREFIX = tip.getCOND_PREFIX();
+						String strCOND_SUFFIX = tip.getCOND_SUFFIX();
+						String strCondMessage = checkDicContainsValue(listCOL_COND, strDICT_TRANS_DETAIL,
+								DicList, strColName, strCOND_PREFIX, strCOND_SUFFIX, Message.TmplInputTipsCoudMapNotHaveDic);
+						if(strCondMessage!=null && !strCondMessage.trim().equals("")){
+                			commonBase.setCode(2);
+                			commonBase.setMessage(Message.TmplInputTipsSet + strCondMessage);
+                			break;
+						}
+						if(getCOL_MAPPING!=null && !getCOL_MAPPING.trim().equals("")){
+							String[] listCOL_MAPPING = getCOL_MAPPING.replace(" ", "").replace("，", ",").split(",");
+							if(listCOL_MAPPING!=null && listCOL_MAPPING.length>0){
+								String strMAPPING_PREFIX = tip.getMAPPING_PREFIX();
+								String strMAPPING_SUFFIX = tip.getMAPPING_SUFFIX();
+								String strMapMessage = checkDicContainsValue(listCOL_MAPPING, strDICT_TRANS_DETAIL,
+										DicList, strColName, strMAPPING_PREFIX, strMAPPING_SUFFIX, Message.TmplInputTipsCoudMapNotHaveDic);
+								if(strMapMessage!=null && !strMapMessage.trim().equals("")){
+		                			commonBase.setCode(2);
+		                			commonBase.setMessage(Message.TmplInputTipsSet + strMapMessage);
+		                			break;
+								}
+		                        if(listCOL_COND.length != listCOL_MAPPING.length){
+		                			commonBase.setCode(2);
+		                			commonBase.setMessage(Message.TmplInputTipsCoudMapNotSameNum);
+		                			break;
+		                        }
+							}
+						}
+					}
+				}
+			}
+        }
 	}
 	
 	public static int getColumnLength(String Column_type, String Data_type) {

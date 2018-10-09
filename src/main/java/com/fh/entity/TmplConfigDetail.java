@@ -25,7 +25,6 @@ public class TmplConfigDetail implements Serializable {
 	private String DEC_PRECISION;
 	private String BILL_OFF;
 	private Boolean IsNum;
-
 	public Boolean getIsNum() {
 		return IsNum;
 	}

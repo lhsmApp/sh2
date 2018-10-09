@@ -153,26 +153,32 @@ public class Corresponding {
 	public static String getBillTypeFromPZTYPE(String SelectedTypeCode) {
 		String strReturn = "";
 		if (SelectedTypeCode != null && !SelectedTypeCode.trim().equals("")) { 
-			if(SelectedTypeCode.equals(PZTYPE.GFZYJF.getNameKey())){
+			if(SelectedTypeCode.equals(PZTYPE.GFZYJF)){
 				strReturn = BillNumType.GZJF;// 1工会经费、教育经费凭证 
-			} else if(SelectedTypeCode.equals(PZTYPE.DF.getNameKey())){
+			} else if(SelectedTypeCode.equals(PZTYPE.DF)){
 				strReturn = BillNumType.DFJT;// 2党费凭证
-			}  else if(SelectedTypeCode.equals(PZTYPE.SB.getNameKey())){
+			}  else if(SelectedTypeCode.equals(PZTYPE.SB)){
 				strReturn = BillNumType.SBHT;// 3社保互推凭证
-			} else if(SelectedTypeCode.equals(PZTYPE.GJJ.getNameKey())){
+			} else if(SelectedTypeCode.equals(PZTYPE.GJJ)){
 				strReturn = BillNumType.ZHHT;// 4公积金互推凭证
-			} else if(SelectedTypeCode.equals(PZTYPE.GJ.getNameKey())){
+			} else if(SelectedTypeCode.equals(PZTYPE.GJ)){
 				strReturn = BillNumType.SBGJ;// 5个缴凭证
-			} else if(SelectedTypeCode.equals(PZTYPE.YFLWF.getNameKey())){
+			} else if(SelectedTypeCode.equals(PZTYPE.YFLWF)){
 				strReturn = BillNumType.YFLW;// 6应付劳务费凭证
-			} else if(SelectedTypeCode.equals(PZTYPE.QYNJTQ.getNameKey())){
+			} else if(SelectedTypeCode.equals(PZTYPE.QYNJTQ)){
 				strReturn = BillNumType.NJTQ;// 7企业年金提取凭证
-			} else if(SelectedTypeCode.equals(PZTYPE.BCYLTQ.getNameKey())){
+			} else if(SelectedTypeCode.equals(PZTYPE.BCYLTQ)){
 				strReturn = BillNumType.YLTQ;// 8补充医疗提取凭证
-			} else if(SelectedTypeCode.equals(PZTYPE.QYNJFF.getNameKey())){
+			} else if(SelectedTypeCode.equals(PZTYPE.QYNJFF)){
 				strReturn = BillNumType.NJFF;// 9企业年金发放凭证
-			} else if(SelectedTypeCode.equals(PZTYPE.PGTZ.getNameKey())){
+			} else if(SelectedTypeCode.equals(PZTYPE.PGTZ)){
 				strReturn = BillNumType.PGTZ;// 10评估调整凭证
+			} else if(SelectedTypeCode.equals(PZTYPE.SGRQ)){
+				strReturn = BillNumType.SGRQ;// 11深港天然气
+			} else if(SelectedTypeCode.equals(PZTYPE.SGFY)){
+				strReturn = BillNumType.SGFY;// 12深港社保劳务及管理费
+			} else if(SelectedTypeCode.equals(PZTYPE.SGDX)){
+				strReturn = BillNumType.SGDX;// 13深港社保费用及抵消往来
 			}
 		}
 		return strReturn;

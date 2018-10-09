@@ -31,6 +31,9 @@ public class Message {
 	public static String HavaNotHavaChangeCols = "存在未对应的数据列，请点击【查询】按钮！";
 	public static String HavaNotSumOrDetail = "操作的数据没有明细信息，请刷新！";
 	public static String SetSumCodeError = "设置汇总单号出错！";
+	public static String TmplInputTipsSet = "请重新配置导入规则！";
+	public static String TmplInputTipsCoudMapNotSameNum = TmplInputTipsSet + "条件列与映射列不匹配！";
+	public static String TmplInputTipsCoudMapNotHaveDic = TmplInputTipsSet + "条件列与映射列未获取到字典信息！";
 	
 	public static String GetHelpfulDetailFalue = "获取可操作的数据的条件失败，请联系管理员！";
 	public static String ReportTypeIsNull = "上报类型为空！，请联系管理员！";
