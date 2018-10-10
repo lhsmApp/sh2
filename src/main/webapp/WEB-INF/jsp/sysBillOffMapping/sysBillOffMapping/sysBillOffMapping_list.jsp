@@ -615,6 +615,8 @@
 			$(grid_selector).jqGrid('setGridParam',{  // 重新加载数据
 				url:'<%=basePath%>sysBillOffMapping/getPageList.do?SelectedCustCol7='+$("#SelectedCustCol7").val()
                 + '&SelectedTypeCode=' + $("#SelectedTypeCode").val(),
+    	        editurl: '<%=basePath%>sysBillOffMapping/save.do?SelectedCustCol7='+$("#SelectedCustCol7").val()
+                + '&SelectedTypeCode=' + $("#SelectedTypeCode").val(),
 								datatype : 'json'
 							}).trigger("reloadGrid");
 		}

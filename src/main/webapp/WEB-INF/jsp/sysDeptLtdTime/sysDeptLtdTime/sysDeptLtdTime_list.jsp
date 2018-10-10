@@ -548,6 +548,12 @@
 				url:'<%=basePath%>sysDeptLtdTime/getPageList.do?'
     				+ 'SelectedDepartCode='+ShowDataDepartCode
     	            + '&SelectedBusiType='+ShowDataBusiType,
+        		editurl: '<%=basePath%>sysDeptLtdTime/edit.do?'
+        			+ 'SelectedDepartCode='+$("#SelectedDepartCode").val()
+        	        + '&SelectedBusiType='+$("#SelectedBusiType").val()
+        	            
+        			+ '&ShowDataDepartCode='+ShowDataDepartCode
+        	        + '&ShowDataBusiType='+ShowDataBusiType,
 								datatype : 'json'
 							}).trigger("reloadGrid");
 		}

@@ -254,7 +254,10 @@ li{border:solid 1px;width:100px;}
 			pgbuttons: false, // 分页按钮是否显示 
 			pginput: false, // 是否允许输入分页页数 
 			
-	        editurl: '<%=basePath%>certParmConfig/save.do?',
+	        editurl: '<%=basePath%>certParmConfig/save.do?'
+				+ 'SelectedCustCol7='+$("#SelectedCustCol7").val()
+                + '&SelectedTypeCode=' + $("#SelectedTypeCode").val()
+	            + '&SelectedBusiDate='+$("#SelectedBusiDate").val(),
 	        
 			loadComplete : function() {
 				var table = this;
@@ -671,7 +674,11 @@ li{border:solid 1px;width:100px;}
 					+ 'SelectedCustCol7='+$("#SelectedCustCol7").val()
                     + '&SelectedTypeCode=' + $("#SelectedTypeCode").val()
     	            + '&SelectedBusiDate='+$("#SelectedBusiDate").val(),
-								datatype : 'json'
+    		    editurl: '<%=basePath%>certParmConfig/save.do?'
+    				+ 'SelectedCustCol7='+$("#SelectedCustCol7").val()
+    	            + '&SelectedTypeCode=' + $("#SelectedTypeCode").val()
+    		        + '&SelectedBusiDate='+$("#SelectedBusiDate").val(),
+				datatype : 'json'
 							}).trigger("reloadGrid");
 		}
 	</script>

@@ -422,7 +422,10 @@
                                         + '&SelectedDepartCode=' + $("#SelectedDepartCode").val()
 										+ '&SelectedfxCode=' + $("#SelectedfxCode").val()
 										+ '&SelectedstateCode=' + $("#SelectedstateCode").val(),
-								datatype : 'json'
+				editurl: '<%=basePath%>glZrzxFx/save.do?SelectedCustCol7='+$("#SelectedCustCol7").val()
+							            + '&SelectedDepartCode=' + $("#SelectedDepartCode").val()
+							        	+ '&SelectedfxCode=' + $("#SelectedfxCode").val()
+								        + '&SelectedstateCode=' + $("#SelectedstateCode").val()
 							}).trigger("reloadGrid");
 		}
 

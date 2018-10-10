@@ -508,6 +508,14 @@
     				+ 'SelectedTypeCode='+ShowDataTypeCode
     	            + '&SelectedCustCol7='+ShowDataCustCol7
     	            + '&SelectedBusiDate='+ShowDataBusiDate,
+        		editurl: '<%=basePath%>sysTableMapping/edit.do?'
+        			+ 'SelectedTypeCode='+$("#SelectedTypeCode").val()
+        	        + '&SelectedCustCol7='+$("#SelectedCustCol7").val()
+        	        + '&SelectedBusiDate='+$("#SelectedBusiDate").val()
+        	            
+        			+ '&ShowDataTypeCode='+ShowDataTypeCode
+        	        + '&ShowDataCustCol7='+ShowDataCustCol7
+        	        + '&ShowDataBusiDate='+ShowDataBusiDate,
 								datatype : 'json'
 							}).trigger("reloadGrid");
 		}

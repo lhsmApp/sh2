@@ -560,6 +560,9 @@ function batchDelete(){
 				url:'<%=basePath%>sysDeptMapping/getPageList.do?SelectedCustCol7='+$("#SelectedCustCol7").val()
                 + '&SelectedTypeCode=' + $("#SelectedTypeCode").val(),
                 //+ '&SelectedDepartCode='+$("#SelectedDepartCode").val()
+	            editurl: '<%=basePath%>sysDeptMapping/save.do?SelectedCustCol7='+$("#SelectedCustCol7").val()
+                + '&SelectedTypeCode=' + $("#SelectedTypeCode").val(),
+                //+ '&SelectedDepartCode='+$("#SelectedDepartCode").val()
 								datatype : 'json'
 							}).trigger("reloadGrid");
 		}
