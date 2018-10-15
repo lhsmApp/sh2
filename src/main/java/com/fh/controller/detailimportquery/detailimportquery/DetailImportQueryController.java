@@ -120,9 +120,9 @@ public class DetailImportQueryController extends BaseController {
 		pdGroupIsExportData.put("KEY_CODE", SysConfigKeyCode.GroupIsExportData);
 		String strGroupIsExportData = sysConfigManager.getSysConfigByKey(pdGroupIsExportData);
 		if(strGroupIsExportData == null) strGroupIsExportData = "";
-		String SCH = EmplGroupType.SCH.getNameKey();
-		String HTH = EmplGroupType.HTH.getNameKey();
-		String YXRY = EmplGroupType.YXRY.getNameKey();
+		String SCH = EmplGroupType.SCH;
+		String HTH = EmplGroupType.HTH;
+		String YXRY = EmplGroupType.YXRY;
 		strGroupIsExportData = SCH + "," + HTH + "," + YXRY;
 		String[] listGroupIsExportData = strGroupIsExportData.replace(" ", "").split(",");
 		if(listGroupIsExportData!=null && listGroupIsExportData.length>0){

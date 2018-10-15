@@ -251,45 +251,45 @@ public class Corresponding {
 				|| which.equals(TmplType.TB_STAFF_SUMMY_CONTRACT.getNameKey())
 				|| which.equals(TmplType.TB_STAFF_AUDIT_CONTRACT.getNameKey())
 				|| which.equals(TmplType.TB_STAFF_TRANSFER_CONTRACT.getNameKey())) {
-			emplGroupType = EmplGroupType.HTH.getNameKey();
+			emplGroupType = EmplGroupType.HTH;
 		} else if (which.equals(TmplType.TB_STAFF_DETAIL_MARKET.getNameKey())
 				//|| which.equals(TmplType.TB_STAFF_SUMMY_BILL_MARKET.getNameKey())
 				|| which.equals(TmplType.TB_STAFF_SUMMY_MARKET.getNameKey())
 				|| which.equals(TmplType.TB_STAFF_AUDIT_MARKET.getNameKey())
 				|| which.equals(TmplType.TB_STAFF_TRANSFER_MARKET.getNameKey())) {
-			emplGroupType = EmplGroupType.SCH.getNameKey();
+			emplGroupType = EmplGroupType.SCH;
 		} else if (which.equals(TmplType.TB_STAFF_DETAIL_SYS_LABOR.getNameKey())
 				//|| which.equals(TmplType.TB_STAFF_SUMMY_BILL_SYS_LABOR.getNameKey())
 				|| which.equals(TmplType.TB_STAFF_SUMMY_SYS_LABOR.getNameKey())
 				|| which.equals(TmplType.TB_STAFF_AUDIT_SYS_LABOR.getNameKey())
 				|| which.equals(TmplType.TB_STAFF_TRANSFER_SYS_LABOR.getNameKey())) {
-			emplGroupType = EmplGroupType.XTNLW.getNameKey();
+			emplGroupType = EmplGroupType.XTNLW;
 		} else if (which.equals(TmplType.TB_STAFF_DETAIL_OPER_LABOR.getNameKey())
 				//|| which.equals(TmplType.TB_STAFF_SUMMY_BILL_OPER_LABOR.getNameKey())
 				|| which.equals(TmplType.TB_STAFF_SUMMY_OPER_LABOR.getNameKey())
 				|| which.equals(TmplType.TB_STAFF_AUDIT_OPER_LABOR.getNameKey())
 				|| which.equals(TmplType.TB_STAFF_TRANSFER_OPER_LABOR.getNameKey())) {
-			emplGroupType = EmplGroupType.YXRY.getNameKey();
+			emplGroupType = EmplGroupType.YXRY;
 		} else if (which.equals(TmplType.TB_STAFF_DETAIL_LABOR.getNameKey())
 				//|| which.equals(TmplType.TB_STAFF_SUMMY_BILL_LABOR.getNameKey())
 				|| which.equals(TmplType.TB_STAFF_SUMMY_LABOR.getNameKey())
 				|| which.equals(TmplType.TB_STAFF_AUDIT_LABOR.getNameKey())
 				|| which.equals(TmplType.TB_STAFF_TRANSFER_LABOR.getNameKey())) {
-			emplGroupType = EmplGroupType.LWPQ.getNameKey();
+			emplGroupType = EmplGroupType.LWPQ;
 		}
 		return emplGroupType;
 	}
 	public static String getTmplTypeTranferFromUserGroupType(String userGroup) throws Exception {
 		String retTmplTypeTranfer = "";// 数据库真实业务数据表
-		if (userGroup.equals(EmplGroupType.HTH.getNameKey())) {
+		if (userGroup.equals(EmplGroupType.HTH)) {
 			retTmplTypeTranfer = TmplType.TB_STAFF_TRANSFER_CONTRACT.getNameKey();
-		} else if (userGroup.equals(EmplGroupType.SCH.getNameKey())) {
+		} else if (userGroup.equals(EmplGroupType.SCH)) {
 			retTmplTypeTranfer = TmplType.TB_STAFF_TRANSFER_MARKET.getNameKey();
-		} else if (userGroup.equals(EmplGroupType.XTNLW.getNameKey())) {
+		} else if (userGroup.equals(EmplGroupType.XTNLW)) {
 			retTmplTypeTranfer = TmplType.TB_STAFF_TRANSFER_SYS_LABOR.getNameKey();
-		} else if (userGroup.equals(EmplGroupType.YXRY.getNameKey())) {
+		} else if (userGroup.equals(EmplGroupType.YXRY)) {
 			retTmplTypeTranfer = TmplType.TB_STAFF_TRANSFER_OPER_LABOR.getNameKey();
-		} else if (userGroup.equals(EmplGroupType.LWPQ.getNameKey())) {
+		} else if (userGroup.equals(EmplGroupType.LWPQ)) {
 			retTmplTypeTranfer = TmplType.TB_STAFF_TRANSFER_LABOR.getNameKey();
 		}
 		return retTmplTypeTranfer;

@@ -432,7 +432,7 @@ public class LeadingInExcelToPageData<T> {
             				if(!(getKey != null && !getKey.trim().equals(""))){
                 				if((bolIsDicSetUSER_CATG || bolIsDicSetSAL_RANGE)){
                 					if(USER_GROP_LWYG.equals(value)){
-                						getExtraKayUSER_GROP = EmplGroupType.LWPQ.getNameKey();
+                						getExtraKayUSER_GROP = EmplGroupType.LWPQ;
                 					}
                 					if(COL_CODE.equals("USER_GROP")){
                     					getKey = getExtraKayUSER_GROP;

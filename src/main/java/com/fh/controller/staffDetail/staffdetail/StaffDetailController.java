@@ -1374,8 +1374,8 @@ public class StaffDetailController extends BaseController {
 		mv.addObject("commonBaseCode", commonBase.getCode());
 		mv.addObject("commonMessage", commonBase.getMessage());
 		return mv;
-	}
-	//*/
+	}//*/
+	
 	/*
 	@SuppressWarnings("unchecked")
 	@RequestMapping(value = "/readExcel")
@@ -1386,7 +1386,7 @@ public class StaffDetailController extends BaseController {
 		
 	    String CurrentDepartCode = Jurisdiction.getCurrentDepartmentID();
 
-		String YXRY = EmplGroupType.YXRY.getNameKey();
+		String YXRY = EmplGroupType.YXRY;
 		//责任中心-管道分公司廊坊油气储运公司-0100106
 		String DEPT_CODE_0100106 = "0100106";
 		//责任中心-华北石油管理局-0100107
@@ -1395,7 +1395,6 @@ public class StaffDetailController extends BaseController {
 		String DEPT_CODE_0100108 = "0100108";
 		//责任中心-华北采油二厂-0100109
 		String DEPT_CODE_0100109 = "0100109";
-
 
 		PageData getPd = this.getPageData();
 		//员工组
