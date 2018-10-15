@@ -863,8 +863,8 @@ public class StaffDetailController extends BaseController {
 		//String strImportDataType = "";
 	    String CurrentDepartCode = Jurisdiction.getCurrentDepartmentID();
 
-		String YXRY = EmplGroupType.YXRY.getNameKey();
-		String LWPQ = EmplGroupType.LWPQ.getNameKey();
+		String YXRY = EmplGroupType.YXRY;
+		String LWPQ = EmplGroupType.LWPQ;
 		//责任中心-管道分公司廊坊油气储运公司-0100106
 		String DEPT_CODE_0100106 = "0100106";
 		//责任中心-华北石油管理局-0100107
@@ -1124,9 +1124,9 @@ public class StaffDetailController extends BaseController {
 										    if(!emplGroupType.equals(getUSER_GROP)){
 									    	    continue;
 									        }
-											String SCH = EmplGroupType.SCH.getNameKey();
-											String HTH = EmplGroupType.HTH.getNameKey();
-											String XTNLW = EmplGroupType.XTNLW.getNameKey();
+											String SCH = EmplGroupType.SCH;
+											String HTH = EmplGroupType.HTH;
+											String XTNLW = EmplGroupType.XTNLW;
 											if((CurrentDepartCode!=null && CurrentDepartCode.equals(DictsUtil.DepartShowAll_01001)
 													&& SelectedDepartCode!=null && SelectedDepartCode.equals(DictsUtil.DepartShowAll_01001)
 													&& (emplGroupType.equals(SCH) || emplGroupType.equals(HTH) || emplGroupType.equals(XTNLW)))
