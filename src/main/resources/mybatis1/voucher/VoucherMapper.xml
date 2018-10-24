@@ -1130,10 +1130,10 @@
 				and A.BILL_CODE = #{pd.BILL_CODE}
 			</if>
 			<if test="pd.BUSI_DATE!= null and pd.BUSI_DATE != ''">
-				and BUSI_DATE = #{pd.BUSI_DATE}
+				and A.BUSI_DATE = #{pd.BUSI_DATE}
 			</if>
 			<if test="pd.FMISACC!= null and pd.FMISACC != ''">
-				and BILL_OFF = #{pd.FMISACC}
+				and A.BILL_OFF = #{pd.FMISACC}
 			</if>
 			<if test="pd.BILL_TYPE_TRANSFER!= null and pd.BILL_TYPE_TRANSFER != ''">
 				and A.TYPE_CODE = #{pd.BILL_TYPE_TRANSFER}

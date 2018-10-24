@@ -34,7 +34,7 @@ import com.fh.util.PageData;
 import com.fh.util.SqlTools;
 import com.fh.util.StringUtil;
 import com.fh.util.enums.TmplType;
-import com.fh.util.enums.TmplTypeTransfer;
+import com.fh.util.enums.TmplTypeTransferss;
 
 import net.sf.json.JSONArray;
 
@@ -178,7 +178,7 @@ public class SysSealedInfoController extends BaseController {
 		}
 		mv.addObject("zTreeNodes", departTreeSource);
 		// ***********************************************************
-		mv.addObject("billTypeList", TmplTypeTransfer.values());
+		mv.addObject("billTypeList", TmplTypeTransferss.values());
 
 		// CUST_COL7 FMISACC 帐套字典
 		mv.addObject("fmisacc", DictsUtil.getDictsByParentBianma(dictionariesService, "FMISACC"));

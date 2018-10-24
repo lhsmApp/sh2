@@ -1,6 +1,6 @@
 package com.fh.util.enums;
 
-public enum TmplTypeTransfer {
+public enum TmplTypeTransferss {
 
 	TB_STAFF_TRANSFER_CONTRACT("16","合同化工资传输表"),
 	TB_STAFF_TRANSFER_MARKET("17","市场化工资传输表"),
@@ -21,14 +21,17 @@ public enum TmplTypeTransfer {
 	TB_QYNJTQ_TRANSFER("PZ07","企业年金提取传输表"),
 	TB_BCYLTQ_TRANSFER("PZ08","补充医疗提取传输表"),
 	TB_QYNJFF_TRANSFER("PZ09","企业年金发放传输表"),
-	TB_PGTZ_TRANSFER("PZ10","评估调整传输表");
+	TB_PGTZ_TRANSFER("PZ10","评估调整传输表"),
+	TB_SGRQ_TRANSFER("PZ11","深港天然气传输表"),
+	TB_SGFY_TRANSFER("PZ12","深港社保劳务及管理费传输表"),
+	TB_SGDX_TRANSFER("PZ13","深港社保费用及抵消往来传输表");
 	
 	private String nameKey;
 
     private String nameValue;
     
     
-    private TmplTypeTransfer(String nameKey, String nameValue) {
+    private TmplTypeTransferss(String nameKey, String nameValue) {
     	this.nameKey = nameKey;
         this.setNameValue(nameValue);
 	}
@@ -63,7 +66,7 @@ public enum TmplTypeTransfer {
      * @return String 
      */  
     public static String getValueByKey(String key) {  
-    	TmplTypeTransfer[] enums = TmplTypeTransfer.values();  
+    	TmplTypeTransferss[] enums = TmplTypeTransferss.values();  
         for (int i = 0; i < enums.length; i++) {  
             if (enums[i].getNameKey().equals(key)) {  
                 return enums[i].getNameValue();  
