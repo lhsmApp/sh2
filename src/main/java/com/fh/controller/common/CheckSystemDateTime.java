@@ -46,7 +46,7 @@ public class CheckSystemDateTime {
 	 */
 	public static String getSystemDateTimeYear(String SystemDateTime) 
 			throws Exception {
-		String strReturn = SystemDateTime.substring(0, SystemDateTime.length() - 1 - 2);
+		String strReturn = SystemDateTime.substring(0, SystemDateTime.length() - 2);
 		return strReturn;
 	}
 

@@ -1891,7 +1891,7 @@ public class StaffDetailController extends BaseController {
 			String QueryFeildBusiDate = " and BUSI_DATE = '" + SystemDateTime + "' ";
 			String QueryFeildBusiYear = " and BUSI_DATE like '" + CheckSystemDateTime.getSystemDateTimeYear(SystemDateTime) + "%' ";
 			String strSumInvalidNotInsert = QueryFeildString.getBillCodeNotInSumInvalidDetail(TableNameSummy);
-			strSumInvalidNotInsert += " and BILL_CODE not in (select BILL_CODE from tb_gl_cert where REVCERT_CODE like ' %') ";
+			strSumInvalidNotInsert += " and BILL_CODE not in (select BILL_CODE from tb_gl_cert where REVCERT_CODE not like ' %') ";
 			
 	        PageData SalaryExemptionTaxPd = new PageData();
 	        SalaryExemptionTaxPd.put("KEY_CODE", SysConfigKeyCode.ExemptionTax);

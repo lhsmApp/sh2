@@ -428,9 +428,6 @@ public class FundsSummyConfirmController extends BaseController {
 		commonBase.setCode(-1);
 		
 		PageData getPd = this.getPageData();
-		String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("SelectedTableNo"), DefaultWhile);
-		//tab
-		String SelectedTabType = getPd.getString("SelectedTabType");
 		//当前区间
 		String SystemDateTime = getPd.getString("SystemDateTime");
 		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager,
@@ -440,103 +437,61 @@ public class FundsSummyConfirmController extends BaseController {
 			commonBase.setMessage(mesDateTime);
 			return commonBase;
 		}
-		User user = (User) Jurisdiction.getSession().getAttribute(Const.SESSION_USERROL);
-		String userId = user.getUSER_ID();
-		
-		List<SysConfirmInfo> listTransfer = new ArrayList<SysConfirmInfo>();
 		
 		Object DATA_ROWS = getPd.get("DataRows");
 		String json = DATA_ROWS.toString();  
         JSONArray array = JSONArray.fromObject(json);  
         List<PageData> listData = (List<PageData>) JSONArray.toCollection(array,PageData.class);
-        
-		/*// 执行从FIMS获取凭证号
-		Service servicePzbh = new Service();
-		Call callPzbh = (Call) servicePzbh.createCall();
-		PageData pdKeyCodePzbh = new PageData();
-		pdKeyCodePzbh.put("KEY_CODE", "JQueryPzInformation");
-		String strUrlPzbh = sysConfigManager.getSysConfigByKey(pdKeyCodePzbh);
-		URL urlPzbh = new URL(strUrlPzbh);
-		callPzbh.setTargetEndpointAddress(urlPzbh);
-		callPzbh.setOperationName(new QName("http://JQueryPzInformation.j2ee", "commonQueryPzBh"));
-		callPzbh.setUseSOAPAction(true);
-
-		// 执行从FIMS获取冲销凭证号
-		Service serviceCxpz = new Service();
-		Call callCxpz = (Call) serviceCxpz.createCall();
-		PageData pdKeyCodeCxpz = new PageData();
-		pdKeyCodeCxpz.put("KEY_CODE", "JRevertVoucher");
-		String strUrlCxpz = sysConfigManager.getSysConfigByKey(pdKeyCodeCxpz);
-		URL urlCxpz = new URL(strUrlCxpz);
-		callCxpz.setTargetEndpointAddress(urlCxpz);
-		callCxpz.setOperationName(new QName("http://JRevertVoucher.j2ee", "AmisRevertVoucher"));
-		callCxpz.setUseSOAPAction(true);*/
-
         List<String> listBillCode = new ArrayList<String>();
-        //String strMessage = "";
         for(PageData each : listData){
         	String BILL_CODE = each.getString("BILL_CODE" + TmplUtil.keyExtra);
         	listBillCode.add(BILL_CODE);
-        	SysConfirmInfo itemAdd = new SysConfirmInfo();
-        	itemAdd.setBILL_CODE(BILL_CODE);
-        	itemAdd.setRPT_USER(userId);
-        	itemAdd.setRPT_DATE(DateUtil.getTime());
-        	String CUST_COL7 = each.getString("CUST_COL7" + TmplUtil.keyExtra);
-        	itemAdd.setBILL_OFF(CUST_COL7);
-        	String DEPT_CODE = each.getString("DEPT_CODE" + TmplUtil.keyExtra);
-        	itemAdd.setRPT_DEPT(DEPT_CODE);
-        	String BUSI_DATE = each.getString("BUSI_DATE" + TmplUtil.keyExtra);
-        	itemAdd.setRPT_DUR(BUSI_DATE);
-        	String BILL_TYPE = Corresponding.getSysConfirmInfoBillTypeFromTmplType(SelectedTableNo);
-        	itemAdd.setBILL_TYPE(BILL_TYPE);
-        	itemAdd.setSTATE(BillState.Normal.getNameKey());
-
-			//String tableName = "T_" + DictsUtil.getTableCodeOnFmis(tmplType, sysConfigManager);// 在fmis建立的业务表名
-			//String resultPzbh = (String) callPzbh.invoke(new Object[] { tableName, BILL_CODE, CUST_COL7 });// 对应定义参数
-			String strPzbh = " ";
-			//String strPzrq = "";
-			//String strCxpz = "";
-			/*if (resultPzbh.length() > 0) {
-				String[] stringArrPzbh = resultPzbh.split(";");
-				strPzbh = stringArrPzbh[0]; // 凭证编号
-				strPzrq = stringArrPzbh[1];
-			}
-			if(strPzbh!=null && !strPzbh.trim().equals("")){
-				String workDate = DateUtils.getCurrentTime(DateFormatUtils.DATE_NOFUll_FORMAT);// 当前工作日期格式20170602
-				String resultCxpz = (String) callCxpz.invoke(new Object[] { tableName, CUST_COL7, strPzrq, strPzbh, workDate });// 对应定义参数
-				String [] resultStrsCxpz = resultCxpz.split(";");
-				if(resultStrsCxpz.length>0&&resultStrsCxpz[0].equals("FALSE")){
-					//strMessage += " " + BILL_CODE + "获取冲销凭证编号失败！";
-				} else if(resultStrsCxpz.length>0&&resultStrsCxpz[0].equals("TRUE")){
-					if(resultStrsCxpz.length>1){
-						strCxpz = resultStrsCxpz[1];// 冲销凭证编号
-					}
-					if(strCxpz!=null && !strCxpz.trim().equals("")){
-						strMessage += " " + BILL_CODE + "有冲销凭证编号！";
-					}
-				}
-			} else {
-				strMessage += " " + BILL_CODE + "未获取到凭证编号！";
-			}*/
-        	itemAdd.setCERT_CODE(strPzbh);
-        	listTransfer.add(itemAdd);
         }
-		/*if(strMessage!=null && !strMessage.trim().equals("")){
-			commonBase.setCode(2);
-			commonBase.setMessage(strMessage);
-			return commonBase;
-		}*/
-		String checkState = CheckState(SelectedTableNo, SelectedTabType, QueryFeildString.tranferListValueToSqlInString(listBillCode), SystemDateTime);
-		if(checkState!=null && !checkState.trim().equals("")){
-			commonBase.setCode(2);
-			commonBase.setMessage(checkState);
-			return commonBase;
-		}
-        if(null != listData && listData.size() > 0){
-        	sysConfirmInfoService.batchSummyConfirm(listTransfer);
-			commonBase.setCode(0);
-		}
 		
+		PageData getQueryFeildPd = new PageData();
+		getQueryFeildPd.put("BUSI_DATE", SystemDateTime);
+		String QueryFeild = QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList);
+		QueryFeild += " and BILL_CODE in (" + QueryFeildString.tranferListValueToSqlInString(listBillCode) + ") ";
+		List<String> AllDeptCode = Common.getAllDeptCode(departmentService, Jurisdiction.getCurrentDepartmentID());
+		QueryFeild += " and DEPT_CODE in (" + QueryFeildString.tranferListValueToSqlInString(AllDeptCode) + ") ";
+		if(!(SystemDateTime!=null && !SystemDateTime.trim().equals(""))){
+			QueryFeild += " and 1 != 1 ";
+		}
+		QueryFeild += " and BILL_STATE = '" + BillState.Normal.getNameKey() + "' ";
+		QueryFeild += " and BILL_CODE in (select bill_code FROM tb_sys_sealed_info WHERE state = '1' AND RPT_DUR = '" + SystemDateTime + "') ";
+		getPd.put("QueryFeild", QueryFeild);
+		
+		getPd.put("TableName", Corresponding.tb_staff_summy_bill);
+		List<PageData> getListStaff = fundssummyconfirmService.getOperList(getPd);	//列出Betting列表
+		getPd.put("TableName", Corresponding.tb_social_inc_summy_bill);
+		List<PageData> getListSocial = fundssummyconfirmService.getOperList(getPd);	//列出Betting列表
+		getPd.put("TableName", Corresponding.tb_house_fund_summy_bill);
+		List<PageData> getListHouse = fundssummyconfirmService.getOperList(getPd);	//列出Betting列表
+		
+		List<SysConfirmInfo> listTransferConfirm = new ArrayList<SysConfirmInfo>();
+		List<PageData> listTransferCert = new ArrayList<PageData>();
+		setConfirm(getListStaff, listTransferConfirm, listTransferCert, "");
+		setConfirm(getListSocial, listTransferConfirm, listTransferCert, TmplType.TB_SOCIAL_INC_TRANSFER.getNameKey());
+		setConfirm(getListHouse, listTransferConfirm, listTransferCert, TmplType.TB_HOUSE_FUND_TRANSFER.getNameKey());
+        
+    	Map<String, Object> map = new HashMap<String, Object>();
+    	
+    	PageData pdCert = new PageData();
+    	pdCert.put("BUSI_DATE", SystemDateTime);
+        map.put("TransferCertDel", pdCert);
+
+		PageData pdConfirm = new PageData();
+		pdConfirm.put("RPT_DUR", SystemDateTime);
+    	map.put("TransferConfirmDel", pdConfirm);
+    	
+        if(null != listTransferCert && listTransferCert.size() > 0){
+        	map.put("TransferCertAdd", listTransferCert);
+		}
+    	
+        if(listTransferConfirm!=null && listTransferConfirm.size()>0){
+        	map.put("TransferConfirmAdd", listTransferConfirm);
+        }
+    	sysConfirmInfoService.batchAllConfirm(map);
 		return commonBase;
 	}
 

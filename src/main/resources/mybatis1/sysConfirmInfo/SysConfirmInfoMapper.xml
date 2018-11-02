@@ -180,7 +180,7 @@
 
 	<!-- 张晓柳 -->
 	<!-- 确认 -->
-	<update id="batchSummyConfirm" parameterType="com.fh.entity.SysConfirmInfo">
+	<!-- <update id="batchSummyConfirm" parameterType="com.fh.entity.SysConfirmInfo">
 		<foreach item="item" index="index" collection="list" open=" " separator=" " close=" ">
 		    delete from
 		    <include refid="tableName"></include>
@@ -189,7 +189,7 @@
 		    <include refid="tableName"></include>
 		    (<include refid="Field"></include>) values (<include refid="FieldItemValue"></include>);
 		</foreach>
-	</update>
+	</update> -->
 	<update id="batchAllConfirm" parameterType="java.util.Map">
 		<!-- <if test="TransferConfirmDel != null"> -->
 		    delete from <include refid="tableName"></include>
