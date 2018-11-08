@@ -45,14 +45,44 @@
 					<div class="page-header">
 						<span class="label label-xlg label-success arrowed-right">东部管道</span>
 						<!-- arrowed-in-right -->
-									<span class="label label-xlg label-yellow arrowed-in arrowed-right"
-									    id="subTitle" style="margin-left: 2px;">操作时限</span> 
-                                    <span style="border-left: 1px solid #e2e2e2; margin: 0px 10px;">&nbsp;</span>
+						<span class="label label-xlg label-yellow arrowed-in arrowed-right"
+							id="subTitle" style="margin-left: 2px;">关账设置</span> 
+                        <span style="border-left: 1px solid #e2e2e2; margin: 0px 10px;">&nbsp;</span>
 								
-									<button id="btnQuery" class="btn btn-white btn-info btn-sm"
-										onclick="showQueryCondi($('#jqGridBase'))">
-										<i class="ace-icon fa fa-chevron-down bigger-120 blue"></i> <span>隐藏查询</span>
-									</button>
+						<button id="btnQuery" class="btn btn-white btn-info btn-sm"
+							onclick="showQueryCondi($('#jqGridBase'))">
+							<i class="ace-icon fa fa-chevron-down bigger-120 blue"></i> <span>隐藏查询</span>
+						</button>
+						
+						<div class="pull-right">
+							<span class="green middle bolder">类型: &nbsp;</span>
+
+							<div class="btn-toolbar inline middle no-margin">
+								<div data-toggle="buttons" class="btn-group no-margin">
+									            <label class="btn btn-sm btn-primary active"> <span
+									    	        class="bigger-110">合同化</span> <input type="radio" value="1" />
+									            </label> 
+									            <label class="btn btn-sm btn-primary"> <span
+									            	class="bigger-110">市场化</span> <input type="radio" value="2" />
+									            </label> 
+									            <label class="btn btn-sm btn-primary"> <span
+									            	class="bigger-110">劳务人员在建</span> <input type="radio" value="3" />
+									            </label>
+									            <label class="btn btn-sm btn-primary"> <span
+									    	        class="bigger-110">运行人员</span> <input type="radio" value="4" />
+									            </label>
+									            <label class="btn btn-sm btn-primary"> <span
+										            class="bigger-110">劳务用工</span> <input type="radio" value="5" />
+									            </label>
+									<label class="btn btn-sm btn-primary"> <span
+										class="bigger-110">社保</span> <input type="radio" value="21" />
+									</label>
+									<label class="btn btn-sm btn-primary"> <span
+										class="bigger-110">公积金</span> <input type="radio" value="25" />
+									</label>
+								</div>
+							</div>
+						</div>
 					</div><!-- /.page-header -->
 
 					<div class="row">
@@ -62,19 +92,20 @@
 									<div class="widget-main">
 										<form class="form-inline">
 											<span class="pull-left" style="margin-right: 5px;">
+												<select class="chosen-select form-control"
+													name="SelectedCustCol7" id="SelectedCustCol7" data-placeholder="请选择帐套"
+													style="vertical-align: top; height:32px;width: 150px;">
+													<option value="">请选择帐套</option>
+													<c:forEach items="${FMISACC}" var="each">
+														<option value="${each.DICT_CODE}">${each.NAME}</option>
+													</c:forEach>
+												</select>
+											</span>
+											
+											<span class="pull-left" style="margin-right: 5px;">
 												<div class="selectTree" id="selectTree" multiMode="true"
 												    allSelectable="false" noGroup="false"></div>
 											    <input id="SelectedDepartCode" type="hidden"/> 
-											</span>
-											<span class="pull-left" style="margin-right: 5px;"> 
-												<select class="chosen-select form-control" 
-												    name="SelectedBusiType" id="SelectedBusiType" data-placeholder="请选择业务类型"
-													style="vertical-align: top; height: 32px; width: 150px;">
-														<option value="">请选择业务类型</option>
-														<c:forEach items="${BUSITYPE}" var="each">
-															<option value="${each.DICT_CODE}">${each.NAME}</option>
-														</c:forEach>
-												</select>
 											</span>
 											<button type="button" class="btn btn-info btn-sm" onclick="tosearch();">
 												<i class="ace-icon fa fa-search bigger-110"></i>
@@ -136,10 +167,12 @@
 	<script type="text/javascript"> 
         var gridBase_selector = "#jqGridBase";  
         var pagerBase_selector = "#jqGridBasePager";  
-    	
+
+        var which;
+        
     	//页面显示的数据的查询信息，在tosearch()里赋值
+		var ShowDataCustCol7 = "";
     	var ShowDataDepartCode = "";
-    	var ShowDataBusiType = "";
 
 	    $(document).ready(function () { 
 		    $(top.hangge());//关闭加载状态
@@ -149,21 +182,46 @@
 		        $(gridBase_selector).jqGrid( 'setGridWidth', $(".page-content").width());
 		        //$(gridBase_selector).jqGrid( 'setGridHeight', $(window).height() - 230);
 			    resizeGridHeight($(gridBase_selector));
-			})
+			});
+			
+			//初始化当前选择凭证类型
+			if('${pd.which}'!=""){
+				$('[data-toggle="buttons"] .btn').each(function(index, data){
+					var target = $(this).find('input[type=radio]');
+					$(this).removeClass('active');
+					var whichCur = parseInt(target.val());
+					console.log(which);
+					if(whichCur=='${pd.which}'){
+						$(this).addClass('active');
+						which=whichCur;
+					}
+				});
+			} 
+			//凭证类型变化
+			$('[data-toggle="buttons"] .btn').on('click', function(e){
+				var target = $(this).find('input[type=radio]');
+				which = parseInt(target.val());
+				//if(which!='${pd.which}'){
+					window.location.href="<%=basePath%>sysDeptLtdTime/list.do?SelectedTableNo="+which;
+				//}
+			});
 		
 		    $(gridBase_selector).jqGrid({
-    			url: '<%=basePath%>sysDeptLtdTime/getPageList.do?'
-    				+ 'SelectedDepartCode='+ShowDataDepartCode
-    	            + '&SelectedBusiType='+ShowDataBusiType,
+    			url: '<%=basePath%>sysDeptLtdTime/getPageList.do?SelectedTableNo='+which
+	                + '&SelectedCustCol7='+ShowDataCustCol7
+    				+ '&SelectedDepartCode='+ShowDataDepartCode,
 		        datatype: "json",
 		        colModel: [
+					{ label: '启用状态',name:'STATE__', width:90,hidden : true,editable: true},
+					{ label: '业务类型',name:'BUSI_TYPE__', width:90,hidden : true,editable: true},
+				    { label: '账套',name:'BILL_OFF__', width:90,hidden : true,editable: true},
 					{ label: '责任中心', name: 'DEPT_CODE__', width: 90,hidden : true,editable: true},
-				    { label: '业务类型',name:'BUSI_TYPE__', width:90,hidden : true,editable: true},
+				    { label: '每月日',name:'LTD_DAY__', width:90,hidden : true,editable: true},
 				    
-				    { label: '责任中心', name: 'DEPT_CODE', width: 140,editable: true, editrules:{required:true},edittype: 'select',formatter:'select',formatoptions:{value:"${departmentStrSelect}"},editoptions:{value:"${departmentStrSelect}"},stype: 'select',searchoptions:{value:"${departmentStrAll}"}},
-				    { label: '业务类型',name:'BUSI_TYPE', width:160,editable: true, editrules:{required:true},edittype: 'select',formatter:'select',formatoptions:{value:"${busiTypeStrSelect}"},editoptions:{value:"${busiTypeStrSelect}"},stype: 'select',searchoptions:{value:"${busiTypeStrAll}"}}, 
-				    { label: '每月日', name: 'LTD_DAY', width: 140,editable: true, editrules:{required:true},edittype: 'select',formatter:'select',formatoptions:{value:"${lidDayStrSelect}"},editoptions:{value:"${lidDayStrSelect}"},stype: 'select',searchoptions:{value:"${lidDayStrAll}"}},
-					{ label: '每日时', name: 'LTD_HOUR', width: 140,editable: true, editrules:{required:true},edittype: 'select',formatter:'select',formatoptions:{value:"${lidHourStrSelect}"},editoptions:{value:"${lidHourStrSelect}"},stype: 'select',searchoptions:{value:"${lidHourStrAll}"}},
+				    { label: '启用状态', name: 'STATE', width: 80,editable: true, editrules:{required:true}, align:'center',edittype:"checkbox",editoptions: {value:"1:0"},unformat: aceSwitch,formatter: customFmatterState},                   
+				    { label: '帐套', name: 'BILL_OFF', width: 120,editable: false,editrules:{required:true},edittype: 'select',formatter:'select',formatteroptions:{value:"${billOffStrAll}"},editoptions:{value:"${billOffStrSelect}"},stype: 'select',searchoptions:{value:"${billOffStrAll}"}},
+					{ label: '责任中心', name: 'DEPT_CODE', width: 140,editable: false, editrules:{required:true},edittype: 'select',formatter:'select',formatoptions:{value:"${departmentStrSelect}"},editoptions:{value:"${departmentStrSelect}"},stype: 'select',searchoptions:{value:"${departmentStrAll}"}},
+				    { label: '每月日', name: 'LTD_DAY', width: 140,editable: true, editrules:{required:true},edittype: 'select',formatter:'select',formatoptions:{value:"${lidDayStrSelect}"},editoptions:{value:"${lidDayStrSelect}"},stype: 'select',searchoptions:{value:"${lidDayStrAll}"}}
 				],
     			reloadAfterSubmit: true, 
     			viewrecords: true, 
@@ -175,8 +233,8 @@
 				//rownumbers: true, 
 	            //rownumWidth: 35,		
 	            
-				multiselect: true,
-		        multiboxonly: true, 
+				multiselect: false,
+		        multiboxonly: false, 
 
 				ondblClickRow: doubleClickRow,
 				
@@ -184,12 +242,12 @@
 				pgbuttons: false, // 分页按钮是否显示 
 				pginput: false, // 是否允许输入分页页数 
 				
-    			editurl: '<%=basePath%>sysDeptLtdTime/edit.do?'
-    				+ 'SelectedDepartCode='+$("#SelectedDepartCode").val()
-    	            + '&SelectedBusiType='+$("#SelectedBusiType").val()
+    			editurl: '<%=basePath%>sysDeptLtdTime/edit.do?SelectedTableNo='+which
+                    + '&SelectedDepartCode='+$("#SelectedDepartCode").val()
+    	            + '&SelectedCustCol7='+$("#SelectedCustCol7").val()
     	            
     				+ '&ShowDataDepartCode='+ShowDataDepartCode
-    	            + '&ShowDataBusiType='+ShowDataBusiType,
+    	            + '&ShowDataCustCol7='+ShowDataCustCol7,
     			
     			loadComplete : function() {
     				var table = this;
@@ -208,9 +266,9 @@
 		    jQuery(gridBase_selector).navGrid(pagerBase_selector,
 			{ 
 	            //navbar options
-		        edit: true,
+		        edit: false,
 	            editicon : 'ace-icon fa fa-pencil blue',
-	            add: true,
+	            add: false,
 	            addicon : 'ace-icon fa fa-plus-circle purple',
 	            del: false,
 	            delicon : 'ace-icon fa fa-trash-o red',
@@ -297,7 +355,7 @@
 	            title : "批量保存",
 	            cursor : "pointer"
 	        });
-	        $(gridBase_selector).navButtonAdd(pagerBase_selector, {
+	        /*$(gridBase_selector).navButtonAdd(pagerBase_selector, {
     			id : "batchDelete",
                 caption : "",
                 buttonicon : "ace-icon fa fa-trash-o red",
@@ -305,7 +363,7 @@
                 position : "last",
                 title : "删除",
                 cursor : "pointer"
-            });
+            });*/
             $(gridBase_selector).navSeparatorAdd(pagerBase_selector, {
     			sepclass : "ui-separator",
     			sepcontent: ""
@@ -454,6 +512,101 @@
     			    }
                 });
         }
+    	
+        //加载单位树
+        function initComplete(){
+    		//下拉树
+    		var defaultNodes = {"treeNodes":${zTreeNodes}};
+    		//绑定change事件
+    		$("#selectTree").bind("change",function(){
+    			$("#SelectedDepartCode").val("");
+    			if($(this).attr("relValue")){
+    				$("#SelectedDepartCode").val($(this).attr("relValue"));
+    		    }
+    			getSelectBillCodeOptions();
+    		});
+    		//赋给data属性
+    		$("#selectTree").data("data",defaultNodes);  
+    		$("#selectTree").render();
+    		$("#selectTree2_input").val("请选择单位");
+    	}
+	
+		//检索
+		function tosearch() {
+	    	//页面显示的数据的查询信息，在tosearch()里赋值
+	    	ShowDataDepartCode = $("#SelectedDepartCode").val();
+	    	ShowDataCustCol7 = $("#SelectedCustCol7").val();
+	    	
+			$(gridBase_selector).jqGrid('setGridParam',{  // 重新加载数据
+				url:'<%=basePath%>sysDeptLtdTime/getPageList.do?SelectedTableNo='+which
+                    + '&SelectedDepartCode='+ShowDataDepartCode
+    	            + '&SelectedCustCol7='+ShowDataCustCol7,
+        		editurl: '<%=basePath%>sysDeptLtdTime/edit.do?SelectedTableNo='+which
+                    + '&SelectedDepartCode='+$("#SelectedDepartCode").val()
+        	        + '&SelectedCustCol7='+$("#SelectedCustCol7").val()
+        	            
+        			+ '&ShowDataDepartCode='+ShowDataDepartCode
+        	        + '&ShowDataCustCol7='+ShowDataCustCol7,
+								datatype : 'json'
+							}).trigger("reloadGrid");
+		}
+		
+		//switch element when editing inline
+		function aceSwitch( cellvalue, options, cell ) {
+			setTimeout(function(){
+				 $(cell).find('input[type=checkbox]')
+					.addClass('ace ace-switch ace-switch-5')
+					.after('<span class="lbl" data-lbl="启用        关闭"></span>'); 
+				 if (cellvalue=="启用") {	
+					$(cell).find('input[type=checkbox]').attr('checked','checked');
+				 }else{
+				 	$(cell).find('input[type=checkbox]').removeAttr('checked');
+				 }
+			}, 0);
+			if (cellvalue=="启用") {
+				return 1;
+			} else {
+				return 0;
+			} 
+		}
+		
+		function customFmatterState(cellvalue, options, rowObject){  
+			if (cellvalue==1) {
+				 return '<span class="label label-important arrowed-in">启用</span>';
+			} else {
+				return '<span class="label label-success arrowed">关闭</span>';
+			}
+		};
+
+        /**
+         * 增加成功
+         * 
+         * @param response
+         * @param postdata
+         * @returns
+         */
+        function fn_addSubmit_extend(response, postdata) {
+            var responseJSON = JSON.parse(response.responseText);
+        	if (responseJSON.code == 0) {
+        		// console.log("Add Success");
+        		$("#subTitle").tips({
+        			side : 3,
+        			msg : '保存成功',
+        			bg : '#009933',
+        			time : 3
+        		});
+        		return [ true ];
+        	} else {
+        		// console.log("Add Failed"+response.responseJSON.message);
+        		$("#subTitle").tips({
+        			side : 3,
+        			msg : '保存失败,' + responseJSON.message,
+        			bg : '#cc0033',
+        			time : 3
+        		});
+        		return [ false, responseJSON.message ];
+        	}
+        }
 
         //批量删除
         function batchDelete(){
@@ -519,74 +672,6 @@
                 });
     		}
     	}
-    	
-        //加载单位树
-        function initComplete(){
-    		//下拉树
-    		var defaultNodes = {"treeNodes":${zTreeNodes}};
-    		//绑定change事件
-    		$("#selectTree").bind("change",function(){
-    			$("#SelectedDepartCode").val("");
-    			if($(this).attr("relValue")){
-    				$("#SelectedDepartCode").val($(this).attr("relValue"));
-    		    }
-    			getSelectBillCodeOptions();
-    		});
-    		//赋给data属性
-    		$("#selectTree").data("data",defaultNodes);  
-    		$("#selectTree").render();
-    		$("#selectTree2_input").val("请选择单位");
-    	}
-	
-		//检索
-		function tosearch() {
-	    	//页面显示的数据的查询信息，在tosearch()里赋值
-	    	ShowDataDepartCode = $("#SelectedDepartCode").val();
-	    	ShowDataBusiType = $("#SelectedBusiType").val();
-	    	
-			$(gridBase_selector).jqGrid('setGridParam',{  // 重新加载数据
-				url:'<%=basePath%>sysDeptLtdTime/getPageList.do?'
-    				+ 'SelectedDepartCode='+ShowDataDepartCode
-    	            + '&SelectedBusiType='+ShowDataBusiType,
-        		editurl: '<%=basePath%>sysDeptLtdTime/edit.do?'
-        			+ 'SelectedDepartCode='+$("#SelectedDepartCode").val()
-        	        + '&SelectedBusiType='+$("#SelectedBusiType").val()
-        	            
-        			+ '&ShowDataDepartCode='+ShowDataDepartCode
-        	        + '&ShowDataBusiType='+ShowDataBusiType,
-								datatype : 'json'
-							}).trigger("reloadGrid");
-		}
-
-        /**
-         * 增加成功
-         * 
-         * @param response
-         * @param postdata
-         * @returns
-         */
-        function fn_addSubmit_extend(response, postdata) {
-            var responseJSON = JSON.parse(response.responseText);
-        	if (responseJSON.code == 0) {
-        		// console.log("Add Success");
-        		$("#subTitle").tips({
-        			side : 3,
-        			msg : '保存成功',
-        			bg : '#009933',
-        			time : 3
-        		});
-        		return [ true ];
-        	} else {
-        		// console.log("Add Failed"+response.responseJSON.message);
-        		$("#subTitle").tips({
-        			side : 3,
-        			msg : '保存失败,' + responseJSON.message,
-        			bg : '#cc0033',
-        			time : 3
-        		});
-        		return [ false, responseJSON.message ];
-        	}
-        }
 	</script>
 </body>
 </html>

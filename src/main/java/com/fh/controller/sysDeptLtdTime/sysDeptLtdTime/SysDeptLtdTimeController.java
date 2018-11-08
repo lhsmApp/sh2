@@ -12,17 +12,19 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.fh.controller.base.BaseController;
+import com.fh.controller.common.Corresponding;
 import com.fh.controller.common.DictsUtil;
 import com.fh.controller.common.Message;
 import com.fh.controller.common.QueryFeildString;
+import com.fh.controller.common.TmplUtil;
 import com.fh.entity.CommonBase;
 import com.fh.entity.JqPage;
 import com.fh.entity.Page;
 import com.fh.entity.PageResult;
 import com.fh.entity.SysDeptLtdTime;
-import com.fh.entity.system.Dictionaries;
 import com.fh.service.fhoa.department.DepartmentManager;
 import com.fh.service.sysDeptLtdTime.sysDeptLtdTime.SysDeptLtdTimeManager;
+import com.fh.service.system.dictionaries.impl.DictionariesService;
 import com.fh.util.Jurisdiction;
 import com.fh.util.PageData;
 import com.fh.util.SqlTools;
@@ -49,9 +51,16 @@ public class SysDeptLtdTimeController extends BaseController {
 
 	@Resource(name = "departmentService")
 	private DepartmentManager departmentService;
+	@Resource(name="dictionariesService")
+	private DictionariesService dictionariesService;
 
 	//界面查询字段
-    List<String> QueryFeildList = Arrays.asList("DEPT_CODE", "BUSI_TYPE");
+    List<String> QueryFeildList = Arrays.asList("BUSI_TYPE", "BILL_OFF", "DEPT_CODE");
+    //设置必定不用编辑的列
+    List<String> MustNotEditList = Arrays.asList("BUSI_TYPE", "BILL_OFF", "DEPT_CODE");
+
+	//默认的which值
+	String DefaultWhile = TmplType.TB_STAFF_DETAIL_CONTRACT.getNameKey();
 	
 	/**
 	 * 列表
@@ -61,9 +70,21 @@ public class SysDeptLtdTimeController extends BaseController {
 	@RequestMapping(value = "/list")
 	public ModelAndView list(Page page) throws Exception {
 		PageData getPd = this.getPageData();
+		//业务类型
+		String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("SelectedTableNo"), DefaultWhile);
+		//while
+		getPd.put("which", SelectedTableNo);
+		
 		ModelAndView mv = this.getModelAndView();
 		mv.setViewName("sysDeptLtdTime/sysDeptLtdTime/sysDeptLtdTime_list");
 
+		//CUST_COL7 FMISACC 帐套字典
+		mv.addObject("FMISACC", DictsUtil.getDictsByParentCode(dictionariesService, "FMISACC"));
+		String billOffValus = DictsUtil.getDicValue(dictionariesService, "FMISACC");
+		String billOffStringAll = ":[All];" + billOffValus;
+		String billOffStringSelect = ":;" + billOffValus;
+		mv.addObject("billOffStrAll", billOffStringAll);
+		mv.addObject("billOffStrSelect", billOffStringSelect);
 		// *********************加载单位树  DEPT_CODE*******************************
 		List<PageData> treeSource = DictsUtil.getDepartmentSelectTreeSourceList(departmentService);
 		if (treeSource != null && treeSource.size() > 0) {
@@ -77,29 +98,6 @@ public class SysDeptLtdTimeController extends BaseController {
 		mv.addObject("departmentStrAll", departmentStringAll);
 		mv.addObject("departmentStrSelect", departmentStringSelect);
 
-		//BUSI_TYPE BUSITYPE
-		//List<PageData> listBase = tmplconfigService.listBase(page); // 列出TmplConfigBase列表
-		List<Dictionaries> dicBusiTypeList = new ArrayList<Dictionaries>();
-		String busiTypeValus = "";
-		TmplType[] enums = TmplType.values();  
-    	if(enums!=null){
-            for (int i = 0; i < enums.length; i++) {  
-            	Dictionaries dic = new Dictionaries();
-            	dic.setDICT_CODE(enums[i].getNameKey());
-            	dic.setNAME(enums[i].getNameValue());
-            	dicBusiTypeList.add(dic);
-    			if (busiTypeValus != null && !busiTypeValus.toString().trim().equals("")) {
-    				busiTypeValus += ";";
-    			}
-    			busiTypeValus += enums[i].getNameKey() + ":" + enums[i].getNameValue();
-            }  
-    	}
-		mv.addObject("BUSITYPE", dicBusiTypeList);
-		String busiTypeStringAll = ":[All];" + busiTypeValus;
-		String busiTypeStringSelect = ":;" + busiTypeValus;
-		mv.addObject("busiTypeStrAll", busiTypeStringAll);
-		mv.addObject("busiTypeStrSelect", busiTypeStringSelect);
-
 		String lidDayValus = "";
 		for(int i=1;i<=31;i++){
 			String strDay = String.valueOf(i);
@@ -109,28 +107,12 @@ public class SysDeptLtdTimeController extends BaseController {
 			if (lidDayValus != null && !lidDayValus.toString().trim().equals("")) {
 				lidDayValus += ";";
 			}
-			lidDayValus += strDay + ":" + strDay;
+			lidDayValus += strDay + ":" + " " + strDay + " ";
 		}
 		String lidDayStringAll = ":[All];" + lidDayValus;
 		String lidDayStringSelect = ":;" + lidDayValus;
 		mv.addObject("lidDayStrAll", lidDayStringAll);
 		mv.addObject("lidDayStrSelect", lidDayStringSelect);
-
-		String lidHourValus = "";
-		for(int i=1;i<=24;i++){
-			String strHour = String.valueOf(i);
-			if(i<10){
-				strHour = "0" + String.valueOf(i);
-			}
-			if (lidHourValus != null && !lidHourValus.toString().trim().equals("")) {
-				lidHourValus += ";";
-			}
-			lidHourValus += strHour + ":" + strHour;
-		}
-		String lidHourStringAll = ":[All];" + lidHourValus;
-		String lidHourStringSelect = ":;" + lidHourValus;
-		mv.addObject("lidHourStrAll", lidHourStringAll);
-		mv.addObject("lidHourStrSelect", lidHourStringSelect);
 		
 		mv.addObject("pd", getPd);
 		return mv;
@@ -147,15 +129,25 @@ public class SysDeptLtdTimeController extends BaseController {
 		logBefore(logger, Jurisdiction.getUsername()+"列表SysDeptLtdTime");
 
 		PageData getPd = this.getPageData();
-		//责任中心
-		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
 		//业务类型
-		String SelectedBusiType = getPd.getString("SelectedBusiType");
+		String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("SelectedTableNo"), DefaultWhile);
+		String strBusiType = Corresponding.getTypeCodeDetailFromTmplType(SelectedTableNo);
+		//单位
+		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
+		//账套
+		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
 
 		PageData getQueryFeildPd = new PageData();
+		getQueryFeildPd.put("BUSI_TYPE", strBusiType);
+		getQueryFeildPd.put("BILL_OFF", SelectedCustCol7);
 		getQueryFeildPd.put("DEPT_CODE", SelectedDepartCode);
-		getQueryFeildPd.put("BUSI_TYPE", SelectedBusiType);
 		String QueryFeild = QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList);
+		if(!(SelectedCustCol7 != null && !SelectedCustCol7.trim().equals(""))){
+			QueryFeild += " and 1 != 1 ";
+		}
+		if(!(strBusiType!=null && !strBusiType.trim().equals(""))){
+			QueryFeild += " and 1 != 1 ";
+		}
 		getPd.put("QueryFeild", QueryFeild);
 		
 		//多条件过滤条件
@@ -190,17 +182,22 @@ public class SysDeptLtdTimeController extends BaseController {
 		//操作
 		String oper = getPd.getString("oper");
 		
-		List<PageData> listData = new ArrayList<PageData>();
-		listData.add(getPd);
-		String checkState = CheckState(listData);
-		if(checkState!=null && !checkState.trim().equals("")){
-			commonBase.setCode(2);
-			commonBase.setMessage(checkState);
-			return commonBase;
+		if(oper.toUpperCase().equals(("edit").toUpperCase())){
+			for(String strFeild : MustNotEditList){
+				getPd.put(strFeild, getPd.get(strFeild + TmplUtil.keyExtra));
+			}
+			List<PageData> listData = new ArrayList<PageData>();
+			listData.add(getPd);
+			String checkState = CheckState(listData);
+			if(checkState!=null && !checkState.trim().equals("")){
+				commonBase.setCode(2);
+				commonBase.setMessage(checkState);
+				return commonBase;
+			}
+			sysDeptLtdTimeService.batchUpdateDatabase(listData);
+			commonBase.setCode(0);
 		}
-		sysDeptLtdTimeService.batchUpdateDatabase(listData);
-		commonBase.setCode(0);
-	
+		
 		return commonBase;
 	}
 	
@@ -222,6 +219,11 @@ public class SysDeptLtdTimeController extends BaseController {
         List<PageData> listData = (List<PageData>) JSONArray.toCollection(array,PageData.class);
 
 		if(null != listData && listData.size() > 0){
+        	for(PageData pd : listData){
+        		for(String strFeild : MustNotEditList){
+        			pd.put(strFeild, pd.get(strFeild + TmplUtil.keyExtra));
+        		}
+        	}
 			String checkState = CheckState(listData);
 			if(checkState!=null && !checkState.trim().equals("")){
 				commonBase.setCode(2);

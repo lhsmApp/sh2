@@ -44,7 +44,10 @@ public enum TmplType {
 	TB_QYNJTQ_TRANSFER("PZ07","企业年金提取"),
 	TB_BCYLTQ_TRANSFER("PZ08","补充医疗提取"),
 	TB_QYNJFF_TRANSFER("PZ09","企业年金发放"),
-	TB_PGTZ_TRANSFER("PZ10","评估调整");
+	TB_PGTZ_TRANSFER("PZ10","评估调整"),
+	TB_SGRQ_TRANSFER("PZ11","深港天然气"),
+	TB_SGFY_TRANSFER("PZ12","深港社保劳务及管理费"),
+	TB_SGDX_TRANSFER("PZ13","深港社保费用及抵消往来");
 	
 	private String nameKey;
 

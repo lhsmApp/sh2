@@ -9,11 +9,19 @@ package com.fh.entity;
 *
  */
 public class SysDeptLtdTime {
+	private String BUSI_TYPE;
+	private String BILL_OFF;
 	private String DEPT_CODE;
 	private String DEPT_NAME;
-	private String BUSI_TYPE;
 	private String LTD_DAY;
-	private String LTD_HOUR;
+	private String STATE;
+	
+	public String getSTATE() {
+		return STATE;
+	}
+	public void setSTATE(String sTATE) {
+		STATE = sTATE;
+	}
 	public String getDEPT_NAME() {
 		return DEPT_NAME;
 	}
@@ -38,10 +46,10 @@ public class SysDeptLtdTime {
 	public void setLTD_DAY(String lTD_DAY) {
 		LTD_DAY = lTD_DAY;
 	}
-	public String getLTD_HOUR() {
-		return LTD_HOUR;
+	public String getBILL_OFF() {
+		return BILL_OFF;
 	}
-	public void setLTD_HOUR(String lTD_HOUR) {
-		LTD_HOUR = lTD_HOUR;
+	public void setBILL_OFF(String bILL_OFF) {
+		BILL_OFF = bILL_OFF;
 	}
 }

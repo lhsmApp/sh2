@@ -502,8 +502,9 @@ public class HouseFundSummyController extends BaseController {
         for(PageData each : listData){
         	listBillCode.add(each.getString("BILL_CODE" + TmplUtil.keyExtra));
 
+			String strCustCol7 = each.getString("CUST_COL7" + TmplUtil.keyExtra);
 			String strDepartCode = each.getString("DEPT_CODE" + TmplUtil.keyExtra);
-			String mesSysDeptLtdTime = CheckSystemDateTime.CheckSysDeptLtdTime(strDepartCode, TypeCodeSummyBill, sysDeptLtdTimeService);
+			String mesSysDeptLtdTime = CheckSystemDateTime.CheckSysDeptLtdTime(TypeCodeSummyBill, strCustCol7, strDepartCode, sysDeptLtdTimeService);
 			if(mesSysDeptLtdTime!=null && !mesSysDeptLtdTime.trim().equals("")){
 				commonBase.setCode(2);
 				commonBase.setMessage(mesSysDeptLtdTime);
@@ -661,7 +662,7 @@ public class HouseFundSummyController extends BaseController {
 					strGetSetItemDeptCode += ",";
 				}
 				strGetSetItemDeptCode += strDepartCode;
-				String mesSysDeptLtdTime = CheckSystemDateTime.CheckSysDeptLtdTime(strDepartCode, TypeCodeSummyBill, sysDeptLtdTimeService);
+				String mesSysDeptLtdTime = CheckSystemDateTime.CheckSysDeptLtdTime(TypeCodeSummyBill, SelectedCustCol7, strDepartCode, sysDeptLtdTimeService);
 				if(mesSysDeptLtdTime!=null && !mesSysDeptLtdTime.trim().equals("")){
 					commonBase.setCode(2);
 					commonBase.setMessage(mesSysDeptLtdTime);
@@ -727,7 +728,7 @@ public class HouseFundSummyController extends BaseController {
 					strGetSetItemDeptCode += ",";
 				}
 				strGetSetItemDeptCode += strDepartCode;
-				String mesSysDeptLtdTime = CheckSystemDateTime.CheckSysDeptLtdTime(strDepartCode, TypeCodeSummyBill, sysDeptLtdTimeService);
+				String mesSysDeptLtdTime = CheckSystemDateTime.CheckSysDeptLtdTime(TypeCodeSummyBill, SelectedCustCol7, strDepartCode, sysDeptLtdTimeService);
 				if(mesSysDeptLtdTime!=null && !mesSysDeptLtdTime.trim().equals("")){
 					commonBase.setCode(2);
 					commonBase.setMessage(mesSysDeptLtdTime);

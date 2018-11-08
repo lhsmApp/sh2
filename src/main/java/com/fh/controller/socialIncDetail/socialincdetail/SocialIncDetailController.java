@@ -367,7 +367,7 @@ public class SocialIncDetailController extends BaseController {
 			commonBase.setMessage(strGetCheckMustSelected);
 			return commonBase;
 		}
-		String mesSysDeptLtdTime = CheckSystemDateTime.CheckSysDeptLtdTime(SelectedDepartCode, TypeCodeDetail, sysDeptLtdTimeService);
+		String mesSysDeptLtdTime = CheckSystemDateTime.CheckSysDeptLtdTime(TypeCodeDetail, SelectedCustCol7, SelectedDepartCode, sysDeptLtdTimeService);
 		if(mesSysDeptLtdTime!=null && !mesSysDeptLtdTime.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(mesSysDeptLtdTime);
@@ -483,7 +483,7 @@ public class SocialIncDetailController extends BaseController {
 			commonBase.setMessage(strGetCheckMustSelected);
 			return commonBase;
 		}
-		String mesSysDeptLtdTime = CheckSystemDateTime.CheckSysDeptLtdTime(SelectedDepartCode, TypeCodeDetail, sysDeptLtdTimeService);
+		String mesSysDeptLtdTime = CheckSystemDateTime.CheckSysDeptLtdTime(TypeCodeDetail, SelectedCustCol7, SelectedDepartCode, sysDeptLtdTimeService);
 		if(mesSysDeptLtdTime!=null && !mesSysDeptLtdTime.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(mesSysDeptLtdTime);
@@ -572,7 +572,7 @@ public class SocialIncDetailController extends BaseController {
 			commonBase.setMessage(strGetCheckMustSelected);
 			return commonBase;
 		}
-		String mesSysDeptLtdTime = CheckSystemDateTime.CheckSysDeptLtdTime(SelectedDepartCode, TypeCodeDetail, sysDeptLtdTimeService);
+		String mesSysDeptLtdTime = CheckSystemDateTime.CheckSysDeptLtdTime(TypeCodeDetail, SelectedCustCol7, SelectedDepartCode, sysDeptLtdTimeService);
 		if(mesSysDeptLtdTime!=null && !mesSysDeptLtdTime.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(mesSysDeptLtdTime);
@@ -655,7 +655,7 @@ public class SocialIncDetailController extends BaseController {
 			commonBase.setMessage(strGetCheckMustSelected);
 			return commonBase;
 		}
-		String mesSysDeptLtdTime = CheckSystemDateTime.CheckSysDeptLtdTime(SelectedDepartCode, TypeCodeDetail, sysDeptLtdTimeService);
+		String mesSysDeptLtdTime = CheckSystemDateTime.CheckSysDeptLtdTime(TypeCodeDetail, SelectedCustCol7, SelectedDepartCode, sysDeptLtdTimeService);
 		if(mesSysDeptLtdTime!=null && !mesSysDeptLtdTime.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(mesSysDeptLtdTime);
@@ -747,7 +747,7 @@ public class SocialIncDetailController extends BaseController {
 		}
 	}
 	if(commonBase.getCode()==-1){
-		String mesSysDeptLtdTime = CheckSystemDateTime.CheckSysDeptLtdTime(SelectedDepartCode, TypeCodeDetail, sysDeptLtdTimeService);
+		String mesSysDeptLtdTime = CheckSystemDateTime.CheckSysDeptLtdTime(TypeCodeDetail, SelectedCustCol7, SelectedDepartCode, sysDeptLtdTimeService);
 		if(mesSysDeptLtdTime!=null && !mesSysDeptLtdTime.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(mesSysDeptLtdTime);
@@ -830,7 +830,7 @@ public class SocialIncDetailController extends BaseController {
 		} 
 	}
 	if(commonBase.getCode()==-1){
-		String mesSysDeptLtdTime = CheckSystemDateTime.CheckSysDeptLtdTime(SelectedDepartCode, TypeCodeDetail, sysDeptLtdTimeService);
+		String mesSysDeptLtdTime = CheckSystemDateTime.CheckSysDeptLtdTime(TypeCodeDetail, SelectedCustCol7, SelectedDepartCode, sysDeptLtdTimeService);
 		if(mesSysDeptLtdTime!=null && !mesSysDeptLtdTime.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(mesSysDeptLtdTime);

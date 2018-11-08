@@ -25,7 +25,7 @@ public class Message {
 	public static String SystemDateTimeMustNotKong = "当前区间不能为空，请联系管理员！";
 	public static String SystemDateTimeNotSameTranferSystemDateTime = "当前区间与界面操作区间不一致，请重新打开界面！";
 	public static String CurrentDay_LTD_DAY = "当前日期大于系统设置可操作日期，不能操作！";
-	public static String CurrentHour_LTD_HOUR = "当前时辰大于系统设置可操作时辰，不能操作！";
+	public static String LTD_DAY_Not_Have = "未获取到系统设置可操作日期，请联系管理员！";
 	public static String NotHaveConfirmData = "没有已确认数据，请到【汇总单据确认】功能确认相关数据！";
 	public static String SetValue = "勾选记录已设置值信息，请删除后再删除此记录！！";
 	public static String HavaNotHavaChangeCols = "存在未对应的数据列，请点击【查询】按钮！";

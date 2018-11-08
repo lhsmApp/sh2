@@ -9,30 +9,34 @@
 
 	<!-- 字段 -->
 	<sql id="Field">
-		DEPT_CODE,
 		BUSI_TYPE,
+		BILL_OFF,
+		DEPT_CODE,
 		LTD_DAY,
-		LTD_HOUR
+		STATE
 	</sql>
 	<sql id="FieldSelectKey">
-		,DEPT_CODE DEPT_CODE__,
-		BUSI_TYPE BUSI_TYPE__,
+		,BUSI_TYPE BUSI_TYPE__,
+		BILL_OFF BILL_OFF__,
+		DEPT_CODE DEPT_CODE__,
 		LTD_DAY LTD_DAY__,
-		LTD_HOUR LTD_HOUR__
+		STATE STATE__
 	</sql>
 
 	<!-- 字段值 -->
 	<sql id="FieldValue">
-		#{DEPT_CODE},
 		#{BUSI_TYPE},
+		#{BILL_OFF},
+		#{DEPT_CODE},
 		#{LTD_DAY},
-		#{LTD_HOUR}
+		#{STATE}
 	</sql>
 	<sql id="FieldValueItem">
-		#{item.DEPT_CODE},
 		#{item.BUSI_TYPE},
+		#{item.BILL_OFF},
+		#{item.DEPT_CODE},
 		#{item.LTD_DAY},
-		#{item.LTD_HOUR}
+		#{item.STATE}
 	</sql>
 
 	<!-- 列表 -->
@@ -77,8 +81,8 @@
 		<include refid="tableName"></include>
         <where>
 		<foreach item="item" index="index" collection="list" open=" " separator=" or " close=" ">
-            ((DEPT_CODE = #{item.DEPT_CODE} and BUSI_TYPE = #{item.BUSI_TYPE})
-             and (DEPT_CODE != #{item.DEPT_CODE__} or BUSI_TYPE != #{item.BUSI_TYPE__}))
+            ((BUSI_TYPE = #{item.BUSI_TYPE} and BILL_OFF = #{item.BILL_OFF} and DEPT_CODE = #{item.DEPT_CODE})
+             and (BUSI_TYPE != #{item.BUSI_TYPE__} or BILL_OFF != #{item.BILL_OFF__} or DEPT_CODE != #{item.DEPT_CODE__}))
 		</foreach>
 		</where>
 	</select>
@@ -88,8 +92,9 @@
 		<include refid="tableName"></include>
 		where
 		<foreach item="item" index="index" collection="list" open=" (" separator=" or " close=") ">
-		    DEPT_CODE = #{item.DEPT_CODE__}
-		    and BUSI_TYPE = #{item.BUSI_TYPE__}
+		    BUSI_TYPE = #{item.BUSI_TYPE__}
+		    and BILL_OFF = #{item.BILL_OFF__} 
+		    and DEPT_CODE = #{item.DEPT_CODE__} 
 		</foreach>;
 		
 		<foreach item="item" index="index" collection="list" open=" " separator=" " close=" ">
@@ -104,8 +109,9 @@
 		<include refid="tableName"></include>
 		where
 		<foreach item="item" index="index" collection="list" open=" (" separator=" or " close=") ">
-		    DEPT_CODE = #{item.DEPT_CODE__} 
-		    and BUSI_TYPE = #{item.BUSI_TYPE__}
+		    BUSI_TYPE = #{item.BUSI_TYPE__}
+		    and BILL_OFF = #{item.BILL_OFF__} 
+		    and DEPT_CODE = #{item.DEPT_CODE__} 
 		</foreach>
 	</delete>
 
@@ -114,7 +120,8 @@
 		select t.*, IFNULL(d.NAME, ' ') DEPT_NAME
 		from <include refid="tableName"></include> t
 		left join oa_department d on t.DEPT_CODE = d.DEPARTMENT_CODE
-		where DEPT_CODE = #{DEPT_CODE}
-		and BUSI_TYPE = #{BUSI_TYPE}
+		where BUSI_TYPE = #{BUSI_TYPE}
+		and BILL_OFF = #{BILL_OFF}
+		and DEPT_CODE = #{DEPT_CODE}
 	</select>
 </mapper>

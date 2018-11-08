@@ -2,7 +2,7 @@ package com.fh.controller.common;
 
 import com.fh.util.DateUtil;
 import com.fh.util.PageData;
-
+import com.fh.util.enums.BillState;
 import com.fh.entity.SysDeptLtdTime;
 import com.fh.service.sysConfig.sysconfig.SysConfigManager;
 import com.fh.service.sysDeptLtdTime.sysDeptLtdTime.impl.SysDeptLtdTimeService;
@@ -55,23 +55,29 @@ public class CheckSystemDateTime {
 	 * @return
 	 * @throws Exception
 	 */
-	public static String CheckSysDeptLtdTime(String DEPT_CODE, String BUSI_TYPE, SysDeptLtdTimeService sysDeptLtdTimeService) 
+	public static String CheckSysDeptLtdTime(String SelectedTableNo, String BILL_OFF, String DEPT_CODE, SysDeptLtdTimeService sysDeptLtdTimeService) 
 			throws Exception {
 		String strReturn = "";
 		SysDeptLtdTime sysTransfer = new SysDeptLtdTime();
-		sysTransfer.setDEPT_CODE(DEPT_CODE);
+		String BUSI_TYPE = Corresponding.getTypeCodeDetailFromTmplType(SelectedTableNo);
 		sysTransfer.setBUSI_TYPE(BUSI_TYPE);
+		sysTransfer.setBILL_OFF(BILL_OFF);
+		sysTransfer.setDEPT_CODE(DEPT_CODE);
 		SysDeptLtdTime getSysDeptLtdTime = sysDeptLtdTimeService.getUseSysDeptLtdTime(sysTransfer);
-		if(getSysDeptLtdTime!=null){
-			String LTD_DAY = getSysDeptLtdTime.getLTD_DAY();
-			String LTD_HOUR = getSysDeptLtdTime.getLTD_HOUR();
-			String strCurrentDay = DateUtil.getCurrentDay();
-			String strCurrentHour = DateUtil.getCurrentHour();
-			if(Integer.valueOf(strCurrentDay) >= Integer.valueOf(LTD_DAY)){
-				strReturn += getSysDeptLtdTime.getDEPT_NAME() + " " + Message.CurrentDay_LTD_DAY;
-			} else if(Integer.valueOf(strCurrentHour) >= Integer.valueOf(LTD_HOUR)){
-				strReturn += getSysDeptLtdTime.getDEPT_NAME() + " " + Message.CurrentHour_LTD_HOUR;
+		if(getSysDeptLtdTime!=null && getSysDeptLtdTime.getBUSI_TYPE()!=null 
+				&& !getSysDeptLtdTime.getBUSI_TYPE().trim().equals("")){
+			if(getSysDeptLtdTime.getSTATE()!=null && getSysDeptLtdTime.getSTATE().equals(BillState.Normal.getNameKey())){
+				String LTD_DAY = getSysDeptLtdTime.getLTD_DAY();
+				if(!(LTD_DAY!=null && !LTD_DAY.trim().equals(""))){
+					LTD_DAY = String.valueOf(0);
+				}
+				String strCurrentDay = DateUtil.getCurrentDay();
+				if(Integer.valueOf(strCurrentDay) > Integer.valueOf(LTD_DAY)){
+					strReturn += getSysDeptLtdTime.getDEPT_NAME() + " " + Message.CurrentDay_LTD_DAY;
+				}
 			}
+		} else {
+			strReturn += Message.LTD_DAY_Not_Have;
 		}
 		return strReturn;
 	}

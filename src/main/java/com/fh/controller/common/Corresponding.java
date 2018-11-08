@@ -294,6 +294,59 @@ public class Corresponding {
 		}
 		return retTmplTypeTranfer;
 	}
+
+	public static String getTypeCodeDetailFromTmplType(String which) throws Exception{
+		String strReturn = "";
+		if (which.equals(TmplType.TB_STAFF_DETAIL_CONTRACT.getNameKey())
+				//|| which.equals(TmplType.TB_STAFF_SUMMY_BILL_CONTRACT.getNameKey())
+				|| which.equals(TmplType.TB_STAFF_SUMMY_CONTRACT.getNameKey())
+				|| which.equals(TmplType.TB_STAFF_AUDIT_CONTRACT.getNameKey())
+				|| which.equals(TmplType.TB_STAFF_TRANSFER_CONTRACT.getNameKey())) {
+			//合同化
+			strReturn = TmplType.TB_STAFF_DETAIL_CONTRACT.getNameKey();
+		} else if (which.equals(TmplType.TB_STAFF_DETAIL_MARKET.getNameKey())
+			//|| which.equals(TmplType.TB_STAFF_SUMMY_BILL_MARKET.getNameKey())
+			|| which.equals(TmplType.TB_STAFF_SUMMY_MARKET.getNameKey())
+			|| which.equals(TmplType.TB_STAFF_AUDIT_MARKET.getNameKey())
+			|| which.equals(TmplType.TB_STAFF_TRANSFER_MARKET.getNameKey())) {
+			//市场化
+			strReturn = TmplType.TB_STAFF_DETAIL_MARKET.getNameKey();
+		} else if (which.equals(TmplType.TB_STAFF_DETAIL_SYS_LABOR.getNameKey())
+		//|| which.equals(TmplType.TB_STAFF_SUMMY_BILL_SYS_LABOR.getNameKey())
+		|| which.equals(TmplType.TB_STAFF_SUMMY_SYS_LABOR.getNameKey())
+		|| which.equals(TmplType.TB_STAFF_AUDIT_SYS_LABOR.getNameKey())
+		|| which.equals(TmplType.TB_STAFF_TRANSFER_SYS_LABOR.getNameKey())) {
+			//系统内劳务
+			strReturn = TmplType.TB_STAFF_DETAIL_SYS_LABOR.getNameKey();
+		} else if (which.equals(TmplType.TB_STAFF_DETAIL_OPER_LABOR.getNameKey())
+		//|| which.equals(TmplType.TB_STAFF_SUMMY_BILL_OPER_LABOR.getNameKey())
+		|| which.equals(TmplType.TB_STAFF_SUMMY_OPER_LABOR.getNameKey())
+		|| which.equals(TmplType.TB_STAFF_AUDIT_OPER_LABOR.getNameKey())
+		|| which.equals(TmplType.TB_STAFF_TRANSFER_OPER_LABOR.getNameKey())) {
+			//运行人员
+			strReturn = TmplType.TB_STAFF_DETAIL_OPER_LABOR.getNameKey();
+		} else if (which.equals(TmplType.TB_STAFF_DETAIL_LABOR.getNameKey())
+		//|| which.equals(TmplType.TB_STAFF_SUMMY_BILL_LABOR.getNameKey())
+		|| which.equals(TmplType.TB_STAFF_SUMMY_LABOR.getNameKey())
+		|| which.equals(TmplType.TB_STAFF_AUDIT_LABOR.getNameKey())
+		|| which.equals(TmplType.TB_STAFF_TRANSFER_LABOR.getNameKey())) {
+			//劳务派遣工资
+			strReturn = TmplType.TB_STAFF_DETAIL_LABOR.getNameKey();
+		} else if (which.equals(TmplType.TB_SOCIAL_INC_DETAIL.getNameKey())
+				//|| which.equals(TmplType.TB_SOCIAL_INC_SUMMY_BILL.getNameKey())
+				|| which.equals(TmplType.TB_SOCIAL_INC_SUMMY.getNameKey())
+				|| which.equals(TmplType.TB_SOCIAL_INC_AUDIT.getNameKey())
+				|| which.equals(TmplType.TB_SOCIAL_INC_TRANSFER.getNameKey())) {
+			strReturn = TmplType.TB_SOCIAL_INC_DETAIL.getNameKey();
+		} else if (which.equals(TmplType.TB_HOUSE_FUND_DETAIL.getNameKey())
+				//|| which.equals(TmplType.TB_HOUSE_FUND_SUMMY_BILL.getNameKey())
+				|| which.equals(TmplType.TB_HOUSE_FUND_SUMMY.getNameKey())
+				|| which.equals(TmplType.TB_HOUSE_FUND_AUDIT.getNameKey())
+				|| which.equals(TmplType.TB_HOUSE_FUND_TRANSFER.getNameKey())) {
+			strReturn = TmplType.TB_HOUSE_FUND_DETAIL.getNameKey();
+		}
+		return strReturn;
+	}
 	
 	/**
 	 * 根据前端业务表索引获取表名称
