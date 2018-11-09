@@ -460,23 +460,31 @@ public class DaoSupport implements DAO {
 				getListBySerialNo.put("SqlInBillCode", SqlInBillCode);
 				List<PageData> retList = sqlSession.selectList("DataCalculation.getListBySerialNo",  getListBySerialNo);
 				if(retList!=null){
+					Boolean bolBonusTax = true;
+					Boolean bolSalaryTax = true;
 					for(PageData eachAdd : retList){
-						//本条记录自己的税额
+						BigDecimal selfBonus = new BigDecimal(eachAdd.get(TableFeildBonusSelf).toString());
+						selfBonus = selfBonus.setScale(2, BigDecimal.ROUND_HALF_UP);
 						BigDecimal selfB_Tax = new BigDecimal(eachAdd.get(TableFeildBonusTax).toString());
 						selfB_Tax = selfB_Tax.setScale(2, BigDecimal.ROUND_HALF_UP);
 						eachAdd.put(TableFeildBonusTax, selfB_Tax);
+						eachAdd.put(TableFeildBonusTax + TmplUtil_KeyExtra, selfB_Tax);
+						if(selfBonus.compareTo(new BigDecimal(0)) == 0 && selfB_Tax.compareTo(new BigDecimal(0)) == 0){
+							bolBonusTax = false;
+						}
+						
+						BigDecimal selfSalary = new BigDecimal(eachAdd.get(TableFeildSalarySelf).toString());
+						selfSalary = selfSalary.setScale(2, BigDecimal.ROUND_HALF_UP);
 						BigDecimal selfS_Tax = new BigDecimal(eachAdd.get(TableFeildSalaryTax).toString());
 						selfS_Tax = selfS_Tax.setScale(2, BigDecimal.ROUND_HALF_UP);
 						eachAdd.put(TableFeildSalaryTax, selfS_Tax);
-						
-						BigDecimal addB_Tax = new BigDecimal(eachAdd.get(TableFeildBonusTax + TmplUtil_KeyExtra).toString());
-						addB_Tax = addB_Tax.setScale(2, BigDecimal.ROUND_HALF_UP);
-						eachAdd.put(TableFeildBonusTax + TmplUtil_KeyExtra, addB_Tax);
-						BigDecimal addS_Tax = new BigDecimal(eachAdd.get(TableFeildSalaryTax + TmplUtil_KeyExtra).toString());
-						addS_Tax = addS_Tax.setScale(2, BigDecimal.ROUND_HALF_UP);
-						eachAdd.put(TableFeildSalaryTax + TmplUtil_KeyExtra, addS_Tax);
+						eachAdd.put(TableFeildSalaryTax + TmplUtil_KeyExtra, selfS_Tax);
+						if(selfSalary.compareTo(new BigDecimal(0)) == 0 && selfS_Tax.compareTo(new BigDecimal(0)) == 0){
+							bolSalaryTax = false;
+						}
 					}
-					List<String> userCodeList = new ArrayList<String>();
+					List<String> B_UserCodeList = new ArrayList<String>();
+					List<String> S_UserCodeList = new ArrayList<String>();
 					for(PageData eachAdd : retList){
 						String USER_CODE = eachAdd.getString("USER_CODE");
 						eachAdd.put("B_YSZE", new BigDecimal(0));//应税总额
@@ -486,9 +494,10 @@ public class DaoSupport implements DAO {
 						//本条记录自己的税额
 						BigDecimal addB_Tax = new BigDecimal(eachAdd.get(TableFeildBonusTax + TmplUtil_KeyExtra).toString());
 						BigDecimal addS_Tax = new BigDecimal(eachAdd.get(TableFeildSalaryTax + TmplUtil_KeyExtra).toString());
-						
-						if(!userCodeList.contains(USER_CODE)){
-							userCodeList.add(USER_CODE);
+
+						if(bolSalaryTax == true && !S_UserCodeList.contains(USER_CODE)){
+							S_UserCodeList.add(USER_CODE);
+							
 							PageData getSumByUserCodeSalary = new PageData();
 							getSumByUserCodeSalary.put("sqlSumByUserCode", sqlSumByUserCodeSalary);
 							getSumByUserCodeSalary.put("USER_CODE", USER_CODE);
@@ -496,17 +505,8 @@ public class DaoSupport implements DAO {
 							BigDecimal checkSalaryTaxConfigGrade = new BigDecimal(getSumSalary.get(TableFeildSalaryTaxConfigGradeOper).toString());
 							BigDecimal getSalaryTaxConfigSum = new BigDecimal(getSumSalary.get(TableFeildSalaryTaxConfigSumOper).toString());
 
-							PageData getSumByUserCodeBonus = new PageData();
-							getSumByUserCodeBonus.put("sqlSumByUserCode", sqlSumByUserCodeBonus);
-							getSumByUserCodeBonus.put("USER_CODE", USER_CODE);
-							PageData getSumBonus = sqlSession.selectOne("DataCalculation.getSumByUserCode",  getSumByUserCodeBonus);
-							BigDecimal checkBonusTaxConfigGrade = new BigDecimal(getSumBonus.get(TableFeildBonusTaxConfigGradeOper).toString());
-							BigDecimal getBonusTaxConfigSum = new BigDecimal(getSumBonus.get(TableFeildBonusTaxConfigSumOper).toString());
-							
 							BigDecimal douSalaryTAX_RATE = new BigDecimal(0);
 							BigDecimal douSalaryQUICK_DEDUCTION = new BigDecimal(0);
-							BigDecimal douBonusTAX_RATE = new BigDecimal(0);
-							BigDecimal douBonusQUICK_DEDUCTION = new BigDecimal(0);
 							if(listStaffTax!=null){
 								for(int i=0; i<listStaffTax.size(); i++){
 									StaffTax eachTax = listStaffTax.get(i);
@@ -530,7 +530,41 @@ public class DaoSupport implements DAO {
 											}
 										}
 									}
+								}
+							}
 
+							BigDecimal bd3Salary = new BigDecimal(Double.toString(0.010000));
+							BigDecimal sumSalaryTaxConfig = getSalaryTaxConfigSum.multiply(douSalaryTAX_RATE).multiply(bd3Salary).subtract(douSalaryQUICK_DEDUCTION);
+							sumSalaryTaxConfig = sumSalaryTaxConfig.setScale(2, BigDecimal.ROUND_HALF_UP);
+							BigDecimal sumSalaryTaxSelf = new BigDecimal(getSumSalary.get(TableFeildSalaryTaxSelfSumOper).toString());
+							sumSalaryTaxSelf = sumSalaryTaxSelf.setScale(2, BigDecimal.ROUND_HALF_UP);
+							BigDecimal douTableFeildSalaryTax = sumSalaryTaxConfig.subtract(sumSalaryTaxSelf).add(addS_Tax);
+							eachAdd.put(TableFeildSalaryTax, douTableFeildSalaryTax.setScale(2, BigDecimal.ROUND_HALF_UP));
+							eachAdd.put("S_YSZE", sumSalaryTaxConfig.setScale(2, BigDecimal.ROUND_HALF_UP));
+							eachAdd.put("S_YDRZE", sumSalaryTaxSelf.setScale(2, BigDecimal.ROUND_HALF_UP));
+						}
+						if(bolBonusTax == true && !B_UserCodeList.contains(USER_CODE)){
+							B_UserCodeList.add(USER_CODE);
+							
+							PageData getSumByUserCodeBonus = new PageData();
+							getSumByUserCodeBonus.put("sqlSumByUserCode", sqlSumByUserCodeBonus);
+							getSumByUserCodeBonus.put("USER_CODE", USER_CODE);
+							PageData getSumBonus = sqlSession.selectOne("DataCalculation.getSumByUserCode",  getSumByUserCodeBonus);
+							BigDecimal checkBonusTaxConfigGrade = new BigDecimal(getSumBonus.get(TableFeildBonusTaxConfigGradeOper).toString());
+							BigDecimal getBonusTaxConfigSum = new BigDecimal(getSumBonus.get(TableFeildBonusTaxConfigSumOper).toString());
+
+							BigDecimal douBonusTAX_RATE = new BigDecimal(0);
+							BigDecimal douBonusQUICK_DEDUCTION = new BigDecimal(0);
+							if(listStaffTax!=null){
+								for(int i=0; i<listStaffTax.size(); i++){
+									StaffTax eachTax = listStaffTax.get(i);
+									//int a = bigdemical.compareTo(bigdemical2)
+									//a = -1,表示bigdemical小于bigdemical2；
+									//a = 0,表示bigdemical等于bigdemical2；
+									//a = 1,表示bigdemical大于bigdemical2；
+									BigDecimal eachMIN_VALUE = new BigDecimal(Double.toString(eachTax.getMIN_VALUE()));
+									BigDecimal eachMAX_VALUE = new BigDecimal(Double.toString(eachTax.getMAX_VALUE()));
+									
 									int BonusMIN_VALUE = checkBonusTaxConfigGrade.compareTo(eachMIN_VALUE);
 									int BonusMAX_VALUE = checkBonusTaxConfigGrade.compareTo(eachMAX_VALUE);
 									if(BonusMIN_VALUE == 0 || BonusMIN_VALUE == 1){//eachMouth >= eachTax.getMIN_VALUE()
@@ -546,15 +580,6 @@ public class DaoSupport implements DAO {
 									}
 								}
 							}
-							BigDecimal bd3Salary = new BigDecimal(Double.toString(0.010000));
-							BigDecimal sumSalaryTaxConfig = getSalaryTaxConfigSum.multiply(douSalaryTAX_RATE).multiply(bd3Salary).subtract(douSalaryQUICK_DEDUCTION);
-							sumSalaryTaxConfig = sumSalaryTaxConfig.setScale(2, BigDecimal.ROUND_HALF_UP);
-							BigDecimal sumSalaryTaxSelf = new BigDecimal(getSumSalary.get(TableFeildSalaryTaxSelfSumOper).toString());
-							sumSalaryTaxSelf = sumSalaryTaxSelf.setScale(2, BigDecimal.ROUND_HALF_UP);
-							BigDecimal douTableFeildSalaryTax = sumSalaryTaxConfig.subtract(sumSalaryTaxSelf).add(addS_Tax);
-							eachAdd.put(TableFeildSalaryTax, douTableFeildSalaryTax.setScale(2, BigDecimal.ROUND_HALF_UP));
-							eachAdd.put("S_YSZE", sumSalaryTaxConfig.setScale(2, BigDecimal.ROUND_HALF_UP));
-							eachAdd.put("S_YDRZE", sumSalaryTaxSelf.setScale(2, BigDecimal.ROUND_HALF_UP));
 
 							BigDecimal bd3Bonus = new BigDecimal(Double.toString(0.0100000));
 							BigDecimal sumBonusTaxConfig = getBonusTaxConfigSum.multiply(douBonusTAX_RATE).multiply(bd3Bonus).subtract(douBonusQUICK_DEDUCTION);
