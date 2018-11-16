@@ -1926,15 +1926,20 @@ public class StaffDetailController extends BaseController {
 			pdInsetBackup.put("FeildList", strInsertFeild);
 			pdInsetBackup.put("SumInvalidNotInsert", strSumInvalidNotInsert);
 			
-			List<PageData> dataCalculation = staffdetailService.getDataCalculation(TableNameBackup, TmplUtil.keyExtra,
-					TF_SalarySelf, TF_SalaryTax, TF_BonusSelf, TF_BonusTax,
-					TableFeildSalaryTaxConfigGradeOper, TableFeildBonusTaxConfigGradeOper,
-					TableFeildSalaryTaxConfigSumOper, TableFeildBonusTaxConfigSumOper,
-					TableFeildSalaryTaxSelfSumOper, TableFeildBonusTaxSelfSumOper,
-					pdInsetBackup,
-					listSalaryFeildUpdate, sqlRetSelect, listData,
-					sqlSumByUserCodeSalary, sqlSumByUserCodeBonus);
-			retCommonBaseAndList.setList(dataCalculation);
+			try{
+				List<PageData> dataCalculation = staffdetailService.getDataCalculation(TableNameBackup, TmplUtil.keyExtra,
+						TF_SalarySelf, TF_SalaryTax, TF_BonusSelf, TF_BonusTax,
+						TableFeildSalaryTaxConfigGradeOper, TableFeildBonusTaxConfigGradeOper,
+						TableFeildSalaryTaxConfigSumOper, TableFeildBonusTaxConfigSumOper,
+						TableFeildSalaryTaxSelfSumOper, TableFeildBonusTaxSelfSumOper,
+						pdInsetBackup,
+						listSalaryFeildUpdate, sqlRetSelect, listData,
+						sqlSumByUserCodeSalary, sqlSumByUserCodeBonus);
+				retCommonBaseAndList.setList(dataCalculation);
+			} catch(Exception e){
+				commonBase.setCode(2);
+				commonBase.setMessage(Message.ImportExcelError);
+			}
 		}
 		retCommonBaseAndList.setCommonBase(commonBase);
 		return retCommonBaseAndList;
@@ -2128,9 +2133,9 @@ public class StaffDetailController extends BaseController {
 		    if(!BILL_CODE.equals(ShowDataBillCode)){
 				strRut += "查询条件中所选单号与页面显示数据单号不一致，请单击查询再进行操作！";
 		    }
-			if(!BILL_CODE.equals(SelectBillCodeFirstShow)){
-				strRut += "已汇总记录不能再进行操作！";
-			}
+			//if(!BILL_CODE.equals(SelectBillCodeFirstShow)){
+			//	strRut += "已汇总记录不能再进行操作！";
+			//}
 		}
 		if(!(emplGroupType!=null && !emplGroupType.trim().equals(""))){
 			strRut += Message.StaffSelectedTabOppositeGroupTypeIsNull;

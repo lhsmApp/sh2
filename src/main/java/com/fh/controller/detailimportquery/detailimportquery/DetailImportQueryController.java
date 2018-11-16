@@ -715,7 +715,9 @@ public class DetailImportQueryController extends BaseController {
 					+ " sum(UNEMPL_INS) UNEMPL_INS, "
 					+ " sum(HOUSE_FUND) HOUSE_FUND, "
 					+ " sum(KID_ALLE) KID_ALLE, "
-					+ " sum(SUP_PESN) SUP_PESN, sum(" + TableFeildSalaryTax + ") " + TableFeildSalaryTax + " ";
+					+ " sum(SUP_PESN) SUP_PESN, "
+					+ " sum(TAX_BASE_ADJ) TAX_BASE_ADJ, "
+					+ " sum(" + TableFeildSalaryTax + ") " + TableFeildSalaryTax + " ";
 				//SelectGroupFeild += ", UNITS_CODE ";
 			getPd.put("SelectGroupFeild", SelectGroupFeild);
 		}
@@ -779,6 +781,9 @@ public class DetailImportQueryController extends BaseController {
 			map_SetColumnsList.put("KID_ALLE", new TmplConfigDetail("KID_ALLE", "允许扣除的税费", "1", true));
 			map_SetColumnsList.put("SUP_PESN", new TmplConfigDetail("SUP_PESN", "年金", "1", true));
 			map_SetColumnsList.put("商业健康保险费", new TmplConfigDetail("商业健康保险费", "商业健康保险费", "1", true));
+			
+			map_SetColumnsList.put("TAX_BASE_ADJ", new TmplConfigDetail("TAX_BASE_ADJ", "税延养老保险费", "1", true));
+			
 			map_SetColumnsList.put("其他扣除", new TmplConfigDetail("其他扣除", "其他扣除", "1", true));
 			map_SetColumnsList.put("减除费用", new TmplConfigDetail("减除费用", "减除费用", "1", true));
 			map_SetColumnsList.put("实际捐赠额", new TmplConfigDetail("实际捐赠额", "实际捐赠额", "1", true));

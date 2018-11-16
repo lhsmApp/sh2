@@ -1431,23 +1431,28 @@ public class HouseFundDetailController extends BaseController {
     				//"", 
     				TmplUtil.keyExtra, keyListBase, 
     				tmplconfigService);
-    		
-    		List<PageData> dataCalculation = housefunddetailService.getDataCalculation(TableNameBackup, sqlRetSelect, listAdd);
-    		if(dataCalculation!=null){
-    			for(PageData each : dataCalculation){
-    				if(IsAdd){
-    					each.put("SERIAL_NO", "");
-    				}
-    				Common.setModelDefault(each, map_HaveColumnsList, map_SetColumnsList, MustNotEditList);
-    				each.put("CanOperate", strHelpful);
-    				each.put("TableName", TableNameDetail);
-    			}
-    		}
-    		
-    		//此处执行集合添加 
-    		housefunddetailService.batchUpdateDatabase(dataCalculation);
-    		commonBase.setCode(0);
-    		commonBase.setMessage(strErrorMessage);
+
+			try{
+	    		List<PageData> dataCalculation = housefunddetailService.getDataCalculation(TableNameBackup, sqlRetSelect, listAdd);
+	    		if(dataCalculation!=null){
+	    			for(PageData each : dataCalculation){
+	    				if(IsAdd){
+	    					each.put("SERIAL_NO", "");
+	    				}
+	    				Common.setModelDefault(each, map_HaveColumnsList, map_SetColumnsList, MustNotEditList);
+	    				each.put("CanOperate", strHelpful);
+	    				each.put("TableName", TableNameDetail);
+	    			}
+	    		}
+	    		
+	    		//此处执行集合添加 
+	    		housefunddetailService.batchUpdateDatabase(dataCalculation);
+	    		commonBase.setCode(0);
+	    		commonBase.setMessage(strErrorMessage);
+			} catch(Exception e){
+				commonBase.setCode(2);
+				commonBase.setMessage(Message.ImportExcelError);
+			}
     	}
 		return commonBase;
     }
@@ -1647,9 +1652,9 @@ public class HouseFundDetailController extends BaseController {
 		    if(!BILL_CODE.equals(ShowDataBillCode)){
 				strRut += "查询条件中所选单号与页面显示数据单号不一致，请单击查询再进行操作！";
 		    }
-			if(!BILL_CODE.equals(SelectBillCodeFirstShow)){
-				strRut += "已汇总记录不能再进行操作！";
-			}
+			//if(!BILL_CODE.equals(SelectBillCodeFirstShow)){
+			//	strRut += "已汇总记录不能再进行操作！";
+			//}
 		}
 		return strRut;
 	}

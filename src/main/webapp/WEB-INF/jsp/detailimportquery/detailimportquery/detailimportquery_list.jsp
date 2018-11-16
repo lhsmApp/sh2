@@ -478,7 +478,6 @@
 		                 +'&SelectedCustCol7='+$("#SelectedCustCol7").val()
 		                 +'&SelectedBillCode='+$("#SelectedBillCode").val()
 		                 +'&SelectedtabIndex='+tabIndex,
-			        mtype: "GET",
 					datatype: "json",
 					colModel: jqGridColModel,
 	                page: 1,
