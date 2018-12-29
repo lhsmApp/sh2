@@ -180,16 +180,27 @@
 
 	<!-- 张晓柳 -->
 	<!-- 确认 -->
-	<!-- <update id="batchSummyConfirm" parameterType="com.fh.entity.SysConfirmInfo">
-		<foreach item="item" index="index" collection="list" open=" " separator=" " close=" ">
-		    delete from
-		    <include refid="tableName"></include>
-		    where BILL_CODE = #{item.BILL_CODE};
-		    insert into
-		    <include refid="tableName"></include>
-		    (<include refid="Field"></include>) values (<include refid="FieldItemValue"></include>);
-		</foreach>
-	</update> -->
+	<update id="batchEachConfirm" parameterType="java.util.Map">
+		<if test="TransferConfirmAdd != null">
+		    <foreach item="item" index="index" collection="TransferConfirmAdd" open=" " separator=" " close=" ">
+		        delete from
+		        <include refid="tableName"></include>
+		        where BILL_CODE = #{item.BILL_CODE};
+		        insert into
+		        <include refid="tableName"></include>
+		        (<include refid="Field"></include>) values (<include refid="FieldItemValue"></include>);
+		    </foreach>
+		</if>
+		<if test="TransferCertAdd != null">
+		    <foreach item="item" index="index" collection="TransferCertAdd" open=" " separator=" " close=" ">
+			    delete from TB_GL_CERT
+			    where BILL_CODE = #{item.BILL_CODE};
+				insert into TB_GL_CERT(BILL_CODE,CERT_CODE,REVCERT_CODE,BILL_USER,BILL_DATE,VOUCHER_DATE,BUSI_DATE)
+				values
+				(#{item.BILL_CODE},#{item.CERT_CODE},#{item.REVCERT_CODE},#{item.BILL_USER},#{item.BILL_DATE},#{item.VOUCHER_DATE},#{item.BUSI_DATE});
+		    </foreach>
+		</if>
+	</update>
 	<update id="batchAllConfirm" parameterType="java.util.Map">
 		<!-- <if test="TransferConfirmDel != null"> -->
 		    delete from <include refid="tableName"></include>

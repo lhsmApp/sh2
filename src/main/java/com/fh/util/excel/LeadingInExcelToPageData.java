@@ -282,7 +282,7 @@ public class LeadingInExcelToPageData<T> {
             for (int columnIndex = 0; columnIndex < titelRow.getLastCellNum(); columnIndex++) {
                 Cell cell = titelRow.getCell(columnIndex);
                 if (cell != null) {
-                    String key = TransferSbcDbc.ToDBC(cell.getStringCellValue());
+                    String key = TransferSbcDbc.ToDBC(cell.getStringCellValue().trim());
                     String value = titleAndAttribute.get(key);
                     if (value == null) {
                         value = key;
@@ -294,7 +294,7 @@ public class LeadingInExcelToPageData<T> {
             for (int columnIndex = 0; columnIndex < titelRow.getLastCellNum(); columnIndex++) {
                 Cell cell = titelRow.getCell(columnIndex);
                 if (cell != null) {
-                    String key = cell.getStringCellValue();
+                    String key = cell.getStringCellValue().trim();
                     attribute.put(Integer.valueOf(columnIndex), key);
                 }
             }

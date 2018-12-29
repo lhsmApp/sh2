@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.fh.controller.base.BaseController;
+import com.fh.controller.common.CheckCertCode;
 import com.fh.controller.common.Common;
 import com.fh.controller.common.Corresponding;
 import com.fh.controller.common.DictsUtil;
@@ -43,6 +44,7 @@ import com.fh.entity.TmplTypeInfo;
 import com.fh.entity.system.User;
 import com.fh.service.detailimportcommon.detailimportcommon.impl.DetailImportCommonService;
 import com.fh.service.fhoa.department.DepartmentManager;
+import com.fh.service.fundssummyconfirm.fundssummyconfirm.FundsSummyConfirmManager;
 import com.fh.service.glZrzxFx.glZrzxFx.GlZrzxFxManager;
 import com.fh.service.sysConfig.sysconfig.SysConfigManager;
 import com.fh.service.sysSealedInfo.syssealedinfo.SysSealedInfoManager;
@@ -62,11 +64,9 @@ import com.fh.util.StringUtil;
 import com.fh.util.date.DateFormatUtils;
 import com.fh.util.date.DateUtils;
 import com.fh.util.enums.BillState;
-import com.fh.util.enums.EmplGroupType;
 import com.fh.util.enums.SysConfigKeyCode;
 import com.fh.util.enums.TmplType;
 import com.fh.util.enums.TransferOperType;
-import com.sun.mail.handlers.message_rfc822;
 
 import net.sf.json.JSONArray;
 
@@ -116,6 +116,9 @@ public class VoucherController extends BaseController {
 
 	@Resource(name = "glZrzxFxService")
 	private GlZrzxFxManager glZrzxFxService;
+
+	@Resource(name="fundssummyconfirmService")
+	private FundsSummyConfirmManager fundssummyconfirmService;
 
 	// 底行显示的求和与平均值字段
 	private StringBuilder SqlUserdata = new StringBuilder();
@@ -978,6 +981,17 @@ public class VoucherController extends BaseController {
 		@SuppressWarnings("unchecked")
 		List<PageData> listTransferData = (List<PageData>) JSONArray.toCollection(array, PageData.class);// 过时方法
 		if (null != listTransferData && listTransferData.size() > 0) {
+	        List<String> listBillCode = new ArrayList<String>();
+	        for(PageData each : listTransferData){
+	        	String BILL_CODE = each.getString("BILL_CODE");
+	        	listBillCode.add(BILL_CODE);
+	        }
+			String strRet = CheckCertCode.getCheckCertCode(listBillCode, fundssummyconfirmService, sysConfigManager);
+			if(strRet!=null && !strRet.trim().equals("")){
+				commonBase.setCode(-1);
+				commonBase.setMessage(strRet);
+				return commonBase;
+			}
 			/********************** 生成传输数据 ************************/
 			String which = pd.getString("TABLE_CODE");
 			String tableCode = getTableCode(which);

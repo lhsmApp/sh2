@@ -74,7 +74,9 @@ public interface StaffDetailManager{
 			String TableFeildSalaryTaxSelfSumOper, String TableFeildBonusTaxSelfSumOper,
 			PageData pdInsetBackup,
 			List<String> listSalaryFeildUpdate, String sqlRetSelect, List<PageData> listData, 
-			String sqlSumByUserCodeSalary, String sqlSumByUserCodeBonus)throws Exception;
+			String sqlSumByUserCodeSalary, 
+			String sqlSumByUserCodeBonus_Not0,
+			String sqlSumByUserCodeBonus_Same0)throws Exception;
 	/**更新数据库
 	 * @param pd
 	 * @throws Exception

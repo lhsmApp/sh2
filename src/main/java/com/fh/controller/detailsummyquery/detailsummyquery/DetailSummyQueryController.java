@@ -158,7 +158,9 @@ public class DetailSummyQueryController extends BaseController {
 		
 		PageData getQueryFeildPd = new PageData();
 		getQueryFeildPd.put("USER_GROP", emplGroupType);
-		getQueryFeildPd.put("DEPT_CODE", SelectedDepartCode);
+		if(departSelf == 1){
+			getQueryFeildPd.put("DEPT_CODE", SelectedDepartCode);
+		}
 		getQueryFeildPd.put("CUST_COL7", SelectedCustCol7);
 		getQueryFeildPd.put("BUSI_DATE", SelectedBusiDate);
 		String QueryFeild = QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList);
@@ -167,8 +169,14 @@ public class DetailSummyQueryController extends BaseController {
 		if(!(SelectedCustCol7!=null && !SelectedCustCol7.trim().equals(""))){
 			QueryFeild += " and 1 != 1 ";
 		}
-		if(!(SelectedDepartCode!=null && !SelectedDepartCode.trim().equals(""))){
-			QueryFeild += " and 1 != 1 ";
+		if(departSelf == 1){
+			if(!(SelectedDepartCode!=null && !SelectedDepartCode.trim().equals(""))){
+				QueryFeild += " and 1 != 1 ";
+			}
+		} else {
+			if(SelectedDepartCode!=null && !SelectedDepartCode.trim().equals("")){
+				QueryFeild += " and DEPT_CODE in (" + Common.getSqlNextDeptCode(SelectedDepartCode) + ") ";
+			}
 		}
 		if(!(SelectedBusiDate!=null && !SelectedBusiDate.trim().equals(""))){
 			QueryFeild += " and 1 != 1 ";
@@ -432,23 +440,22 @@ public class DetailSummyQueryController extends BaseController {
 		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
 		//账套
 		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
-
+		
 		String strShowCalModelDepaet = Jurisdiction.getCurrentDepartmentID();
 		if(SelectedDepartCode!=null && !SelectedDepartCode.trim().equals("") && !SelectedDepartCode.contains(",")){
 			strShowCalModelDepaet = SelectedDepartCode;
 		}
-		
 		Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(SelectedTableNo, strShowCalModelDepaet, SelectedCustCol7, tmplconfigService);
 		Map<String, Object> DicList = Common.GetDicList(SelectedTableNo, strShowCalModelDepaet, SelectedCustCol7, 
 				tmplconfigService, tmplconfigdictService, dictionariesService, departmentService, userService, "");
-
-		String tableNameSummy = Corresponding.getSummyTableNameFromTmplType(SelectedTableNo);
+		
 		PageData pdTransfer = setTransferPd(getPd);
 		//表名
+		String tableNameSummy = Corresponding.getSumBillTableNameFromTmplType(SelectedTableNo);
 		pdTransfer.put("TableName", tableNameSummy);
 		page.setPd(pdTransfer);
 		List<PageData> varOList = detailsummyqueryryService.datalistExport(page);
-		
+
 		ModelAndView mv = new ModelAndView();
 		Map<String,Object> dataMap = new LinkedHashMap<String,Object>();
 		dataMap.put("filename", "");
@@ -514,7 +521,9 @@ public class DetailSummyQueryController extends BaseController {
 		
 		PageData getQueryFeildPd = new PageData();
 		getQueryFeildPd.put("USER_GROP", emplGroupType);
-		getQueryFeildPd.put("DEPT_CODE", SelectedDepartCode);
+		if(departSelf == 1){
+			getQueryFeildPd.put("DEPT_CODE", SelectedDepartCode);
+		}
 		getQueryFeildPd.put("CUST_COL7", SelectedCustCol7);
 		getQueryFeildPd.put("BUSI_DATE", SelectedBusiDate);
 		String QueryFeild = QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList);
@@ -524,8 +533,14 @@ public class DetailSummyQueryController extends BaseController {
 		if(!(SelectedCustCol7!=null && !SelectedCustCol7.trim().equals(""))){
 			QueryFeild += " and 1 != 1 ";
 		}
-		if(!(SelectedDepartCode!=null && !SelectedDepartCode.trim().equals(""))){
-			QueryFeild += " and 1 != 1 ";
+		if(departSelf == 1){
+			if(!(SelectedDepartCode!=null && !SelectedDepartCode.trim().equals(""))){
+				QueryFeild += " and 1 != 1 ";
+			}
+		} else {
+			if(SelectedDepartCode!=null && !SelectedDepartCode.trim().equals("")){
+				QueryFeild += " and DEPT_CODE in (" + Common.getSqlNextDeptCode(SelectedDepartCode) + ") ";
+			}
 		}
 		if(!(SelectedBusiDate!=null && !SelectedBusiDate.trim().equals(""))){
 			QueryFeild += " and 1 != 1 ";

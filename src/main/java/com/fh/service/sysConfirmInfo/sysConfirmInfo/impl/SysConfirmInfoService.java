@@ -95,9 +95,9 @@ public class SysConfirmInfoService implements SysConfirmInfoManager{
 	 * @param page
 	 * @throws Exception
 	 */
-	//public void batchSummyConfirm(List<SysConfirmInfo> listData)throws Exception{
-	//	dao.update("SysConfirmInfoMapper.batchSummyConfirm", listData);
-	//}
+	public void batchEachConfirm(Map<String, Object> map)throws Exception{
+		dao.update("SysConfirmInfoMapper.batchEachConfirm", map);
+	}
 	public void batchAllConfirm(Map<String, Object> map)throws Exception{
 		dao.update("SysConfirmInfoMapper.batchAllConfirm", map);
 	}

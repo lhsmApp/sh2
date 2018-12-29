@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.fh.controller.base.BaseController;
+import com.fh.controller.common.CheckCertCode;
 import com.fh.controller.common.DictsUtil;
 import com.fh.entity.CommonBase;
 import com.fh.entity.JqPage;
@@ -24,6 +25,8 @@ import com.fh.entity.Page;
 import com.fh.entity.PageResult;
 import com.fh.entity.system.User;
 import com.fh.service.fhoa.department.DepartmentManager;
+import com.fh.service.fundssummyconfirm.fundssummyconfirm.FundsSummyConfirmManager;
+import com.fh.service.sysConfig.sysconfig.SysConfigManager;
 import com.fh.service.sysSealedInfo.syssealedinfo.SysSealedInfoManager;
 import com.fh.service.sysUnlockInfo.sysunlockinfo.SysUnlockInfoManager;
 import com.fh.service.system.dictionaries.DictionariesManager;
@@ -66,6 +69,12 @@ public class SysSealedInfoController extends BaseController {
 
 	@Resource(name = "dictionariesService")
 	private DictionariesManager dictionariesService;
+
+	@Resource(name="fundssummyconfirmService")
+	private FundsSummyConfirmManager fundssummyconfirmService;
+
+	@Resource(name="sysconfigService")
+	private SysConfigManager sysConfigManager;
 
 	// 判断当前人员的所在组织机构是否只有自己单位
 	private int departSelf = 0;
@@ -138,6 +147,15 @@ public class SysSealedInfoController extends BaseController {
 				if (StringUtil.isEmpty(pdItem0.getString("REVCERT_CODE"))) {// 如果已生成冲销凭证号，则历史记录不允许删除，即不再往tb_sys_unlock_info插入记录
 					sysUnlockInfoService.save(listSysUnlockInfo);
 				}
+			}
+	        List<String> listBillCode = new ArrayList<String>();
+	        String BILL_CODE = pd.getString("BILL_CODE");
+	        listBillCode.add(BILL_CODE);
+			String strRet = CheckCertCode.getCheckCertCode(listBillCode, fundssummyconfirmService, sysConfigManager);
+			if(strRet!=null && !strRet.trim().equals("")){
+				commonBase.setCode(3);
+				commonBase.setMessage(strRet);
+				return commonBase;
 			}
 			syssealedinfoService.edit(pd);
 			commonBase.setCode(0);

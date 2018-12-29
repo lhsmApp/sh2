@@ -67,7 +67,7 @@ public interface SysConfirmInfoManager{
 	 * @param 
 	 * @throws Exception
 	 */
-	//public void batchSummyConfirm(List<SysConfirmInfo> listData)throws Exception;
+	public void batchEachConfirm(Map<String, Object> map)throws Exception;
 	public void batchAllConfirm(Map<String, Object> map)throws Exception;
 	
 	/**取消确认

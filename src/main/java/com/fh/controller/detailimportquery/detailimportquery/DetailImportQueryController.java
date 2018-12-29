@@ -74,8 +74,8 @@ public class DetailImportQueryController extends BaseController {
 	private SysConfigManager sysConfigManager;
 
 	//临时数据
-	String SelectBillCodeFirstShow = "临时数据";
-	String SelectBillCodeLastShow = "";
+	String SelectBillCodeNoSumShow = "临时数据";
+	String SelectBillCodeAllShow = "全部";
 	//当前期间,取自tb_system_config的SystemDateTime字段
 	//String SystemDateTime = "";
     //
@@ -167,7 +167,7 @@ public class DetailImportQueryController extends BaseController {
 		getPd.put("CanExportTable", bolCanExportTable);
 		
 		//单号下拉列表
-		getPd.put("InitBillCodeOptions", SelectBillCodeOptions.getSelectBillCodeOptions(null, SelectBillCodeFirstShow, SelectBillCodeLastShow));
+		getPd.put("InitBillCodeOptions", SelectBillCodeOptions.getSelectBillCodeOptions(null, SelectBillCodeAllShow, SelectBillCodeNoSumShow));
 		
 		//"BUSI_DATE", "DEPT_CODE", "USER_CATG", "USER_GROP", "CUST_COL7"
 		//CUST_COL7 FMISACC 帐套字典
@@ -218,7 +218,9 @@ public class DetailImportQueryController extends BaseController {
 		
 		PageData getQueryFeildPd = new PageData();
 		getQueryFeildPd.put("USER_GROP", emplGroupType);
-		getQueryFeildPd.put("DEPT_CODE", SelectedDepartCode);
+		if(departSelf == 1){
+			getQueryFeildPd.put("DEPT_CODE", SelectedDepartCode);
+		}
 		getQueryFeildPd.put("CUST_COL7", SelectedCustCol7);
 		getQueryFeildPd.put("BUSI_DATE", SelectedBusiDate);
 		String QueryFeild = QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList);
@@ -227,8 +229,14 @@ public class DetailImportQueryController extends BaseController {
 		if(!(SelectedCustCol7!=null && !SelectedCustCol7.trim().equals(""))){
 			QueryFeild += " and 1 != 1 ";
 		}
-		if(!(SelectedDepartCode!=null && !SelectedDepartCode.trim().equals(""))){
-			QueryFeild += " and 1 != 1 ";
+		if(departSelf == 1){
+			if(!(SelectedDepartCode!=null && !SelectedDepartCode.trim().equals(""))){
+				QueryFeild += " and 1 != 1 ";
+			}
+		} else {
+			if(SelectedDepartCode!=null && !SelectedDepartCode.trim().equals("")){
+				QueryFeild += " and DEPT_CODE in (" + Common.getSqlNextDeptCode(SelectedDepartCode) + ") ";
+			}
 		}
 		if(!(SelectedBusiDate!=null && !SelectedBusiDate.trim().equals(""))){
 			QueryFeild += " and 1 != 1 ";
@@ -239,7 +247,7 @@ public class DetailImportQueryController extends BaseController {
 		getPd.put("TableName", tableNameDetail);
 		           
 		List<String> getCodeList = detailimportqueryService.getBillCodeList(getPd);
-		String returnString = SelectBillCodeOptions.getSelectBillCodeOptions(getCodeList, SelectBillCodeFirstShow, SelectBillCodeLastShow);
+		String returnString = SelectBillCodeOptions.getSelectBillCodeOptions(getCodeList, SelectBillCodeAllShow, SelectBillCodeNoSumShow);
 		commonBase.setMessage(returnString);
 		commonBase.setCode(0);
 		
@@ -267,10 +275,15 @@ public class DetailImportQueryController extends BaseController {
 		}
 		//账套
 		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
+
+		String strShowCalModelDepaet = Jurisdiction.getCurrentDepartmentID();
+		if(SelectedDepartCode!=null && !SelectedDepartCode.trim().equals("") && !SelectedDepartCode.contains(",")){
+			strShowCalModelDepaet = SelectedDepartCode;
+		}
 		
 		TmplUtil tmpl = new TmplUtil(tmplconfigService, tmplconfigdictService, dictionariesService, 
 				departmentService,userService);
-		String jqGridColModel = tmpl.generateStructureNoEdit(SelectedTableNo, SelectedDepartCode, SelectedCustCol7);
+		String jqGridColModel = tmpl.generateStructureNoEdit(SelectedTableNo, strShowCalModelDepaet, SelectedCustCol7);
 		
 		commonBase.setCode(0);
 		commonBase.setMessage(jqGridColModel);
@@ -348,20 +361,28 @@ public class DetailImportQueryController extends BaseController {
 		
 		PageData getQueryFeildPd = new PageData();
 		getQueryFeildPd.put("USER_GROP", emplGroupType);
-		getQueryFeildPd.put("DEPT_CODE", SelectedDepartCode);
+		if(departSelf == 1){
+			getQueryFeildPd.put("DEPT_CODE", SelectedDepartCode);
+		}
 		getQueryFeildPd.put("CUST_COL7", SelectedCustCol7);
 		getQueryFeildPd.put("BUSI_DATE", SelectedBusiDate);
 		String QueryFeild = QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList);
 		QueryFeild += QueryFeildString.getBillCodeNotInSumInvalidDetail(TableNameSummy);
 		if(bolBillCodeUse){
-			QueryFeild += QueryFeildString.getQueryFeildBillCodeDetail(SelectedBillCode, SelectBillCodeFirstShow);
+			QueryFeild += QueryFeildString.getQueryFeildBillCodeSummy(SelectedBillCode, SelectBillCodeAllShow, SelectBillCodeNoSumShow);
 		}
 		QueryFeild += " and DEPT_CODE in (" + QueryFeildString.tranferListValueToSqlInString(AllDeptCode) + ") ";
 		if(!(SelectedCustCol7!=null && !SelectedCustCol7.trim().equals(""))){
 			QueryFeild += " and 1 != 1 ";
 		}
-		if(!(SelectedDepartCode!=null && !SelectedDepartCode.trim().equals(""))){
-			QueryFeild += " and 1 != 1 ";
+		if(departSelf == 1){
+			if(!(SelectedDepartCode!=null && !SelectedDepartCode.trim().equals(""))){
+				QueryFeild += " and 1 != 1 ";
+			}
+		} else {
+			if(SelectedDepartCode!=null && !SelectedDepartCode.trim().equals("")){
+				QueryFeild += " and DEPT_CODE in (" + Common.getSqlNextDeptCode(SelectedDepartCode) + ") ";
+			}
 		}
 		if(!(SelectedBusiDate!=null && !SelectedBusiDate.trim().equals(""))){
 			QueryFeild += " and 1 != 1 ";
@@ -405,6 +426,10 @@ public class DetailImportQueryController extends BaseController {
 		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
 		//单位
 		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
+		int departSelf = Common.getDepartSelf(departmentService);
+		if(departSelf == 1){
+			SelectedDepartCode = Jurisdiction.getCurrentDepartmentID();
+		}
 		//
 		String SelectedtabIndex = getPd.getString("SelectedtabIndex");
 		List<String> AllDeptCode = Common.getAllDeptCode(departmentService, Jurisdiction.getCurrentDepartmentID());
@@ -415,7 +440,9 @@ public class DetailImportQueryController extends BaseController {
 		
 		PageData getQueryFeildPd = new PageData();
 		getQueryFeildPd.put("USER_GROP", emplGroupType);
-		getQueryFeildPd.put("DEPT_CODE", SelectedDepartCode);
+		if(departSelf == 1){
+		    getQueryFeildPd.put("DEPT_CODE", SelectedDepartCode);
+		}
 		getQueryFeildPd.put("CUST_COL7", SelectedCustCol7);
 		getQueryFeildPd.put("BUSI_DATE", SelectedBusiDate);
 		String QueryFeild = QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList);
@@ -426,6 +453,15 @@ public class DetailImportQueryController extends BaseController {
 		}
 		if(!(SelectedCustCol7!=null && !SelectedCustCol7.trim().equals(""))){
 			QueryFeild += " and 1 != 1 ";
+		}
+		if(departSelf == 1){
+			if(!(SelectedDepartCode!=null && !SelectedDepartCode.trim().equals(""))){
+				QueryFeild += " and 1 != 1 ";
+			}
+		} else {
+			if(SelectedDepartCode!=null && !SelectedDepartCode.trim().equals("")){
+				QueryFeild += " and DEPT_CODE in (" + Common.getSqlNextDeptCode(SelectedDepartCode) + ") ";
+			}
 		}
 		getPd.put("QueryFeild", QueryFeild);
 		

@@ -24,7 +24,9 @@ import com.fh.util.enums.TmplType;
  */
 public class Corresponding {
 	
-
+	public static String tb_gl_cert = "tb_gl_cert";
+	public static String tb_sys_confirm_info = "tb_sys_confirm_info";
+	
 	public static String tb_staff_detail = "tb_staff_detail";
 	public static String tb_social_inc_detail = "tb_social_inc_detail";
 	public static String tb_house_fund_detail = "tb_house_fund_detail";

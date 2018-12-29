@@ -340,7 +340,7 @@ public class Common {
 		return listSalaryFeildCal;
 	}
 	
-	public static String GetRetSumByUserColoumnsSalary(String tableName, 
+	public static String GetRetSumByUserColoumnsSalary1(String tableName, 
 			String QueryFeild, String salaryExemptionTax,
 			String configFormulaSalary, String TableFeildSalaryTaxConfigGradeOper, String TableFeildSalaryTaxConfigSumOper, 
 			String TableFeildSalaryTax, String TableFeildSalaryTaxSelfSumOper,
@@ -358,7 +358,27 @@ public class Common {
 				+ " group by USER_CODE";
 		return strRetSelectColoumn;
 	}
-	public static String GetRetSumByUserColoumnsBonus(String tableName, 
+	public static String GetRetSumByUserColoumnsSalary2(String tableName, 
+			String QueryFeild, String salaryExemptionTax,
+			String configFormulaSalary, String TableFeildSalaryTaxConfigGradeOper, String TableFeildSalaryTaxConfigSumOper, 
+			String TableFeildSalaryTax, String TableFeildSalaryTaxSelfSumOper,
+			String TableFeildSalarySelf, 
+			TmplConfigManager tmplconfigService) throws Exception{
+		if(!(salaryExemptionTax!=null && !salaryExemptionTax.trim().equals(""))){
+			salaryExemptionTax = "0";
+		}
+		String strRetSelectColoumn = " select USER_CODE, " 
+		        + " sum(" + configFormulaSalary + ") - " + salaryExemptionTax + " " + TableFeildSalaryTaxConfigGradeOper + ", "
+				+ " sum(" + configFormulaSalary + ") - " + salaryExemptionTax + " " + TableFeildSalaryTaxConfigSumOper + ", "
+				+ " sum(" + TableFeildSalaryTax + ") " + TableFeildSalaryTaxSelfSumOper + ", "
+				+ " sum(" + TableFeildSalarySelf + ") " + TableFeildSalarySelf + " "
+				+ " from " + tableName 
+				+ " where 1 = 1 "
+				+ QueryFeild 
+				+ " group by USER_CODE";
+		return strRetSelectColoumn;
+	}
+	public static String GetRetSumByUserColoumnsBonus1(String tableName, 
 			String QueryFeild, String salaryExemptionTax,
 			String configFormulaBonus, String TableFeildBonusTaxConfigGradeOper, String TableFeildBonusTaxConfigSumOper, 
 			String TableFeildBonusTax, String TableFeildBonusTaxSelfSumOper,
@@ -367,8 +387,26 @@ public class Common {
 			salaryExemptionTax = "0";
 		}
 		String strRetSelectColoumn = " select USER_CODE, " 
-				+ " ROUND(sum(" + configFormulaBonus + ")/12 - " + salaryExemptionTax + ", 2) " + TableFeildBonusTaxConfigGradeOper + ", "
-				+ " sum(" + configFormulaBonus + ") " + TableFeildBonusTaxConfigSumOper + ", "
+			    + " ROUND(sum(" + configFormulaBonus + ")/12 - " + salaryExemptionTax + ", 2) " + TableFeildBonusTaxConfigGradeOper + ", "
+			    + " sum(" + configFormulaBonus + ") " + TableFeildBonusTaxConfigSumOper + ", "
+				+ " sum(" + TableFeildBonusTax + ") " + TableFeildBonusTaxSelfSumOper + " "
+				+ " from " + tableName 
+				+ " where 1 = 1 "
+				+ QueryFeild 
+				+ " group by USER_CODE";
+		return strRetSelectColoumn;
+	}
+	public static String GetRetSumByUserColoumnsBonus2(String tableName, 
+			String QueryFeild, String salaryExemptionTax,
+			String configFormulaBonus, String TableFeildBonusTaxConfigGradeOper, String TableFeildBonusTaxConfigSumOper, 
+			String TableFeildBonusTax, String TableFeildBonusTaxSelfSumOper,
+			TmplConfigManager tmplconfigService) throws Exception{
+		if(!(salaryExemptionTax!=null && !salaryExemptionTax.trim().equals(""))){
+			salaryExemptionTax = "0";
+		}
+		String strRetSelectColoumn = " select USER_CODE, " 
+				+ " sum(" + configFormulaBonus + ") - " + salaryExemptionTax + " " + TableFeildBonusTaxConfigGradeOper + ", "
+				+ " sum(" + configFormulaBonus + ") - " + salaryExemptionTax + " " + TableFeildBonusTaxConfigSumOper + ", "
 				+ " sum(" + TableFeildBonusTax + ") " + TableFeildBonusTaxSelfSumOper + " "
 				+ " from " + tableName 
 				+ " where 1 = 1 "
@@ -757,6 +795,40 @@ public class Common {
 			}
 		}
 		return AllDeptCode;
+	}
+	
+	public static String getSqlNextDeptCode(String departCodes) throws Exception{
+		String strReturn = "";
+		if(departCodes!=null && !departCodes.trim().equals("")){
+			String[] strList = departCodes.split(",");
+			for(String str : strList){
+				if(strReturn!=null && !strReturn.trim().equals("")){
+					strReturn += " UNION ";
+				}
+				strReturn += " SELECT ";
+				strReturn += "   department_code "; 
+				strReturn += " FROM ";
+				strReturn += "   oa_department ";
+				strReturn += " WHERE department_code = '" + str + "' ";
+				strReturn += " UNION ";
+				strReturn += " (SELECT ";
+				strReturn += "   department_code ";
+				strReturn += " FROM ";
+				strReturn += "   (SELECT "; 
+				strReturn += "     * ";
+				strReturn += "   FROM ";
+				strReturn += "     oa_department "; 
+				strReturn += "   ORDER BY parent_code, ";
+				strReturn += "     department_code) depart_sorted, ";
+				strReturn += "   (SELECT "; 
+				strReturn += "     @pv := '" + str + "') initialisation "; 
+				strReturn += " WHERE FIND_IN_SET(parent_code, @pv) "; 
+				strReturn += "   AND LENGTH( ";
+				strReturn += "     @pv := CONCAT(@pv, ',', department_code) ";
+				strReturn += "   )) ";
+			}
+		}
+		return strReturn;
 	}
 	
 	public static Boolean checkHaveItemList(String strBillCode, String TableNameFirstItem, 

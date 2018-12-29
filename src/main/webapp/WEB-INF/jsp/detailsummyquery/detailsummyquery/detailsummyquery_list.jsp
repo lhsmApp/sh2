@@ -658,7 +658,7 @@
 					showQuery: false
 		        },
 		        {},{});
-			/*$(gridBase_selector).navSeparatorAdd(pagerBase_selector, {
+			$(gridBase_selector).navSeparatorAdd(pagerBase_selector, {
 	        			sepclass : "ui-separator",
 	        			sepcontent: ""
 	        		});
@@ -669,7 +669,7 @@
 			             position : "last",
 			             title : "导出",
 			             cursor : "pointer"
-			         });*/
+			         });
 	}
 </script>
 </html>
