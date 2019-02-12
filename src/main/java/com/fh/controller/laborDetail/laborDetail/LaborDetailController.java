@@ -124,7 +124,7 @@ public class LaborDetailController extends BaseController {
 		mv.addObject("zTreeNodes", DepartmentSelectTreeSource);
 		// ***********************************************************
 		
-		Map_HaveColumnsList = Common.GetHaveColumnsListByTableName(TableNameDetail, tmplconfigService);
+		Map_HaveColumnsList = Common.GetHaveColumnsMapByTableName(TableNameDetail, tmplconfigService);
 		
 		Map_SetColumnsList.put("BUSI_DATE", new TmplConfigDetail("BUSI_DATE", "当前区间", "0", false));
 		Map_SetColumnsList.put("BILL_OFF", new TmplConfigDetail("BILL_OFF", "当前帐套", "0", false));
@@ -656,10 +656,15 @@ public class LaborDetailController extends BaseController {
 									if(pdAdd.get("ACT_SALY")!=null && !pdAdd.get("ACT_SALY").toString().trim().equals("")){
 										strACT_SALY = pdAdd.get("ACT_SALY").toString().trim();
 									}
-									double douGROSS_PAY = Double.valueOf(strGROSS_PAY);
-									double douACCRD_TAX = Double.valueOf(strACCRD_TAX);
-									double douACT_SALY = Double.valueOf(strACT_SALY);
-									if(douACT_SALY != douGROSS_PAY - douACCRD_TAX){
+									BigDecimal douGROSS_PAY = new BigDecimal(strGROSS_PAY).setScale(2, BigDecimal.ROUND_HALF_UP);
+									BigDecimal douACCRD_TAX = new BigDecimal(strACCRD_TAX).setScale(2, BigDecimal.ROUND_HALF_UP);
+									BigDecimal douACT_SALY = new BigDecimal(strACT_SALY).setScale(2, BigDecimal.ROUND_HALF_UP);
+
+									pdAdd.put("GROSS_PAY", douGROSS_PAY);
+									pdAdd.put("ACCRD_TAX", douACCRD_TAX);
+									pdAdd.put("ACT_SALY", douACT_SALY);
+									
+									if(douACT_SALY.compareTo(douGROSS_PAY.subtract(douACCRD_TAX)) != 0){
 										sbRet.add(//"员工编号:" + pdSetUSER_CODE + 
 												  " 姓名:" + pdAdd.getString("USER_NAME")
 												+ " 身份证号:" + pdAdd.getString("STAFF_IDENT")

@@ -6,7 +6,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,9 +35,9 @@ import com.fh.entity.CommonBaseAndList;
 import com.fh.entity.JqPage;
 import com.fh.entity.Page;
 import com.fh.entity.PageResult;
+import com.fh.entity.StaffFilterInfo;
 import com.fh.entity.TableColumns;
 import com.fh.entity.TmplConfigDetail;
-import com.fh.entity.TmplInputTips;
 import com.fh.entity.system.User;
 import com.fh.exception.CustomException;
 import com.fh.util.ObjectExcelView;
@@ -57,6 +56,7 @@ import net.sf.json.JSONArray;
 
 import com.fh.service.fhoa.department.impl.DepartmentService;
 import com.fh.service.staffDetail.staffdetail.StaffDetailManager;
+import com.fh.service.staffFilter.staffFilter.StaffFilterManager;
 import com.fh.service.staffsummy.staffsummy.StaffSummyManager;
 import com.fh.service.sysConfig.sysconfig.SysConfigManager;
 import com.fh.service.sysDeptLtdTime.sysDeptLtdTime.impl.SysDeptLtdTimeService;
@@ -93,6 +93,8 @@ public class StaffDetailController extends BaseController {
 	private UserManager userService;
 	@Resource(name="sysDeptLtdTimeService")
 	private SysDeptLtdTimeService sysDeptLtdTimeService;
+	@Resource(name="staffFilterService")
+	private StaffFilterManager staffFilterService;
 
 	//表名
 	String TableNameDetail = "TB_STAFF_DETAIL";
@@ -122,8 +124,9 @@ public class StaffDetailController extends BaseController {
 	//String SystemDateTime = "";
     //
 	String AdditionalReportColumns = "";
-	//
-	private List<String> MustInputList = Arrays.asList("USER_CODE", "UNITS_CODE", "USER_CATG");
+	//配置表配置成显示，则是必填项
+	private List<String> IfShow_MustInputList = Arrays.asList("USER_CODE", "UNITS_CODE", "STAFF_IDENT", "USER_CATG");
+	
 	//界面查询字段
     List<String> QueryFeildList2 = Arrays.asList("DEPT_CODE", "CUST_COL7", "USER_GROP", "BUSI_DATE");
     List<String> QueryFeildList1 = Arrays.asList("DEPT_CODE", "CUST_COL7", "USER_GROP");
@@ -234,11 +237,14 @@ public class StaffDetailController extends BaseController {
 		transferPd.put("SelectedDepartCode", SelectedDepartCode);
 		transferPd.put("SystemDateTime", SystemDateTime);
 		transferPd.put("emplGroupType", emplGroupType);
+		//汇总单据状态不为0，就是没汇总或汇总但没作废
 		String strCanOperate = QueryFeildString.getBillCodeNotInSumInvalidDetail(TableNameSummy);
+	    //tb_sys_unlock_info表 DEL_STATE（融合系统删除状态为1）数据显示。为0不显示。
 		strCanOperate += QueryFeildString.getBillCodeNotInInvalidSysUnlockInfo();
 		if(!(SelectedDepartCode != null && !SelectedDepartCode.trim().equals(""))){
 			strCanOperate += " and 1 != 1 ";
 		} else {
+			//tb_sys_sealed_info不是封存state = '1'
 			strCanOperate += QueryFeildString.getNotReportBillCode(strTypeCodeTramsfer, SystemDateTime, SelectedCustCol7, SelectedDepartCode);
 		}
 		if(!(SelectedCustCol7 != null && !SelectedCustCol7.trim().equals(""))){
@@ -279,7 +285,7 @@ public class StaffDetailController extends BaseController {
 		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
 		
 		TmplUtil tmpl = new TmplUtil(tmplconfigService, tmplconfigdictService, dictionariesService, 
-				departmentService,userService, keyListBase, null, AdditionalReportColumns, MustInputList, jqGridGroupNotSumFeild);
+				departmentService,userService, keyListBase, null, AdditionalReportColumns, IfShow_MustInputList, jqGridGroupNotSumFeild);
 		String jqGridColModel = tmpl.generateStructure(SelectedTableNo, SelectedDepartCode, SelectedCustCol7, 3, MustNotEditList);
 		
 		commonBase.setCode(0);
@@ -332,11 +338,16 @@ public class StaffDetailController extends BaseController {
 		if(!(emplGroupType!=null && !emplGroupType.trim().equals(""))){
 			QueryFeild += " and 1 != 1 ";
 		}
+		//根据单号，临时数据为like ' %'
 		QueryFeild += QueryFeildString.getQueryFeildBillCodeDetail(SelectedBillCode, SelectBillCodeFirstShow);
+		//不是临时数据，tb_sys_sealed_info不是封存、tb_sys_unlock_info表 DEL_STATE（融合系统删除状态为1）数据显示，为0不显示、
 		if(!SelectedBillCode.equals(SelectBillCodeFirstShow)){
+			//tb_sys_sealed_info不是封存state = '1'
 			QueryFeild += QueryFeildString.getNotReportBillCode(strTypeCodeTramsfer, SystemDateTime, SelectedCustCol7, SelectedDepartCode);
+		    //tb_sys_unlock_info表 DEL_STATE（融合系统删除状态为1）数据显示。为0不显示。
 			QueryFeild += QueryFeildString.getBillCodeNotInInvalidSysUnlockInfo();
 		}
+		//汇总单据状态不为0，就是没汇总或汇总但没作废
 		QueryFeild += QueryFeildString.getBillCodeNotInSumInvalidDetail(TableNameSummy);
 		getPd.put("QueryFeild", QueryFeild);
 		//多条件过滤条件
@@ -370,6 +381,67 @@ public class StaffDetailController extends BaseController {
 		result.setUserdata(userdata);
 		
 		return result;
+	}
+
+	//一些必填项的验证
+	public List<String> CheckMustInputFeild(PageData p_pd, List<StaffFilterInfo> listStaffFilterInfo, 
+			Map<String, TmplConfigDetail> map_SetColumnsList){
+		List<String> sbRetFeild = new ArrayList<String>();
+		String USER_CODE = (String) p_pd.get("USER_CODE");
+		if(!(USER_CODE!=null && !USER_CODE.trim().equals(""))){
+			sbRetFeild.add("人员编码不能为空！");
+		}
+		String BUSI_DATE = (String) p_pd.get("BUSI_DATE");
+		if(!(BUSI_DATE!=null && !BUSI_DATE.trim().equals(""))){
+			sbRetFeild.add("区间不能为空！");
+		}
+		String CUST_COL7 = (String) p_pd.get("CUST_COL7");
+		if(!(CUST_COL7!=null && !CUST_COL7.trim().equals(""))){
+			sbRetFeild.add("账套不能为空！");
+		}
+		String DEPT_CODE = (String) p_pd.get("DEPT_CODE");
+		if(!(DEPT_CODE!=null && !DEPT_CODE.trim().equals(""))){
+			sbRetFeild.add("单位不能为空！");
+		}
+		String USER_GROP = (String) p_pd.get("USER_GROP");
+		if(!(USER_GROP!=null && !USER_GROP.trim().equals(""))){
+			sbRetFeild.add("员工组不能为空！");
+		}
+		String UNITS_CODE = (String) p_pd.get("UNITS_CODE");
+		if(!(UNITS_CODE!=null && !UNITS_CODE.trim().equals(""))){
+			sbRetFeild.add("所属二级单位不能为空！");
+		}
+		//是否验证身份证号不为空，
+		Boolean bolCheckSTAFF_IDENT = true;
+		//不显示就不验证
+		TmplConfigDetail tmpl = map_SetColumnsList.get("STAFF_IDENT");
+		if(!(tmpl!=null && tmpl.getCOL_HIDE()!=null
+				&& tmpl.getCOL_HIDE().trim().equals("1"))){
+			bolCheckSTAFF_IDENT = false;
+		}
+		//tb_staff_filter_info有对应的工资范围编码或ANY,STAFF_IDENT_STATE = 1验证，！=1不验证
+		if(bolCheckSTAFF_IDENT){
+		    //工资范围编码
+			String getSAL_RANGE = (String) p_pd.get("SAL_RANGE");
+			if(getSAL_RANGE!=null && listStaffFilterInfo!=null){
+				for(StaffFilterInfo filter : listStaffFilterInfo){
+					if(("ANY").toUpperCase().trim().equals(filter.getSAL_RANGE().toUpperCase().trim()) 
+							|| getSAL_RANGE.equals(filter.getSAL_RANGE())){
+						if(!(filter.getSTAFF_IDENT_STATE()!=null && filter.getSTAFF_IDENT_STATE().equals("1"))){
+							bolCheckSTAFF_IDENT = false;
+						}
+					}
+				}
+			}
+		}
+		//验证身份证号不能为空
+		if(bolCheckSTAFF_IDENT){
+			String getSTAFF_IDENT = (String) p_pd.get("STAFF_IDENT");
+			if(!(getSTAFF_IDENT!=null && !getSTAFF_IDENT.trim().equals(""))){
+				sbRetFeild.add("身份证号不能为空！");
+			}
+		}
+		return sbRetFeild;
 	}
 	
 	/**修改
@@ -407,6 +479,7 @@ public class StaffDetailController extends BaseController {
 		String oper = getPd.getString("oper");
 		//当前区间
 		String SystemDateTime = getPd.getString("SystemDateTime");
+		//判断传过来的TranferSystemDateTime和配置表里的当前区间是否一致
 		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager, false);
 		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
 			commonBase.setCode(2);
@@ -424,16 +497,20 @@ public class StaffDetailController extends BaseController {
 			commonBase.setMessage(strGetCheckMustSelected);
 			return commonBase;
 		}
+		//验证是否在操作时间内
 		String mesSysDeptLtdTime = CheckSystemDateTime.CheckSysDeptLtdTime(SelectedTableNo, SelectedCustCol7, SelectedDepartCode, sysDeptLtdTimeService);
 		if(mesSysDeptLtdTime!=null && !mesSysDeptLtdTime.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(mesSysDeptLtdTime);
 			return commonBase;
 		}
-		
+
+	    //汇总单据状态不为0，就是没汇总或汇总但没作废
 		String strHelpful = QueryFeildString.getBillCodeNotInSumInvalidDetail(TableNameSummy);
 		if(!SelectedBillCode.equals(SelectBillCodeFirstShow)){
+			//tb_sys_sealed_info不是封存state = '1'
 			strHelpful += QueryFeildString.getNotReportBillCode(strTypeCodeTramsfer, SystemDateTime, SelectedCustCol7, SelectedDepartCode);
+		    //tb_sys_unlock_info表 DEL_STATE（融合系统删除状态为1）数据显示。为0不显示。
 			strHelpful += QueryFeildString.getBillCodeNotInInvalidSysUnlockInfo();
 		}
 		if(!(strHelpful != null && !strHelpful.trim().equals(""))){
@@ -441,9 +518,13 @@ public class StaffDetailController extends BaseController {
 			commonBase.setMessage(Message.GetHelpfulDetailFalue);
 			return commonBase;
 		}
+	    //不用验证导入税的情况、验证身份证号
+		List<StaffFilterInfo> listStaffFilterInfo = getStaffFilter(SelectedTableNo, SelectedCustCol7, SelectedDepartCode);
+		Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(SelectedTableNo, SelectedDepartCode, SelectedCustCol7, tmplconfigService);
 		
 		//必定不用编辑的列  MustNotEditList  Arrays.asList("SERIAL_NO", "BILL_CODE", "BUSI_DATE", "DEPT_CODE", "CUST_COL7", "USER_GROP");
 		if(oper.equals("add")){
+			//默认值
 			getPd.put("SERIAL_NO", "");
 			getPd.put("BUSI_DATE", SystemDateTime); 
 			getPd.put("DEPT_CODE", SelectedDepartCode); 
@@ -458,8 +539,22 @@ public class StaffDetailController extends BaseController {
 			if(!(getESTB_DEPT!=null && !getESTB_DEPT.trim().equals(""))){
 				getPd.put("ESTB_DEPT", SelectedDepartCode);
 			}
+			//一些必填项的验证
+			List<String> sbRetFeild = CheckMustInputFeild(getPd, listStaffFilterInfo, map_SetColumnsList);
+			if(sbRetFeild != null && sbRetFeild.size()>0){
+				StringBuilder getCheckMustInputFeild = new StringBuilder();
+				for(String str : sbRetFeild){
+					getCheckMustInputFeild.append(str + "  ");
+				}
+				if(getCheckMustInputFeild!=null && !getCheckMustInputFeild.toString().trim().equals("")){
+					commonBase.setCode(2);
+					commonBase.setMessage(getCheckMustInputFeild.toString());
+					return commonBase;
+				}
+			}
 			List<PageData> listData = new ArrayList<PageData>();
 			listData.add(getPd);
+			//验证单据状态
 			String checkState = CheckState(SelectedBillCode, SystemDateTime,
 					SelectedCustCol7, SelectedDepartCode, emplGroupType, strTypeCodeTramsfer, listData, "SERIAL_NO", TmplUtil.keyExtra);
 			if(checkState!=null && !checkState.trim().equals("")){
@@ -467,14 +562,31 @@ public class StaffDetailController extends BaseController {
 				commonBase.setMessage(checkState);
 				return commonBase;
 			}
-			commonBase = CalculationUpdateDatabase(false, true, commonBase, "",
+			//计算并保存
+			commonBase = CalculationUpdateDatabase(true, commonBase, "",
 					SelectedTableNo, SelectedCustCol7, SelectedDepartCode, emplGroupType,
-					listData, strHelpful, SystemDateTime);
+					listData, strHelpful, SystemDateTime, listStaffFilterInfo);
 		} else {
-			Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(SelectedTableNo, SelectedDepartCode, SelectedCustCol7, tmplconfigService);
-			Map<String, TableColumns> map_HaveColumnsList = Common.GetHaveColumnsList(SelectedTableNo, tmplconfigService);
+			for(String strFeild : MustNotEditList){
+				getPd.put(strFeild, getPd.get(strFeild + TmplUtil.keyExtra));
+			}
+			//一些必填项的验证
+			List<String> sbRetFeild = CheckMustInputFeild(getPd, listStaffFilterInfo, map_SetColumnsList);
+			if(sbRetFeild != null && sbRetFeild.size()>0){
+				StringBuilder getCheckMustInputFeild = new StringBuilder();
+				for(String str : sbRetFeild){
+					getCheckMustInputFeild.append(str + "  ");
+				}
+				if(getCheckMustInputFeild!=null && !getCheckMustInputFeild.toString().trim().equals("")){
+					commonBase.setCode(2);
+					commonBase.setMessage(getCheckMustInputFeild.toString());
+					return commonBase;
+				}
+			}
+			Map<String, TableColumns> map_HaveColumnsList = Common.GetHaveColumnsList(SelectedTableNo, tmplconfigService);        
 			List<PageData> listCheckState = new ArrayList<PageData>();
 			listCheckState.add(getPd);
+			//验证单据状态
 			String checkState = CheckState(SelectedBillCode, SystemDateTime,
 					SelectedCustCol7, SelectedDepartCode, emplGroupType, strTypeCodeTramsfer, listCheckState, "SERIAL_NO", TmplUtil.keyExtra);
 			if(checkState!=null && !checkState.trim().equals("")){
@@ -482,9 +594,8 @@ public class StaffDetailController extends BaseController {
 				commonBase.setMessage(checkState);
 				return commonBase;
 			}
-			for(String strFeild : MustNotEditList){
-				getPd.put(strFeild, getPd.get(strFeild + TmplUtil.keyExtra));
-			}
+			//IsNumFeildButMustInput设置字段类型是数字，但不管隐藏 或显示都必须保存的
+			//haveColumnsList和map_SetColumnsList，设置保存的数据列及对应值
 			Common.setModelDefault(getPd, map_HaveColumnsList, map_SetColumnsList, MustNotEditList);
 			getPd.put("TableName", TableNameDetail);
 			getPd.put("CanOperate", strHelpful);
@@ -533,6 +644,7 @@ public class StaffDetailController extends BaseController {
 		String ShowDataBillCode = getPd.getString("ShowDataBillCode");
 		//当前区间
 		String SystemDateTime = getPd.getString("SystemDateTime");
+		//判断传过来的TranferSystemDateTime和配置表里的当前区间是否一致
 		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager, false);
 		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
 			commonBase.setCode(2);
@@ -550,6 +662,7 @@ public class StaffDetailController extends BaseController {
 			commonBase.setMessage(strGetCheckMustSelected);
 			return commonBase;
 		}
+		//验证是否在操作时间内
 		String mesSysDeptLtdTime = CheckSystemDateTime.CheckSysDeptLtdTime(SelectedTableNo, SelectedCustCol7, SelectedDepartCode, sysDeptLtdTimeService);
 		if(mesSysDeptLtdTime!=null && !mesSysDeptLtdTime.trim().equals("")){
 			commonBase.setCode(2);
@@ -559,7 +672,9 @@ public class StaffDetailController extends BaseController {
 
 		String strHelpful = QueryFeildString.getBillCodeNotInSumInvalidDetail(TableNameSummy);
 		if(!SelectedBillCode.equals(SelectBillCodeFirstShow)){
+			//tb_sys_sealed_info不是封存state = '1'
 		    strHelpful += QueryFeildString.getNotReportBillCode(strTypeCodeTramsfer, SystemDateTime, SelectedCustCol7, SelectedDepartCode);
+		    //tb_sys_unlock_info表 DEL_STATE（融合系统删除状态为1）数据显示。为0不显示。
 			strHelpful += QueryFeildString.getBillCodeNotInInvalidSysUnlockInfo();
 		}
 		if(!(strHelpful != null && !strHelpful.trim().equals(""))){
@@ -572,6 +687,7 @@ public class StaffDetailController extends BaseController {
 		String json = DATA_ROWS.toString();  
         JSONArray array = JSONArray.fromObject(json);  
         List<PageData> listData = (List<PageData>) JSONArray.toCollection(array,PageData.class);
+		//验证单据状态
 		String checkState = CheckState(SelectedBillCode, SystemDateTime,
 				SelectedCustCol7, SelectedDepartCode, emplGroupType, strTypeCodeTramsfer, listData, "SERIAL_NO", TmplUtil.keyExtra);
 		if(checkState!=null && !checkState.trim().equals("")){
@@ -581,10 +697,29 @@ public class StaffDetailController extends BaseController {
 		}
 		Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(SelectedTableNo, SelectedDepartCode, SelectedCustCol7, tmplconfigService);
 		Map<String, TableColumns> map_HaveColumnsList = Common.GetHaveColumnsList(SelectedTableNo, tmplconfigService);
+		
+		List<StaffFilterInfo> listStaffFilterInfo = getStaffFilter(SelectedTableNo, SelectedCustCol7, SelectedDepartCode);
         for(PageData item : listData){
+			for(String strFeild : MustNotEditList){
+				item.put(strFeild, item.get(strFeild + TmplUtil.keyExtra));
+			}
         	item.put("CanOperate", strHelpful);
       	    item.put("TableName", TableNameDetail);
         	Common.setModelDefault(item, map_HaveColumnsList, map_SetColumnsList, MustNotEditList);
+
+			//一些必填项的验证
+			List<String> sbRetFeild = CheckMustInputFeild(item, listStaffFilterInfo, map_SetColumnsList);
+			if(sbRetFeild != null && sbRetFeild.size()>0){
+				StringBuilder getCheckMustInputFeild = new StringBuilder();
+				for(String str : sbRetFeild){
+					getCheckMustInputFeild.append(str + "  ");
+				}
+				if(getCheckMustInputFeild!=null && !getCheckMustInputFeild.toString().trim().equals("")){
+					commonBase.setCode(2);
+					commonBase.setMessage(getCheckMustInputFeild.toString());
+					return commonBase;
+				}
+			}
         }
 		if(null != listData && listData.size() > 0){
 			//此处执行集合添加 
@@ -627,6 +762,7 @@ public class StaffDetailController extends BaseController {
 		String ShowDataBillCode = getPd.getString("ShowDataBillCode");
 		//当前区间
 		String SystemDateTime = getPd.getString("SystemDateTime");
+		//判断传过来的TranferSystemDateTime和配置表里的当前区间是否一致
 		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager, false);
 		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
 			commonBase.setCode(2);
@@ -644,6 +780,7 @@ public class StaffDetailController extends BaseController {
 			commonBase.setMessage(strGetCheckMustSelected);
 			return commonBase;
 		}
+		//验证是否在操作时间内
 		String mesSysDeptLtdTime = CheckSystemDateTime.CheckSysDeptLtdTime(SelectedTableNo, SelectedCustCol7, SelectedDepartCode, sysDeptLtdTimeService);
 		if(mesSysDeptLtdTime!=null && !mesSysDeptLtdTime.trim().equals("")){
 			commonBase.setCode(2);
@@ -653,7 +790,9 @@ public class StaffDetailController extends BaseController {
 		
 		String strHelpful = QueryFeildString.getBillCodeNotInSumInvalidDetail(TableNameSummy);
 		if(!SelectedBillCode.equals(SelectBillCodeFirstShow)){
+			//tb_sys_sealed_info不是封存state = '1'
 			strHelpful += QueryFeildString.getNotReportBillCode(strTypeCodeTramsfer, SystemDateTime, SelectedCustCol7, SelectedDepartCode);
+		    //tb_sys_unlock_info表 DEL_STATE（融合系统删除状态为1）数据显示。为0不显示。
 			strHelpful += QueryFeildString.getBillCodeNotInInvalidSysUnlockInfo();
 		}
 		if(!(strHelpful != null && !strHelpful.trim().equals(""))){
@@ -666,6 +805,7 @@ public class StaffDetailController extends BaseController {
 		String json = DATA_ROWS.toString();  
         JSONArray array = JSONArray.fromObject(json);  
         List<PageData> listData = (List<PageData>) JSONArray.toCollection(array,PageData.class);
+		//验证单据状态
 		String checkState = CheckState(SelectedBillCode, SystemDateTime,
 				SelectedCustCol7, SelectedDepartCode, emplGroupType, strTypeCodeTramsfer, listData, "SERIAL_NO", TmplUtil.keyExtra);
 		if(checkState!=null && !checkState.trim().equals("")){
@@ -717,6 +857,7 @@ public class StaffDetailController extends BaseController {
 		String ShowDataBillCode = getPd.getString("ShowDataBillCode");
 		//当前区间
 		String SystemDateTime = getPd.getString("SystemDateTime");
+		//判断传过来的TranferSystemDateTime和配置表里的当前区间是否一致
 		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager, false);
 		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
 			commonBase.setCode(2);
@@ -734,6 +875,7 @@ public class StaffDetailController extends BaseController {
 			commonBase.setMessage(strGetCheckMustSelected);
 			return commonBase;
 		}
+		//验证是否在操作时间内
 		String mesSysDeptLtdTime = CheckSystemDateTime.CheckSysDeptLtdTime(SelectedTableNo, SelectedCustCol7, SelectedDepartCode, sysDeptLtdTimeService);
 		if(mesSysDeptLtdTime!=null && !mesSysDeptLtdTime.trim().equals("")){
 			commonBase.setCode(2);
@@ -743,7 +885,9 @@ public class StaffDetailController extends BaseController {
 
 		String strHelpful = QueryFeildString.getBillCodeNotInSumInvalidDetail(TableNameSummy);
 		if(!SelectedBillCode.equals(SelectBillCodeFirstShow)){
+			//tb_sys_sealed_info不是封存state = '1'
 			strHelpful += QueryFeildString.getNotReportBillCode(strTypeCodeTramsfer, SystemDateTime, SelectedCustCol7, SelectedDepartCode);
+		    //tb_sys_unlock_info表 DEL_STATE（融合系统删除状态为1）数据显示。为0不显示。
 			strHelpful += QueryFeildString.getBillCodeNotInInvalidSysUnlockInfo();
 		}
 		if(!(strHelpful != null && !strHelpful.trim().equals(""))){
@@ -756,6 +900,28 @@ public class StaffDetailController extends BaseController {
 		String json = DATA_ROWS.toString();  
         JSONArray array = JSONArray.fromObject(json);  
         List<PageData> listData = (List<PageData>) JSONArray.toCollection(array,PageData.class);
+
+		List<StaffFilterInfo> listStaffFilterInfo = getStaffFilter(SelectedTableNo, SelectedCustCol7, SelectedDepartCode);
+		Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(SelectedTableNo, SelectedDepartCode, SelectedCustCol7, tmplconfigService);
+		for(PageData item : listData){
+			for(String strFeild : MustNotEditList){
+				item.put(strFeild, item.get(strFeild + TmplUtil.keyExtra));
+			}
+			//一些必填项的验证
+			List<String> sbRetFeild = CheckMustInputFeild(item, listStaffFilterInfo, map_SetColumnsList);
+			if(sbRetFeild != null && sbRetFeild.size()>0){
+				StringBuilder getCheckMustInputFeild = new StringBuilder();
+				for(String str : sbRetFeild){
+					getCheckMustInputFeild.append(str + "  ");
+				}
+				if(getCheckMustInputFeild!=null && !getCheckMustInputFeild.toString().trim().equals("")){
+					commonBase.setCode(2);
+					commonBase.setMessage(getCheckMustInputFeild.toString());
+					return commonBase;
+				}
+			}
+        }
+		//验证单据状态
 		String checkState = CheckState(SelectedBillCode, SystemDateTime,
 				SelectedCustCol7, SelectedDepartCode, emplGroupType, strTypeCodeTramsfer, listData, "SERIAL_NO", TmplUtil.keyExtra);
 		if(checkState!=null && !checkState.trim().equals("")){
@@ -763,9 +929,10 @@ public class StaffDetailController extends BaseController {
 			commonBase.setMessage(checkState);
 			return commonBase;
 		}
-		commonBase = CalculationUpdateDatabase(false, false, commonBase, "",
+		//计算并保存
+		commonBase = CalculationUpdateDatabase(false, commonBase, "",
 				SelectedTableNo, SelectedCustCol7, SelectedDepartCode, emplGroupType,
-				listData, strHelpful, SystemDateTime);
+				listData, strHelpful, SystemDateTime, listStaffFilterInfo);
 		return commonBase;
 	}
 
@@ -800,6 +967,7 @@ public class StaffDetailController extends BaseController {
 		String ShowDataBillCode = getPd.getString("ShowDataBillCode");
 		//当前区间
 		String SystemDateTime = getPd.getString("SystemDateTime");
+		//判断传过来的TranferSystemDateTime和配置表里的当前区间是否一致
 		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager, false);
 		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
 			commonBase.setCode(2);
@@ -818,6 +986,7 @@ public class StaffDetailController extends BaseController {
 		}
 	}
 	if(commonBase.getCode()==-1){
+		//验证是否在操作时间内
 		String mesSysDeptLtdTime = CheckSystemDateTime.CheckSysDeptLtdTime(SelectedTableNo, SelectedCustCol7, SelectedDepartCode, sysDeptLtdTimeService);
 		if(mesSysDeptLtdTime!=null && !mesSysDeptLtdTime.trim().equals("")){
 			commonBase.setCode(2);
@@ -826,6 +995,7 @@ public class StaffDetailController extends BaseController {
 	}
 	if(commonBase.getCode()==-1){
 		if(!SelectedBillCode.equals(SelectBillCodeFirstShow) && commonBase.getCode() != 2){
+			//不是临时数据要验证单据状态
 			String checkState = CheckState(SelectedBillCode, SystemDateTime,
 					SelectedCustCol7, SelectedDepartCode, emplGroupType, strTypeCodeTramsfer, null, "SERIAL_NO", TmplUtil.keyExtra);
 			if(checkState!=null && !checkState.trim().equals("")){
@@ -912,6 +1082,7 @@ public class StaffDetailController extends BaseController {
 		String ShowDataBillCode = getPd.getString("ShowDataBillCode");
 		//当前区间
 		String SystemDateTime = getPd.getString("SystemDateTime");
+		//判断传过来的TranferSystemDateTime和配置表里的当前区间是否一致
 		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager, false);
 		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
 			commonBase.setCode(2);
@@ -935,6 +1106,7 @@ public class StaffDetailController extends BaseController {
 		} 
 	}
 	if(commonBase.getCode()==-1){
+		//验证是否在操作时间内
 		String mesSysDeptLtdTime = CheckSystemDateTime.CheckSysDeptLtdTime(SelectedTableNo, SelectedCustCol7, SelectedDepartCode, sysDeptLtdTimeService);
 		if(mesSysDeptLtdTime!=null && !mesSysDeptLtdTime.trim().equals("")){
 			commonBase.setCode(2);
@@ -942,6 +1114,7 @@ public class StaffDetailController extends BaseController {
 		}
 	}
 	if(commonBase.getCode()==-1){
+		//不是临时数据要验证单据状态
 		if(!SelectedBillCode.equals(SelectBillCodeFirstShow)){
 			String checkState = CheckState(SelectedBillCode, SystemDateTime,
 					SelectedCustCol7, SelectedDepartCode, emplGroupType, strTypeCodeTramsfer, null, "SERIAL_NO", TmplUtil.keyExtra);
@@ -961,7 +1134,562 @@ public class StaffDetailController extends BaseController {
 		String strHelpful = QueryFeildString.getBillCodeNotInSumInvalidDetail(TableNameSummy);
 	if(commonBase.getCode()==-1){
 		if(!SelectedBillCode.equals(SelectBillCodeFirstShow)){
+			//tb_sys_sealed_info不是封存state = '1'
 			strHelpful += QueryFeildString.getNotReportBillCode(strTypeCodeTramsfer, SystemDateTime, SelectedCustCol7, SelectedDepartCode);
+		    //tb_sys_unlock_info表 DEL_STATE（融合系统删除状态为1）数据显示。为0不显示。
+			strHelpful += QueryFeildString.getBillCodeNotInInvalidSysUnlockInfo();
+		}
+		if(!(strHelpful != null && !strHelpful.trim().equals(""))){
+			commonBase.setCode(2);
+			commonBase.setMessage(Message.GetHelpfulDetailFalue);
+		} 
+	}
+		if(commonBase.getCode()==-1){
+							Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(SelectedTableNo, SelectedDepartCode, SelectedCustCol7, tmplconfigService);
+							Map<String, TableColumns> map_HaveColumnsList = Common.GetHaveColumnsList(SelectedTableNo, tmplconfigService);
+							Map<String, Object> DicList = Common.GetDicList(SelectedTableNo, SelectedDepartCode, SelectedCustCol7, 
+									tmplconfigService, tmplconfigdictService, dictionariesService, departmentService, userService, AdditionalReportColumns);
+							// 局部变量
+							LeadingInExcelToPageData<PageData> testExcel = null;
+							Map<Integer, Object> uploadAndReadMap = null;
+							try {
+								// 定义需要读取的数据
+								String formart = "yyyy-MM-dd";
+								String propertiesFileName = "config";
+								String kyeName = "file_path";
+								int sheetIndex = 0;
+								Map<String, String> titleAndAttribute = null;
+								// 定义对应的标题名与对应属性名
+								titleAndAttribute = new LinkedHashMap<String, String>();
+								
+								//配置表设置列
+								if(map_SetColumnsList != null && map_SetColumnsList.size() > 0){
+									for (TmplConfigDetail col : map_SetColumnsList.values()) {
+										titleAndAttribute.put(TransferSbcDbc.ToDBC(col.getCOL_NAME()), col.getCOL_CODE());
+									}
+								}
+								// 调用解析工具包
+								testExcel = new LeadingInExcelToPageData<PageData>(formart);
+								// 解析excel，获取客户信息集合
+								
+								Boolean bolIsDicSetSAL_RANGE = false;
+								Boolean bolIsDicSetUSER_CATG = false;
+							    if((CurrentDepartCode!=null && CurrentDepartCode.equals(DictsUtil.DepartShowAll_01001)
+							    		&& emplGroupType.equals(YXRY)
+										&& SelectedDepartCode!=null && SelectedDepartCode.equals(DictsUtil.DepartShowAll_01001))
+										|| 
+										(CurrentDepartCode!=null && CurrentDepartCode.equals(DictsUtil.DepartShowAll_00)
+							    		&& emplGroupType.equals(YXRY)
+										&& SelectedDepartCode!=null && SelectedDepartCode.equals(DictsUtil.DepartShowAll_00))){
+							    	bolIsDicSetSAL_RANGE = true;
+							    }
+							    if((CurrentDepartCode!=null && (CurrentDepartCode.equals(DictsUtil.DepartShowAll_01001) || CurrentDepartCode.equals(DictsUtil.DepartShowAll_00)))
+							    		&& (emplGroupType.equals(YXRY))
+										&& (SelectedDepartCode.equals(DEPT_CODE_0100107) || SelectedDepartCode.equals(DEPT_CODE_0100108) || SelectedDepartCode.equals(DEPT_CODE_0100106) || SelectedDepartCode.equals(DEPT_CODE_0100109))){
+							    	//LWPQ.equals(getUSER_GROP) && (USER_CATG_GDJLW.equals(getUSER_CATG) || USER_CATG_hbytgslw.equals(getUSER_CATG))
+							    	bolIsDicSetUSER_CATG = true;
+							    }
+							    //bolIsDicSetSAL_RANGE或bolIsDicSetUSER_CATG为true：员工组未在字典里获取到翻译时，Excel里是"劳务用工"，设置员工组为LWPQ = "50210004";// 劳务派遣、 劳务用工
+							    //bolIsDicSetUSER_CATG为true：企业特定员工分类未在字典里获取到翻译时，管道局劳务（公司结算）、华北油田劳务（公司结算）分别按管道局劳务、华北油田公司劳务获取字典
+								uploadAndReadMap = testExcel.uploadAndRead(file, propertiesFileName, kyeName, sheetIndex,
+										titleAndAttribute, map_HaveColumnsList, map_SetColumnsList, DicList, bolIsDicSetSAL_RANGE, bolIsDicSetUSER_CATG,
+										null, ImportNotHaveTransferList);
+							} catch (Exception e) {
+								e.printStackTrace();
+								logger.error("读取Excel文件错误", e);
+								throw new CustomException("读取Excel文件错误:" + e.getMessage(),false);
+							}
+							boolean judgement = false;
+
+							Map<String, String> returnErrorCostomn =  (Map<String, String>) uploadAndReadMap.get(2);
+							Map<String, String> returnErrorMust =  (Map<String, String>) uploadAndReadMap.get(3);
+							//if(returnErrorCostomn != null && returnErrorCostomn.size()>0){
+							//	strErrorMessage += "字典无此翻译： "; // \n
+							//	for (String k : returnErrorCostomn.keySet())  
+							//    {
+							//		strErrorMessage += k + " : " + returnErrorCostomn.get(k);
+							//    }
+							//}
+
+							List<PageData> listUploadAndRead = (List<PageData>) uploadAndReadMap.get(1);
+							List<PageData> listAdd = new ArrayList<PageData>();
+							if (listUploadAndRead != null && !"[]".equals(listUploadAndRead.toString()) && listUploadAndRead.size() >= 1) {
+								judgement = true;
+							}
+							if (judgement) {
+								int listSize = listUploadAndRead.size();
+								if(listSize > 0){
+									List<StaffFilterInfo> listStaffFilterInfo = getStaffFilter(SelectedTableNo, SelectedCustCol7, SelectedDepartCode);
+									
+									List<String> sbRetFeild = new ArrayList<String>();
+									String strRetUserCode = "";
+									List<String> sbRetUserGroup = new ArrayList<String>();
+									String sbRetMust = "";
+									for(int i=0;i<listSize;i++){
+										PageData pdAdd = listUploadAndRead.get(i);
+										if(pdAdd.size() <= 0){
+											continue;
+										}
+										String getUSER_CODE = (String) pdAdd.get("USER_CODE");
+									    if(!(getUSER_CODE!=null && !getUSER_CODE.trim().equals(""))){
+									    	strRetUserCode = "导入人员编码不能为空！";
+									    	break;
+									    } else {
+											String getMustMessage = returnErrorMust==null ? "" : returnErrorMust.get(getUSER_CODE);
+											String getCustomnMessage = returnErrorCostomn==null ? "" : returnErrorCostomn.get(getUSER_CODE);
+											if(getMustMessage!=null && !getMustMessage.trim().equals("")){
+												sbRetMust += "员工编号" + getUSER_CODE + "：" + getMustMessage + " ";
+											}
+											if(getCustomnMessage!=null && !getCustomnMessage.trim().equals("")){
+												strErrorMessage += "员工编号" + getUSER_CODE + "：" + getCustomnMessage + " ";
+											}
+									    	
+										    String getCUST_COL7 = (String) pdAdd.get("CUST_COL7");
+											if(!(getCUST_COL7!=null && !getCUST_COL7.trim().equals(""))){
+											    pdAdd.put("CUST_COL7", SelectedCustCol7);
+											    getCUST_COL7 = SelectedCustCol7;
+										    }
+											
+										    String getUSER_GROP = (String) pdAdd.get("USER_GROP");
+										    //if(!(getUSER_GROP!=null && !getUSER_GROP.trim().equals(""))){
+									        //    pdAdd.put("USER_GROP", emplGroupType);
+									        //    getUSER_GROP = emplGroupType;
+								            //}
+										    if(!(getUSER_GROP!=null && !getUSER_GROP.trim().equals(""))){
+										    	sbRetUserGroup.add("员工编号" + getUSER_CODE + "：导入员工组不能为空！" + " ");
+										    }
+
+										    //工资范围编码
+											String getSAL_RANGE = (String) pdAdd.get("SAL_RANGE");
+											//企业特定员工分类
+											String getUSER_CATG = (String) pdAdd.get("USER_CATG");
+											TmplConfigDetail configUSER_CATG = map_SetColumnsList.get("USER_CATG");
+											if(configUSER_CATG!=null && configUSER_CATG.getCOL_HIDE()!=null
+													&& configUSER_CATG.getCOL_HIDE().trim().equals("1")){
+												if(!(getUSER_CATG!=null && !getUSER_CATG.trim().equals(""))){
+													if(!sbRetFeild.contains("企业特定员工分类不能为空！")){
+														sbRetFeild.add("企业特定员工分类不能为空！");
+													}
+												}
+											}
+										    if((CurrentDepartCode!=null && CurrentDepartCode.equals(DictsUtil.DepartShowAll_01001)
+										    		&& emplGroupType.equals(YXRY)
+													&& SelectedDepartCode!=null && SelectedDepartCode.equals(DictsUtil.DepartShowAll_01001))
+													||
+													(CurrentDepartCode!=null && CurrentDepartCode.equals(DictsUtil.DepartShowAll_00)
+										    		&& emplGroupType.equals(YXRY)
+													&& SelectedDepartCode!=null && SelectedDepartCode.equals(DictsUtil.DepartShowAll_00))){
+										    	if(YXRY.equals(getUSER_GROP)){
+										    	    continue;
+										    	}
+										    	if(LWPQ.equals(getUSER_GROP)){// && SAL_RANGE_dong_0.equals(getSAL_RANGE)
+												    pdAdd.put("USER_GROP", YXRY);
+												    getUSER_GROP = YXRY;
+										    	}
+										    }
+										    if((CurrentDepartCode!=null && (CurrentDepartCode.equals(DictsUtil.DepartShowAll_01001) || CurrentDepartCode.equals(DictsUtil.DepartShowAll_00)))
+										    		&& (emplGroupType.equals(YXRY))
+													&& (SelectedDepartCode.equals(DEPT_CODE_0100107) || SelectedDepartCode.equals(DEPT_CODE_0100108) || SelectedDepartCode.equals(DEPT_CODE_0100106) || SelectedDepartCode.equals(DEPT_CODE_0100109))){
+										    	if(YXRY.equals(getUSER_GROP)){
+										    	    continue;
+										    	}
+										    	if(LWPQ.equals(getUSER_GROP)){
+												    if(!((SelectedDepartCode.equals(DEPT_CODE_0100107) && USER_CATG_hbytgslw.equals(getUSER_CATG))
+												    		|| (SelectedDepartCode.equals(DEPT_CODE_0100108) && USER_CATG_GDJLW.equals(getUSER_CATG))
+												    		|| (SelectedDepartCode.equals(DEPT_CODE_0100106) && USER_CATG_GDGSLW.equals(getUSER_CATG))
+												    		|| (SelectedDepartCode.equals(DEPT_CODE_0100109) && USER_CATG_HBCYECLW.equals(getUSER_CATG)))){
+											    	    continue;
+												    }
+												    pdAdd.put("USER_GROP", YXRY);
+												    getUSER_GROP = YXRY;
+										    	}
+										    }
+										    
+										    if(!emplGroupType.equals(getUSER_GROP)){
+									    	    continue;
+									        }
+											String SCH = EmplGroupType.SCH;
+											String HTH = EmplGroupType.HTH;
+											String XTNLW = EmplGroupType.XTNLW;
+											if((CurrentDepartCode!=null && CurrentDepartCode.equals(DictsUtil.DepartShowAll_01001)
+													&& SelectedDepartCode!=null && SelectedDepartCode.equals(DictsUtil.DepartShowAll_01001)
+													&& (emplGroupType.equals(SCH) || emplGroupType.equals(HTH) || emplGroupType.equals(XTNLW)))
+													||
+													(CurrentDepartCode!=null && CurrentDepartCode.equals(DictsUtil.DepartShowAll_00)
+													&& SelectedDepartCode!=null && SelectedDepartCode.equals(DictsUtil.DepartShowAll_00)
+													&& (emplGroupType.equals(SCH) || emplGroupType.equals(HTH) || emplGroupType.equals(XTNLW)))){
+												//账套-新西气东输公司-9870
+												String CUST_COL7_xxqdsgs = "9870";
+												//企业特定员工分类-东部管道机关-PUT02
+												String USER_CATG_DBGDJG = "PUT02";
+												//账套-西气东输管道-9100
+												String CUST_COL7_xqdsgd = "9100";
+												//企业特定员工分类-西气东输管道机关-PUT04
+												String USER_CATG_XQDSGDJG = "PUT04";
+												
+												//工资范围编码-东零    String SAL_RANGE_dong_0 = "S12";
+												if(!SAL_RANGE_dong_0.equals(getSAL_RANGE)){
+										    	    continue;
+												}
+
+												//账套-新西气东输公司-9870 String CUST_COL7_xxqdsgs = "9870";
+												//企业特定员工分类-东部管道机关-PUT02 String USER_CATG_DBGDJG = "PUT02";
+												if(CUST_COL7_xxqdsgs.equals(getCUST_COL7)){
+													if(!USER_CATG_DBGDJG.equals(getUSER_CATG)){
+											    	    continue;
+													}
+												}
+												//账套-西气东输管道-9100 String CUST_COL7_xqdsgd = "9100";
+												//企业特定员工分类-西气东输管道机关-PUT04 String USER_CATG_XQDSGDJG = "PUT04";
+												if(CUST_COL7_xqdsgd.equals(getCUST_COL7)){
+													if(!USER_CATG_XQDSGDJG.equals(getUSER_CATG)){
+											    	    continue;
+													}
+												}
+											}
+											
+										    if(!SelectedCustCol7.equals(getCUST_COL7)){
+										    	if(!sbRetFeild.contains("导入账套和当前账套必须一致！")){
+										    		sbRetFeild.add("导入账套和当前账套必须一致！");
+											    }
+										    }
+										    //if(!emplGroupType.equals(getUSER_GROP)){
+											//   if(!sbRet.contains("导入员工组和当前员工组必须一致！")){
+											//	    sbRet.add("导入员工组和当前员工组必须一致！");
+											//    }
+										    //}
+
+											pdAdd.put("SERIAL_NO", "");
+											String getBILL_CODE = (String) pdAdd.get("BILL_CODE");
+											if(!(getBILL_CODE!=null && !getBILL_CODE.trim().equals(""))){
+												if(SelectedBillCode.equals(SelectBillCodeFirstShow)){
+													pdAdd.put("BILL_CODE", "");
+													getBILL_CODE = "";
+												} else {
+													pdAdd.put("BILL_CODE", SelectedBillCode);
+													getBILL_CODE = SelectedBillCode;
+												}
+											}
+											if(SelectedBillCode.equals(SelectBillCodeFirstShow)){
+												if(!"".equals(getBILL_CODE)){
+													if(!sbRetFeild.contains("导入单号和当前单号必须一致！")){
+														sbRetFeild.add("导入单号和当前单号必须一致！");
+													}
+												}
+											} else {
+												if(!SelectedBillCode.equals(getBILL_CODE)){
+													if(!sbRetFeild.contains("导入单号和当前单号必须一致！")){
+														sbRetFeild.add("导入单号和当前单号必须一致！");
+													}
+												}
+											}
+											String getBUSI_DATE = (String) pdAdd.get("BUSI_DATE");
+											if(!(getBUSI_DATE!=null && !getBUSI_DATE.trim().equals(""))){
+												pdAdd.put("BUSI_DATE", SystemDateTime);
+												getBUSI_DATE = SystemDateTime;
+											}
+											if(!SystemDateTime.equals(getBUSI_DATE)){
+												if(!sbRetFeild.contains("导入区间和当前区间必须一致！")){
+													sbRetFeild.add("导入区间和当前区间必须一致！");
+												}
+											}
+											String getDEPT_CODE = (String) pdAdd.get("DEPT_CODE");
+											if(!(getDEPT_CODE!=null && !getDEPT_CODE.trim().equals(""))){
+												pdAdd.put("DEPT_CODE", SelectedDepartCode);
+												getDEPT_CODE = SelectedDepartCode;
+											}
+											if(!SelectedDepartCode.equals(getDEPT_CODE)){
+												if(!sbRetFeild.contains("导入单位和当前单位必须一致！")){
+													sbRetFeild.add("导入单位和当前单位必须一致！");
+												}
+											}
+											/*
+											//身份证号
+											String getSTAFF_IDENT = (String) pdAdd.get("STAFF_IDENT");
+											if(!(getSTAFF_IDENT!=null && !getSTAFF_IDENT.trim().equals(""))){
+												if(!sbRetFeild.contains("身份证号不能为空！")){
+													sbRetFeild.add("身份证号不能为空！");
+												}
+											}
+											String getUNITS_CODE = (String) pdAdd.get("UNITS_CODE");
+											if(!(getUNITS_CODE!=null && !getUNITS_CODE.trim().equals(""))){
+												if(!sbRetFeild.contains("所属二级单位不能为空！")){
+													sbRetFeild.add("所属二级单位不能为空！");
+												}
+											}
+											 */
+											String getESTB_DEPT = (String) pdAdd.get("ESTB_DEPT");
+											if(!(getESTB_DEPT!=null && !getESTB_DEPT.trim().equals(""))){
+												pdAdd.put("ESTB_DEPT", SelectedDepartCode);
+											}
+											//一些必填项的验证
+											List<String> getCheckMustInputFeild = CheckMustInputFeild(pdAdd, listStaffFilterInfo, map_SetColumnsList);
+											if(getCheckMustInputFeild != null && getCheckMustInputFeild.size()>0){
+												for(String str : getCheckMustInputFeild){
+													if(!sbRetFeild.contains(str)){
+														sbRetFeild.add(str);
+													}
+												}
+											}
+											listAdd.add(pdAdd);
+										}
+									}
+									if(strRetUserCode!=null && !strRetUserCode.trim().equals("")){
+										commonBase.setCode(2);
+										commonBase.setMessage(strRetUserCode);
+									} else {
+										if(sbRetMust!=null && !sbRetMust.trim().equals("")){
+											commonBase.setCode(3);
+											commonBase.setMessage("字典无此翻译, 不能导入： " + sbRetMust);
+										} else {
+											if(sbRetUserGroup!=null && sbRetUserGroup.size()>0){
+												StringBuilder sbTitle = new StringBuilder();
+												for(String str : sbRetUserGroup){
+													sbTitle.append(str + "  "); // \n
+												}
+												commonBase.setCode(3);
+												commonBase.setMessage(sbTitle.toString());
+											} else {
+												if(sbRetFeild.size()>0){
+													StringBuilder sbTitle = new StringBuilder();
+													for(String str : sbRetFeild){
+														sbTitle.append(str + "  "); // \n
+													}
+													commonBase.setCode(3);
+													commonBase.setMessage(sbTitle.toString());
+												} else {
+													if(!(listAdd!=null && listAdd.size()>0)){
+														commonBase.setCode(2);
+														commonBase.setMessage("无可处理的数据！");
+													} else {
+														String strCalculationMessage = "";
+														CommonBaseAndList getCommonBaseAndList = getCalculationData(commonBase,
+																SelectedTableNo, SelectedCustCol7, SelectedDepartCode, emplGroupType,
+																listAdd, strHelpful, SystemDateTime, listStaffFilterInfo);
+														if(Corresponding.CheckCalculation(SelectedTableNo)){
+															for(PageData pdSet : getCommonBaseAndList.getList()){
+																String pdSetSTAFF_IDENT = pdSet.getString("STAFF_IDENT");
+																	BigDecimal douSalaryCalTax = new BigDecimal(0);//计算出的税额
+																	BigDecimal douSalaryImpTax = new BigDecimal(0);//导入税额
+																	BigDecimal douSalaryYDRZE = new BigDecimal(0);
+																	BigDecimal douSalaryYSZE = new BigDecimal(0);
+																	
+																	BigDecimal douBonusCalTax = new BigDecimal(0);
+																	BigDecimal douBonusImpTax = new BigDecimal(0);
+																	BigDecimal douBonusYDRZE = new BigDecimal(0);
+																	BigDecimal douBonusYSZE = new BigDecimal(0);
+																	for(PageData pdsum : getCommonBaseAndList.getList()){
+																		String pdsumSTAFF_IDENT = pdsum.getString("STAFF_IDENT");
+																		if(pdSetSTAFF_IDENT!=null && pdSetSTAFF_IDENT.equals(pdsumSTAFF_IDENT)){
+																			douSalaryCalTax = douSalaryCalTax.add(new BigDecimal(pdsum.get(TF_SalaryTax).toString()));
+																			douSalaryImpTax = douSalaryImpTax.add(new BigDecimal(pdsum.get(TF_SalaryTax + TmplUtil.keyExtra).toString()));
+																			douSalaryYDRZE = douSalaryYDRZE.add(new BigDecimal(pdsum.get("S_YDRZE").toString()));
+																			douSalaryYSZE = douSalaryYSZE.add(new BigDecimal(pdsum.get("S_YSZE").toString()));
+																			
+																			douBonusCalTax = douBonusCalTax.add(new BigDecimal(pdsum.get(TF_BonusTax).toString()));
+																			douBonusImpTax = douBonusImpTax.add(new BigDecimal(pdsum.get(TF_BonusTax + TmplUtil.keyExtra).toString()));
+																			douBonusYDRZE = douBonusYDRZE.add(new BigDecimal(pdsum.get("B_YDRZE").toString()));
+																			douBonusYSZE = douBonusYSZE.add(new BigDecimal(pdsum.get("B_YSZE").toString()));
+																		}
+																	}
+																	pdSet.put(TF_SalaryTax + TmplUtil.keyExtra + TmplUtil.keyExtra, douSalaryCalTax);
+																	pdSet.put(TF_SalaryTax + TmplUtil.keyExtra + TmplUtil.keyExtra + TmplUtil.keyExtra, douSalaryImpTax);
+																	pdSet.put("S_YDRZE" + TmplUtil.keyExtra, douSalaryYDRZE);
+																	pdSet.put("S_YSZE" + TmplUtil.keyExtra, douSalaryYSZE);
+																	
+																	pdSet.put(TF_BonusTax + TmplUtil.keyExtra + TmplUtil.keyExtra, douBonusCalTax);
+																	pdSet.put(TF_BonusTax + TmplUtil.keyExtra + TmplUtil.keyExtra + TmplUtil.keyExtra, douBonusImpTax);
+																	pdSet.put("B_YDRZE" + TmplUtil.keyExtra, douBonusYDRZE);
+																	pdSet.put("B_YSZE" + TmplUtil.keyExtra, douBonusYSZE);
+															}
+															List<String> listSTAFF_IDENT = new ArrayList<String>();
+															for(PageData pdSet : getCommonBaseAndList.getList()){
+																String pdSetSTAFF_IDENT = pdSet.getString("STAFF_IDENT");
+																if(!listSTAFF_IDENT.contains(pdSetSTAFF_IDENT)){
+																	String pdSetUSER_CODE = pdSet.getString("USER_CODE");
+																	String pdSetUSER_NAME = pdSet.getString("USER_NAME");
+																	BigDecimal douSalaryCalTax = new BigDecimal(pdSet.get(TF_SalaryTax + TmplUtil.keyExtra + TmplUtil.keyExtra).toString());
+																	BigDecimal douSalaryImpTax = new BigDecimal(pdSet.get(TF_SalaryTax + TmplUtil.keyExtra + TmplUtil.keyExtra + TmplUtil.keyExtra).toString());
+																	BigDecimal douSalaryYSZE = new BigDecimal(pdSet.get("S_YSZE" + TmplUtil.keyExtra).toString());
+																	BigDecimal douSalaryYDRZE = new BigDecimal(pdSet.get("S_YDRZE" + TmplUtil.keyExtra).toString());
+
+																	BigDecimal douBonusCalTax = new BigDecimal(pdSet.get(TF_BonusTax + TmplUtil.keyExtra + TmplUtil.keyExtra).toString());
+																	BigDecimal douBonusImpTax = new BigDecimal(pdSet.get(TF_BonusTax + TmplUtil.keyExtra + TmplUtil.keyExtra + TmplUtil.keyExtra).toString());
+																	BigDecimal douBonusYSZE = new BigDecimal(pdSet.get("B_YSZE" + TmplUtil.keyExtra).toString());
+																	BigDecimal douBonusYDRZE = new BigDecimal(pdSet.get("B_YDRZE" + TmplUtil.keyExtra).toString());
+
+																	if(!(douSalaryCalTax.compareTo(douSalaryImpTax) == 0)){
+																		if(!(douSalaryCalTax.compareTo(new BigDecimal(0)) < 0 && douSalaryImpTax.compareTo(new BigDecimal(0)) == 0)){
+																			strCalculationMessage += " 员工编号:" + pdSetUSER_CODE + " 员工姓名:" + pdSetUSER_NAME;
+																			strCalculationMessage += " 工资： "
+																					+ " 本年应缴个税总额:" + douSalaryYSZE 
+																					+ " 本年已导入个税总额:" + (douSalaryYDRZE.subtract(douSalaryImpTax));
+																					//+ " 本次导入纳税额:" + douSalaryImpTax
+																			if(douSalaryCalTax.compareTo(new BigDecimal(0)) < 0){
+																				strCalculationMessage += " 本次应导入个税额:" + douSalaryCalTax + "或0  <br/>";
+																			} else {
+																				strCalculationMessage += " 本次应导入个税额:" + douSalaryCalTax + "  <br/>";
+																			}
+																		}
+																	}
+																	if(!(douBonusCalTax.compareTo(douBonusImpTax) == 0)){
+																		strCalculationMessage += " 员工编号:" + pdSetUSER_CODE + " 员工姓名:" + pdSetUSER_NAME;
+																		strCalculationMessage += " 奖金： "
+																				+ " 本年应缴奖金税总额:" + douBonusYSZE 
+																				+ " 本年已导入奖金税总额:" + (douBonusYDRZE.subtract(douBonusImpTax)) 
+																				//+ " 本次导入纳税额:" + douBonusImpTax 
+																				+ " 本次应导入奖金税额:" + douBonusCalTax + "  <br/>";
+																	}
+																}
+																listSTAFF_IDENT.add(pdSetSTAFF_IDENT);
+															}
+														}
+														if(strCalculationMessage!=null && !strCalculationMessage.trim().equals("")){
+															commonBase.setCode(3);
+															commonBase.setMessage(strCalculationMessage);
+														} else {
+															commonBase = UpdateDatabase(true, commonBase, strErrorMessage,
+																	SelectedTableNo, SelectedCustCol7, SelectedDepartCode, emplGroupType,
+																	getCommonBaseAndList, strHelpful);
+														}
+													}
+												}
+											}
+										}
+									}
+								}
+							} else {
+								commonBase.setCode(-1);
+								commonBase.setMessage("TranslateUtil");
+							}
+		}
+		ModelAndView mv = this.getModelAndView();
+		mv.setViewName("common/uploadExcel");
+		mv.addObject("local", "staffdetail");
+		mv.addObject("which", SelectedTableNo);
+		mv.addObject("SelectedDepartCode", SelectedDepartCode);
+		mv.addObject("SelectedCustCol7", SelectedCustCol7);
+		mv.addObject("SelectedBillCode", SelectedBillCode);
+		mv.addObject("DepartTreeSource", DepartTreeSource);
+		mv.addObject("ShowDataDepartCode", ShowDataDepartCode);
+		mv.addObject("ShowDataCustCol7", ShowDataCustCol7);
+		mv.addObject("ShowDataBillCode", ShowDataBillCode);
+		mv.addObject("SystemDateTime", SystemDateTime);
+		mv.addObject("commonBaseCode", commonBase.getCode());
+		mv.addObject("commonMessage", commonBase.getMessage());
+		return mv;
+	}
+	/*
+	@SuppressWarnings("unchecked")
+	@RequestMapping(value = "/readExcel")
+	 public ModelAndView readExcel(@RequestParam(value="excel",required=false) MultipartFile file) throws Exception{
+		CommonBase commonBase = new CommonBase();
+		commonBase.setCode(-1);
+		//if(!Jurisdiction.buttonJurisdiction(menuUrl, "add")){return null;}//校验权限
+		
+		String strErrorMessage = "";
+		//String strImportDataType = "";
+	    String CurrentDepartCode = Jurisdiction.getCurrentDepartmentID();
+
+		String YXRY = EmplGroupType.YXRY;
+		String LWPQ = EmplGroupType.LWPQ;
+		//责任中心-管道分公司廊坊油气储运公司-0100106
+		String DEPT_CODE_0100106 = "0100106";
+		//责任中心-华北石油管理局-0100107
+		String DEPT_CODE_0100107 = "0100107";
+		//责任中心-中国石油天然气管道局-0100108
+		String DEPT_CODE_0100108 = "0100108";
+		//责任中心-华北采油二厂-0100109
+		String DEPT_CODE_0100109 = "0100109";
+
+		//工资范围编码-东零
+		String SAL_RANGE_dong_0 = "S12";
+		//企业特定员工分类-管道局劳务-PUT05
+		String USER_CATG_GDJLW = "PUT05";
+		//企业特定员工分类-华北油田公司劳务-PUT06
+		String USER_CATG_hbytgslw = "PUT06";
+		//企业特定员工分类-华北采油二厂劳务-PUT07
+		String USER_CATG_HBCYECLW = "PUT07";
+		//企业特定员工分类-管道公司劳务-PUT08
+		String USER_CATG_GDGSLW = "PUT08";
+
+		PageData getPd = this.getPageData();
+		//员工组
+		String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("SelectedTableNo"), DefaultWhile);
+		String strTypeCodeTramsfer = Corresponding.getTypeCodeTransferFromTmplType(SelectedTableNo);
+		String emplGroupType = Corresponding.getUserGroupTypeFromTmplType(SelectedTableNo);
+		//单位
+		String SelectedDepartCode = getPd.getString("SelectedDepartCode");
+		int departSelf = Common.getDepartSelf(departmentService);
+		if(departSelf == 1){
+			SelectedDepartCode = Jurisdiction.getCurrentDepartmentID();
+		}
+		//账套
+		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
+		//单号
+		String SelectedBillCode = getPd.getString("SelectedBillCode");
+		//
+		String DepartTreeSource = getPd.getString("DepartTreeSource");
+		String ShowDataDepartCode = getPd.getString("ShowDataDepartCode");
+		String ShowDataCustCol7 = getPd.getString("ShowDataCustCol7");
+		String ShowDataBillCode = getPd.getString("ShowDataBillCode");
+		//当前区间
+		String SystemDateTime = getPd.getString("SystemDateTime");
+		//判断传过来的TranferSystemDateTime和配置表里的当前区间是否一致
+		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager, false);
+		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
+			commonBase.setCode(2);
+			commonBase.setMessage(mesDateTime);
+		} 
+		if(commonBase.getCode()==-1){
+			if(!(CurrentDepartCode!=null && !CurrentDepartCode.trim().equals(""))){
+				commonBase.setCode(2);
+				commonBase.setMessage("当前登录人责任中心为空，请联系管理员！");
+			} 
+		}
+	if(commonBase.getCode()==-1){
+		//判断选择为必须选择的
+		String strGetCheckMustSelected = CheckMustSelectedAndSame(emplGroupType, 
+				SelectedCustCol7, ShowDataCustCol7, 
+				SelectedDepartCode, ShowDataDepartCode, DepartTreeSource,
+				SelectedBillCode, ShowDataBillCode);
+		if(strGetCheckMustSelected!=null && !strGetCheckMustSelected.trim().equals("")){
+			commonBase.setCode(2);
+			commonBase.setMessage(strGetCheckMustSelected);
+		} 
+	}
+	if(commonBase.getCode()==-1){
+		//验证是否在操作时间内
+		String mesSysDeptLtdTime = CheckSystemDateTime.CheckSysDeptLtdTime(SelectedTableNo, SelectedCustCol7, SelectedDepartCode, sysDeptLtdTimeService);
+		if(mesSysDeptLtdTime!=null && !mesSysDeptLtdTime.trim().equals("")){
+			commonBase.setCode(2);
+			commonBase.setMessage(mesSysDeptLtdTime);
+		}
+	}
+	if(commonBase.getCode()==-1){
+		if(!SelectedBillCode.equals(SelectBillCodeFirstShow)){
+		//不是临时数据要验证单据状态
+			String checkState = CheckState(SelectedBillCode, SystemDateTime,
+					SelectedCustCol7, SelectedDepartCode, emplGroupType, strTypeCodeTramsfer, null, "SERIAL_NO", TmplUtil.keyExtra);
+			if(checkState!=null && !checkState.trim().equals("")){
+				commonBase.setCode(2);
+				commonBase.setMessage(checkState);
+			}
+		}
+	}
+	if(commonBase.getCode()==-1){
+		if(!(SystemDateTime!=null && !SystemDateTime.trim().equals("")
+				&& SelectedDepartCode!=null && !SelectedDepartCode.trim().equals(""))){
+			commonBase.setCode(2);
+			commonBase.setMessage("当前区间和当前单位不能为空！");
+		} 
+	}
+		String strHelpful = QueryFeildString.getBillCodeNotInSumInvalidDetail(TableNameSummy);
+	if(commonBase.getCode()==-1){
+		if(!SelectedBillCode.equals(SelectBillCodeFirstShow)){
+			//tb_sys_sealed_info不是封存state = '1'
+			strHelpful += QueryFeildString.getNotReportBillCode(strTypeCodeTramsfer, SystemDateTime, SelectedCustCol7, SelectedDepartCode);
+		    //tb_sys_unlock_info表 DEL_STATE（融合系统删除状态为1）数据显示。为0不显示。
 			strHelpful += QueryFeildString.getBillCodeNotInInvalidSysUnlockInfo();
 		}
 		if(!(strHelpful != null && !strHelpful.trim().equals(""))){
@@ -1396,8 +2124,7 @@ public class StaffDetailController extends BaseController {
 		mv.addObject("commonBaseCode", commonBase.getCode());
 		mv.addObject("commonMessage", commonBase.getMessage());
 		return mv;
-	}//*/
-	
+	}*/
 	/*
 	@SuppressWarnings("unchecked")
 	@RequestMapping(value = "/readExcel")
@@ -1440,6 +2167,7 @@ public class StaffDetailController extends BaseController {
 		String ShowDataBillCode = getPd.getString("ShowDataBillCode");
 		//当前区间
 		String SystemDateTime = getPd.getString("SystemDateTime");
+		//判断传过来的TranferSystemDateTime和配置表里的当前区间是否一致
 		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager, false);
 		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
 			commonBase.setCode(2);
@@ -1463,6 +2191,7 @@ public class StaffDetailController extends BaseController {
 		} 
 	    }
 	    if(commonBase.getCode()==-1){
+		//验证是否在操作时间内
 		String mesSysDeptLtdTime = CheckSystemDateTime.CheckSysDeptLtdTime(SelectedDepartCode, SelectedTableNo, sysDeptLtdTimeService);
 		if(mesSysDeptLtdTime!=null && !mesSysDeptLtdTime.trim().equals("")){
 			commonBase.setCode(2);
@@ -1471,6 +2200,7 @@ public class StaffDetailController extends BaseController {
 	    }
 	    if(commonBase.getCode()==-1){
 		if(!SelectedBillCode.equals(SelectBillCodeFirstShow)){
+		//不是临时数据要验证单据状态
 			String checkState = CheckState(SelectedBillCode, SystemDateTime,
 					SelectedCustCol7, SelectedDepartCode, emplGroupType, strTypeCodeTramsfer, null, "SERIAL_NO", TmplUtil.keyExtra);
 			if(checkState!=null && !checkState.trim().equals("")){
@@ -1489,7 +2219,9 @@ public class StaffDetailController extends BaseController {
 		String strHelpful = QueryFeildString.getBillCodeNotInSumInvalidDetail(TableNameSummy);
 	    if(commonBase.getCode()==-1){
 		if(!SelectedBillCode.equals(SelectBillCodeFirstShow)){
+			//tb_sys_sealed_info不是封存state = '1'
 			strHelpful += QueryFeildString.getNotReportBillCode(strTypeCodeTramsfer, SystemDateTime, SelectedCustCol7, SelectedDepartCode);
+		    //tb_sys_unlock_info表 DEL_STATE（融合系统删除状态为1）数据显示。为0不显示。
 			strHelpful += QueryFeildString.getBillCodeNotInInvalidSysUnlockInfo();
 		}
 		if(!(strHelpful != null && !strHelpful.trim().equals(""))){
@@ -1850,7 +2582,184 @@ public class StaffDetailController extends BaseController {
 		return mv;
 	}//*/
 	
-	private CommonBaseAndList getCalculationData(Boolean IsImport, Boolean IsAdd, CommonBase commonBase,
+	private CommonBaseAndList getCalculationData(CommonBase commonBase,
+			String SelectedTableNo, String SelectedCustCol7, String SelectedDepartCode, String emplGroupType,
+			List<PageData> listData, String strHelpful, String SystemDateTimess,
+			List<StaffFilterInfo> listStaffFilterInfo) throws Exception{
+		CommonBaseAndList retCommonBaseAndList = new CommonBaseAndList();
+		if(listData!=null && listData.size()>0){
+			Boolean bolCalculation = Corresponding.CheckCalculation(SelectedTableNo);
+			
+			Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(SelectedTableNo, SelectedDepartCode, SelectedCustCol7, tmplconfigService);
+			Map<String, TableColumns> map_HaveColumnsList = Common.GetHaveColumnsList(SelectedTableNo, tmplconfigService);
+			//税字段，不能定义公式
+			if(!(TF_SalaryTax!=null && map_SetColumnsList.containsKey(TF_SalaryTax.toUpperCase())
+					&& TF_BonusTax!=null && map_SetColumnsList.containsKey(TF_BonusTax.toUpperCase()))){
+				commonBase.setCode(2);
+				commonBase.setMessage("配置表里定义列（个人所得税、全年一次性奖金税）必须在结构配置表中，请联系管理员修改！");
+				retCommonBaseAndList.setCommonBase(commonBase);
+				return retCommonBaseAndList;
+			}
+			if(TF_SalaryTax.toUpperCase().equals(TF_BonusTax.toUpperCase())
+					|| TF_SalarySelf.toUpperCase().equals(TF_BonusTax.toUpperCase())
+					|| TF_SalarySelf.toUpperCase().equals(TF_SalaryTax.toUpperCase())
+					|| TF_SalarySelf.toUpperCase().equals(TF_BonusSelf.toUpperCase())
+					|| TF_BonusSelf.toUpperCase().equals(TF_BonusTax.toUpperCase())
+					|| TF_BonusSelf.toUpperCase().equals(TF_SalaryTax.toUpperCase())){
+				commonBase.setCode(2);
+				commonBase.setMessage("配置表里定义列（应发合计、个人所得税、全年一次性奖金税、全年一次性奖金）不能定义为相同列，请联系管理员修改！");
+				retCommonBaseAndList.setCommonBase(commonBase);
+				return retCommonBaseAndList;
+			} 
+			TmplConfigDetail colTableFeildSalaryTax = map_SetColumnsList.get(TF_SalaryTax.toUpperCase());
+			if(colTableFeildSalaryTax.getCOL_FORMULA()!=null && !colTableFeildSalaryTax.getCOL_FORMULA().trim().equals("")){
+				commonBase.setCode(2);
+				commonBase.setMessage("个人所得税字段不能定义公式，请联系管理员修改！");
+				retCommonBaseAndList.setCommonBase(commonBase);
+				return retCommonBaseAndList;
+			}
+			TmplConfigDetail colTableFeildBonusTax = map_SetColumnsList.get(TF_BonusTax.toUpperCase());
+			if(colTableFeildBonusTax.getCOL_FORMULA()!=null && !colTableFeildBonusTax.getCOL_FORMULA().trim().equals("")){
+				commonBase.setCode(2);
+				commonBase.setMessage("全年一次性奖金税字段不能定义公式，请联系管理员修改！");
+				retCommonBaseAndList.setCommonBase(commonBase);
+				return retCommonBaseAndList;
+			}
+			
+	        for(PageData item : listData){
+	         	item.put("CanOperate", strHelpful);
+          	    item.put("TableName", TableNameBackup);
+	       	    Common.setModelDefault(item, map_HaveColumnsList, map_SetColumnsList, MustNotEditList);
+	        }
+			PageData getQueryFeildPd = new PageData();
+			getQueryFeildPd.put("USER_GROP", emplGroupType);
+			getQueryFeildPd.put("DEPT_CODE", SelectedDepartCode);
+			getQueryFeildPd.put("CUST_COL7", SelectedCustCol7);
+			String QueryFeildPart = QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList1);
+			if(!(SelectedDepartCode != null && !SelectedDepartCode.trim().equals(""))){
+				QueryFeildPart += " and 1 != 1 ";
+			}
+			if(!(SelectedCustCol7 != null && !SelectedCustCol7.trim().equals(""))){
+				QueryFeildPart += " and 1 != 1 ";
+			}
+			if(!(emplGroupType!=null && !emplGroupType.trim().equals(""))){
+				QueryFeildPart += " and 1 != 1 ";
+			}
+			String strSystemDateTimeYear = CheckSystemDateTime.getSystemDateTimeYear(SystemDateTimess);
+			String strSystemDateTimeMouth = CheckSystemDateTime.getSystemDateTimeMouth(SystemDateTimess);
+			String QueryFeildBusiPreYear = " and BUSI_DATE > '" + strSystemDateTimeYear + "00' " + " and BUSI_DATE <= '" + SystemDateTimess + "' ";
+			String QueryFeildBusiAllYear = " and BUSI_DATE like '" + strSystemDateTimeYear + "%' ";
+			//QueryFeild
+			//and DEPT_CODE in ('01002')  and USER_GROP in ('50210002')  and CUST_COL7 in ('9870')
+			//strSumInvalidNotInsert
+			//and BILL_CODE not in (select BILL_CODE from TB_STAFF_SUMMY_BILL where BILL_STATE = '0')  
+			//and BILL_CODE not in (select BILL_CODE from tb_gl_cert where REVCERT_CODE not like ' %') 
+			String strSumInvalidNotInsert = QueryFeildString.getBillCodeNotInSumInvalidDetail(TableNameSummy);
+			strSumInvalidNotInsert += " and BILL_CODE not in (select BILL_CODE from tb_gl_cert where REVCERT_CODE not like ' %') ";
+			
+			//ExemptionTaxSalary 
+			//5000
+	        PageData SalaryExemptionTaxPd = new PageData();
+	        SalaryExemptionTaxPd.put("KEY_CODE", SysConfigKeyCode.ExemptionTax);
+	        String ExemptionTaxSalary = sysConfigManager.getSysConfigByKey(SalaryExemptionTaxPd);
+	        //configFormulaSalary  
+	        //GROSS_PAY-ENDW_INS-MED_INS-CASD_INS-UNEMPL_INS-HOUSE_FUND-SUP_PESN-KID_ALLE+TAX_BASE_ADJ
+	        PageData SalaryPd = new PageData();
+	        SalaryPd.put("KEY_CODE", SysConfigKeyCode.StaffFormulaSalary);
+	        String configFormulaSalary = sysConfigManager.getSysConfigByKey(SalaryPd);
+	        //configFormulaStaffTDSItem
+	        //CUST_COL1 + CUST_COL2 + CUST_COL3 + CUST_COL4 + CUST_COL5 + CUST_COL6
+	        PageData SalaryStaffTDSItemPd = new PageData();
+	        SalaryStaffTDSItemPd.put("KEY_CODE", SysConfigKeyCode.StaffTDSItem);
+	        String configFormulaStaffTDSItem = sysConfigManager.getSysConfigByKey(SalaryStaffTDSItemPd);
+	        
+	        //configFormulaBonus_Not0
+	        //CUST_COL14
+	        PageData BonusPd_Not0 = new PageData();
+	        BonusPd_Not0.put("KEY_CODE", SysConfigKeyCode.StaffFormulaBonus);
+	        String configFormulaBonus = sysConfigManager.getSysConfigByKey(BonusPd_Not0);
+
+	        //select * , ACCRD_TAX ACCRD_TAX__, CUST_COL15 CUST_COL15__, SERIAL_NO SERIAL_NO__, BILL_CODE BILL_CODE__, BUSI_DATE BUSI_DATE__, DEPT_CODE DEPT_CODE__, CUST_COL7 CUST_COL7__, USER_GROP USER_GROP__ from TB_STAFF_DETAIL_backup
+			String sqlRetSelect = Common.GetRetSelectNotCalculationColoumns(TableNameBackup, 
+					TF_SalaryTax, TF_BonusTax, TmplUtil.keyExtra, keyListBase, 
+					tmplconfigService);
+			List<String> listSalaryFeildUpdate = Common.GetSalaryFeildUpdate(SelectedTableNo, TableNameBackup, SelectedDepartCode, SelectedCustCol7, 
+					tmplconfigService);
+
+			String strSumGroupBy = " STAFF_IDENT ";
+			//select  STAFF_IDENT ,  sum(GROSS_PAY-ENDW_INS-MED_INS-CASD_INS-UNEMPL_INS-HOUSE_FUND-SUP_PESN-KID_ALLE+TAX_BASE_ADJ-CUST_COL13-CUST_COL16-CUST_COL17-CUST_COL18-CUST_COL19-CUST_COL20) - 55000 S_TAX_CONFIG_GRADE_OPER,  sum(GROSS_PAY-ENDW_INS-MED_INS-CASD_INS-UNEMPL_INS-HOUSE_FUND-SUP_PESN-KID_ALLE+TAX_BASE_ADJ-CUST_COL13-CUST_COL16-CUST_COL17-CUST_COL18-CUST_COL19-CUST_COL20) - 55000 S_TAX_CONFIG_SUM_OPER,  sum(ACCRD_TAX) S_TAX_SELF_SUM_OPER,  sum(GROSS_PAY) GROSS_PAY  from TB_STAFF_DETAIL_backup where 1 = 1  and DEPT_CODE in ('01002')  and USER_GROP in ('50210002')  and CUST_COL7 in ('9870')  and BUSI_DATE > '201800'  and BUSI_DATE <= '201811'  and BILL_CODE not in (select BILL_CODE from TB_STAFF_SUMMY_BILL where BILL_STATE = '0')  and BILL_CODE not in (select BILL_CODE from tb_gl_cert where REVCERT_CODE not like ' %')  group by  STAFF_IDENT
+			String sqlSumByUserCodeSalary11 = Common.GetRetSumByUserColoumnsSalary22(TableNameBackup, strSumGroupBy,
+					QueryFeildPart + QueryFeildBusiPreYear + strSumInvalidNotInsert, ((new BigDecimal(ExemptionTaxSalary)).multiply(new BigDecimal(strSystemDateTimeMouth))).toString(), 
+					configFormulaSalary, TableFeildSalaryTaxConfigGradeOper, TableFeildSalaryTaxConfigSumOper, 
+					TF_SalaryTax, TableFeildSalaryTaxSelfSumOper, 
+					TF_SalarySelf, 
+					tmplconfigService);
+			//select t. STAFF_IDENT ,  t.S_TAX_CONFIG_GRADE_OPER - IFNULL(b.STAFF_TDS, 0) S_TAX_CONFIG_GRADE_OPER,  t.S_TAX_CONFIG_SUM_OPER - IFNULL(b.STAFF_TDS, 0) S_TAX_CONFIG_SUM_OPER,  t.S_TAX_SELF_SUM_OPER,  t.GROSS_PAY  from ( select  STAFF_IDENT ,  sum(GROSS_PAY-ENDW_INS-MED_INS-CASD_INS-UNEMPL_INS-HOUSE_FUND-SUP_PESN-KID_ALLE+TAX_BASE_ADJ-CUST_COL13-CUST_COL16-CUST_COL17-CUST_COL18-CUST_COL19-CUST_COL20) - 55000 S_TAX_CONFIG_GRADE_OPER,  sum(GROSS_PAY-ENDW_INS-MED_INS-CASD_INS-UNEMPL_INS-HOUSE_FUND-SUP_PESN-KID_ALLE+TAX_BASE_ADJ-CUST_COL13-CUST_COL16-CUST_COL17-CUST_COL18-CUST_COL19-CUST_COL20) - 55000 S_TAX_CONFIG_SUM_OPER,  sum(ACCRD_TAX) S_TAX_SELF_SUM_OPER,  sum(GROSS_PAY) GROSS_PAY  from TB_STAFF_DETAIL_backup where 1 = 1  and DEPT_CODE in ('01002')  and USER_GROP in ('50210002')  and CUST_COL7 in ('9870')  and BUSI_DATE > '201800'  and BUSI_DATE <= '201811'  and BILL_CODE not in (select BILL_CODE from TB_STAFF_SUMMY_BILL where BILL_STATE = '0')  and BILL_CODE not in (select BILL_CODE from tb_gl_cert where REVCERT_CODE not like ' %')  group by  STAFF_IDENT  ) t  LEFT JOIN (SELECT  STAFF_IDENT ,             SUM( CUST_COL1+CUST_COL2+CUST_COL3+CUST_COL4+CUST_COL5+CUST_COL6) STAFF_TDS             FROM TB_STAFF_TDS_INFO            where 1 = 1  and BUSI_DATE > '201800'  and BUSI_DATE <= '201811'             group by  STAFF_IDENT ) B  ON t. STAFF_IDENT  = b. STAFF_IDENT
+			String sqlSumByUserCodeSalary1 = Common.GetRetSumByUserColoumnsStaffTds(sqlSumByUserCodeSalary11, "TB_STAFF_TDS_INFO", strSumGroupBy,
+					QueryFeildBusiPreYear, configFormulaStaffTDSItem, "STAFF_TDS",
+					TableFeildSalaryTaxConfigGradeOper, TableFeildSalaryTaxConfigSumOper, 
+					TableFeildSalaryTaxSelfSumOper,
+					TF_SalarySelf);
+			//select  STAFF_IDENT ,  sum(CUST_COL14) B_TAX_CONFIG_GRADE_OPER,  sum(CUST_COL14) B_TAX_CONFIG_SUM_OPER,  sum(CUST_COL15) B_TAX_SELF_SUM_OPER  from TB_STAFF_DETAIL_backup where 1 = 1  and DEPT_CODE in ('01002')  and USER_GROP in ('50210002')  and CUST_COL7 in ('9870')  and BUSI_DATE like '2018%'  and BILL_CODE not in (select BILL_CODE from TB_STAFF_SUMMY_BILL where BILL_STATE = '0')  and BILL_CODE not in (select BILL_CODE from tb_gl_cert where REVCERT_CODE not like ' %')  group by  STAFF_IDENT
+			String sqlSumByUserCodeBonus1 = Common.GetRetSumByUserColoumnsBonus11(TableNameBackup, strSumGroupBy,
+					QueryFeildPart + QueryFeildBusiAllYear + strSumInvalidNotInsert, 
+					configFormulaBonus, TableFeildBonusTaxConfigGradeOper, TableFeildBonusTaxConfigSumOper, 
+					TF_BonusTax, TableFeildBonusTaxSelfSumOper,
+					tmplconfigService);
+			
+			PageData pdInsetBackup = new PageData();
+			pdInsetBackup.put("QueryFeild", QueryFeildPart + QueryFeildBusiAllYear);
+			//strInsertFeild
+			//SERIAL_NO,BILL_CODE,BUSI_DATE,USER_CODE,USER_NAME,STAFF_IDENT,BANK_CARD,USER_GROP,USER_CATG,DEPT_CODE,UNITS_CODE,ORG_UNIT,SAL_RANGE,POST_SALY,BONUS,CASH_BONUS,WORK_OT,BACK_SALY,RET_SALY,CHK_CASH,INTR_SGL_AWAD,SENY_ALLE,POST_ALLE,NS_ALLE,AREA_ALLE,EXPT_ALLE,TECH_ALLE,LIVE_EXPE,LIVE_ALLE,LEAVE_DM,HOUSE_ALLE,ITEM_ALLE,MEAL_EXPE,TRF_ALLE,TEL_EXPE,HLDY_ALLE,KID_ALLE,COOL_EXPE,EXT_SGL_AWAD,PRE_TAX_PLUS,GROSS_PAY,ENDW_INS,UNEMPL_INS,MED_INS,CASD_INS,HOUSE_FUND,SUP_PESN,TAX_BASE_ADJ,ACCRD_TAX,AFTER_TAX,ACT_SALY,GUESS_DIFF,CUST_COL1,CUST_COL2,CUST_COL3,CUST_COL4,CUST_COL5,CUST_COL6,CUST_COL7,CUST_COL8,CUST_COL9,CUST_COL10,CUST_COL11,CUST_COL12,CUST_COL13,CUST_COL14,CUST_COL15,CUST_COL16,CUST_COL17,CUST_COL18,CUST_COL19,CUST_COL20,ESTB_DEPT,DATA_TYPE,ITEM_CODE
+			String strInsertFeild = QueryFeildString.tranferListValueToSelectString(map_HaveColumnsList);
+			pdInsetBackup.put("FeildList", strInsertFeild);
+			pdInsetBackup.put("SumInvalidNotInsert", strSumInvalidNotInsert);
+			
+			try{
+				//TF_SalarySelf, TF_SalaryTax, TF_BonusSelf, TF_BonusTax,
+				//TableFeildSalaryTaxConfigGradeOper, TableFeildBonusTaxConfigGradeOper,
+				//TableFeildSalaryTaxConfigSumOper, TableFeildBonusTaxConfigSumOper,
+				//TableFeildSalaryTaxSelfSumOper, TableFeildBonusTaxSelfSumOper,
+				//pdInsetBackup,
+				//listSalaryFeildUpdate, sqlRetSelect, listData,
+				//sqlSumByUserCodeSalary, sqlSumByUserCodeBonus);
+
+				//GROSS_PAY, ACCRD_TAX, CUST_COL14, CUST_COL15,
+				
+				//S_TAX_CONFIG_GRADE_OPER, B_TAX_CONFIG_GRADE_OPER,
+
+				//S_TAX_CONFIG_SUM_OPER, B_TAX_CONFIG_SUM_OPER,
+
+				//S_TAX_SELF_SUM_OPER, B_TAX_SELF_SUM_OPER,
+
+				//{SumInvalidNotInsert= and BILL_CODE not in (select BILL_CODE from TB_STAFF_SUMMY_BILL where BILL_STATE = '0')  and BILL_CODE not in (select BILL_CODE from tb_gl_cert where REVCERT_CODE not like ' %') , FeildList=SERIAL_NO,BILL_CODE,BUSI_DATE,USER_CODE,USER_NAME,STAFF_IDENT,BANK_CARD,USER_GROP,USER_CATG,DEPT_CODE,UNITS_CODE,ORG_UNIT,SAL_RANGE,POST_SALY,BONUS,CASH_BONUS,WORK_OT,BACK_SALY,RET_SALY,CHK_CASH,INTR_SGL_AWAD,SENY_ALLE,POST_ALLE,NS_ALLE,AREA_ALLE,EXPT_ALLE,TECH_ALLE,LIVE_EXPE,LIVE_ALLE,LEAVE_DM,HOUSE_ALLE,ITEM_ALLE,MEAL_EXPE,TRF_ALLE,TEL_EXPE,HLDY_ALLE,KID_ALLE,COOL_EXPE,EXT_SGL_AWAD,PRE_TAX_PLUS,GROSS_PAY,ENDW_INS,UNEMPL_INS,MED_INS,CASD_INS,HOUSE_FUND,SUP_PESN,TAX_BASE_ADJ,ACCRD_TAX,AFTER_TAX,ACT_SALY,GUESS_DIFF,CUST_COL1,CUST_COL2,CUST_COL3,CUST_COL4,CUST_COL5,CUST_COL6,CUST_COL7,CUST_COL8,CUST_COL9,CUST_COL10,CUST_COL11,CUST_COL12,CUST_COL13,CUST_COL14,CUST_COL15,CUST_COL16,CUST_COL17,CUST_COL18,CUST_COL19,CUST_COL20,ESTB_DEPT,DATA_TYPE,ITEM_CODE, QueryFeild= and DEPT_CODE in ('01002')  and USER_GROP in ('50210002')  and CUST_COL7 in ('9870') },
+
+				//select * , ACCRD_TAX ACCRD_TAX__, CUST_COL15 CUST_COL15__, SERIAL_NO SERIAL_NO__, BILL_CODE BILL_CODE__, BUSI_DATE BUSI_DATE__, DEPT_CODE DEPT_CODE__, CUST_COL7 CUST_COL7__, USER_GROP USER_GROP__ from TB_STAFF_DETAIL_backup,
+                //[{AREA_ALLE=0.00, HOUSE_ALLE=0.00, SERIAL_NO=, USER_GROP=50210002, POST_ALLE=0.00, BILL_CODE=, LEAVE_DM=0.00, LIVE_ALLE=0.00, ITEM_ALLE=0.00, LIVE_EXPE=0.00, MEAL_EXPE=368.00, DEPT_CODE=01002, UNITS_CODE=0100110, POST_SALY=3810.00, SAL_RANGE=S12, ACT_SALY=8061.83, InsertLogVale=''201811'',''00075138'',''蔡丽君'',''622101196701010727'',''4228020100100225480'',''50210002'',''PUT04'',''01002'',''0100110'',''S12'',''3810.00'',''2330.00'',''2330.00'',''0.00'',''0.00'',''0.00'',''0.00'',''0.00'',''420.00'',''0.00'',''0.00'',''0.00'',''0.00'',''0.00'',''0.00'',''0.00'',''0.00'',''0.00'',''0.00'',''368.00'',''1300.00'',''200.00'',''2000.00'',''0.00'',''0.00'',''0.00'',''0.00'',''12758.00'',''1498.40'',''93.70'',''374.60'',''0.00'',''2248.00'',''374.60'',''0.00'',''106.87'',''0.00'',''8061.83'',''0.00'',''9870'',''8000.0'',''1.0'',''01002'', TableName=TB_STAFF_DETAIL_backup, HLDY_ALLE=2000.00, InsertVale='201811','00075138','蔡丽君','622101196701010727','4228020100100225480','50210002','PUT04','01002','0100110','S12','3810.00','2330.00','2330.00','0.00','0.00','0.00','0.00','0.00','420.00','0.00','0.00','0.00','0.00','0.00','0.00','0.00','0.00','0.00','0.00','368.00','1300.00','200.00','2000.00','0.00','0.00','0.00','0.00','12758.00','1498.40','93.70','374.60','0.00','2248.00','374.60','0.00','106.87','0.00','8061.83','0.00','9870','8000.0','1.0','01002', BONUS=2330.00, BUSI_DATE=201811, RET_SALY=0.00, NS_ALLE=0.00, UNEMPL_INS=93.70, CUST_COL7=9870, INTR_SGL_AWAD=0.00, CHK_CASH=0.00, USER_CATG=PUT04, CASH_BONUS=2330.00, CASD_INS=0.00, EXPT_ALLE=0.00, TEL_EXPE=200.00, TAX_BASE_ADJ=0.00, PRE_TAX_PLUS=0.00, MED_INS=374.60, TRF_ALLE=1300.00, SUP_PESN=374.60, BACK_SALY=0.00, EXT_SGL_AWAD=0.00, ENDW_INS=1498.40, KID_ALLE=0.00, COOL_EXPE=0.00, CanOperate= and BILL_CODE not in (select BILL_CODE from TB_STAFF_SUMMY_BILL where BILL_STATE = '0') , AFTER_TAX=0.00, WORK_OT=0.00, GUESS_DIFF=0.00, CUST_COL14=8000.0, CUST_COL15=1.0, GROSS_PAY=12758.00, USER_NAME=蔡丽君, HOUSE_FUND=2248.00, TECH_ALLE=0.00, USER_CODE=00075138, ESTB_DEPT=01002, STAFF_IDENT=622101196701010727, ACCRD_TAX=106.87, SENY_ALLE=420.00, BANK_CARD=4228020100100225480, InsertField=BUSI_DATE,USER_CODE,USER_NAME,STAFF_IDENT,BANK_CARD,USER_GROP,USER_CATG,DEPT_CODE,UNITS_CODE,SAL_RANGE,POST_SALY,BONUS,CASH_BONUS,WORK_OT,BACK_SALY,RET_SALY,CHK_CASH,INTR_SGL_AWAD,SENY_ALLE,POST_ALLE,NS_ALLE,AREA_ALLE,EXPT_ALLE,TECH_ALLE,LIVE_EXPE,LIVE_ALLE,LEAVE_DM,HOUSE_ALLE,ITEM_ALLE,MEAL_EXPE,TRF_ALLE,TEL_EXPE,HLDY_ALLE,KID_ALLE,COOL_EXPE,EXT_SGL_AWAD,PRE_TAX_PLUS,GROSS_PAY,ENDW_INS,UNEMPL_INS,MED_INS,CASD_INS,HOUSE_FUND,SUP_PESN,TAX_BASE_ADJ,ACCRD_TAX,AFTER_TAX,ACT_SALY,GUESS_DIFF,CUST_COL7,CUST_COL14,CUST_COL15,ESTB_DEPT}],
+
+                //select USER_CODE,  sum(GROSS_PAY-ENDW_INS-MED_INS-CASD_INS-UNEMPL_INS-HOUSE_FUND-SUP_PESN-KID_ALLE+TAX_BASE_ADJ) - 5000 S_TAX_CONFIG_GRADE_OPER,  sum(GROSS_PAY-ENDW_INS-MED_INS-CASD_INS-UNEMPL_INS-HOUSE_FUND-SUP_PESN-KID_ALLE+TAX_BASE_ADJ) - 5000 S_TAX_CONFIG_SUM_OPER,  sum(ACCRD_TAX) S_TAX_SELF_SUM_OPER  from TB_STAFF_DETAIL_backup where 1 = 1  and DEPT_CODE in ('01002')  and USER_GROP in ('50210002')  and CUST_COL7 in ('9870')  and BILL_CODE not in (select BILL_CODE from TB_STAFF_SUMMY_BILL where BILL_STATE = '0')  and BILL_CODE not in (select BILL_CODE from tb_gl_cert where REVCERT_CODE not like ' %')  group by USER_CODE,
+
+                //select USER_CODE,  sum(CUST_COL14) - 0 B_TAX_CONFIG_GRADE_OPER,  sum(CUST_COL14) B_TAX_CONFIG_SUM_OPER,  sum(CUST_COL15) B_TAX_SELF_SUM_OPER  from TB_STAFF_DETAIL_backup where 1 = 1  and DEPT_CODE in ('01002')  and USER_GROP in ('50210002')  and CUST_COL7 in ('9870')  and BILL_CODE not in (select BILL_CODE from TB_STAFF_SUMMY_BILL where BILL_STATE = '0')  and BILL_CODE not in (select BILL_CODE from tb_gl_cert where REVCERT_CODE not like ' %')  group by USER_CODE
+				List<PageData> dataCalculation = staffdetailService.getDataCalculation(TableNameBackup, TmplUtil.keyExtra,
+						TF_SalarySelf, TF_SalaryTax, TF_BonusSelf, TF_BonusTax,
+						TableFeildSalaryTaxConfigGradeOper, TableFeildBonusTaxConfigGradeOper,
+						TableFeildSalaryTaxConfigSumOper, TableFeildBonusTaxConfigSumOper,
+						TableFeildSalaryTaxSelfSumOper, TableFeildBonusTaxSelfSumOper,
+						pdInsetBackup,
+						listSalaryFeildUpdate, sqlRetSelect, listData,
+						sqlSumByUserCodeSalary1, 
+						sqlSumByUserCodeBonus1,
+						bolCalculation, listStaffFilterInfo);
+				retCommonBaseAndList.setList(dataCalculation);
+			} catch(Exception e){
+				commonBase.setCode(2);
+				commonBase.setMessage(Message.ImportExcelError);
+			}
+		}
+		retCommonBaseAndList.setCommonBase(commonBase);
+		return retCommonBaseAndList;
+	}
+	/*private CommonBaseAndList getCalculationData(Boolean IsImport, Boolean IsAdd, CommonBase commonBase,
 			String SelectedTableNo, String SelectedCustCol7, String SelectedDepartCode, String emplGroupType,
 			List<PageData> listData, String strHelpful, String SystemDateTime) throws Exception{
 		CommonBaseAndList retCommonBaseAndList = new CommonBaseAndList();
@@ -2023,7 +2932,7 @@ public class StaffDetailController extends BaseController {
 		}
 		retCommonBaseAndList.setCommonBase(commonBase);
 		return retCommonBaseAndList;
-	}
+	}*/
 	
 	/*private CommonBaseAndList getCalculationData(Boolean IsImport, Boolean IsAdd, CommonBase commonBase,
 			String SelectedTableNo, String SelectedCustCol7, String SelectedDepartCode, String emplGroupType,
@@ -2172,12 +3081,13 @@ public class StaffDetailController extends BaseController {
 		return commonBase;
 	}
 	
-	private CommonBase CalculationUpdateDatabase(Boolean IsImport, Boolean IsAdd, CommonBase commonBase, String strErrorMessage,
+	private CommonBase CalculationUpdateDatabase(Boolean IsAdd, CommonBase commonBase, String strErrorMessage,
 			String SelectedTableNo, String SelectedCustCol7, String SelectedDepartCode, String emplGroupType,
-			List<PageData> listData, String strHelpful, String SystemDateTime) throws Exception{
-		CommonBaseAndList getCommonBaseAndList = getCalculationData(IsImport, IsAdd, commonBase,
+			List<PageData> listData, String strHelpful, String SystemDateTime, 
+			List<StaffFilterInfo> listStaffFilterInfo) throws Exception{
+		CommonBaseAndList getCommonBaseAndList = getCalculationData(commonBase,
 				SelectedTableNo, SelectedCustCol7, SelectedDepartCode, emplGroupType,
-				listData, strHelpful, SystemDateTime);
+				listData, strHelpful, SystemDateTime, listStaffFilterInfo);
 		return UpdateDatabase(IsAdd, commonBase, strErrorMessage,
 				SelectedTableNo, SelectedCustCol7, SelectedDepartCode, emplGroupType,
 				getCommonBaseAndList, strHelpful);
@@ -2409,6 +3319,14 @@ public class StaffDetailController extends BaseController {
 		return strRut;
 	}
 
+    //不用验证导入税的情况、验证身份证号
+	private List<StaffFilterInfo> getStaffFilter(String SelectedTableNo, String SelectedCustCol7, String SelectedDepartCode) throws Exception{
+		StaffFilterInfo getStaffFilter = new StaffFilterInfo();
+	    getStaffFilter.setTYPE_CODE(Corresponding.getStaffFilterTypeFromTmplType(SelectedTableNo));
+	    getStaffFilter.setDEPT_CODE(SelectedDepartCode);
+	    getStaffFilter.setBILL_OFF(SelectedCustCol7);
+	    return staffFilterService.getStaffFilter(getStaffFilter);
+	}
 	 /**导入提示
 	 * @param
 	 * @throws Exception

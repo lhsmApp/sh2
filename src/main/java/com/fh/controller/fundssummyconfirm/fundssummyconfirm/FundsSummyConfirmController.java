@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 import com.fh.controller.base.BaseController;
-import com.fh.controller.common.CheckSystemDateTime;
 import com.fh.controller.common.Common;
 import com.fh.controller.common.Corresponding;
 import com.fh.controller.common.DictsUtil;
@@ -216,17 +215,17 @@ public class FundsSummyConfirmController extends BaseController {
 			SelectedDepartCode = Jurisdiction.getCurrentDepartmentID();
 		}
 		//当前区间
-		String SystemDateTime = getPd.getString("SystemDateTime");
+		String SelectedBusiDate = getPd.getString("SelectedBusiDate");
 
 		PageData getQueryFeildPd = new PageData();
 		getQueryFeildPd.put("USER_GROP", emplGroupType);
 		getQueryFeildPd.put("DEPT_CODE", SelectedDepartCode);
 		getQueryFeildPd.put("CUST_COL7", SelectedCustCol7);
-		getQueryFeildPd.put("BUSI_DATE", SystemDateTime);
+		getQueryFeildPd.put("BUSI_DATE", SelectedBusiDate);
 		String QueryFeild = QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList);
 		List<String> AllDeptCode = Common.getAllDeptCode(departmentService, Jurisdiction.getCurrentDepartmentID());
 		QueryFeild += " and DEPT_CODE in (" + QueryFeildString.tranferListValueToSqlInString(AllDeptCode) + ") ";
-		if(!(SystemDateTime!=null && !SystemDateTime.trim().equals(""))){
+		if(!(SelectedBusiDate!=null && !SelectedBusiDate.trim().equals(""))){
 			QueryFeild += " and 1 != 1 ";
 		}
 		if(!(SelectedCustCol7!=null && !SelectedCustCol7.trim().equals(""))){
@@ -240,10 +239,10 @@ public class FundsSummyConfirmController extends BaseController {
 		
 		if(SelectedTabType!=null && SelectedTabType.trim().equals("1")){
 			QueryFeild += " and BILL_STATE = '" + BillState.Normal.getNameKey() + "' ";
-			QueryFeild += " and BILL_CODE in (select bill_code FROM tb_sys_sealed_info WHERE state = '1' AND RPT_DUR = '" + SystemDateTime + "') ";
-			QueryFeild += " and BILL_CODE not in (select bill_code FROM TB_SYS_CONFIRM_INFO WHERE state = '1' AND RPT_DUR = '" + SystemDateTime + "') ";
+			QueryFeild += " and BILL_CODE in (select bill_code FROM tb_sys_sealed_info WHERE state = '1' AND RPT_DUR = '" + SelectedBusiDate + "') ";
+			QueryFeild += " and BILL_CODE not in (select bill_code FROM TB_SYS_CONFIRM_INFO WHERE state = '1' AND RPT_DUR = '" + SelectedBusiDate + "') ";
 		} else if(SelectedTabType!=null && SelectedTabType.trim().equals("2")){
-			QueryFeild += " and BILL_CODE     in (select bill_code FROM TB_SYS_CONFIRM_INFO WHERE state = '1' AND RPT_DUR = '" + SystemDateTime + "') ";
+			QueryFeild += " and BILL_CODE     in (select bill_code FROM TB_SYS_CONFIRM_INFO WHERE state = '1' AND RPT_DUR = '" + SelectedBusiDate + "') ";
 		} else{
 			QueryFeild += " and 1 != 1 ";
 		}
@@ -428,15 +427,15 @@ public class FundsSummyConfirmController extends BaseController {
 		commonBase.setCode(-1);
 		
 		PageData getPd = this.getPageData();
-		//当前区间
-		String SystemDateTime = getPd.getString("SystemDateTime");
+		/*//当前区间
+		String SelectedBusiDate = getPd.getString("SystemDateTime");
 		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager,
 				false);
 		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(mesDateTime);
 			return commonBase;
-		}
+		}*/
 		
 		Object DATA_ROWS = getPd.get("DataRows");
 		String json = DATA_ROWS.toString();  
@@ -448,19 +447,13 @@ public class FundsSummyConfirmController extends BaseController {
         	listBillCode.add(BILL_CODE);
         }
 
-		PageData getQueryFeildPd = new PageData();
-		getQueryFeildPd.put("BUSI_DATE", SystemDateTime);
-		String QueryFeild = QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList);
-		QueryFeild += " and BILL_CODE in (" + QueryFeildString.tranferListValueToSqlInString(listBillCode) + ") ";
+		String QueryFeild = " and BILL_CODE in (" + QueryFeildString.tranferListValueToSqlInString(listBillCode) + ") ";
 		List<String> AllDeptCode = Common.getAllDeptCode(departmentService, Jurisdiction.getCurrentDepartmentID());
 		QueryFeild += " and DEPT_CODE in (" + QueryFeildString.tranferListValueToSqlInString(AllDeptCode) + ") ";
-		if(!(SystemDateTime!=null && !SystemDateTime.trim().equals(""))){
-			QueryFeild += " and 1 != 1 ";
-		}
 		QueryFeild += " and BILL_STATE = '" + BillState.Normal.getNameKey() + "' ";
-		QueryFeild += " and BILL_CODE in (select bill_code FROM tb_sys_sealed_info WHERE state = '1' AND RPT_DUR = '" + SystemDateTime + "') ";
+		QueryFeild += " and BILL_CODE in (select bill_code FROM tb_sys_sealed_info WHERE state = '1') ";
 		
-    	sysConfirmInfoService.batchEachConfirm(getSaveConfirm(false, SystemDateTime, QueryFeild));
+    	sysConfirmInfoService.batchEachConfirm(getSaveConfirm(false, "", QueryFeild));
 		commonBase.setCode(0);
 		return commonBase;
 	}
@@ -480,15 +473,15 @@ public class FundsSummyConfirmController extends BaseController {
 		String SelectedTableNo = Corresponding.getWhileValue(getPd.getString("SelectedTableNo"), DefaultWhile);
 		//tab
 		String SelectedTabType = getPd.getString("SelectedTabType");
-		//当前区间
-		String SystemDateTime = getPd.getString("SystemDateTime");
+		/*//当前区间
+		String SelectedBusiDate = getPd.getString("SelectedBusiDate");
 		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager,
 				false);
 		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(mesDateTime);
 			return commonBase;
-		}
+		}*/
 		User user = (User) Jurisdiction.getSession().getAttribute(Const.SESSION_USERROL);
 		String userId = user.getUSER_ID();
 		
@@ -509,7 +502,7 @@ public class FundsSummyConfirmController extends BaseController {
         	itemAdd.setSTATE(BillState.Invalid.getNameKey());
         	listTransfer.add(itemAdd);
         }
-		String checkState = CheckState(SelectedTableNo, SelectedTabType, QueryFeildString.tranferListValueToSqlInString(listBillCode), SystemDateTime);
+		String checkState = CheckState(SelectedTableNo, SelectedTabType, QueryFeildString.tranferListValueToSqlInString(listBillCode));
 		if(checkState!=null && !checkState.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(checkState);
@@ -716,24 +709,24 @@ public class FundsSummyConfirmController extends BaseController {
 		//单位
 		////String SelectedDepartCode = getPd.getString("SelectedDepartCode");
 		//当前区间
-		String SystemDateTime = getViewPd.getString("SystemDateTime");
-		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager,
+		String SelectedBusiDate = getViewPd.getString("SelectedBusiDate");
+		/*String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager,
 				false);
 		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(mesDateTime);
 			return commonBase;
-		}
+		}*/
 		
 		PageData getQueryFeildPd = new PageData();
 		//getQueryFeildPd.put("USER_GROP", emplGroupType);
 		//getQueryFeildPd.put("DEPT_CODE", SelectedDepartCode);
 		//getQueryFeildPd.put("CUST_COL7", SelectedCustCol7);
-		getQueryFeildPd.put("BUSI_DATE", SystemDateTime);
+		getQueryFeildPd.put("BUSI_DATE", SelectedBusiDate);
 		String QueryFeild = QueryFeildString.getQueryFeild(getQueryFeildPd, QueryFeildList);
 		List<String> AllDeptCode = Common.getAllDeptCode(departmentService, Jurisdiction.getCurrentDepartmentID());
 		QueryFeild += " and DEPT_CODE in (" + QueryFeildString.tranferListValueToSqlInString(AllDeptCode) + ") ";
-		if(!(SystemDateTime!=null && !SystemDateTime.trim().equals(""))){
+		if(!(SelectedBusiDate!=null && !SelectedBusiDate.trim().equals(""))){
 			QueryFeild += " and 1 != 1 ";
 		}
 		//if(!(SelectedCustCol7!=null && !SelectedCustCol7.trim().equals(""))){
@@ -748,14 +741,14 @@ public class FundsSummyConfirmController extends BaseController {
 		//	}
 		//}
 		QueryFeild += " and BILL_STATE = '" + BillState.Normal.getNameKey() + "' ";
-		QueryFeild += " and BILL_CODE in (select bill_code FROM tb_sys_sealed_info WHERE state = '1' AND RPT_DUR = '" + SystemDateTime + "') ";
+		QueryFeild += " and BILL_CODE in (select bill_code FROM tb_sys_sealed_info WHERE state = '1' AND RPT_DUR = '" + SelectedBusiDate + "') ";
 		
-    	sysConfirmInfoService.batchAllConfirm(getSaveConfirm(true, SystemDateTime, QueryFeild));
+    	sysConfirmInfoService.batchAllConfirm(getSaveConfirm(true, SelectedBusiDate, QueryFeild));
 		commonBase.setCode(0);
 		return commonBase;
 	}
 	
-	private Map<String, Object> getSaveConfirm(Boolean bolAll, String SystemDateTime,
+	private Map<String, Object> getSaveConfirm(Boolean bolAll, String SelectedBusiDate,
 			String QueryFeild) throws Exception{
 		PageData getDataPd = new PageData();
 		getDataPd.put("QueryFeild", QueryFeild);
@@ -777,11 +770,11 @@ public class FundsSummyConfirmController extends BaseController {
     	
     	if(bolAll){
         	PageData pdCert = new PageData();
-        	pdCert.put("BUSI_DATE", SystemDateTime);
+        	pdCert.put("BUSI_DATE", SelectedBusiDate);
             map.put("TransferCertDel", pdCert);
 
     		PageData pdConfirm = new PageData();
-    		pdConfirm.put("RPT_DUR", SystemDateTime);
+    		pdConfirm.put("RPT_DUR", SelectedBusiDate);
         	map.put("TransferConfirmDel", pdConfirm);
     	}
     	
@@ -900,11 +893,11 @@ public class FundsSummyConfirmController extends BaseController {
 	}
 	
 	//判断单据状态
-	private String CheckState(String SelectedTableNo, String SelectedTabType, String strSqlInBillCode, String SystemDateTime) throws Exception{
+	private String CheckState(String SelectedTableNo, String SelectedTabType, String strSqlInBillCode) throws Exception{
 		String strRut = "";
 		
 		String QueryFeild = " and BILL_CODE in (" + strSqlInBillCode + ") ";
-		QueryFeild += " and state = '1' AND RPT_DUR = '" + SystemDateTime + "' ";
+		QueryFeild += " and state = '1' ";
 
 		String strSqlCancelBillCodeIn = "";
 		if(!(SelectedTabType!=null && (SelectedTabType.trim().equals("1") || SelectedTabType.trim().equals("2")))){
@@ -944,11 +937,10 @@ public class FundsSummyConfirmController extends BaseController {
 			}*/
 		}
 		
-		PageData transferPd = new PageData();
-		transferPd.put("SystemDateTime", SystemDateTime);
-		transferPd.put("CanOperate", QueryFeild);
-		transferPd.put("TableName", tb_sys_confirm_info);
-		List<SysConfirmInfo> getCodeList = sysConfirmInfoService.getCheckStateList(transferPd);
+		PageData tranPd = new PageData();
+		tranPd.put("CanOperate", QueryFeild);
+		tranPd.put("TableName", tb_sys_confirm_info);
+		List<SysConfirmInfo> getCodeList = sysConfirmInfoService.getCheckStateList(tranPd);
 		if(SelectedTabType!=null && SelectedTabType.trim().equals("2")
 				&& !(strSqlCancelBillCodeIn!=null && !strSqlCancelBillCodeIn.trim().equals(""))){
 			strRut = "";

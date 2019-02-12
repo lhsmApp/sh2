@@ -496,6 +496,14 @@
 		BUSI_DATE = #{RPT_DUR} LIMIT 1
 	</select>
 	
+	<!-- 通过期间获取数据，判断是否已经生成过特殊模板配置信息 -->
+	<select id="findStaffTds" parameterType="String" resultType="String">
+		select 1
+		from tb_staff_tds_info
+		where
+		BUSI_DATE = #{RPT_DUR} LIMIT 1
+	</select>
+	
 	<!-- 更新业务期间 -->
 	<update id="updateBusidate" parameterType="pd">
 		update tb_sys_config
@@ -572,6 +580,22 @@
 			       ITEM9_CODE,ITEM9_NAME,ITEM9_BUD,ITEM10_CODE,ITEM10_NAME,ITEM10_BUD,
 			       #{NEXT_RPT_DUR} as BUSI_DATE
 		    FROM tb_gl_item_user 
+		    WHERE BUSI_DATE=#{CUR_RPT_DUR};
+		</if>
+		<if test="CopyStaffTds!= null and CopyStaffTds != ''">
+		    insert into
+		    tb_staff_tds_info
+		    (
+			       USER_CODE,USER_NAME,STAFF_IDENT,DEPT_CODE,UNITS_CODE,
+			       CUST_COL1,CUST_COL2,CUST_COL3,CUST_COL4,CUST_COL5,CUST_COL6,
+			       CUST_COL7,CUST_COL8,CUST_COL9,CUST_COL10,CUST_COL11,CUST_COL12,
+			       BUSI_DATE
+		    )
+		    SELECT USER_CODE,USER_NAME,STAFF_IDENT,DEPT_CODE,UNITS_CODE,
+			       CUST_COL1,CUST_COL2,CUST_COL3,CUST_COL4,CUST_COL5,CUST_COL6,
+			       CUST_COL7,CUST_COL8,CUST_COL9,CUST_COL10,CUST_COL11,CUST_COL12,
+			       #{NEXT_RPT_DUR} as BUSI_DATE
+		    FROM tb_staff_tds_info 
 		    WHERE BUSI_DATE=#{CUR_RPT_DUR};
 		</if>
 	</update>

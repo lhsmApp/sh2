@@ -136,6 +136,10 @@ public class BusidateController extends BaseController {
 		if (StringUtil.isEmpty(hasGlItemUser)) {
 			pd.put("CopyGlItemUser", true);
 		}
+		String hasStaffTds = tmplconfigService.findStaffTds(nextBusidate);
+		if (StringUtil.isEmpty(hasStaffTds)) {
+			pd.put("CopyStaffTds", true);
+		}
 		tmplconfigService.updateBusidate(pd);// 变更业务区间
 		
 		commonBase.setCode(0);

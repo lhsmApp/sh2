@@ -90,6 +90,11 @@
 								<div class="widget-body">
 									<div class="widget-main">
 										<form class="form-inline">
+											<span class="input-icon pull-left" style="margin-right: 5px;">
+												<input id="SelectedBusiDate" class="input-mask-date" type="text"
+												  placeholder="请输入业务区间"> 
+												<i class="ace-icon fa fa-calendar blue"></i>
+											</span>
 											<span class="pull-left" style="margin-right: 5px;">
 												<select class="chosen-select form-control" data-placeholder="请选择帐套"
 													    name="SelectedCustCol7" id="SelectedCustCol7"
@@ -192,15 +197,14 @@
 	var TabType = 1;
 	//前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
 	var jqGridColModel;
-
-	//当前期间,取自tb_system_config的SystemDateTime字段
-    var SystemDateTime = '';
 	
 	$(document).ready(function () {
 		$(top.hangge());//关闭加载状态
+		$('.input-mask-date').mask('999999');
 	    
 		//当前期间,取自tb_system_config的SystemDateTime字段
-	    SystemDateTime = '${SystemDateTime}';
+        var SystemDateTime = '${SystemDateTime}';
+		$("#SelectedBusiDate").val(SystemDateTime);
 	    
 		//前端数据表格界面字段,动态取自tb_tmpl_config_detail，根据当前单位编码及表名获取字段配置信息
 	    jqGridColModel = "[]";//此处记得用eval()行数将string转为array
@@ -224,7 +228,7 @@
 			var target = $(this).find('input[type=radio]');
 			which = parseInt(target.val());
 			window.location.href='<%=basePath%>fundssummyconfirm/list.do?SelectedTableNo='+which
-            + '&SystemDateTime='+SystemDateTime;
+            + '&SelectedBusiDate='+$("#SelectedBusiDate").val();
 		});
 		
 		//tab页切换
@@ -257,7 +261,7 @@
 		$.ajax({
 			type: "GET",
 			url: '<%=basePath%>fundssummyconfirm/getFirstDetailColModel.do?SelectedTableNo='+which
-            + '&SystemDateTime='+SystemDateTime,
+            + '&SelectedBusiDate='+$("#SelectedBusiDate").val(),
 	    	data: {DataDeptCode:DEPT_CODE,DataCustCol7:CUST_COL7},
 			dataType:'json',
 			cache: false,
@@ -271,7 +275,7 @@
 		            var childGridPagerID = parentRowID + _pager;
 		            // send the parent row primary key to the server so that we know which grid to show
 		            var childGridURL = '<%=basePath%>fundssummyconfirm/getFirstDetailList.do?SelectedTableNo='+which+'&DetailListBillCode='+BILL_CODE
-    	            + '&SystemDateTime='+SystemDateTime;
+		            + '&SelectedBusiDate='+$("#SelectedBusiDate").val();
 
 		            // add a table and pager HTML elements to the parent grid row - we will render the child grid here
 		            $('#' + parentRowID).append('<table id=' + childGridID + '></table><div id=' + childGridPagerID + ' class=scroll></div>');
@@ -354,7 +358,7 @@
 		$.ajax({
 			type: "GET",
 			url: '<%=basePath%>fundssummyconfirm/getSecondDetailColModel.do?SelectedTableNo='+which
-            + '&SystemDateTime='+SystemDateTime,
+            + '&SelectedBusiDate='+$("#SelectedBusiDate").val(),
 	    	data: {DataDeptCode:DEPT_CODE,DataCustCol7:CUST_COL7},
 			dataType:'json',
 			cache: false,
@@ -368,7 +372,7 @@
 		            var childGridPagerID = parentRowID + _pager;
 		            // send the parent row primary key to the server so that we know which grid to show
 		            var childGridURL = '<%=basePath%>fundssummyconfirm/getSecondDetailList.do?SelectedTableNo='+which
-    	            + '&SystemDateTime='+SystemDateTime;
+		            + '&SelectedBusiDate='+$("#SelectedBusiDate").val();
 		            //childGridURL = childGridURL + "&parentRowID=" + encodeURIComponent(parentRowKey)
                     var listData =new Array();
 				    listData.push(rowData);
@@ -439,7 +443,7 @@
 		$("#selectTree").data("data",defaultNodes);  
 		$("#selectTree").render();
 		$("#selectTree2_input").val("请选择单位");
-	}
+	};
 	
 	//检索
 	function tosearch() {
@@ -454,7 +458,7 @@
                 +'&SelectedTabType='+TabType
                 +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
                 +'&SelectedCustCol7='+$("#SelectedCustCol7").val()
-	            + '&SystemDateTime='+SystemDateTime,
+                + '&SelectedBusiDate='+$("#SelectedBusiDate").val(),
 			dataType:'json',
 			cache: false,
 			success: function(response){
@@ -487,7 +491,7 @@
 		        });
 	    	}
 		});
-	}  
+	};  
 	
 	function SetStructure(){
 		//resize to fit page size
@@ -502,7 +506,7 @@
                 +'&SelectedTabType='+TabType
                 +'&SelectedDepartCode='+$("#SelectedDepartCode").val()
                 +'&SelectedCustCol7='+$("#SelectedCustCol7").val()
-	            + '&SystemDateTime='+SystemDateTime,
+                + '&SelectedBusiDate='+$("#SelectedBusiDate").val(),
 			datatype: "json",
 			colModel: jqGridColModel,
 			viewrecords: true, 
@@ -633,7 +637,7 @@
 						type: "POST",
 						url: '<%=basePath%>fundssummyconfirm/summyBillConfirm.do?SelectedTableNo='+which
 		                        +'&SelectedTabType='+TabType
-		        	            + '&SystemDateTime='+SystemDateTime,
+		                        + '&SelectedBusiDate='+$("#SelectedBusiDate").val(),
 				    	data: {DataRows:JSON.stringify(listData)},
 						dataType:'json',
 						cache: false,
@@ -702,7 +706,7 @@
 						type: "POST",
 						url: '<%=basePath%>fundssummyconfirm/summyBillCancel.do?SelectedTableNo='+which
                              +'&SelectedTabType='+TabType
-             	            + '&SystemDateTime='+SystemDateTime,
+                             + '&SelectedBusiDate='+$("#SelectedBusiDate").val(),
 				    	data: {DataRows:JSON.stringify(listData)},
 						dataType:'json',
 						cache: false,
@@ -776,7 +780,7 @@
 					url: '<%=basePath%>fundssummyconfirm/confirmAll.do?SelectedTableNo='+which
                      +'&SelectedCustCol7='+CustCol7
 				 	 +'&SelectedDepartCode='+DepartCode
-      	             +'&SystemDateTime='+SystemDateTime,
+			            + '&SelectedBusiDate='+$("#SelectedBusiDate").val(),
 					dataType:'json',
 					cache: false,
 					success: function(response){

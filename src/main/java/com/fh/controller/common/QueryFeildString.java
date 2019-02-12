@@ -240,6 +240,7 @@ public class QueryFeildString {
 		return strRet;
 	}
 	
+	//tb_sys_sealed_info不是封存state = '1'
 	public static String getNotReportBillCode(String BILL_TYPE, String RPT_DUR, String BILL_OFF, String SqlInRPT_DEPT) throws Exception{
 		String strInRPT_DEPT = getSqlInString(SqlInRPT_DEPT);
 		String strRet = " and BILL_CODE not in (SELECT bill_code FROM tb_sys_sealed_info "

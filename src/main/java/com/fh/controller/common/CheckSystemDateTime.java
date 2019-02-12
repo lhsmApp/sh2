@@ -19,7 +19,7 @@ import com.fh.service.sysDeptLtdTime.sysDeptLtdTime.impl.SysDeptLtdTimeService;
 public class CheckSystemDateTime {
 
 	/**
-	 * 
+	 * 判断传过来的TranferSystemDateTime和配置表里的当前区间是否一致
 	 * @return
 	 * @throws Exception
 	 */
@@ -40,7 +40,7 @@ public class CheckSystemDateTime {
 	}
 
 	/**
-	 * SystemDateTime取年
+	 * SystemDateTime取年、月
 	 * @return
 	 * @throws Exception
 	 */
@@ -49,9 +49,14 @@ public class CheckSystemDateTime {
 		String strReturn = SystemDateTime.substring(0, SystemDateTime.length() - 2);
 		return strReturn;
 	}
+	public static String getSystemDateTimeMouth(String SystemDateTime) 
+			throws Exception {
+		String strReturn = SystemDateTime.substring(SystemDateTime.length() - 2, SystemDateTime.length());
+		return strReturn;
+	}
 
 	/**
-	 * 
+	 * 验证是否在操作时间内
 	 * @return
 	 * @throws Exception
 	 */

@@ -16,6 +16,25 @@
 <!-- jsp文件头和头部 -->
 <%@ include file="../system/index/top.jsp"%>
 
+	<!-- 下拉框 -->
+	<link rel="stylesheet" href="static/ace/css/chosen.css" />
+	<!-- 日期框 -->
+	<link rel="stylesheet" href="static/ace/css/datepicker.css" />
+	<!-- 最新版的Jqgrid Css，如果旧版本（Ace）某些方法不好用，尝试用此版本Css，替换旧版本Css -->
+	<!-- <link rel="stylesheet" type="text/css" media="screen" href="static/ace/css/ui.jqgrid-bootstrap.css" /> -->
+	<script type="text/javascript" src="static/js/jquery-1.7.2.js"></script>
+	<!-- 树形下拉框start -->
+	<script type="text/javascript" src="plugins/selectZtree/selectTree.js"></script>
+	<script type="text/javascript" src="plugins/selectZtree/framework.js"></script>
+	<link rel="stylesheet" type="text/css"
+		href="plugins/selectZtree/import_fh.css" />
+	<script type="text/javascript" src="plugins/selectZtree/ztree/ztree.js"></script>
+	<link type="text/css" rel="stylesheet"
+		href="plugins/selectZtree/ztree/ztree.css"></link>
+	<!-- 树形下拉框end -->
+    <!-- 标准页面统一样式 -->
+    <link rel="stylesheet" href="static/css/normal.css" />
+
 </head>
 <body class="no-skin">
 
@@ -65,6 +84,27 @@
 	<script src="static/ace/js/ace/elements.fileinput.js"></script>
 	<!--提示框-->
 	<script type="text/javascript" src="static/js/jquery.tips.js"></script>
+	<!-- 删除时确认窗口 -->
+	<script src="static/ace/js/bootbox.js"></script>
+	
+	<!-- 最新版的Jqgrid Js，如果旧版本（Ace）某些方法不好用，尝试用此版本Js，替换旧版本JS -->
+	<!-- <script src="static/ace/js/jquery.jqGrid.min.js" type="text/javascript"></script>
+	<script src="static/ace/js/grid.locale-cn.js" type="text/javascript"></script> -->
+	<!-- 旧版本（Ace）Jqgrid Js -->
+	<script src="static/ace/js/jqGrid/jquery.jqGrid.src.js"></script>
+	<script src="static/ace/js/jqGrid/i18n/grid.locale-cn.js"></script>
+	<!-- 下拉框 -->
+	<script src="static/ace/js/chosen.jquery.js"></script>
+	<!-- 日期框 -->
+	<script src="static/ace/js/date-time/bootstrap-datepicker.js"></script>
+	<!-- 输入格式化 -->
+	<script src="static/ace/js/jquery.maskedinput.js"></script>
+	<!-- JqGrid统一样式统一操作 -->
+	<script type="text/javascript" src="static/js/common/jqgrid_style.js"></script>
+	<script type="text/javascript" src="static/js/common/cusElement_style.js"></script>
+	<script type="text/javascript" src="static/js/util/toolkit.js"></script>
+	<script src="static/ace/js/ace/ace.widget-box.js"></script>
+	
 	<script type="text/javascript">
 	    var local = '${local}';
 	    var which = '${which}';
@@ -82,6 +122,8 @@
 	    var SalaryOrBonus = '${SalaryOrBonus}';
 	    var SystemDateTime = '${SystemDateTime}';
 	    var tipfiles = "请选择xls格式的文件";
+	    
+		var StringDataRows = '${StringDataRows}';
 	    
 		$(document).ready(function () {
 			$(top.hangge());
@@ -121,7 +163,50 @@
 		                //diag.show();
 
 			        	alert(commonMessage);
-		        	} else if($.trim(commonBaseCode) != -1){
+		        	} else if($.trim(commonBaseCode) == 9){
+		                var msg = commonMessage + '确定覆盖吗??';
+		                bootbox.confirm(msg, function(result) {
+		    				if(result) {
+		    					$.ajax({
+		    						type: "POST",
+		    						url: '<%=basePath%>' + local + '/coverAdd.do?TABLE_CODE='+which+'&SelectedTableNo='+which
+		    		                +'&SelectedDepartCode='+SelectedDepartCode+'&SelectedCustCol7='+SelectedCustCol7+'&SelectedBillCode='+SelectedBillCode+'&SelectedTypeCode='+SelectedTypeCode+'&SelectedBusiDate='+SelectedBusiDate
+		    		                +'&DepartTreeSource='+DepartTreeSource
+		    		                +'&ShowDataDepartCode='+ShowDataDepartCode+'&ShowDataCustCol7='+ShowDataCustCol7+'&ShowDataBillCode='+ShowDataBillCode+'&ShowDataTypeCode='+ShowDataTypeCode+'&ShowDataBusiDate='+ShowDataBusiDate
+		    		                +'&SalaryOrBonus='+SalaryOrBonus
+		    		                +'&SystemDateTime='+SystemDateTime,
+		    				    	data: {StringDataRows:StringDataRows},
+		    						dataType:'json',
+		    						cache: false,
+		    						success: function(response){
+		    							if(response.code==0){
+			    						    $("#excel").tips({
+			    						    	side:3,
+			    				                msg:'成功',
+			    				                bg:'#AE81FF',
+			    				                time:3
+			    				            });
+		    							}else{
+			    						    $("#excel").tips({
+			    						    	side:3,
+			    				                msg:'失败,'+response.message,
+			    				                bg:'#AE81FF',
+			    				                time:3
+			    				            });
+		    							}
+		    						},
+		    				    	error: function(response) {
+		    						    $("#excel").tips({
+		    						    	side:3,
+		    				                msg:'出错:'+response.responseJSON.message,
+		    				                bg:'#AE81FF',
+		    				                time:3
+		    				            });
+		    				    	}
+		    					});
+		    				}
+		                });
+			        } else if($.trim(commonBaseCode) != -1){
 					    $("#excel").tips({
 					    	side:3,
 			                msg:commonMessage,
@@ -129,9 +214,9 @@
 			                time:3
 			            });
 			        }
-			    }
-		    };
-		})
+		        }
+		    }
+		});
 		
 		$(function() {
 			//上传
@@ -151,9 +236,9 @@
 		//下载模板
 		function downModel(basePath){
 			var url = basePath + local + '/downExcel.do?TABLE_CODE='+which+"&SelectedTableNo="+which
-                +'&SelectedDepartCode='+SelectedDepartCode+'&SelectedCustCol7='+SelectedCustCol7+'&SelectedBillCode='+SelectedBillCode+'&SelectedTypeCode='+SelectedTypeCode
+                +'&SelectedDepartCode='+SelectedDepartCode+'&SelectedCustCol7='+SelectedCustCol7+'&SelectedBillCode='+SelectedBillCode+'&SelectedTypeCode='+SelectedTypeCode+'&SelectedBusiDate='+SelectedBusiDate
                 +'&DepartTreeSource='+DepartTreeSource
-                +'&ShowDataDepartCode='+ShowDataDepartCode+'&ShowDataCustCol7='+ShowDataCustCol7+'&ShowDataBillCode='+ShowDataBillCode+'&ShowDataTypeCode='+ShowDataTypeCode
+                +'&ShowDataDepartCode='+ShowDataDepartCode+'&ShowDataCustCol7='+ShowDataCustCol7+'&ShowDataBillCode='+ShowDataBillCode+'&ShowDataTypeCode='+ShowDataTypeCode+'&ShowDataBusiDate='+ShowDataBusiDate
                 +'&SalaryOrBonus='+SalaryOrBonus
                 +'&SystemDateTime='+SystemDateTime;
 			window.location.href = url;

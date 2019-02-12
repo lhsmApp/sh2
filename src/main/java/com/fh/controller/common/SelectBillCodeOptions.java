@@ -17,7 +17,7 @@ import com.fh.entity.system.Dictionaries;
  */
 public class SelectBillCodeOptions {
 
-	// 在导入汇总界面使用
+	// 下拉列表 value和显示一致
 	public static String getSelectBillCodeOptions(List<String> listBillCode, String strSelectBillCodeFirstShow,
 			String strSelectBillCodeLastShow) {
 		String strReturn = "";

@@ -3,6 +3,7 @@ package com.fh.service.staffDetail.staffdetail;
 import java.util.List;
 
 import com.fh.entity.JqPage;
+import com.fh.entity.StaffFilterInfo;
 import com.fh.util.PageData;
 
 /** 
@@ -75,8 +76,8 @@ public interface StaffDetailManager{
 			PageData pdInsetBackup,
 			List<String> listSalaryFeildUpdate, String sqlRetSelect, List<PageData> listData, 
 			String sqlSumByUserCodeSalary, 
-			String sqlSumByUserCodeBonus_Not0,
-			String sqlSumByUserCodeBonus_Same0)throws Exception;
+			String sqlSumByUserCodeBonus,
+			Boolean bolCalculation, List<StaffFilterInfo> listStaffFilterInfo)throws Exception;
 	/**更新数据库
 	 * @param pd
 	 * @throws Exception

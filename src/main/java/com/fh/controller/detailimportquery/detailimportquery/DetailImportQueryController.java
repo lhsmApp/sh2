@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 import com.fh.controller.base.BaseController;
+import com.fh.controller.common.CheckSystemDateTime;
 import com.fh.controller.common.Common;
 import com.fh.controller.common.Corresponding;
 import com.fh.controller.common.DictsUtil;
@@ -746,6 +747,7 @@ public class DetailImportQueryController extends BaseController {
 			//String SelectGroupFeild = " USER_CODE, USER_NAME, STAFF_IDENT, DEPT_CODE, "
 			String SelectGroupFeild = " STAFF_IDENT, "
 					+ " sum(GROSS_PAY) GROSS_PAY, "
+					+ " sum(KID_ALLE) KID_ALLE, "
 					+ " sum(ENDW_INS) ENDW_INS, "
 					+ " sum(MED_INS + CASD_INS) MED_INS, "
 					+ " sum(UNEMPL_INS) UNEMPL_INS, "
@@ -774,6 +776,9 @@ public class DetailImportQueryController extends BaseController {
 		getPd.put("GroupByFeild", strGroupByFeild);
 		getPd.put("WhereSql", WhereSql);
 		getPd.put("TableName", TableName);
+		String strSystemDateTimeYear = CheckSystemDateTime.getSystemDateTimeYear(SelectedBusiDate);
+		String QueryFeildBusiPreYear = " and BUSI_DATE > '" + strSystemDateTimeYear + "00' " + " and BUSI_DATE <= '" + SelectedBusiDate + "' ";
+		getPd.put("QueryFeildBusiPreYear", QueryFeildBusiPreYear);
         page.setPd(getPd);
 		List<PageData> getAllList = detailimportqueryService.exportSumList(page);
 		
@@ -790,10 +795,17 @@ public class DetailImportQueryController extends BaseController {
 				//Common.GetSetColumnsList(SelectedTableNo, SelectedDepartCode, SelectedCustCol7, tmplconfigService);
 		map_SetColumnsList.put("USER_CODE", new TmplConfigDetail("USER_CODE", "工号", "1", false));
 		map_SetColumnsList.put("USER_NAME", new TmplConfigDetail("USER_NAME", "姓名", "1", false));
-		map_SetColumnsList.put("CERT_TYPE", new TmplConfigDetail("CERT_TYPE", "证件类型", "1", false));
-		map_SetColumnsList.put("STAFF_IDENT", new TmplConfigDetail("STAFF_IDENT", "证件号码", "1", false));
-		map_SetColumnsList.put("TAX_BURDENS", new TmplConfigDetail("TAX_BURDENS", "税款负担方式", "1", false));
 		
+		if(SalaryOrBonus.equals(StaffDataType1.Salary.getNameKey())){
+			map_SetColumnsList.put("CERT_TYPE", new TmplConfigDetail("CERT_TYPE", "证照类型", "1", false));
+			map_SetColumnsList.put("STAFF_IDENT", new TmplConfigDetail("STAFF_IDENT", "证照号码", "1", false));
+		}
+        if(SalaryOrBonus.equals(StaffDataType1.Bonus.getNameKey())){
+			map_SetColumnsList.put("CERT_TYPE", new TmplConfigDetail("CERT_TYPE", "证件类型", "1", false));
+			map_SetColumnsList.put("STAFF_IDENT", new TmplConfigDetail("STAFF_IDENT", "证件号码", "1", false));
+    		map_SetColumnsList.put("TAX_BURDENS", new TmplConfigDetail("TAX_BURDENS", "税款负担方式", "1", false));
+        }
+
 		String strUNITS_CODE = "UNITS_CODE";
 		TmplConfigDetail tmplGetDic = map_GetDicSetColumnsList.get(strUNITS_CODE);
 		TmplConfigDetail tmplPut = new TmplConfigDetail(strUNITS_CODE, "所属二级单位", "1", false);
@@ -807,26 +819,45 @@ public class DetailImportQueryController extends BaseController {
 		map_SetColumnsList.put(strSAL_RANGE, tmplPutSAL_RANGE);
 		
 		if(SalaryOrBonus.equals(StaffDataType1.Salary.getNameKey())){
-			map_SetColumnsList.put("GROSS_PAY", new TmplConfigDetail("GROSS_PAY", "收入额", "1", true));
-			map_SetColumnsList.put(TableFeildSalaryTax, new TmplConfigDetail(TableFeildSalaryTax, "税额", "1", true));
-			map_SetColumnsList.put("免税所得", new TmplConfigDetail("免税所得", "免税所得", "1", true));
+			/*map_SetColumnsList.put("GROSS_PAY", new TmplConfigDetail("GROSS_PAY", "收入额", "1", true));
+            map_SetColumnsList.put(TableFeildSalaryTax, new TmplConfigDetail(TableFeildSalaryTax, "税额", "1", true));
+            map_SetColumnsList.put("免税所得", new TmplConfigDetail("免税所得", "免税所得", "1", true));
 			map_SetColumnsList.put("ENDW_INS", new TmplConfigDetail("ENDW_INS", "基本养老保险费", "1", true));
 			map_SetColumnsList.put("MED_INS", new TmplConfigDetail("MED_INS", "基本医疗保险费", "1", true));
 			map_SetColumnsList.put("UNEMPL_INS", new TmplConfigDetail("UNEMPL_INS", "失业保险费", "1", true));
 			map_SetColumnsList.put("HOUSE_FUND", new TmplConfigDetail("HOUSE_FUND", "住房公积金", "1", true));
-			map_SetColumnsList.put("KID_ALLE", new TmplConfigDetail("KID_ALLE", "允许扣除的税费", "1", true));
-			map_SetColumnsList.put("SUP_PESN", new TmplConfigDetail("SUP_PESN", "年金", "1", true));
-			map_SetColumnsList.put("商业健康保险费", new TmplConfigDetail("商业健康保险费", "商业健康保险费", "1", true));
-			
-			map_SetColumnsList.put("TAX_BASE_ADJ", new TmplConfigDetail("TAX_BASE_ADJ", "税延养老保险费", "1", true));
-			
-			map_SetColumnsList.put("其他扣除", new TmplConfigDetail("其他扣除", "其他扣除", "1", true));
-			map_SetColumnsList.put("减除费用", new TmplConfigDetail("减除费用", "减除费用", "1", true));
-			map_SetColumnsList.put("实际捐赠额", new TmplConfigDetail("实际捐赠额", "实际捐赠额", "1", true));
-			map_SetColumnsList.put("允许列支的捐赠比例", new TmplConfigDetail("允许列支的捐赠比例", "允许列支的捐赠比例", "1", false));
-			map_SetColumnsList.put("准予扣除的捐赠额", new TmplConfigDetail("准予扣除的捐赠额", "准予扣除的捐赠额", "1", true));
-			map_SetColumnsList.put("减免税额", new TmplConfigDetail("减免税额", "减免税额", "1", true));
-			map_SetColumnsList.put("已扣缴税额", new TmplConfigDetail("已扣缴税额", "已扣缴税额", "1", true));
+            map_SetColumnsList.put("KID_ALLE", new TmplConfigDetail("KID_ALLE", "允许扣除的税费", "1", true));
+            map_SetColumnsList.put("SUP_PESN", new TmplConfigDetail("SUP_PESN", "年金", "1", true));
+            map_SetColumnsList.put("商业健康保险费", new TmplConfigDetail("商业健康保险费", "商业健康保险费", "1", true));
+            
+            map_SetColumnsList.put("TAX_BASE_ADJ", new TmplConfigDetail("TAX_BASE_ADJ", "税延养老保险费", "1", true));
+            
+            map_SetColumnsList.put("其他扣除", new TmplConfigDetail("其他扣除", "其他扣除", "1", true));
+            map_SetColumnsList.put("减除费用", new TmplConfigDetail("减除费用", "减除费用", "1", true));
+            map_SetColumnsList.put("实际捐赠额", new TmplConfigDetail("实际捐赠额", "实际捐赠额", "1", true));
+            map_SetColumnsList.put("允许列支的捐赠比例", new TmplConfigDetail("允许列支的捐赠比例", "允许列支的捐赠比例", "1", false));
+            map_SetColumnsList.put("准予扣除的捐赠额", new TmplConfigDetail("准予扣除的捐赠额", "准予扣除的捐赠额", "1", true));
+            map_SetColumnsList.put("减免税额", new TmplConfigDetail("减免税额", "减免税额", "1", true));
+            map_SetColumnsList.put("已扣缴税额", new TmplConfigDetail("已扣缴税额", "已扣缴税额", "1", true));*/
+
+			map_SetColumnsList.put(TableFeildSalaryTax, new TmplConfigDetail(TableFeildSalaryTax, "税额", "1", true));
+			map_SetColumnsList.put("GROSS_PAY", new TmplConfigDetail("GROSS_PAY", "本期收入", "1", true));
+			map_SetColumnsList.put("KID_ALLE", new TmplConfigDetail("KID_ALLE", "儿贴", "1", true));
+			map_SetColumnsList.put("ENDW_INS", new TmplConfigDetail("ENDW_INS", "基本养老保险费", "1", true));
+			map_SetColumnsList.put("MED_INS", new TmplConfigDetail("MED_INS", "基本医疗保险费", "1", true));
+			map_SetColumnsList.put("UNEMPL_INS", new TmplConfigDetail("UNEMPL_INS", "失业保险费", "1", true));
+			map_SetColumnsList.put("HOUSE_FUND", new TmplConfigDetail("HOUSE_FUND", "住房公积金", "1", true));
+			map_SetColumnsList.put("CUST_COL1", new TmplConfigDetail("CUST_COL1", "累计子女教育", "1", true));
+			map_SetColumnsList.put("CUST_COL5", new TmplConfigDetail("CUST_COL5", "累计继续教育", "1", true));
+			map_SetColumnsList.put("CUST_COL3", new TmplConfigDetail("CUST_COL3", "累计住房贷款利息", "1", true));
+			map_SetColumnsList.put("CUST_COL4", new TmplConfigDetail("CUST_COL4", "累计住房租金", "1", true));
+			map_SetColumnsList.put("CUST_COL2", new TmplConfigDetail("CUST_COL2", "累计赡养老人", "1", true));
+			map_SetColumnsList.put("SUP_PESN", new TmplConfigDetail("SUP_PESN", "企业(职业)年金", "1", true));
+            map_SetColumnsList.put("商业健康保险", new TmplConfigDetail("商业健康保险", "商业健康保险", "1", true));
+			map_SetColumnsList.put("TAX_BASE_ADJ", new TmplConfigDetail("TAX_BASE_ADJ", "税延养老保险", "1", true));
+            map_SetColumnsList.put("其他", new TmplConfigDetail("其他", "其他", "1", true));
+            map_SetColumnsList.put("准予扣除的捐赠额", new TmplConfigDetail("准予扣除的捐赠额", "准予扣除的捐赠额", "1", true));
+            map_SetColumnsList.put("减免税额", new TmplConfigDetail("减免税额", "减免税额", "1", true));
 		}
         if(SalaryOrBonus.equals(StaffDataType1.Bonus.getNameKey())){
 			map_SetColumnsList.put(TableFeildBonusSelf, new TmplConfigDetail(TableFeildBonusSelf, "全年一次性奖金额", "1", true));

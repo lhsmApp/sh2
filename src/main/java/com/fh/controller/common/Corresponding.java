@@ -9,6 +9,7 @@ import com.fh.util.PageData;
 import com.fh.util.enums.BillNumType;
 import com.fh.util.enums.EmplGroupType;
 import com.fh.util.enums.PZTYPE;
+import com.fh.util.enums.StaffFilterType;
 import com.fh.util.enums.SysConfigKeyCode;
 import com.fh.util.enums.SysConfirmInfoBillType;
 import com.fh.util.enums.TmplType;
@@ -699,6 +700,75 @@ public class Corresponding {
 			retItem.setSumFieldDetail(listSumFieldDetail);
 		}
 		return retItem;
+	}
+	
+	/**
+	 * 根据模板基本类型获取SysConfirmInfoBillType
+	 * 
+	 * @param which
+	 * @return
+	 */
+	public static String getStaffFilterTypeFromTmplType(String which) {
+		String billType = "";
+		if (which != null){
+			if (which.equals(TmplType.TB_STAFF_DETAIL_CONTRACT.getNameKey())
+					//|| which.equals(TmplType.TB_STAFF_SUMMY_BILL_CONTRACT.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_SUMMY_CONTRACT.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_AUDIT_CONTRACT.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_TRANSFER_CONTRACT.getNameKey())) {
+				billType = StaffFilterType.StaffFilterType_CONTRACT.getNameKey();
+			} else if (which.equals(TmplType.TB_STAFF_DETAIL_MARKET.getNameKey())
+					//|| which.equals(TmplType.TB_STAFF_SUMMY_BILL_MARKET.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_SUMMY_MARKET.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_AUDIT_MARKET.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_TRANSFER_MARKET.getNameKey())) {
+				billType = StaffFilterType.StaffFilterType_MARKET.getNameKey();
+			} else if (which.equals(TmplType.TB_STAFF_DETAIL_SYS_LABOR.getNameKey())
+					//|| which.equals(TmplType.TB_STAFF_SUMMY_BILL_SYS_LABOR.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_SUMMY_SYS_LABOR.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_AUDIT_SYS_LABOR.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_TRANSFER_SYS_LABOR.getNameKey())) {
+				billType = StaffFilterType.StaffFilterType_SYS_LABOR.getNameKey();
+			} else if (which.equals(TmplType.TB_STAFF_DETAIL_OPER_LABOR.getNameKey())
+					//|| which.equals(TmplType.TB_STAFF_SUMMY_BILL_OPER_LABOR.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_SUMMY_OPER_LABOR.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_AUDIT_OPER_LABOR.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_TRANSFER_OPER_LABOR.getNameKey())) {
+				billType = StaffFilterType.StaffFilterType_OPER_LABOR.getNameKey();
+			} else if (which.equals(TmplType.TB_STAFF_DETAIL_LABOR.getNameKey())
+					//|| which.equals(TmplType.TB_STAFF_SUMMY_BILL_LABOR.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_SUMMY_LABOR.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_AUDIT_LABOR.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_TRANSFER_LABOR.getNameKey())) {
+				billType = StaffFilterType.StaffFilterType_LABOR.getNameKey();
+			}
+		}
+		return billType;
+	}
+	
+	public static Boolean CheckCalculation(String which) {
+		if (which != null){
+			if(which.equals(TmplType.TB_STAFF_DETAIL_CONTRACT.getNameKey())
+					//|| which.equals(TmplType.TB_STAFF_SUMMY_BILL_CONTRACT.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_SUMMY_CONTRACT.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_AUDIT_CONTRACT.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_TRANSFER_CONTRACT.getNameKey())
+					
+					||which.equals(TmplType.TB_STAFF_DETAIL_MARKET.getNameKey())
+					//|| which.equals(TmplType.TB_STAFF_SUMMY_BILL_MARKET.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_SUMMY_MARKET.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_AUDIT_MARKET.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_TRANSFER_MARKET.getNameKey())
+					
+					||which.equals(TmplType.TB_STAFF_DETAIL_OPER_LABOR.getNameKey())
+					//|| which.equals(TmplType.TB_STAFF_SUMMY_BILL_OPER_LABOR.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_SUMMY_OPER_LABOR.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_AUDIT_OPER_LABOR.getNameKey())
+					|| which.equals(TmplType.TB_STAFF_TRANSFER_OPER_LABOR.getNameKey())) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	/**

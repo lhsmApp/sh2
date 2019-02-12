@@ -14,9 +14,12 @@ public class SysConfigKeyCode {
 	
 	//计算税率（）里的汇总公式
 	public static final String StaffFormulaSalary = "StaffFormulaSalary";
-    //public static final String StaffFormulaBonus = "StaffFormulaBonus";
-	public static final String StaffFormulaBonus_Same0 = "StaffFormulaBonus0";
-	public static final String StaffFormulaBonus_Not0 = "StaffFormulaBonus1";
+	public static final String StaffTDSItem = "StaffTDSItem";
+	public static final String StaffTDSFuncDisp = "StaffTDSFuncDisp";
+	public static final String StaffTDSFuncDispCN = "StaffTDSFuncDispCN";
+    public static final String StaffFormulaBonus = "StaffFormulaBonus";
+	//public static final String StaffFormulaBonus_Same0 = "StaffFormulaBonus0";
+	//public static final String StaffFormulaBonus_Not0 = "StaffFormulaBonus1";
 
 	//免征税
 	public static final String ExemptionTax = "ExemptionTax";

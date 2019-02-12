@@ -185,17 +185,25 @@ public class Common {
 	public static Map<String, TableColumns> GetHaveColumnsList(String tableNo, TmplConfigManager tmplconfigService) throws Exception{
 		String tableCodeTmpl = getTableCodeTmpl(tableNo, tmplconfigService);
 		String tableCodeOri=DictsUtil.getActualTable(tableCodeTmpl);//数据库真实业务数据表
-		return GetHaveColumnsListByTableName(tableCodeOri, tmplconfigService);
+		return GetHaveColumnsMapByTableName(tableCodeOri, tmplconfigService);
 	}
 
-	public static Map<String, TableColumns> GetHaveColumnsListByTableName(String tableName, TmplConfigManager tmplconfigService) throws Exception{
+	public static Map<String, TableColumns> GetHaveColumnsMapByTableName(String tableName, TmplConfigManager tmplconfigService) throws Exception{
 		Map<String, TableColumns> m_HaveColumnsList = new LinkedHashMap<String, TableColumns>();
-		List<TableColumns> tableColumns = tmplconfigService.getTableColumns(tableName);
+		List<TableColumns> tableColumns = GetHaveColumnsListByTableName(tableName, tmplconfigService);
 		for (TableColumns col : tableColumns) {
 			//表结构
 			m_HaveColumnsList.put(col.getColumn_name(), col);
 		}
 		return m_HaveColumnsList;
+	}
+
+    /** 
+     * 说明：获取数据库中表的结构信息
+     */
+	public static List<TableColumns> GetHaveColumnsListByTableName(String tableName, TmplConfigManager tmplconfigService) throws Exception{
+		List<TableColumns> tableColumns = tmplconfigService.getTableColumns(tableName);
+		return tableColumns;
 	}
 	
 	
@@ -358,7 +366,7 @@ public class Common {
 				+ " group by USER_CODE";
 		return strRetSelectColoumn;
 	}
-	public static String GetRetSumByUserColoumnsSalary2(String tableName, 
+	public static String GetRetSumByUserColoumnsSalary22(String tableName, String strSumGroupBy,
 			String QueryFeild, String salaryExemptionTax,
 			String configFormulaSalary, String TableFeildSalaryTaxConfigGradeOper, String TableFeildSalaryTaxConfigSumOper, 
 			String TableFeildSalaryTax, String TableFeildSalaryTaxSelfSumOper,
@@ -367,7 +375,7 @@ public class Common {
 		if(!(salaryExemptionTax!=null && !salaryExemptionTax.trim().equals(""))){
 			salaryExemptionTax = "0";
 		}
-		String strRetSelectColoumn = " select USER_CODE, " 
+		String strRetSelectColoumn = " select " + strSumGroupBy + ", " 
 		        + " sum(" + configFormulaSalary + ") - " + salaryExemptionTax + " " + TableFeildSalaryTaxConfigGradeOper + ", "
 				+ " sum(" + configFormulaSalary + ") - " + salaryExemptionTax + " " + TableFeildSalaryTaxConfigSumOper + ", "
 				+ " sum(" + TableFeildSalaryTax + ") " + TableFeildSalaryTaxSelfSumOper + ", "
@@ -375,10 +383,29 @@ public class Common {
 				+ " from " + tableName 
 				+ " where 1 = 1 "
 				+ QueryFeild 
-				+ " group by USER_CODE";
+				+ " group by " + strSumGroupBy + " ";
 		return strRetSelectColoumn;
 	}
-	public static String GetRetSumByUserColoumnsBonus1(String tableName, 
+	public static String GetRetSumByUserColoumnsStaffTds(String selectFrom, String tableName, String strSumGroupBy,
+			String QueryFeild, String configFormulaStaffTDSItem, String STAFF_TDS,
+			String TableFeildSalaryTaxConfigGradeOper, String TableFeildSalaryTaxConfigSumOper, 
+			String TableFeildSalaryTaxSelfSumOper,
+			String TableFeildSalarySelf) throws Exception{
+		String strRetSelectColoumn = " select t." + strSumGroupBy + ", " 
+		        + " t." + TableFeildSalaryTaxConfigGradeOper + " - IFNULL(b." + STAFF_TDS + ", 0) " + TableFeildSalaryTaxConfigGradeOper + ", "
+				+ " t." + TableFeildSalaryTaxConfigSumOper + " - IFNULL(b." + STAFF_TDS + ", 0) " + TableFeildSalaryTaxConfigSumOper + ", "
+				+ " t." + TableFeildSalaryTaxSelfSumOper + ", "
+				+ " t." + TableFeildSalarySelf + " "
+				+ " from (" + selectFrom + ") t "
+				+ " LEFT JOIN (SELECT " + strSumGroupBy + ", "
+				+ "            SUM( " + configFormulaStaffTDSItem + ") " + STAFF_TDS + " "
+				+ "            FROM " + tableName 
+				+ "            where 1 = 1 " + QueryFeild 
+				+ "            group by " + strSumGroupBy + ") B "
+				+ " ON t." + strSumGroupBy + " = b." + strSumGroupBy;
+		return strRetSelectColoumn;
+	}
+	/*public static String GetRetSumByUserColoumnsBonus1(String tableName, 
 			String QueryFeild, String salaryExemptionTax,
 			String configFormulaBonus, String TableFeildBonusTaxConfigGradeOper, String TableFeildBonusTaxConfigSumOper, 
 			String TableFeildBonusTax, String TableFeildBonusTaxSelfSumOper,
@@ -394,6 +421,21 @@ public class Common {
 				+ " where 1 = 1 "
 				+ QueryFeild 
 				+ " group by USER_CODE";
+		return strRetSelectColoumn;
+	}*/
+	public static String GetRetSumByUserColoumnsBonus11(String tableName, String strSumGroupBy,
+			String QueryFeild, 
+			String configFormulaBonus, String TableFeildBonusTaxConfigGradeOper, String TableFeildBonusTaxConfigSumOper, 
+			String TableFeildBonusTax, String TableFeildBonusTaxSelfSumOper,
+			TmplConfigManager tmplconfigService) throws Exception{
+		String strRetSelectColoumn = " select " + strSumGroupBy + ", " 
+			    + " sum(" + configFormulaBonus + ") " + TableFeildBonusTaxConfigGradeOper + ", "
+			    + " sum(" + configFormulaBonus + ") " + TableFeildBonusTaxConfigSumOper + ", "
+				+ " sum(" + TableFeildBonusTax + ") " + TableFeildBonusTaxSelfSumOper + " "
+				+ " from " + tableName 
+				+ " where 1 = 1 "
+				+ QueryFeild 
+				+ " group by " + strSumGroupBy + " ";
 		return strRetSelectColoumn;
 	}
 	public static String GetRetSumByUserColoumnsBonus2(String tableName, 
@@ -694,7 +736,18 @@ public class Common {
 		return SelectFeild;
 	}
 
-	//IsNumFeildButMustInput 设置字段类型是数字，但不管隐藏 或显示都必须保存的
+	//InsertField、InsertVale、InsertLogVale字段全设置成""，listAdd可变成listAdd传递
+	public static void setModelDefault(PageData pd)
+			throws ClassNotFoundException {
+		String InsertField = "";
+		String InsertVale = "";
+		String InsertLogVale = "";
+		pd.put("InsertField", InsertField);
+		pd.put("InsertVale", InsertVale);
+		pd.put("InsertLogVale", InsertLogVale);
+	}
+	//IsNumFeildButMustInput设置字段类型是数字，但不管隐藏 或显示都必须保存的
+	//haveColumnsList和map_SetColumnsList，设置保存的数据列及对应值
 	public static void setModelDefault(PageData pd, Map<String, TableColumns> haveColumnsList, 
 			Map<String, TmplConfigDetail> map_SetColumnsList, List<String> IsNumFeildButMustInput)
 			throws ClassNotFoundException {

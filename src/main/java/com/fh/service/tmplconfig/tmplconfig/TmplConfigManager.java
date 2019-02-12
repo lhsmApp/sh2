@@ -169,6 +169,12 @@ public interface TmplConfigManager{
 	 */
 	public String findGlItemUser(String nextRptDur)throws Exception;
 	
+	/**通过期间获取数据，判断是否已经生成过参数配置信息 
+	 * @param pd
+	 * @throws Exception
+	 */
+	public String findStaffTds(String nextRptDur)throws Exception;
+	
 	/**
 	 * 更新业务期间 
 	 * @param pd

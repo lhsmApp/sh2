@@ -216,6 +216,14 @@ public class TmplConfigService implements TmplConfigManager{
 		return (String)dao.findForObject("TmplConfigMapper.findGlItemUser", nextRptDur);
 	}
 	
+	/**通过期间获取数据，判断是否已经生成过参数配置信息 
+	 * @param pd
+	 * @throws Exception
+	 */
+	public String findStaffTds(String nextRptDur)throws Exception{
+		return (String)dao.findForObject("TmplConfigMapper.findStaffTds", nextRptDur);
+	}
+	
 	/**
 	 * 更新业务期间 
 	 */

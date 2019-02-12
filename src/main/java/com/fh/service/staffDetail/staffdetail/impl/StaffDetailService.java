@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.fh.dao.DaoSupport;
 import com.fh.entity.JqPage;
+import com.fh.entity.StaffFilterInfo;
 import com.fh.util.PageData;
 import com.fh.service.staffDetail.staffdetail.StaffDetailManager;
 
@@ -100,7 +101,8 @@ public class StaffDetailService implements StaffDetailManager{
 			PageData pdInsetBackup,
 			List<String> listSalaryFeildUpdate, String sqlRetSelect, List<PageData> listData,
 			String sqlSumByUserCodeSalary, 
-			String sqlSumByUserCodeBonus_Not0, String sqlSumByUserCodeBonus_Same0)throws Exception{
+			String sqlSumByUserCodeBonus,
+			Boolean bolCalculation, List<StaffFilterInfo> listStaffFilterInfo)throws Exception{
 		return dao.findDataCalculation(tableName, TmplUtil_KeyExtra,
 				    TableFeildSalarySelf, TableFeildSalaryTax, TableFeildBonusSelf, TableFeildBonusTax,
 					TableFeildSalaryTaxConfigGradeOper, TableFeildBonusTaxConfigGradeOper,
@@ -110,7 +112,8 @@ public class StaffDetailService implements StaffDetailManager{
 				    "StaffDetailMapper.batchDelAndIns", 
 				    listSalaryFeildUpdate, sqlRetSelect, listData,
 				    sqlSumByUserCodeSalary, 
-				    sqlSumByUserCodeBonus_Not0, sqlSumByUserCodeBonus_Same0);
+				    sqlSumByUserCodeBonus,
+					bolCalculation, listStaffFilterInfo);
 	}
 	/**更新数据库
 	 * @param pd

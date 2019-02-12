@@ -331,7 +331,9 @@ public class LeadingInExcelToPageData<T> {
     	}
 
     	Map<Integer, Object> returnMap = new HashMap<Integer, Object>();
+    	//验证数据，returnErrorCustomn有数据，可以导入，但界面有提示，
     	Map<String, String> returnErrorCustomn = new HashMap<String, String>();
+    	//验证数据，returnErrorMust有数据，不能导入，界面有提示，
     	Map<String, String> returnErrorMust = new HashMap<String, String>();
     	Boolean bolError = false;
     	Boolean bolCust = false;
@@ -428,7 +430,9 @@ public class LeadingInExcelToPageData<T> {
             							|| (transValue.equals(USER_CATG_hbytlw + gsjs) && USER_CATG_hbytgslw.equals(dic.getValue().toString()))){
             						getExtraKayUSER_CATG = dic.getKey();
             					}
-            			    }  
+            			    }
+						    //bolIsDicSetSAL_RANGE或bolIsDicSetUSER_CATG为true：员工组未在字典里获取到翻译时，Excel里是"劳务用工"，设置员工组为LWPQ = "50210004";// 劳务派遣、 劳务用工
+						    //bolIsDicSetUSER_CATG为true：企业特定员工分类未在字典里获取到翻译时，管道局劳务（公司结算）、华北油田劳务（公司结算）分别按管道局劳务、华北油田公司劳务获取字典
             				if(!(getKey != null && !getKey.trim().equals(""))){
                 				if((bolIsDicSetUSER_CATG || bolIsDicSetSAL_RANGE)){
                 					if(USER_GROP_LWYG.equals(value)){
@@ -445,6 +449,7 @@ public class LeadingInExcelToPageData<T> {
                 					}
                 				}
             				}
+            				//现在没用上，特殊导入规则及字段验证
             				if(!(getKey != null && !getKey.trim().equals(""))){
             					if(TmplInputTipsList!=null && TmplInputTipsList.size()>0){
                 					TmplInputTips inputTips = TmplInputTipsList.get(COL_CODE);

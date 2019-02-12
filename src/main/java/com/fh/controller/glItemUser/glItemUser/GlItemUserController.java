@@ -138,7 +138,7 @@ public class GlItemUserController extends BaseController {
 		mv.addObject("departmentStrAll", departmentStringAll);
 		mv.addObject("departmentStrSelect", departmentStringSelect);
 		
-		Map_HaveColumnsList = Common.GetHaveColumnsListByTableName(TableName, tmplconfigService);
+		Map_HaveColumnsList = Common.GetHaveColumnsMapByTableName(TableName, tmplconfigService);
 		
 		Map_SetColumnsList.put("BUSI_DATE", new TmplConfigDetail("BUSI_DATE", "期间", "1", false));
 		Map_SetColumnsList.put("USER_CODE", new TmplConfigDetail("USER_CODE", "员工编号", "1", false));

@@ -72,21 +72,35 @@
     	</if>
 	</select>
 	<select id="exportSumList" parameterType="jqPage" resultType="pd">
-		SELECT t.* , ${pd.SelectAddFeild}
-        FROM ( 
-              select ${pd.SelectGroupFeild} 
-		      from ${pd.TableName}
+	    select j.*,
+		       IFNULL(i.CUST_COL1, 0) CUST_COL1, 
+		       IFNULL(i.CUST_COL2, 0) CUST_COL2, 
+		       IFNULL(i.CUST_COL3, 0) CUST_COL3, 
+		       IFNULL(i.CUST_COL4, 0) CUST_COL4, 
+		       IFNULL(i.CUST_COL5, 0) CUST_COL5, 
+		       IFNULL(i.CUST_COL6, 0) CUST_COL6
+	    from (SELECT t.* , ${pd.SelectAddFeild}
+	          FROM (select ${pd.SelectGroupFeild} 
+		            from ${pd.TableName}
+		            <where>
+		                ${pd.WhereSql} 
+		            </where>
+		            group by ${pd.GroupByFeild} 
+		            ) t, 
+		           (select ${pd.SelectLeftJoinFeild}
+		            from ${pd.TableName} 
+		            <where>
+		                ${pd.WhereSql} 
+		            </where>
+		            ) a 
+              where a.STAFF_IDENT = t.STAFF_IDENT) j
+		left join (select STAFF_IDENT, sum(CUST_COL1) CUST_COL1, sum(CUST_COL2) CUST_COL2, sum(CUST_COL3) CUST_COL3, 
+                     sum(CUST_COL4) CUST_COL4, sum(CUST_COL5) CUST_COL5, sum(CUST_COL6) CUST_COL6
+		      from TB_STAFF_TDS_INFO
 		      <where>
-		          ${pd.WhereSql} 
+		        ${pd.QueryFeildBusiPreYear}
 		      </where>
-		      group by ${pd.GroupByFeild} 
-		      ) t, 
-		      (select ${pd.SelectLeftJoinFeild}
-		           from ${pd.TableName} 
-		           <where>
-		               ${pd.WhereSql} 
-		           </where>
-		           ) a 
-        where a.STAFF_IDENT = t.STAFF_IDENT 
+		      group by STAFF_IDENT
+		      ) i on i.STAFF_IDENT = j.STAFF_IDENT 
 	</select>
 </mapper>
