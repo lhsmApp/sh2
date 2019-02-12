@@ -747,7 +747,6 @@ public class DetailImportQueryController extends BaseController {
 			//String SelectGroupFeild = " USER_CODE, USER_NAME, STAFF_IDENT, DEPT_CODE, "
 			String SelectGroupFeild = " STAFF_IDENT, "
 					+ " sum(GROSS_PAY) GROSS_PAY, "
-					+ " sum(KID_ALLE) KID_ALLE, "
 					+ " sum(ENDW_INS) ENDW_INS, "
 					+ " sum(MED_INS + CASD_INS) MED_INS, "
 					+ " sum(UNEMPL_INS) UNEMPL_INS, "
@@ -842,7 +841,7 @@ public class DetailImportQueryController extends BaseController {
 
 			map_SetColumnsList.put(TableFeildSalaryTax, new TmplConfigDetail(TableFeildSalaryTax, "税额", "1", true));
 			map_SetColumnsList.put("GROSS_PAY", new TmplConfigDetail("GROSS_PAY", "本期收入", "1", true));
-			map_SetColumnsList.put("KID_ALLE", new TmplConfigDetail("KID_ALLE", "儿贴", "1", true));
+            map_SetColumnsList.put("KID_ALLE", new TmplConfigDetail("KID_ALLE", "本期免税收入", "1", true));
 			map_SetColumnsList.put("ENDW_INS", new TmplConfigDetail("ENDW_INS", "基本养老保险费", "1", true));
 			map_SetColumnsList.put("MED_INS", new TmplConfigDetail("MED_INS", "基本医疗保险费", "1", true));
 			map_SetColumnsList.put("UNEMPL_INS", new TmplConfigDetail("UNEMPL_INS", "失业保险费", "1", true));
