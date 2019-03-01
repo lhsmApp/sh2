@@ -644,10 +644,10 @@ public class DetailImportQueryController extends BaseController {
 		String SelectedDepartCode = getPd.getString("DownSelectedDepartCode");
 		//工资或奖金枚举编码
 		String SalaryOrBonus = getPd.getString("DownSalaryOrBonus");
-		
-		String WhereSql = " and BUSI_DATE = '" + SelectedBusiDate + "' ";
-		WhereSql += " and CUST_COL7 = '" + SelectedCustCol7 + "' ";
-		//WhereSql += " and USER_GROP = '" + emplGroupType + "' ";
+		//查询条件相同部分，就是没有日期的部分
+		String WhereSqlCommon = "";
+		WhereSqlCommon += " and CUST_COL7 = '" + SelectedCustCol7 + "' ";
+		//WhereSqlCommon += " and USER_GROP = '" + emplGroupType + "' ";
 	    //导出数据的员工组
 		if(GroupIsExportData != null){
 			List<String> listGroupIsExportData = new ArrayList<String>();
@@ -658,13 +658,13 @@ public class DetailImportQueryController extends BaseController {
 			}
 			if(listGroupIsExportData!=null && listGroupIsExportData.size()>0){
 				String strGroupIsExportData = QueryFeildString.tranferListValueToSqlInString(listGroupIsExportData);
-				WhereSql += " and USER_GROP in (" + strGroupIsExportData + ") ";
+				WhereSqlCommon += " and USER_GROP in (" + strGroupIsExportData + ") ";
 			}
 		}
 		if(DictsUtil.DepartShowAll_01001.equals(Jurisdiction.getCurrentDepartmentID())
 				|| DictsUtil.DepartShowAll_00.equals(Jurisdiction.getCurrentDepartmentID())){
 			if(!(SelectedDepartCode!=null && !SelectedDepartCode.equals(""))){
-				WhereSql += " and 1 != 1 ";
+				WhereSqlCommon += " and 1 != 1 ";
 			} else {
 				if(SelectedDepartCode.equals("ALL")){
 					
@@ -678,18 +678,18 @@ public class DetailImportQueryController extends BaseController {
 						}
 					}
 					String strDeptSqlNotIn = QueryFeildString.tranferListValueToSqlInString(listDeptSqlNotIn);
-					WhereSql += " and DEPT_CODE not in (" + strDeptSqlNotIn + ") ";
+					WhereSqlCommon += " and DEPT_CODE not in (" + strDeptSqlNotIn + ") ";
 					if(SelectedCustCol7.equals("9100")){
 						String strSALARYRANGE_dongxiang = "S17";
-						WhereSql += " and SAL_RANGE not in ('" + strSALARYRANGE_dongxiang + "') ";
+						WhereSqlCommon += " and SAL_RANGE not in ('" + strSALARYRANGE_dongxiang + "') ";
 						
 					}
 				} else {
-					WhereSql += " and DEPT_CODE = '" + SelectedDepartCode + "' ";
+					WhereSqlCommon += " and DEPT_CODE = '" + SelectedDepartCode + "' ";
 				}
 			}
 		} else {
-			WhereSql += " and DEPT_CODE = '" + Jurisdiction.getCurrentDepartmentID() + "' ";
+			WhereSqlCommon += " and DEPT_CODE = '" + Jurisdiction.getCurrentDepartmentID() + "' ";
 		}
 		//责任中心-管道分公司廊坊油气储运公司-0100106
 		String DEPT_CODE_0100106 = "0100106";
@@ -699,7 +699,7 @@ public class DetailImportQueryController extends BaseController {
 		String DEPT_CODE_0100108 = "0100108";
 		//责任中心-华北采油二厂-0100109
 		String DEPT_CODE_0100109 = "0100109";
-		WhereSql += " and DEPT_CODE not in ('" + DEPT_CODE_0100106 + "', '" + DEPT_CODE_0100107 + "', '" + DEPT_CODE_0100108 + "', '" + DEPT_CODE_0100109 + "') ";
+		WhereSqlCommon += " and DEPT_CODE not in ('" + DEPT_CODE_0100106 + "', '" + DEPT_CODE_0100107 + "', '" + DEPT_CODE_0100108 + "', '" + DEPT_CODE_0100109 + "') ";
 	    //不导出数据的部门
 		/*if(DictsUtil.DepartShowAll.equals(Jurisdiction.getCurrentDepartmentID())){
 			if(SelectedDepartCode.equals("ALL") || SelectedDepartCode.equals("HOME")){
@@ -725,11 +725,11 @@ public class DetailImportQueryController extends BaseController {
 			}
 			if(listUnitsNotExportData!=null && listUnitsNotExportData.size()>0){
 				String strUnitsNotExportData = QueryFeildString.tranferListValueToSqlInString(listUnitsNotExportData);
-				WhereSql += " and UNITS_CODE not in (" + strUnitsNotExportData + ") ";
+				WhereSqlCommon += " and UNITS_CODE not in (" + strUnitsNotExportData + ") ";
 			}
 		}
-		WhereSql += QueryFeildString.getBillCodeNotInSumInvalidDetail(Corresponding.getSumBillTableNameFromTmplType(SelectedTableNo));
-		WhereSql += QueryFeildString.getBillConfirm();
+		WhereSqlCommon += QueryFeildString.getBillCodeNotInSumInvalidDetail(Corresponding.getSumBillTableNameFromTmplType(SelectedTableNo));
+		WhereSqlCommon += QueryFeildString.getBillConfirm();
 
 		//个税字段，
 		String TableFeildSalaryTax = "";//"ACCRD_TAX";
@@ -743,7 +743,7 @@ public class DetailImportQueryController extends BaseController {
         TableFeildSalaryTax = sysConfigManager.getSysConfigByKey(SalaryTax);
 		
 		if(SalaryOrBonus.equals(StaffDataType1.Salary.getNameKey())){
-			WhereSql += " and (GROSS_PAY != 0 || " + TableFeildSalaryTax + " != 0) ";
+			WhereSqlCommon += " and (GROSS_PAY != 0 || " + TableFeildSalaryTax + " != 0) ";
 			//String SelectGroupFeild = " USER_CODE, USER_NAME, STAFF_IDENT, DEPT_CODE, "
 			String SelectGroupFeild = " STAFF_IDENT, "
 					+ " sum(GROSS_PAY) GROSS_PAY, "
@@ -759,7 +759,7 @@ public class DetailImportQueryController extends BaseController {
 			getPd.put("SelectGroupFeild", SelectGroupFeild);
 		}
         if(SalaryOrBonus.equals(StaffDataType1.Bonus.getNameKey())){
-			WhereSql += " and (" + TableFeildBonusSelf + " != 0 || " + TableFeildBonusTax + " != 0) ";
+        	WhereSqlCommon += " and (" + TableFeildBonusSelf + " != 0 || " + TableFeildBonusTax + " != 0) ";
 			//String SelectGroupFeild = " USER_CODE, USER_NAME, STAFF_IDENT, DEPT_CODE, "
 			String SelectGroupFeild = " STAFF_IDENT, "
 					+ " sum(" + TableFeildBonusSelf + ") " + TableFeildBonusSelf + ", "
@@ -773,11 +773,16 @@ public class DetailImportQueryController extends BaseController {
 		String strGroupByFeild = " STAFF_IDENT ";
 			//strGroupByFeild += ", UNITS_CODE ";
 		getPd.put("GroupByFeild", strGroupByFeild);
-		getPd.put("WhereSql", WhereSql);
+		getPd.put("WhereSql", WhereSqlCommon + " and BUSI_DATE = '" + SelectedBusiDate + "' ");
 		getPd.put("TableName", TableName);
 		String strSystemDateTimeYear = CheckSystemDateTime.getSystemDateTimeYear(SelectedBusiDate);
 		String QueryFeildBusiPreYear = " and BUSI_DATE > '" + strSystemDateTimeYear + "00' " + " and BUSI_DATE <= '" + SelectedBusiDate + "' ";
 		getPd.put("QueryFeildBusiPreYear", QueryFeildBusiPreYear);
+
+		getPd.put("TableFeildSalaryTax", TableFeildSalaryTax);
+		getPd.put("SystemDateTimeYear", strSystemDateTimeYear);
+		getPd.put("WhereSqlCommon", WhereSqlCommon);
+		
         page.setPd(getPd);
 		List<PageData> getAllList = detailimportqueryService.exportSumList(page);
 		
@@ -872,6 +877,22 @@ public class DetailImportQueryController extends BaseController {
 			map_SetColumnsList.put("已缴税额", new TmplConfigDetail("已缴税额", "已缴税额", "1", true));
 		}
 		map_SetColumnsList.put("备注", new TmplConfigDetail("备注", "备注", "1", false));
+		
+		if(SalaryOrBonus.equals(StaffDataType1.Salary.getNameKey())){
+			map_SetColumnsList.put(TableFeildSalaryTax + "01", new TmplConfigDetail(TableFeildSalaryTax + "01", "1月税额", "1", true));
+            map_SetColumnsList.put(TableFeildSalaryTax + "02", new TmplConfigDetail(TableFeildSalaryTax + "02", "2月税额", "1", true));
+			map_SetColumnsList.put(TableFeildSalaryTax + "03", new TmplConfigDetail(TableFeildSalaryTax + "03", "3月税额", "1", true));
+            map_SetColumnsList.put(TableFeildSalaryTax + "04", new TmplConfigDetail(TableFeildSalaryTax + "04", "4月税额", "1", true));
+			map_SetColumnsList.put(TableFeildSalaryTax + "05", new TmplConfigDetail(TableFeildSalaryTax + "05", "5月税额", "1", true));
+            map_SetColumnsList.put(TableFeildSalaryTax + "06", new TmplConfigDetail(TableFeildSalaryTax + "06", "6月税额", "1", true));
+			map_SetColumnsList.put(TableFeildSalaryTax + "07", new TmplConfigDetail(TableFeildSalaryTax + "07", "7月税额", "1", true));
+            map_SetColumnsList.put(TableFeildSalaryTax + "08", new TmplConfigDetail(TableFeildSalaryTax + "08", "8月税额", "1", true));
+			map_SetColumnsList.put(TableFeildSalaryTax + "09", new TmplConfigDetail(TableFeildSalaryTax + "09", "9月税额", "1", true));
+            map_SetColumnsList.put(TableFeildSalaryTax + "10", new TmplConfigDetail(TableFeildSalaryTax + "10", "10月税额", "1", true));
+			map_SetColumnsList.put(TableFeildSalaryTax + "11", new TmplConfigDetail(TableFeildSalaryTax + "11", "11月税额", "1", true));
+            map_SetColumnsList.put(TableFeildSalaryTax + "12", new TmplConfigDetail(TableFeildSalaryTax + "12", "12月税额", "1", true));
+            map_SetColumnsList.put(TableFeildSalaryTax + "13", new TmplConfigDetail(TableFeildSalaryTax + "13", "全年税额", "1", true));
+		}
 
 		String strBillOffName = "";
 		if(ListDicFMISACC != null){

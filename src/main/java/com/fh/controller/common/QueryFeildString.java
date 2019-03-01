@@ -190,7 +190,8 @@ public class QueryFeildString {
 		}
 		return QueryFeild;
 	}
-	
+
+	// 单号 value和显示一致
 	public static String getQueryFeildBillCodeDetail(String SelectedBillCode, String SelectNoBillCodeShow) throws Exception{
 		String QueryFeild = "";
 		if(SelectedBillCode!=null){
@@ -205,7 +206,8 @@ public class QueryFeildString {
 		}
 		return QueryFeild;
 	}
-	
+
+	// 单号 value和显示一致
 	public static String getQueryFeildBillCodeSummy(String SelectedBillCode, String SelectBillCodeAllShow, String SelectBillCodeDetailShow) throws Exception{
 		String QueryFeild = "";
 		if(SelectedBillCode!=null){

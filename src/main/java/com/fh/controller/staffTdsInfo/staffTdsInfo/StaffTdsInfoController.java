@@ -86,7 +86,7 @@ public class StaffTdsInfoController extends BaseController {
     //设置必定不用编辑的列
     List<String> MustNotEditList = Arrays.asList("BUSI_DATE");
     //获取带__的列，后续删除之类的有用
-	private List<String> keyListBase = Arrays.asList("BUSI_DATE", "DEPT_CODE", "STAFF_IDENT");
+	private List<String> keyListBase = Arrays.asList("BUSI_DATE", "STAFF_IDENT");
 	//设置必定不为空的列
 	private List<String> MustInputList = Arrays.asList("BUSI_DATE", "STAFF_IDENT");
     
@@ -94,7 +94,12 @@ public class StaffTdsInfoController extends BaseController {
     Map<String, TmplConfigDetail> map_SetColumnsList = new LinkedHashMap<String, TmplConfigDetail>();
 	Map<String, Object> map_DicList = new LinkedHashMap<String, Object>();
 	//底行显示的求和字段
-    StringBuilder SqlUserdata = new StringBuilder();
+    StringBuilder SqlUserdata = new StringBuilder();    
+    //StaffTdsRestDeptCode 01001 个税扣除可操作除银川、武汉、深港的责任中心
+    List<String> SysConfigStaffTdsRestDeptCode = new ArrayList<String>();
+    //StaffTdsSelfDeptCode 01009,01017,01022 个税扣除可操作自己的责任中心（银川、武汉、深港）
+    List<String> SysConfigStaffTdsSelfDeptCode = new ArrayList<String>();
+
 
 	/**列表
 	 * @param page
@@ -118,30 +123,41 @@ public class StaffTdsInfoController extends BaseController {
 		String DepartName = user.getDEPARTMENT_NAME();
 		mv.addObject("DepartName", DepartName);
 
-		List<TableColumns> List_HaveColumnsList = new ArrayList<TableColumns>();
-		List<TmplConfigDetail> List_SetColumnsList = new ArrayList<TmplConfigDetail>();
-	    String[] SysConfigCodeList = new String[]{};
-	    String[] SysConfigNameList = new String[]{};
 		map_HaveColumnsList = new LinkedHashMap<String, TableColumns>();
 	    map_SetColumnsList = new LinkedHashMap<String, TmplConfigDetail>();
 		map_DicList = new LinkedHashMap<String, Object>();
 	    SqlUserdata = new StringBuilder();
 
+	    //StaffTdsRestDeptCode 01001 个税扣除可操作除银川、武汉、深港的责任中心
+        PageData pdStaffTdsRestDeptCode = new PageData();
+        pdStaffTdsRestDeptCode.put("KEY_CODE", SysConfigKeyCode.StaffTdsRestDeptCode);
+        String StaffTdsRestDeptCode = sysConfigManager.getSysConfigByKey(pdStaffTdsRestDeptCode);
+        SysConfigStaffTdsRestDeptCode = Arrays.asList(StaffTdsRestDeptCode.split(","));
+        if(SysConfigStaffTdsRestDeptCode==null) SysConfigStaffTdsRestDeptCode = new ArrayList<String>();
+
+        //StaffTdsSelfDeptCode 01009,01017,01022 个税扣除可操作自己的责任中心（银川、武汉、深港）
+        PageData pdStaffTdsSelfDeptCode = new PageData();
+        pdStaffTdsSelfDeptCode.put("KEY_CODE", SysConfigKeyCode.StaffTdsSelfDeptCode);
+        String StaffTdsSelfDeptCode = sysConfigManager.getSysConfigByKey(pdStaffTdsSelfDeptCode);
+        SysConfigStaffTdsSelfDeptCode = Arrays.asList(StaffTdsSelfDeptCode.split(","));
+        if(SysConfigStaffTdsSelfDeptCode==null) SysConfigStaffTdsSelfDeptCode = new ArrayList<String>();
+
 	    //获取数据库中表的结构信息,确定界面显示的全部列
-		List_HaveColumnsList = Common.GetHaveColumnsListByTableName(TableName, tmplconfigService);
+        List<TableColumns> List_HaveColumnsList = Common.GetHaveColumnsListByTableName(TableName, tmplconfigService);
 		//配置表中StaffTDSItem和StaffTDSFuncDisp，确定界面列的隐藏与显示
         PageData pdStaffTDSFuncDisp = new PageData();
         pdStaffTDSFuncDisp.put("KEY_CODE", SysConfigKeyCode.StaffTDSFuncDisp);
         String staffTDSFuncDisp = sysConfigManager.getSysConfigByKey(pdStaffTDSFuncDisp);
-        SysConfigCodeList = staffTDSFuncDisp.split(",");
+        String[] SysConfigCodeList = staffTDSFuncDisp.split(",");
         PageData pdStaffTDSFuncDispCN = new PageData();
         pdStaffTDSFuncDispCN.put("KEY_CODE", SysConfigKeyCode.StaffTDSFuncDispCN);
         String staffTDSFuncDispCN = sysConfigManager.getSysConfigByKey(pdStaffTDSFuncDispCN);
-        SysConfigNameList = staffTDSFuncDispCN.split(",");
-
+        String[] SysConfigNameList = staffTDSFuncDispCN.split(",");
+        
         if(SysConfigCodeList.length != SysConfigNameList.length){
     		mv.addObject("jqGridColModelMessage", "配置参数StaffTDSFuncDisp和StaffTDSFuncDispCN不对应！");
         } else {
+    		List<TmplConfigDetail> List_SetColumnsList = new ArrayList<TmplConfigDetail>();
         	//根据配置表中StaffTDSItem和StaffTDSFuncDisp拼成map_DicList、List_SetColumnsList和map_SetColumnsList的显示列
         	for(int i=0; i<SysConfigCodeList.length; i++){
         		String strCode = SysConfigCodeList[i].toUpperCase().trim();
@@ -222,6 +238,17 @@ public class StaffTdsInfoController extends BaseController {
 		}
 		//页面显示数据的年月
 		getPd.put("SelectedBusiDate", SelectedBusiDate);
+		User user = (User) Jurisdiction.getSession().getAttribute(Const.SESSION_USERROL);
+        String dEPARTMENT_ID = user.getDEPARTMENT_ID();
+		String QueryFeild = "";
+		if(SysConfigStaffTdsSelfDeptCode.contains(dEPARTMENT_ID)){
+			QueryFeild += " and DEPT_CODE in ('" + dEPARTMENT_ID + "') ";
+		} else if(SysConfigStaffTdsRestDeptCode.contains(dEPARTMENT_ID)){
+			QueryFeild += " and DEPT_CODE not in (" + QueryFeildString.tranferListValueToSqlInString(SysConfigStaffTdsSelfDeptCode) + ") ";
+		} else {
+			QueryFeild += " and 1 != 1 ";
+		}
+		getPd.put("QueryFeild", QueryFeild);
 		String strFieldSelectKey = QueryFeildString.getFieldSelectKey(keyListBase, TmplUtil.keyExtra);
 		if(null != strFieldSelectKey && !"".equals(strFieldSelectKey.trim())){
 			getPd.put("FieldSelectKey", strFieldSelectKey);
@@ -264,6 +291,15 @@ public class StaffTdsInfoController extends BaseController {
 		String ShowDataBusiDate = getPd.getString("ShowDataBusiDate");
 		//操作
 		String oper = getPd.getString("oper");
+
+		User user = (User) Jurisdiction.getSession().getAttribute(Const.SESSION_USERROL);
+        String dEPARTMENT_ID = user.getDEPARTMENT_ID();
+		if(!(SysConfigStaffTdsSelfDeptCode.contains(dEPARTMENT_ID) || SysConfigStaffTdsRestDeptCode.contains(dEPARTMENT_ID))){
+			commonBase.setCode(2);
+			commonBase.setMessage("配置表中个税扣除可导入的责任中心未包括登录人责任中心，登录人不可以操作！");
+			return commonBase;
+		}
+		
 		//判断ShowDataBusiDate和配置表里的当前区间是否一致
 		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(ShowDataBusiDate, sysConfigManager, false);
 		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
@@ -280,14 +316,14 @@ public class StaffTdsInfoController extends BaseController {
 			return commonBase;
 		}
 
-		User user = (User) Jurisdiction.getSession().getAttribute(Const.SESSION_USERROL);
-		//必定不用编辑的列  MustNotEditList Arrays.asList("BUSI_DATE");
+		String getDEPT_CODE = (String) getPd.get("DEPT_CODE");
+		if(!(getDEPT_CODE!=null && !getDEPT_CODE.trim().equals(""))){
+			getPd.put("DEPT_CODE", dEPARTMENT_ID);
+			getDEPT_CODE = dEPARTMENT_ID;
+		}
 		if(oper.equals("add")){
+		    //必定不用编辑的列  MustNotEditList Arrays.asList("BUSI_DATE");
 			getPd.put("BUSI_DATE", ShowDataBusiDate);
-			String getDEPT_CODE = (String) getPd.get("DEPT_CODE");
-			if(!(getDEPT_CODE!=null && !getDEPT_CODE.trim().equals(""))){
-				getPd.put("DEPT_CODE", user.getDEPARTMENT_ID());
-			}
 			//必须设置，在查询重复数据时有用
 			getPd.put("BUSI_DATE" + TmplUtil.keyExtra, " ");
 			getPd.put("STAFF_IDENT" + TmplUtil.keyExtra, " ");
@@ -295,6 +331,23 @@ public class StaffTdsInfoController extends BaseController {
 			for(String strFeild : MustNotEditList){
 				getPd.put(strFeild, getPd.get(strFeild + TmplUtil.keyExtra));
 			}
+		}
+		if(SysConfigStaffTdsSelfDeptCode.contains(dEPARTMENT_ID)){
+			if(!dEPARTMENT_ID.equals(getDEPT_CODE)){
+				commonBase.setCode(2);
+			    commonBase.setMessage("只能添加登录人责任中心！");
+				return commonBase;
+			}
+		} else if(SysConfigStaffTdsRestDeptCode.contains(dEPARTMENT_ID)){
+			if(SysConfigStaffTdsSelfDeptCode.contains(getDEPT_CODE)){
+				commonBase.setCode(2);
+			    commonBase.setMessage("只能添加除了特定责任中心的记录！");
+				return commonBase;
+			}
+		} else {
+			commonBase.setCode(2);
+		    commonBase.setMessage("配置表中个税扣除可导入的责任中心未包括登录人责任中心，登录人不可以操作！");
+			return commonBase;
 		}
 		//查询重复数据
 		List<PageData> listCheckRepeat = new ArrayList<PageData>();
@@ -307,6 +360,15 @@ public class StaffTdsInfoController extends BaseController {
 		}
 		//haveColumnsList和map_SetColumnsList，设置保存的数据列及对应值
 		Common.setModelDefault(getPd, map_HaveColumnsList, map_SetColumnsList, MustNotEditList);
+		String strCanDel = "";
+		if(SysConfigStaffTdsSelfDeptCode.contains(dEPARTMENT_ID)){
+			strCanDel = " and DEPT_CODE in ('" + dEPARTMENT_ID + "') ";
+		} else if(SysConfigStaffTdsRestDeptCode.contains(dEPARTMENT_ID)){
+			strCanDel = " and DEPT_CODE not in (" + QueryFeildString.tranferListValueToSqlInString(SysConfigStaffTdsSelfDeptCode) + ") ";
+		} else {
+			strCanDel = " and 1 != 1 ";
+		}
+		getPd.put("CanDel", strCanDel);
 		
 		List<PageData> listData = new ArrayList<PageData>();
 		listData.add(getPd);
@@ -332,6 +394,14 @@ public class StaffTdsInfoController extends BaseController {
 		String SelectedBusiDate = getPd.getString("SelectedBusiDate");
 		//页面显示数据区间
 		String ShowDataBusiDate = getPd.getString("ShowDataBusiDate");
+
+		User user = (User) Jurisdiction.getSession().getAttribute(Const.SESSION_USERROL);
+        String dEPARTMENT_ID = user.getDEPARTMENT_ID();
+		if(!(SysConfigStaffTdsSelfDeptCode.contains(dEPARTMENT_ID) || SysConfigStaffTdsRestDeptCode.contains(dEPARTMENT_ID))){
+			commonBase.setCode(2);
+			commonBase.setMessage("配置表中个税扣除可导入的责任中心未包括登录人责任中心，登录人不可以操作！");
+			return commonBase;
+		}
 		//判断ShowDataBusiDate和配置表里的当前区间是否一致
 		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(ShowDataBusiDate, sysConfigManager, false);
 		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
@@ -357,8 +427,35 @@ public class StaffTdsInfoController extends BaseController {
 				for(String strFeild : MustNotEditList){
 					item.put(strFeild, item.get(strFeild + TmplUtil.keyExtra));
 				}
+				String getDEPT_CODE = (String) item.get("DEPT_CODE");
+				if(SysConfigStaffTdsSelfDeptCode.contains(dEPARTMENT_ID)){
+					if(!dEPARTMENT_ID.equals(getDEPT_CODE)){
+						commonBase.setCode(2);
+					    commonBase.setMessage("只能添加登录人责任中心！");
+						return commonBase;
+					}
+				} else if(SysConfigStaffTdsRestDeptCode.contains(dEPARTMENT_ID)){
+					if(SysConfigStaffTdsSelfDeptCode.contains(getDEPT_CODE)){
+						commonBase.setCode(2);
+					    commonBase.setMessage("只能添加除了特定责任中心的记录！");
+						return commonBase;
+					}
+				} else {
+					commonBase.setCode(2);
+				    commonBase.setMessage("配置表中个税扣除可导入的责任中心未包括登录人责任中心，登录人不可以操作！");
+					return commonBase;
+				}
 				//haveColumnsList和map_SetColumnsList，设置保存的数据列及对应值
 	        	Common.setModelDefault(item, map_HaveColumnsList, map_SetColumnsList, MustNotEditList);
+	    		String strCanDel = "";
+	    		if(SysConfigStaffTdsSelfDeptCode.contains(dEPARTMENT_ID)){
+	    			strCanDel = " and DEPT_CODE in ('" + dEPARTMENT_ID + "') ";
+	    		} else if(SysConfigStaffTdsRestDeptCode.contains(dEPARTMENT_ID)){
+	    			strCanDel = " and DEPT_CODE not in (" + QueryFeildString.tranferListValueToSqlInString(SysConfigStaffTdsSelfDeptCode) + ") ";
+	    		} else {
+	    			strCanDel = " and 1 != 1 ";
+	    		}
+	    		item.put("CanDel", strCanDel);
 	        }
 			//查询重复数据
 			String checkRepeat = CheckRepeat(listData);
@@ -389,6 +486,14 @@ public class StaffTdsInfoController extends BaseController {
 		String SelectedBusiDate = getPd.getString("SelectedBusiDate");
 		//页面显示数据区间
 		String ShowDataBusiDate = getPd.getString("ShowDataBusiDate");
+
+		User user = (User) Jurisdiction.getSession().getAttribute(Const.SESSION_USERROL);
+        String dEPARTMENT_ID = user.getDEPARTMENT_ID();
+		if(!(SysConfigStaffTdsSelfDeptCode.contains(dEPARTMENT_ID) || SysConfigStaffTdsRestDeptCode.contains(dEPARTMENT_ID))){
+			commonBase.setCode(2);
+			commonBase.setMessage("配置表中个税扣除可导入的责任中心未包括登录人责任中心，登录人不可以操作！");
+			return commonBase;
+		}
 		//判断ShowDataBusiDate和配置表里的当前区间是否一致
 		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(ShowDataBusiDate, sysConfigManager, false);
 		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
@@ -430,11 +535,20 @@ public class StaffTdsInfoController extends BaseController {
 		String SelectedBusiDate = getPd.getString("SelectedBusiDate");
 		//页面显示数据区间
 		String ShowDataBusiDate = getPd.getString("ShowDataBusiDate");
-		//判断ShowDataBusiDate和配置表里的当前区间是否一致
-		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(ShowDataBusiDate, sysConfigManager, false);
-		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
+
+		User user = (User) Jurisdiction.getSession().getAttribute(Const.SESSION_USERROL);
+        String dEPARTMENT_ID = user.getDEPARTMENT_ID();
+		if(!(SysConfigStaffTdsSelfDeptCode.contains(dEPARTMENT_ID) || SysConfigStaffTdsRestDeptCode.contains(dEPARTMENT_ID))){
 			commonBase.setCode(2);
-			commonBase.setMessage(mesDateTime);
+			commonBase.setMessage("配置表中个税扣除可导入的责任中心未包括登录人责任中心，登录人不可以操作！");
+		}
+		if(commonBase.getCode()==-1){
+			//判断ShowDataBusiDate和配置表里的当前区间是否一致
+			String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(ShowDataBusiDate, sysConfigManager, false);
+			if(mesDateTime!=null && !mesDateTime.trim().equals("")){
+				commonBase.setCode(2);
+				commonBase.setMessage(mesDateTime);
+			}
 		}
 
 		if(commonBase.getCode()==-1){
@@ -476,11 +590,20 @@ public class StaffTdsInfoController extends BaseController {
 		String SelectedBusiDate = getPd.getString("SelectedBusiDate");
 		//页面显示数据区间
 		String ShowDataBusiDate = getPd.getString("ShowDataBusiDate");
+
+		User user = (User) Jurisdiction.getSession().getAttribute(Const.SESSION_USERROL);
+        String dEPARTMENT_ID = user.getDEPARTMENT_ID();
+		if(!(SysConfigStaffTdsSelfDeptCode.contains(dEPARTMENT_ID) || SysConfigStaffTdsRestDeptCode.contains(dEPARTMENT_ID))){
+			commonBase.setCode(2);
+			commonBase.setMessage("配置表中个税扣除可导入的责任中心未包括登录人责任中心，登录人不可以操作！");
+		}
+		if(commonBase.getCode()==-1){
 		//判断ShowDataBusiDate和配置表里的当前区间是否一致
 		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(ShowDataBusiDate, sysConfigManager, false);
 		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
 			commonBase.setCode(2);
 			commonBase.setMessage(mesDateTime);
+		}
 		}
 		if(commonBase.getCode()==-1){
 			//判断选择为必须选择的
@@ -536,7 +659,6 @@ public class StaffTdsInfoController extends BaseController {
 			if (judgement) {
 				int listSize = listUploadAndRead.size();
 				if(listSize > 0){
-                    User user = (User) Jurisdiction.getSession().getAttribute(Const.SESSION_USERROL);
 					List<String> sbRetFeild = new ArrayList<String>();
 					String strRetUserCode = "";
 					String sbRetMust = "";
@@ -574,7 +696,25 @@ public class StaffTdsInfoController extends BaseController {
 							}
 							String getDEPT_CODE = (String) pdAdd.get("DEPT_CODE");
 							if(!(getDEPT_CODE!=null && !getDEPT_CODE.trim().equals(""))){
-								pdAdd.put("DEPT_CODE", user.getDEPARTMENT_ID());
+								pdAdd.put("DEPT_CODE", dEPARTMENT_ID);
+								getDEPT_CODE = dEPARTMENT_ID;
+							}
+							if(SysConfigStaffTdsSelfDeptCode.contains(dEPARTMENT_ID)){
+								if(!dEPARTMENT_ID.equals(getDEPT_CODE)){
+									if(!sbRetFeild.contains("只能导入登录人责任中心！")){
+										sbRetFeild.add("只能导入登录人责任中心！");
+									}
+								}
+							} else if(SysConfigStaffTdsRestDeptCode.contains(dEPARTMENT_ID)){
+								if(SysConfigStaffTdsSelfDeptCode.contains(getDEPT_CODE)){
+									if(!sbRetFeild.contains("只能导入除了特定责任中心的记录！")){
+										sbRetFeild.add("只能导入除了特定责任中心的记录！");
+									}
+								}
+							} else {
+								if(!sbRetFeild.contains("配置表中个税扣除可导入的责任中心未包括登录人责任中心，登录人不可以操作！")){
+									sbRetFeild.add("配置表中个税扣除可导入的责任中心未包括登录人责任中心，登录人不可以操作！");
+								}
 							}
 							/*
 							String getUNITS_CODE = (String) pdAdd.get("UNITS_CODE");
@@ -588,6 +728,15 @@ public class StaffTdsInfoController extends BaseController {
 							pdAdd.put("STAFF_IDENT" + TmplUtil.keyExtra, " ");
 							//haveColumnsList和map_SetColumnsList，设置保存的数据列及对应值
 							Common.setModelDefault(pdAdd, map_HaveColumnsList, map_SetColumnsList, MustNotEditList);
+				    		String strCanDel = "";
+				    		if(SysConfigStaffTdsSelfDeptCode.contains(dEPARTMENT_ID)){
+				    			strCanDel = " and DEPT_CODE in ('" + dEPARTMENT_ID + "') ";
+				    		} else if(SysConfigStaffTdsRestDeptCode.contains(dEPARTMENT_ID)){
+				    			strCanDel = " and DEPT_CODE not in (" + QueryFeildString.tranferListValueToSqlInString(SysConfigStaffTdsSelfDeptCode) + ") ";
+				    		} else {
+				    			strCanDel = " and 1 != 1 ";
+				    		}
+				    		pdAdd.put("CanDel", strCanDel);
 							listAdd.add(pdAdd);
 						}
 					}
@@ -643,6 +792,7 @@ public class StaffTdsInfoController extends BaseController {
 		//InsertField、InsertVale、InsertLogVale字段全设置成""，listAdd可变成listAdd传递
 		for(PageData pdAdd : listAdd){
 			Common.setModelDefault(pdAdd);
+    		pdAdd.put("CanDel", "");
 		}
 		mv.addObject("StringDataRows", JSONArray.fromObject(listAdd).toString().replaceAll("'", "\""));//
 		return mv;
@@ -677,14 +827,31 @@ public class StaffTdsInfoController extends BaseController {
 			commonBase.setMessage(strGetCheckMustSelected);
 			return commonBase;
 		}
+
+		User user = (User) Jurisdiction.getSession().getAttribute(Const.SESSION_USERROL);
+        String dEPARTMENT_ID = user.getDEPARTMENT_ID();
+		if(!(SysConfigStaffTdsSelfDeptCode.contains(dEPARTMENT_ID) || SysConfigStaffTdsRestDeptCode.contains(dEPARTMENT_ID))){
+			commonBase.setCode(2);
+			commonBase.setMessage("配置表中个税扣除可导入的责任中心未包括登录人责任中心，登录人不可以操作！");
+			return commonBase;
+		}
 		
 	    Object DATA_ROWS = getPd.get("StringDataRows");
 	    String json = DATA_ROWS.toString();  
         JSONArray array = JSONArray.fromObject(json);  
         List<PageData> listData = (List<PageData>) JSONArray.toCollection(array,PageData.class);
 		if(null != listData && listData.size() > 0){
+			String strCanDel = "";
+    		if(SysConfigStaffTdsSelfDeptCode.contains(dEPARTMENT_ID)){
+    			strCanDel = " and DEPT_CODE in ('" + dEPARTMENT_ID + "') ";
+    		} else if(SysConfigStaffTdsRestDeptCode.contains(dEPARTMENT_ID)){
+    			strCanDel = " and DEPT_CODE not in (" + QueryFeildString.tranferListValueToSqlInString(SysConfigStaffTdsSelfDeptCode) + ") ";
+    		} else {
+    			strCanDel = " and 1 != 1 ";
+    		}
 	        for(PageData item : listData){
 	        	Common.setModelDefault(item, map_HaveColumnsList, map_SetColumnsList, MustNotEditList);
+    			item.put("CanDel",  strCanDel);
 	        }
 	        //直接删除添加，不判断重复数据
 			staffTdsInfoService.batchCoverAdd(listData);
@@ -708,6 +875,18 @@ public class StaffTdsInfoController extends BaseController {
 		
 		PageData transferPd = this.getPageData();
 		transferPd.put("SelectedBusiDate", SelectedBusiDate);
+		
+		User user = (User) Jurisdiction.getSession().getAttribute(Const.SESSION_USERROL);
+		String dEPARTMENT_ID = user.getDEPARTMENT_ID();
+		String QueryFeild = "";
+		if(SysConfigStaffTdsSelfDeptCode.contains(dEPARTMENT_ID)){
+			QueryFeild += " and DEPT_CODE in ('" + dEPARTMENT_ID + "') ";
+		} else if(SysConfigStaffTdsRestDeptCode.contains(dEPARTMENT_ID)){
+			QueryFeild += " and DEPT_CODE not in (" + QueryFeildString.tranferListValueToSqlInString(SysConfigStaffTdsSelfDeptCode) + ") ";
+		} else {
+			QueryFeild += " and 1 != 1 ";
+		}
+		transferPd.put("QueryFeild", QueryFeild);
 		List<PageData> varOList = staffTdsInfoService.exportModel(transferPd);
 		return export(varOList, "StaffTdsInfo", map_SetColumnsList, map_DicList); //社保明细
 	}
@@ -734,6 +913,18 @@ public class StaffTdsInfoController extends BaseController {
 		}
 		//页面显示数据的年月
 		getPd.put("SelectedBusiDate", SelectedBusiDate);
+		
+		User user = (User) Jurisdiction.getSession().getAttribute(Const.SESSION_USERROL);
+		String dEPARTMENT_ID = user.getDEPARTMENT_ID();
+		String QueryFeild = "";
+		if(SysConfigStaffTdsSelfDeptCode.contains(dEPARTMENT_ID)){
+			QueryFeild += " and DEPT_CODE in ('" + dEPARTMENT_ID + "') ";
+		} else if(SysConfigStaffTdsRestDeptCode.contains(dEPARTMENT_ID)){
+			QueryFeild += " and DEPT_CODE not in (" + QueryFeildString.tranferListValueToSqlInString(SysConfigStaffTdsSelfDeptCode) + ") ";
+		} else {
+			QueryFeild += " and 1 != 1 ";
+		}
+		getPd.put("QueryFeild", QueryFeild);
 		page.setPd(getPd);
 		List<PageData> varOList = staffTdsInfoService.exportList(page);
 		return export(varOList, "", map_SetColumnsList, map_DicList);

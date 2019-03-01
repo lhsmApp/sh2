@@ -230,6 +230,7 @@ public class StaffSummyController extends BaseController {
 		transferPd.put("SystemDateTime", SystemDateTime);
 		transferPd.put("CanOperate", QueryFeild);
 		List<String> getCodeList = staffsummyService.getBillCodeList(transferPd);
+		// 下拉列表 value和显示一致
 		String returnString = SelectBillCodeOptions.getSelectBillCodeOptions(getCodeList, SelectBillCodeFirstShow, SelectBillCodeLastShow);
 		commonBase.setMessage(returnString);
 		commonBase.setCode(0);
@@ -259,7 +260,7 @@ public class StaffSummyController extends BaseController {
 		String SelectedCustCol7 = getPd.getString("SelectedCustCol7");
 		//单号
 		String SelectedBillCode = getPd.getString("SelectedBillCode");
-
+		//设置结构单位，默认登录人单位，界面只选一个单位，设置成界面所选
 		String strShowCalModelDepaet = Jurisdiction.getCurrentDepartmentID();
 		if(SelectedDepartCode!=null && !SelectedDepartCode.trim().equals("") && !SelectedDepartCode.contains(",")){
 			strShowCalModelDepaet = SelectedDepartCode;
@@ -330,6 +331,7 @@ public class StaffSummyController extends BaseController {
 		if(!(SelectedDepartCode!=null && !SelectedDepartCode.trim().equals(""))){
 			QueryFeild += " and 1 != 1 ";
 		}
+		//单号
         QueryFeild += QueryFeildString.getQueryFeildBillCodeSummy(SelectedBillCode, SelectBillCodeLastShow, SelectBillCodeFirstShow);
 		getPd.put("QueryFeild", QueryFeild);
 		
@@ -404,8 +406,10 @@ public class StaffSummyController extends BaseController {
 		String DEPT_CODE = (String) getPd.get("DataDeptCode");
 		String CUST_COL7 = (String) getPd.get("DataCustCol7");
 		String strBillCode = getPd.getString("DetailListBillCode");
+		//项目人员分配表
 		String TableNameFirstItem = Corresponding.getItemAllocDetailTableNameFromTmplType(SelectedTableNo);
 
+		//有项目人员分配信息，取项目人员分配信息配置，返回8，没下级；没有，取汇总明细配置，返回9，有下级
 		Boolean bolHaveItemList = Common.checkHaveItemList(strBillCode, TableNameFirstItem, detailimportcommonService);
 		TmplUtil tmpl = new TmplUtil(tmplconfigService, tmplconfigdictService, dictionariesService, departmentService,userService,
 				SumFieldDetail, null, null, null, jqGridGroupNotSumFeild);
@@ -434,7 +438,8 @@ public class StaffSummyController extends BaseController {
 		List<String> SumFieldDetail = implTypeCode.getSumFieldDetail();
 		
 		String strBillCode = getPd.getString("DetailListBillCode");
-		
+
+		//有项目人员分配信息，取项目人员分配信息；没有，取汇总明细
 		Boolean bolHaveItemList = Common.checkHaveItemList(strBillCode, TableNameFirstItem, detailimportcommonService);
 		PageResult<PageData> result = new PageResult<PageData>();
 		if(bolHaveItemList){
@@ -505,6 +510,7 @@ public class StaffSummyController extends BaseController {
         PageData pdGet = listData.get(0);
 
 		PageData pdCode = new PageData();
+		//根据汇总字段获取第二层明细
 		String QueryFeild = QueryFeildString.getDetailQueryFeild(pdGet, SumFieldDetail, TmplUtil.keyExtra);
 	    if(!(QueryFeild!=null && !QueryFeild.trim().equals(""))){
 	    	QueryFeild += " and 1 != 1 ";
@@ -572,8 +578,7 @@ public class StaffSummyController extends BaseController {
 		return commonBase;
 	}
 	
-	 /**汇总 接口有上报记录，生成新单号；没有就原有单号；
-	  * 先把接口有上报记录的汇总作废，删掉接口的上报记录，在先删后插
+	 /**汇总
 	 * @param 
 	 * @throws Exception
 	 */
@@ -640,6 +645,7 @@ public class StaffSummyController extends BaseController {
 		boolean bolDeleteSummy;
 		
 		String QueryFeild = "";
+		//临时数据：导入明细表设置单号
 		List<PageData> getDetailSetBillCode = new ArrayList<PageData>();
 		//updateFilter
 		List<String> retSetBillCodeFeild = new ArrayList<String>();
@@ -658,6 +664,7 @@ public class StaffSummyController extends BaseController {
 			List<String> listBillCode = new ArrayList<String>(); 
 			listBillCode.add(SelectedBillCode);
 			QueryFeild += " and BILL_CODE in (" + QueryFeildString.tranferListValueToSqlInString(listBillCode) + ") ";
+			QueryFeild += QueryFeildString.getBillCodeNotInInvalidSysUnlockInfo();
 			QueryFeild += QueryFeildString.getNotReportBillCode(strTypeCodeTramsfer, SystemDateTime, SelectedCustCol7, AllDeptCode + "," + SelectedDepartCode);
 			QueryFeild += QueryFeildString.getBillCodeNotInSumInvalidDetail(TableNameBase);
 		} else {
@@ -687,9 +694,10 @@ public class StaffSummyController extends BaseController {
 			pdSetBillCode.put("TableName", TableNameSecondDetail);
 			String SelectFeildSetBillCode = QueryFeildString.tranferListStringToKeyString(retSetBillCodeFeild, TmplUtil.keyExtra, true);
 			pdSetBillCode.put("SelectFeild", SelectFeildSetBillCode);
+			//临时数据：导入明细表设置单号
 			getDetailSetBillCode = detailimportcommonService.getSum(pdSetBillCode);
 		}
-
+		//从导入明细表获取数据，要设置项目信息
 		List<PageData> getSetItemUser = ItemAlloc.getSetItemUser(SystemDateTime, QueryFeild, TableNameSecondDetail, 
 				DetailSerialNoFeild, DetailUserCodeFeild, Corresponding.SumFieldBillStaff, detailimportcommonService);
 		if(!(getSetItemUser!=null && getSetItemUser.size()>0)){
@@ -707,7 +715,7 @@ public class StaffSummyController extends BaseController {
 		pdDetail.put("SelectFeild", SelectFeildDetail);
 		List<PageData> getSaveDetail = detailimportcommonService.getSum(pdDetail);
 		//TableName CanOperate*/
-		
+		//获取汇总基础信息
 		PageData pdBill = new PageData();
 		pdBill.put("SystemDateTime", SystemDateTime);
 		pdBill.put("QueryFeild", QueryFeild);
@@ -753,7 +761,7 @@ public class StaffSummyController extends BaseController {
                 //添加未设置字段默认值
     			Common.setModelDefault(bill, map_HaveColumnsListSummyBill, map_SetColumnsListBill, null);
     			
-                //汇总明细
+                //汇总明细 从工资人员项目信息表中获取
         		bill.put("IntoSumDetailTableName", TableNameFirstDetail);
         		bill.put("FromItemDetailTableName", TableNameFirstItem);
         		bill.put("FromItemDetailWhere", " and BILL_CODE = '" + strBillCode + "' ");
@@ -819,8 +827,8 @@ public class StaffSummyController extends BaseController {
         		bill.put("TableName", TableNameBase);
                 //添加未设置字段默认值
     			Common.setModelDefault(bill, map_HaveColumnsListSummyBill, map_SetColumnsListBill, null);
-    			
-                //汇总明细
+
+                //汇总明细 从工资人员项目信息表中获取
         		bill.put("IntoSumDetailTableName", TableNameFirstDetail);
         		bill.put("FromItemDetailTableName", TableNameFirstItem);
         		bill.put("FromItemDetailWhere", " and BILL_CODE = '" + getBILL_CODE + "' ");
@@ -828,6 +836,7 @@ public class StaffSummyController extends BaseController {
         		Common.setSumDetailSave(bill, map_HaveColumnsListSummyDetail, strSumFieldDetail, FirstItemMustNotEditList, SumFieldDetail);
 			}
 			//getSaveDetail = getListTo(getSaveBill, getSaveDetail, Corresponding.SumFieldBillStaff);
+			//设置单号 根据基础汇总字段
 			getDetailSetBillCode = getListTo(getSaveBill, getDetailSetBillCode, Corresponding.SumFieldBillStaff);
 			getSetItemUser = getListTo(getSaveBill, getSetItemUser, Corresponding.SumFieldBillStaff);
 			
@@ -853,6 +862,7 @@ public class StaffSummyController extends BaseController {
 					commonBase.setMessage(Message.SetSumCodeError);
 				}
 			}*/
+			//临时数据：导入明细表设置单号
 			for(PageData setBillode : getDetailSetBillCode){
 				setBillode.put("updateFilter", " and BILL_CODE like ' %' ");
 				
@@ -879,11 +889,11 @@ public class StaffSummyController extends BaseController {
 			}
 		}
 
+		//根据导入明细（已有单号），设置工资人员项目信息，
 		List<PageData> getSaveItem = new ArrayList<PageData>();
 		List<PageData> getItemInfo = new ArrayList<PageData>();
-		PageData retPd = new PageData();
         if(commonBase.getCode() == -1 && getSetItemUser!=null && getSetItemUser.size()>0){
-        	retPd = ItemAlloc.getSaveItem(SystemDateTime, strGetSetItemDeptCode, glItemUserService,
+        	PageData retPd = ItemAlloc.getSaveItem(SystemDateTime, strGetSetItemDeptCode, glItemUserService,
         			TypeCodeDetail, tmplconfigService, getSetItemUser, SelectedCustCol7, TableNameFirstItem,
         			FirstItemMustNotEditList, MustNotItemAllocList);
     		getSaveItem = (List<PageData>) retPd.get("SaveItem");
@@ -909,7 +919,8 @@ public class StaffSummyController extends BaseController {
         }
 		return commonBase;
 	}
-	
+
+	//设置单号 根据基础汇总字段
 	private List<PageData> getListTo(List<PageData> listBill, List<PageData> listDetail, List<String> SumFieldBillAll){
 	    if(listBill!=null && listBill.size()>0 && listDetail!=null && listDetail.size()>0 && SumFieldBillAll!=null){
 	    	List<String> listSumFieldBill = new ArrayList<String>();

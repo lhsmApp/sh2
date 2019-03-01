@@ -745,7 +745,7 @@ public class Corresponding {
 		}
 		return billType;
 	}
-	
+	//是否计算税
 	public static Boolean CheckCalculation(String which) {
 		if (which != null){
 			if(which.equals(TmplType.TB_STAFF_DETAIL_CONTRACT.getNameKey())

@@ -78,7 +78,20 @@
 		       IFNULL(i.CUST_COL3, 0) CUST_COL3, 
 		       IFNULL(i.CUST_COL4, 0) CUST_COL4, 
 		       IFNULL(i.CUST_COL5, 0) CUST_COL5, 
-		       IFNULL(i.CUST_COL6, 0) CUST_COL6
+		       IFNULL(i.CUST_COL6, 0) CUST_COL6,
+		       IFNULL(tax01.${pd.TableFeildSalaryTax}, 0) ${pd.TableFeildSalaryTax}01,
+		       IFNULL(tax02.${pd.TableFeildSalaryTax}, 0) ${pd.TableFeildSalaryTax}02,
+		       IFNULL(tax03.${pd.TableFeildSalaryTax}, 0) ${pd.TableFeildSalaryTax}03,
+		       IFNULL(tax04.${pd.TableFeildSalaryTax}, 0) ${pd.TableFeildSalaryTax}04,
+		       IFNULL(tax05.${pd.TableFeildSalaryTax}, 0) ${pd.TableFeildSalaryTax}05,
+		       IFNULL(tax06.${pd.TableFeildSalaryTax}, 0) ${pd.TableFeildSalaryTax}06,
+		       IFNULL(tax07.${pd.TableFeildSalaryTax}, 0) ${pd.TableFeildSalaryTax}07,
+		       IFNULL(tax08.${pd.TableFeildSalaryTax}, 0) ${pd.TableFeildSalaryTax}08,
+		       IFNULL(tax09.${pd.TableFeildSalaryTax}, 0) ${pd.TableFeildSalaryTax}09,
+		       IFNULL(tax10.${pd.TableFeildSalaryTax}, 0) ${pd.TableFeildSalaryTax}10,
+		       IFNULL(tax11.${pd.TableFeildSalaryTax}, 0) ${pd.TableFeildSalaryTax}11,
+		       IFNULL(tax12.${pd.TableFeildSalaryTax}, 0) ${pd.TableFeildSalaryTax}12,
+		       IFNULL(taxAll.${pd.TableFeildSalaryTax}, 0) ${pd.TableFeildSalaryTax}13
 	    from (SELECT t.* , ${pd.SelectAddFeild}
 	          FROM (select ${pd.SelectGroupFeild} 
 		            from ${pd.TableName}
@@ -102,5 +115,109 @@
 		      </where>
 		      group by STAFF_IDENT
 		      ) i on i.STAFF_IDENT = j.STAFF_IDENT 
+		left join (select STAFF_IDENT, sum(${pd.TableFeildSalaryTax}) ${pd.TableFeildSalaryTax}
+		            from ${pd.TableName}
+		            <where>
+		                ${pd.WhereSqlCommon} 
+		                and BUSI_DATE = '${pd.SystemDateTimeYear}01'
+		            </where>
+		            group by STAFF_IDENT
+		      ) tax01 on tax01.STAFF_IDENT = j.STAFF_IDENT 
+		left join (select STAFF_IDENT, sum(${pd.TableFeildSalaryTax}) ${pd.TableFeildSalaryTax}
+		            from ${pd.TableName}
+		            <where>
+		                ${pd.WhereSqlCommon} 
+		                and BUSI_DATE = '${pd.SystemDateTimeYear}02'
+		            </where>
+		            group by STAFF_IDENT
+		      ) tax02 on tax02.STAFF_IDENT = j.STAFF_IDENT 
+		left join (select STAFF_IDENT, sum(${pd.TableFeildSalaryTax}) ${pd.TableFeildSalaryTax}
+		            from ${pd.TableName}
+		            <where>
+		                ${pd.WhereSqlCommon} 
+		                and BUSI_DATE = '${pd.SystemDateTimeYear}03'
+		            </where>
+		            group by STAFF_IDENT
+		      ) tax03 on tax03.STAFF_IDENT = j.STAFF_IDENT 
+		left join (select STAFF_IDENT, sum(${pd.TableFeildSalaryTax}) ${pd.TableFeildSalaryTax}
+		            from ${pd.TableName}
+		            <where>
+		                ${pd.WhereSqlCommon} 
+		                and BUSI_DATE = '${pd.SystemDateTimeYear}04'
+		            </where>
+		            group by STAFF_IDENT
+		      ) tax04 on tax04.STAFF_IDENT = j.STAFF_IDENT 
+		left join (select STAFF_IDENT, sum(${pd.TableFeildSalaryTax}) ${pd.TableFeildSalaryTax}
+		            from ${pd.TableName}
+		            <where>
+		                ${pd.WhereSqlCommon} 
+		                and BUSI_DATE = '${pd.SystemDateTimeYear}05'
+		            </where>
+		            group by STAFF_IDENT
+		      ) tax05 on tax05.STAFF_IDENT = j.STAFF_IDENT 
+		left join (select STAFF_IDENT, sum(${pd.TableFeildSalaryTax}) ${pd.TableFeildSalaryTax}
+		            from ${pd.TableName}
+		            <where>
+		                ${pd.WhereSqlCommon} 
+		                and BUSI_DATE = '${pd.SystemDateTimeYear}06'
+		            </where>
+		            group by STAFF_IDENT
+		      ) tax06 on tax06.STAFF_IDENT = j.STAFF_IDENT 
+		left join (select STAFF_IDENT, sum(${pd.TableFeildSalaryTax}) ${pd.TableFeildSalaryTax}
+		            from ${pd.TableName}
+		            <where>
+		                ${pd.WhereSqlCommon} 
+		                and BUSI_DATE = '${pd.SystemDateTimeYear}07'
+		            </where>
+		            group by STAFF_IDENT
+		      ) tax07 on tax07.STAFF_IDENT = j.STAFF_IDENT 
+		left join (select STAFF_IDENT, sum(${pd.TableFeildSalaryTax}) ${pd.TableFeildSalaryTax}
+		            from ${pd.TableName}
+		            <where>
+		                ${pd.WhereSqlCommon} 
+		                and BUSI_DATE = '${pd.SystemDateTimeYear}08'
+		            </where>
+		            group by STAFF_IDENT
+		      ) tax08 on tax08.STAFF_IDENT = j.STAFF_IDENT 
+		left join (select STAFF_IDENT, sum(${pd.TableFeildSalaryTax}) ${pd.TableFeildSalaryTax}
+		            from ${pd.TableName}
+		            <where>
+		                ${pd.WhereSqlCommon} 
+		                and BUSI_DATE = '${pd.SystemDateTimeYear}09'
+		            </where>
+		            group by STAFF_IDENT
+		      ) tax09 on tax09.STAFF_IDENT = j.STAFF_IDENT 
+		left join (select STAFF_IDENT, sum(${pd.TableFeildSalaryTax}) ${pd.TableFeildSalaryTax}
+		            from ${pd.TableName}
+		            <where>
+		                ${pd.WhereSqlCommon} 
+		                and BUSI_DATE = '${pd.SystemDateTimeYear}10'
+		            </where>
+		            group by STAFF_IDENT
+		      ) tax10 on tax10.STAFF_IDENT = j.STAFF_IDENT 
+		left join (select STAFF_IDENT, sum(${pd.TableFeildSalaryTax}) ${pd.TableFeildSalaryTax}
+		            from ${pd.TableName}
+		            <where>
+		                ${pd.WhereSqlCommon} 
+		                and BUSI_DATE = '${pd.SystemDateTimeYear}11'
+		            </where>
+		            group by STAFF_IDENT
+		      ) tax11 on tax11.STAFF_IDENT = j.STAFF_IDENT 
+		left join (select STAFF_IDENT, sum(${pd.TableFeildSalaryTax}) ${pd.TableFeildSalaryTax}
+		            from ${pd.TableName}
+		            <where>
+		                ${pd.WhereSqlCommon} 
+		                and BUSI_DATE = '${pd.SystemDateTimeYear}12'
+		            </where>
+		            group by STAFF_IDENT
+		      ) tax12 on tax12.STAFF_IDENT = j.STAFF_IDENT 
+		left join (select STAFF_IDENT, sum(${pd.TableFeildSalaryTax}) ${pd.TableFeildSalaryTax}
+		            from ${pd.TableName}
+		            <where>
+		                ${pd.WhereSqlCommon} 
+		                and BUSI_DATE like '${pd.SystemDateTimeYear}%'
+		            </where>
+		            group by STAFF_IDENT
+		      ) taxAll on taxAll.STAFF_IDENT = j.STAFF_IDENT 
 	</select>
 </mapper>

@@ -255,6 +255,7 @@ public class StaffDetailController extends BaseController {
 		}
 		transferPd.put("CanOperate", strCanOperate);
 		List<String> getCodeList = staffdetailService.getBillCodeList(transferPd);
+		// 下拉列表 value和显示一致
 		String returnString = SelectBillCodeOptions.getSelectBillCodeOptions(getCodeList, SelectBillCodeFirstShow, SelectBillCodeLastShow);
 		commonBase.setMessage(returnString);
 		commonBase.setCode(0);
@@ -385,7 +386,7 @@ public class StaffDetailController extends BaseController {
 
 	//一些必填项的验证
 	public List<String> CheckMustInputFeild(PageData p_pd, List<StaffFilterInfo> listStaffFilterInfo, 
-			Map<String, TmplConfigDetail> map_SetColumnsList){
+			Map<String, TmplConfigDetail> map_SetColumnsList, Boolean bolCheckSalary){
 		List<String> sbRetFeild = new ArrayList<String>();
 		String USER_CODE = (String) p_pd.get("USER_CODE");
 		if(!(USER_CODE!=null && !USER_CODE.trim().equals(""))){
@@ -419,7 +420,7 @@ public class StaffDetailController extends BaseController {
 				&& tmpl.getCOL_HIDE().trim().equals("1"))){
 			bolCheckSTAFF_IDENT = false;
 		}
-		//tb_staff_filter_info有对应的工资范围编码或ANY,STAFF_IDENT_STATE = 1验证，！=1不验证
+		//tb_staff_filter_info有对应的类型、账套、责任中心、工资范围编码或ANY,STAFF_IDENT_STATE = 1验证，！=1不验证
 		if(bolCheckSTAFF_IDENT){
 		    //工资范围编码
 			String getSAL_RANGE = (String) p_pd.get("SAL_RANGE");
@@ -439,6 +440,14 @@ public class StaffDetailController extends BaseController {
 			String getSTAFF_IDENT = (String) p_pd.get("STAFF_IDENT");
 			if(!(getSTAFF_IDENT!=null && !getSTAFF_IDENT.trim().equals(""))){
 				sbRetFeild.add("身份证号不能为空！");
+			}
+		}
+		if(bolCheckSalary){
+			Object SalaryTax = p_pd.get(TF_SalaryTax);
+			if(!(SalaryTax!=null && SalaryTax.toString()!=null && !SalaryTax.toString().equals(""))) SalaryTax = 0;
+			BigDecimal douSalaryTax = new BigDecimal(SalaryTax.toString());
+			if(douSalaryTax.compareTo(new BigDecimal(0)) < 0){
+				sbRetFeild.add("工资税不能是负数！");
 			}
 		}
 		return sbRetFeild;
@@ -540,7 +549,7 @@ public class StaffDetailController extends BaseController {
 				getPd.put("ESTB_DEPT", SelectedDepartCode);
 			}
 			//一些必填项的验证
-			List<String> sbRetFeild = CheckMustInputFeild(getPd, listStaffFilterInfo, map_SetColumnsList);
+			List<String> sbRetFeild = CheckMustInputFeild(getPd, listStaffFilterInfo, map_SetColumnsList, true);
 			if(sbRetFeild != null && sbRetFeild.size()>0){
 				StringBuilder getCheckMustInputFeild = new StringBuilder();
 				for(String str : sbRetFeild){
@@ -571,7 +580,7 @@ public class StaffDetailController extends BaseController {
 				getPd.put(strFeild, getPd.get(strFeild + TmplUtil.keyExtra));
 			}
 			//一些必填项的验证
-			List<String> sbRetFeild = CheckMustInputFeild(getPd, listStaffFilterInfo, map_SetColumnsList);
+			List<String> sbRetFeild = CheckMustInputFeild(getPd, listStaffFilterInfo, map_SetColumnsList, true);
 			if(sbRetFeild != null && sbRetFeild.size()>0){
 				StringBuilder getCheckMustInputFeild = new StringBuilder();
 				for(String str : sbRetFeild){
@@ -708,7 +717,7 @@ public class StaffDetailController extends BaseController {
         	Common.setModelDefault(item, map_HaveColumnsList, map_SetColumnsList, MustNotEditList);
 
 			//一些必填项的验证
-			List<String> sbRetFeild = CheckMustInputFeild(item, listStaffFilterInfo, map_SetColumnsList);
+			List<String> sbRetFeild = CheckMustInputFeild(item, listStaffFilterInfo, map_SetColumnsList, true);
 			if(sbRetFeild != null && sbRetFeild.size()>0){
 				StringBuilder getCheckMustInputFeild = new StringBuilder();
 				for(String str : sbRetFeild){
@@ -908,7 +917,7 @@ public class StaffDetailController extends BaseController {
 				item.put(strFeild, item.get(strFeild + TmplUtil.keyExtra));
 			}
 			//一些必填项的验证
-			List<String> sbRetFeild = CheckMustInputFeild(item, listStaffFilterInfo, map_SetColumnsList);
+			List<String> sbRetFeild = CheckMustInputFeild(item, listStaffFilterInfo, map_SetColumnsList, false);
 			if(sbRetFeild != null && sbRetFeild.size()>0){
 				StringBuilder getCheckMustInputFeild = new StringBuilder();
 				for(String str : sbRetFeild){
@@ -1423,7 +1432,7 @@ public class StaffDetailController extends BaseController {
 												pdAdd.put("ESTB_DEPT", SelectedDepartCode);
 											}
 											//一些必填项的验证
-											List<String> getCheckMustInputFeild = CheckMustInputFeild(pdAdd, listStaffFilterInfo, map_SetColumnsList);
+											List<String> getCheckMustInputFeild = CheckMustInputFeild(pdAdd, listStaffFilterInfo, map_SetColumnsList, true);
 											if(getCheckMustInputFeild != null && getCheckMustInputFeild.size()>0){
 												for(String str : getCheckMustInputFeild){
 													if(!sbRetFeild.contains(str)){
@@ -1503,6 +1512,7 @@ public class StaffDetailController extends BaseController {
 																	pdSet.put("B_YSZE" + TmplUtil.keyExtra, douBonusYSZE);
 															}
 															List<String> listSTAFF_IDENT = new ArrayList<String>();
+															List<String> listRetSTAFF_IDENT = new ArrayList<String>();
 															for(PageData pdSet : getCommonBaseAndList.getList()){
 																String pdSetSTAFF_IDENT = pdSet.getString("STAFF_IDENT");
 																if(!listSTAFF_IDENT.contains(pdSetSTAFF_IDENT)){
@@ -1519,14 +1529,16 @@ public class StaffDetailController extends BaseController {
 																	BigDecimal douBonusYDRZE = new BigDecimal(pdSet.get("B_YDRZE" + TmplUtil.keyExtra).toString());
 
 																	if(!(douSalaryCalTax.compareTo(douSalaryImpTax) == 0)){
-																		if(!(douSalaryCalTax.compareTo(new BigDecimal(0)) < 0 && douSalaryImpTax.compareTo(new BigDecimal(0)) == 0)){
+																		if(douSalaryCalTax.compareTo(new BigDecimal(0)) < 0 && douSalaryImpTax.compareTo(new BigDecimal(0)) == 0){
+																			listRetSTAFF_IDENT.add(pdSetSTAFF_IDENT);
+																		} else {
 																			strCalculationMessage += " 员工编号:" + pdSetUSER_CODE + " 员工姓名:" + pdSetUSER_NAME;
 																			strCalculationMessage += " 工资： "
 																					+ " 本年应缴个税总额:" + douSalaryYSZE 
 																					+ " 本年已导入个税总额:" + (douSalaryYDRZE.subtract(douSalaryImpTax));
 																					//+ " 本次导入纳税额:" + douSalaryImpTax
 																			if(douSalaryCalTax.compareTo(new BigDecimal(0)) < 0){
-																				strCalculationMessage += " 本次应导入个税额:" + douSalaryCalTax + "或0  <br/>";
+																				strCalculationMessage += " 本次应导入个税额:0  <br/>";
 																			} else {
 																				strCalculationMessage += " 本次应导入个税额:" + douSalaryCalTax + "  <br/>";
 																			}
@@ -1542,6 +1554,16 @@ public class StaffDetailController extends BaseController {
 																	}
 																}
 																listSTAFF_IDENT.add(pdSetSTAFF_IDENT);
+															}
+															//工资导入税额不能小于0，如汇总计算税额小于0，汇总导入纳税额等于0，记录身份证号，不验证税额。
+															//在验证阶段完成后，把与记录身份证号相同身份证号的记录的保存计算后税额字段设为0。
+															if(listRetSTAFF_IDENT!=null && listRetSTAFF_IDENT.size()>0){
+																for(PageData pdRetSet : getCommonBaseAndList.getList()){
+																	String pdRetSetSTAFF_IDENT = pdRetSet.getString("STAFF_IDENT");
+																	if(listRetSTAFF_IDENT.contains(pdRetSetSTAFF_IDENT)){
+																		pdRetSet.put(TF_SalaryTax, pdRetSet.get(TF_SalaryTax + TmplUtil.keyExtra).toString());
+																	}
+																}
 															}
 														}
 														if(strCalculationMessage!=null && !strCalculationMessage.trim().equals("")){
@@ -2588,7 +2610,6 @@ public class StaffDetailController extends BaseController {
 			List<StaffFilterInfo> listStaffFilterInfo) throws Exception{
 		CommonBaseAndList retCommonBaseAndList = new CommonBaseAndList();
 		if(listData!=null && listData.size()>0){
-			Boolean bolCalculation = Corresponding.CheckCalculation(SelectedTableNo);
 			
 			Map<String, TmplConfigDetail> map_SetColumnsList = Common.GetSetColumnsList(SelectedTableNo, SelectedDepartCode, SelectedCustCol7, tmplconfigService);
 			Map<String, TableColumns> map_HaveColumnsList = Common.GetHaveColumnsList(SelectedTableNo, tmplconfigService);
@@ -2646,8 +2667,9 @@ public class StaffDetailController extends BaseController {
 				QueryFeildPart += " and 1 != 1 ";
 			}
 			String strSystemDateTimeYear = CheckSystemDateTime.getSystemDateTimeYear(SystemDateTimess);
-			String strSystemDateTimeMouth = CheckSystemDateTime.getSystemDateTimeMouth(SystemDateTimess);
-			String QueryFeildBusiPreYear = " and BUSI_DATE > '" + strSystemDateTimeYear + "00' " + " and BUSI_DATE <= '" + SystemDateTimess + "' ";
+			//String strSystemDateTimeMouth = CheckSystemDateTime.getSystemDateTimeMouth(SystemDateTimess);
+			String QueryFeildBusiPreAndNewMonth = " and BUSI_DATE > '" + strSystemDateTimeYear + "00' " + " and BUSI_DATE <= '" + SystemDateTimess + "' ";
+			String QueryFeildBusiPreNotNewMonth = " and BUSI_DATE > '" + strSystemDateTimeYear + "00' " + " and BUSI_DATE < '" + SystemDateTimess + "' ";
 			String QueryFeildBusiAllYear = " and BUSI_DATE like '" + strSystemDateTimeYear + "%' ";
 			//QueryFeild
 			//and DEPT_CODE in ('01002')  and USER_GROP in ('50210002')  and CUST_COL7 in ('9870')
@@ -2683,24 +2705,46 @@ public class StaffDetailController extends BaseController {
 			String sqlRetSelect = Common.GetRetSelectNotCalculationColoumns(TableNameBackup, 
 					TF_SalaryTax, TF_BonusTax, TmplUtil.keyExtra, keyListBase, 
 					tmplconfigService);
+			//按配置结构公式，更新数据
 			List<String> listSalaryFeildUpdate = Common.GetSalaryFeildUpdate(SelectedTableNo, TableNameBackup, SelectedDepartCode, SelectedCustCol7, 
 					tmplconfigService);
-
+			
 			String strSumGroupBy = " STAFF_IDENT ";
-			//select  STAFF_IDENT ,  sum(GROSS_PAY-ENDW_INS-MED_INS-CASD_INS-UNEMPL_INS-HOUSE_FUND-SUP_PESN-KID_ALLE+TAX_BASE_ADJ-CUST_COL13-CUST_COL16-CUST_COL17-CUST_COL18-CUST_COL19-CUST_COL20) - 55000 S_TAX_CONFIG_GRADE_OPER,  sum(GROSS_PAY-ENDW_INS-MED_INS-CASD_INS-UNEMPL_INS-HOUSE_FUND-SUP_PESN-KID_ALLE+TAX_BASE_ADJ-CUST_COL13-CUST_COL16-CUST_COL17-CUST_COL18-CUST_COL19-CUST_COL20) - 55000 S_TAX_CONFIG_SUM_OPER,  sum(ACCRD_TAX) S_TAX_SELF_SUM_OPER,  sum(GROSS_PAY) GROSS_PAY  from TB_STAFF_DETAIL_backup where 1 = 1  and DEPT_CODE in ('01002')  and USER_GROP in ('50210002')  and CUST_COL7 in ('9870')  and BUSI_DATE > '201800'  and BUSI_DATE <= '201811'  and BILL_CODE not in (select BILL_CODE from TB_STAFF_SUMMY_BILL where BILL_STATE = '0')  and BILL_CODE not in (select BILL_CODE from tb_gl_cert where REVCERT_CODE not like ' %')  group by  STAFF_IDENT
+			String QueryFeild_PreAndMonth_Tax = QueryFeildPart + QueryFeildBusiPreAndNewMonth + strSumInvalidNotInsert;
+			String QueryFeild_PreNotMonth_Month = QueryFeildPart + QueryFeildBusiPreNotNewMonth + strSumInvalidNotInsert;
+			//select  STAFF_IDENT ,  sum(GROSS_PAY-ENDW_INS-MED_INS-CASD_INS-UNEMPL_INS-HOUSE_FUND-SUP_PESN-KID_ALLE+TAX_BASE_ADJ) - 55000 S_TAX_CONFIG_GRADE_OPER,  sum(GROSS_PAY-ENDW_INS-MED_INS-CASD_INS-UNEMPL_INS-HOUSE_FUND-SUP_PESN-KID_ALLE+TAX_BASE_ADJ) - 55000 S_TAX_CONFIG_SUM_OPER,  sum(ACCRD_TAX) S_TAX_SELF_SUM_OPER,  sum(GROSS_PAY) GROSS_PAY  
+			//from TB_STAFF_DETAIL_backup 
+			//where 1 = 1  and DEPT_CODE in ('01002')  and USER_GROP in ('50210002')  and CUST_COL7 in ('9870')  
+			//and BUSI_DATE > '201800'  and BUSI_DATE <= '201811'  
+			//and BILL_CODE not in (select BILL_CODE from TB_STAFF_SUMMY_BILL where BILL_STATE = '0')  
+			//and BILL_CODE not in (select BILL_CODE from tb_gl_cert where REVCERT_CODE not like ' %')  
+			//group by  STAFF_IDENT
+			//55000是以前的
+			//现在取的（TB_STAFF_DETAIL_backup在本月之前符合条件的有正常工资月份的个数 + 1）* 5000
 			String sqlSumByUserCodeSalary11 = Common.GetRetSumByUserColoumnsSalary22(TableNameBackup, strSumGroupBy,
-					QueryFeildPart + QueryFeildBusiPreYear + strSumInvalidNotInsert, ((new BigDecimal(ExemptionTaxSalary)).multiply(new BigDecimal(strSystemDateTimeMouth))).toString(), 
+					QueryFeild_PreAndMonth_Tax, ExemptionTaxSalary, QueryFeild_PreNotMonth_Month, 
 					configFormulaSalary, TableFeildSalaryTaxConfigGradeOper, TableFeildSalaryTaxConfigSumOper, 
 					TF_SalaryTax, TableFeildSalaryTaxSelfSumOper, 
 					TF_SalarySelf, 
 					tmplconfigService);
-			//select t. STAFF_IDENT ,  t.S_TAX_CONFIG_GRADE_OPER - IFNULL(b.STAFF_TDS, 0) S_TAX_CONFIG_GRADE_OPER,  t.S_TAX_CONFIG_SUM_OPER - IFNULL(b.STAFF_TDS, 0) S_TAX_CONFIG_SUM_OPER,  t.S_TAX_SELF_SUM_OPER,  t.GROSS_PAY  from ( select  STAFF_IDENT ,  sum(GROSS_PAY-ENDW_INS-MED_INS-CASD_INS-UNEMPL_INS-HOUSE_FUND-SUP_PESN-KID_ALLE+TAX_BASE_ADJ-CUST_COL13-CUST_COL16-CUST_COL17-CUST_COL18-CUST_COL19-CUST_COL20) - 55000 S_TAX_CONFIG_GRADE_OPER,  sum(GROSS_PAY-ENDW_INS-MED_INS-CASD_INS-UNEMPL_INS-HOUSE_FUND-SUP_PESN-KID_ALLE+TAX_BASE_ADJ-CUST_COL13-CUST_COL16-CUST_COL17-CUST_COL18-CUST_COL19-CUST_COL20) - 55000 S_TAX_CONFIG_SUM_OPER,  sum(ACCRD_TAX) S_TAX_SELF_SUM_OPER,  sum(GROSS_PAY) GROSS_PAY  from TB_STAFF_DETAIL_backup where 1 = 1  and DEPT_CODE in ('01002')  and USER_GROP in ('50210002')  and CUST_COL7 in ('9870')  and BUSI_DATE > '201800'  and BUSI_DATE <= '201811'  and BILL_CODE not in (select BILL_CODE from TB_STAFF_SUMMY_BILL where BILL_STATE = '0')  and BILL_CODE not in (select BILL_CODE from tb_gl_cert where REVCERT_CODE not like ' %')  group by  STAFF_IDENT  ) t  LEFT JOIN (SELECT  STAFF_IDENT ,             SUM( CUST_COL1+CUST_COL2+CUST_COL3+CUST_COL4+CUST_COL5+CUST_COL6) STAFF_TDS             FROM TB_STAFF_TDS_INFO            where 1 = 1  and BUSI_DATE > '201800'  and BUSI_DATE <= '201811'             group by  STAFF_IDENT ) B  ON t. STAFF_IDENT  = b. STAFF_IDENT
+			//select t. STAFF_IDENT ,  t.S_TAX_CONFIG_GRADE_OPER - IFNULL(b.STAFF_TDS, 0) S_TAX_CONFIG_GRADE_OPER,  
+			//t.S_TAX_CONFIG_SUM_OPER - IFNULL(b.STAFF_TDS, 0) S_TAX_CONFIG_SUM_OPER,  t.S_TAX_SELF_SUM_OPER,  t.GROSS_PAY  
+			//from ( select  STAFF_IDENT ,  sum(GROSS_PAY-ENDW_INS-MED_INS-CASD_INS-UNEMPL_INS-HOUSE_FUND-SUP_PESN-KID_ALLE+TAX_BASE_ADJ) - 55000 S_TAX_CONFIG_GRADE_OPER,  sum(GROSS_PAY-ENDW_INS-MED_INS-CASD_INS-UNEMPL_INS-HOUSE_FUND-SUP_PESN-KID_ALLE+TAX_BASE_ADJ) - 55000 S_TAX_CONFIG_SUM_OPER,  sum(ACCRD_TAX) S_TAX_SELF_SUM_OPER,  sum(GROSS_PAY) GROSS_PAY  from TB_STAFF_DETAIL_backup where 1 = 1  and DEPT_CODE in ('01002')  and USER_GROP in ('50210002')  and CUST_COL7 in ('9870')  and BUSI_DATE > '201800'  and BUSI_DATE <= '201811'  and BILL_CODE not in (select BILL_CODE from TB_STAFF_SUMMY_BILL where BILL_STATE = '0')  and BILL_CODE not in (select BILL_CODE from tb_gl_cert where REVCERT_CODE not like ' %')  group by  STAFF_IDENT  ) t  
+			//LEFT JOIN (SELECT  STAFF_IDENT ,             SUM( CUST_COL1+CUST_COL2+CUST_COL3+CUST_COL4+CUST_COL5+CUST_COL6) STAFF_TDS             FROM TB_STAFF_TDS_INFO            where 1 = 1  and BUSI_DATE > '201800'  and BUSI_DATE <= '201811'             group by  STAFF_IDENT ) B  
+			//ON t. STAFF_IDENT  = b. STAFF_IDENT
+			//-符合条件、区间取本月及以前月份的扣除项按身份证号汇总
 			String sqlSumByUserCodeSalary1 = Common.GetRetSumByUserColoumnsStaffTds(sqlSumByUserCodeSalary11, "TB_STAFF_TDS_INFO", strSumGroupBy,
-					QueryFeildBusiPreYear, configFormulaStaffTDSItem, "STAFF_TDS",
+					QueryFeildBusiPreAndNewMonth, configFormulaStaffTDSItem, "STAFF_TDS",
 					TableFeildSalaryTaxConfigGradeOper, TableFeildSalaryTaxConfigSumOper, 
 					TableFeildSalaryTaxSelfSumOper,
 					TF_SalarySelf);
-			//select  STAFF_IDENT ,  sum(CUST_COL14) B_TAX_CONFIG_GRADE_OPER,  sum(CUST_COL14) B_TAX_CONFIG_SUM_OPER,  sum(CUST_COL15) B_TAX_SELF_SUM_OPER  from TB_STAFF_DETAIL_backup where 1 = 1  and DEPT_CODE in ('01002')  and USER_GROP in ('50210002')  and CUST_COL7 in ('9870')  and BUSI_DATE like '2018%'  and BILL_CODE not in (select BILL_CODE from TB_STAFF_SUMMY_BILL where BILL_STATE = '0')  and BILL_CODE not in (select BILL_CODE from tb_gl_cert where REVCERT_CODE not like ' %')  group by  STAFF_IDENT
+			//select  STAFF_IDENT ,  sum(CUST_COL14) B_TAX_CONFIG_GRADE_OPER,  sum(CUST_COL14) B_TAX_CONFIG_SUM_OPER,  sum(CUST_COL15) B_TAX_SELF_SUM_OPER  
+			//from TB_STAFF_DETAIL_backup 
+			//where 1 = 1  and DEPT_CODE in ('01002')  and USER_GROP in ('50210002')  and CUST_COL7 in ('9870')  and BUSI_DATE like '2018%'  
+			//and BILL_CODE not in (select BILL_CODE from TB_STAFF_SUMMY_BILL where BILL_STATE = '0')  
+			//and BILL_CODE not in (select BILL_CODE from tb_gl_cert where REVCERT_CODE not like ' %')  
+			//group by  STAFF_IDENT
+			//符合条件、区间取全年的奖金
 			String sqlSumByUserCodeBonus1 = Common.GetRetSumByUserColoumnsBonus11(TableNameBackup, strSumGroupBy,
 					QueryFeildPart + QueryFeildBusiAllYear + strSumInvalidNotInsert, 
 					configFormulaBonus, TableFeildBonusTaxConfigGradeOper, TableFeildBonusTaxConfigSumOper, 
@@ -2732,14 +2776,23 @@ public class StaffDetailController extends BaseController {
 
 				//S_TAX_SELF_SUM_OPER, B_TAX_SELF_SUM_OPER,
 
-				//{SumInvalidNotInsert= and BILL_CODE not in (select BILL_CODE from TB_STAFF_SUMMY_BILL where BILL_STATE = '0')  and BILL_CODE not in (select BILL_CODE from tb_gl_cert where REVCERT_CODE not like ' %') , FeildList=SERIAL_NO,BILL_CODE,BUSI_DATE,USER_CODE,USER_NAME,STAFF_IDENT,BANK_CARD,USER_GROP,USER_CATG,DEPT_CODE,UNITS_CODE,ORG_UNIT,SAL_RANGE,POST_SALY,BONUS,CASH_BONUS,WORK_OT,BACK_SALY,RET_SALY,CHK_CASH,INTR_SGL_AWAD,SENY_ALLE,POST_ALLE,NS_ALLE,AREA_ALLE,EXPT_ALLE,TECH_ALLE,LIVE_EXPE,LIVE_ALLE,LEAVE_DM,HOUSE_ALLE,ITEM_ALLE,MEAL_EXPE,TRF_ALLE,TEL_EXPE,HLDY_ALLE,KID_ALLE,COOL_EXPE,EXT_SGL_AWAD,PRE_TAX_PLUS,GROSS_PAY,ENDW_INS,UNEMPL_INS,MED_INS,CASD_INS,HOUSE_FUND,SUP_PESN,TAX_BASE_ADJ,ACCRD_TAX,AFTER_TAX,ACT_SALY,GUESS_DIFF,CUST_COL1,CUST_COL2,CUST_COL3,CUST_COL4,CUST_COL5,CUST_COL6,CUST_COL7,CUST_COL8,CUST_COL9,CUST_COL10,CUST_COL11,CUST_COL12,CUST_COL13,CUST_COL14,CUST_COL15,CUST_COL16,CUST_COL17,CUST_COL18,CUST_COL19,CUST_COL20,ESTB_DEPT,DATA_TYPE,ITEM_CODE, QueryFeild= and DEPT_CODE in ('01002')  and USER_GROP in ('50210002')  and CUST_COL7 in ('9870') },
+				//SumInvalidNotInsert= and BILL_CODE not in (select BILL_CODE from TB_STAFF_SUMMY_BILL where BILL_STATE = '0')  
+				//and BILL_CODE not in (select BILL_CODE from tb_gl_cert where REVCERT_CODE not like ' %') , 
+				//FeildList=SERIAL_NO,BILL_CODE,BUSI_DATE,USER_CODE,USER_NAME,STAFF_IDENT,BANK_CARD,USER_GROP,USER_CATG,DEPT_CODE,UNITS_CODE,ORG_UNIT,SAL_RANGE,POST_SALY,BONUS,CASH_BONUS,WORK_OT,BACK_SALY,RET_SALY,CHK_CASH,INTR_SGL_AWAD,SENY_ALLE,POST_ALLE,NS_ALLE,AREA_ALLE,EXPT_ALLE,TECH_ALLE,LIVE_EXPE,LIVE_ALLE,LEAVE_DM,HOUSE_ALLE,ITEM_ALLE,MEAL_EXPE,TRF_ALLE,TEL_EXPE,HLDY_ALLE,KID_ALLE,COOL_EXPE,EXT_SGL_AWAD,PRE_TAX_PLUS,GROSS_PAY,ENDW_INS,UNEMPL_INS,MED_INS,CASD_INS,HOUSE_FUND,SUP_PESN,TAX_BASE_ADJ,ACCRD_TAX,AFTER_TAX,ACT_SALY,GUESS_DIFF,CUST_COL1,CUST_COL2,CUST_COL3,CUST_COL4,CUST_COL5,CUST_COL6,CUST_COL7,CUST_COL8,CUST_COL9,CUST_COL10,CUST_COL11,CUST_COL12,CUST_COL13,CUST_COL14,CUST_COL15,CUST_COL16,CUST_COL17,CUST_COL18,CUST_COL19,CUST_COL20,ESTB_DEPT,DATA_TYPE,ITEM_CODE, 
+				//QueryFeild= and DEPT_CODE in ('01002')  and USER_GROP in ('50210002')  and CUST_COL7 in ('9870') and BUSI_DATE like '" + strSystemDateTimeYear + "%'  ,
 
 				//select * , ACCRD_TAX ACCRD_TAX__, CUST_COL15 CUST_COL15__, SERIAL_NO SERIAL_NO__, BILL_CODE BILL_CODE__, BUSI_DATE BUSI_DATE__, DEPT_CODE DEPT_CODE__, CUST_COL7 CUST_COL7__, USER_GROP USER_GROP__ from TB_STAFF_DETAIL_backup,
                 //[{AREA_ALLE=0.00, HOUSE_ALLE=0.00, SERIAL_NO=, USER_GROP=50210002, POST_ALLE=0.00, BILL_CODE=, LEAVE_DM=0.00, LIVE_ALLE=0.00, ITEM_ALLE=0.00, LIVE_EXPE=0.00, MEAL_EXPE=368.00, DEPT_CODE=01002, UNITS_CODE=0100110, POST_SALY=3810.00, SAL_RANGE=S12, ACT_SALY=8061.83, InsertLogVale=''201811'',''00075138'',''蔡丽君'',''622101196701010727'',''4228020100100225480'',''50210002'',''PUT04'',''01002'',''0100110'',''S12'',''3810.00'',''2330.00'',''2330.00'',''0.00'',''0.00'',''0.00'',''0.00'',''0.00'',''420.00'',''0.00'',''0.00'',''0.00'',''0.00'',''0.00'',''0.00'',''0.00'',''0.00'',''0.00'',''0.00'',''368.00'',''1300.00'',''200.00'',''2000.00'',''0.00'',''0.00'',''0.00'',''0.00'',''12758.00'',''1498.40'',''93.70'',''374.60'',''0.00'',''2248.00'',''374.60'',''0.00'',''106.87'',''0.00'',''8061.83'',''0.00'',''9870'',''8000.0'',''1.0'',''01002'', TableName=TB_STAFF_DETAIL_backup, HLDY_ALLE=2000.00, InsertVale='201811','00075138','蔡丽君','622101196701010727','4228020100100225480','50210002','PUT04','01002','0100110','S12','3810.00','2330.00','2330.00','0.00','0.00','0.00','0.00','0.00','420.00','0.00','0.00','0.00','0.00','0.00','0.00','0.00','0.00','0.00','0.00','368.00','1300.00','200.00','2000.00','0.00','0.00','0.00','0.00','12758.00','1498.40','93.70','374.60','0.00','2248.00','374.60','0.00','106.87','0.00','8061.83','0.00','9870','8000.0','1.0','01002', BONUS=2330.00, BUSI_DATE=201811, RET_SALY=0.00, NS_ALLE=0.00, UNEMPL_INS=93.70, CUST_COL7=9870, INTR_SGL_AWAD=0.00, CHK_CASH=0.00, USER_CATG=PUT04, CASH_BONUS=2330.00, CASD_INS=0.00, EXPT_ALLE=0.00, TEL_EXPE=200.00, TAX_BASE_ADJ=0.00, PRE_TAX_PLUS=0.00, MED_INS=374.60, TRF_ALLE=1300.00, SUP_PESN=374.60, BACK_SALY=0.00, EXT_SGL_AWAD=0.00, ENDW_INS=1498.40, KID_ALLE=0.00, COOL_EXPE=0.00, CanOperate= and BILL_CODE not in (select BILL_CODE from TB_STAFF_SUMMY_BILL where BILL_STATE = '0') , AFTER_TAX=0.00, WORK_OT=0.00, GUESS_DIFF=0.00, CUST_COL14=8000.0, CUST_COL15=1.0, GROSS_PAY=12758.00, USER_NAME=蔡丽君, HOUSE_FUND=2248.00, TECH_ALLE=0.00, USER_CODE=00075138, ESTB_DEPT=01002, STAFF_IDENT=622101196701010727, ACCRD_TAX=106.87, SENY_ALLE=420.00, BANK_CARD=4228020100100225480, InsertField=BUSI_DATE,USER_CODE,USER_NAME,STAFF_IDENT,BANK_CARD,USER_GROP,USER_CATG,DEPT_CODE,UNITS_CODE,SAL_RANGE,POST_SALY,BONUS,CASH_BONUS,WORK_OT,BACK_SALY,RET_SALY,CHK_CASH,INTR_SGL_AWAD,SENY_ALLE,POST_ALLE,NS_ALLE,AREA_ALLE,EXPT_ALLE,TECH_ALLE,LIVE_EXPE,LIVE_ALLE,LEAVE_DM,HOUSE_ALLE,ITEM_ALLE,MEAL_EXPE,TRF_ALLE,TEL_EXPE,HLDY_ALLE,KID_ALLE,COOL_EXPE,EXT_SGL_AWAD,PRE_TAX_PLUS,GROSS_PAY,ENDW_INS,UNEMPL_INS,MED_INS,CASD_INS,HOUSE_FUND,SUP_PESN,TAX_BASE_ADJ,ACCRD_TAX,AFTER_TAX,ACT_SALY,GUESS_DIFF,CUST_COL7,CUST_COL14,CUST_COL15,ESTB_DEPT}],
 
-                //select USER_CODE,  sum(GROSS_PAY-ENDW_INS-MED_INS-CASD_INS-UNEMPL_INS-HOUSE_FUND-SUP_PESN-KID_ALLE+TAX_BASE_ADJ) - 5000 S_TAX_CONFIG_GRADE_OPER,  sum(GROSS_PAY-ENDW_INS-MED_INS-CASD_INS-UNEMPL_INS-HOUSE_FUND-SUP_PESN-KID_ALLE+TAX_BASE_ADJ) - 5000 S_TAX_CONFIG_SUM_OPER,  sum(ACCRD_TAX) S_TAX_SELF_SUM_OPER  from TB_STAFF_DETAIL_backup where 1 = 1  and DEPT_CODE in ('01002')  and USER_GROP in ('50210002')  and CUST_COL7 in ('9870')  and BILL_CODE not in (select BILL_CODE from TB_STAFF_SUMMY_BILL where BILL_STATE = '0')  and BILL_CODE not in (select BILL_CODE from tb_gl_cert where REVCERT_CODE not like ' %')  group by USER_CODE,
+                //
 
-                //select USER_CODE,  sum(CUST_COL14) - 0 B_TAX_CONFIG_GRADE_OPER,  sum(CUST_COL14) B_TAX_CONFIG_SUM_OPER,  sum(CUST_COL15) B_TAX_SELF_SUM_OPER  from TB_STAFF_DETAIL_backup where 1 = 1  and DEPT_CODE in ('01002')  and USER_GROP in ('50210002')  and CUST_COL7 in ('9870')  and BILL_CODE not in (select BILL_CODE from TB_STAFF_SUMMY_BILL where BILL_STATE = '0')  and BILL_CODE not in (select BILL_CODE from tb_gl_cert where REVCERT_CODE not like ' %')  group by USER_CODE
+                //select STAFF_IDENT,  sum(CUST_COL14) B_TAX_CONFIG_GRADE_OPER,  sum(CUST_COL14) B_TAX_CONFIG_SUM_OPER,  sum(CUST_COL15) B_TAX_SELF_SUM_OPER  from TB_STAFF_DETAIL_backup where 1 = 1  and DEPT_CODE in ('01002')  and USER_GROP in ('50210002')  and CUST_COL7 in ('9870')  and BUSI_DATE like '2018%'  and BILL_CODE not in (select BILL_CODE from TB_STAFF_SUMMY_BILL where BILL_STATE = '0')  and BILL_CODE not in (select BILL_CODE from tb_gl_cert where REVCERT_CODE not like ' %')  group by STAFF_IDENT
+
+				//是否计算税
+				Boolean bolCalculation = Corresponding.CheckCalculation(SelectedTableNo);
+				
+				//tb_staff_filter_info（不用验证税）有对应的类型、账套、责任中心、工资范围编码或ANY,STAFF_IDENT_STATE = 1验证，！=1不验证
+				
 				List<PageData> dataCalculation = staffdetailService.getDataCalculation(TableNameBackup, TmplUtil.keyExtra,
 						TF_SalarySelf, TF_SalaryTax, TF_BonusSelf, TF_BonusTax,
 						TableFeildSalaryTaxConfigGradeOper, TableFeildBonusTaxConfigGradeOper,
@@ -3088,6 +3141,47 @@ public class StaffDetailController extends BaseController {
 		CommonBaseAndList getCommonBaseAndList = getCalculationData(commonBase,
 				SelectedTableNo, SelectedCustCol7, SelectedDepartCode, emplGroupType,
 				listData, strHelpful, SystemDateTime, listStaffFilterInfo);
+
+		if(Corresponding.CheckCalculation(SelectedTableNo)){
+			for(PageData pdSet : getCommonBaseAndList.getList()){
+				String pdSetSTAFF_IDENT = pdSet.getString("STAFF_IDENT");
+					BigDecimal douSalaryCalTax = new BigDecimal(0);//计算出的税额
+					BigDecimal douSalaryImpTax = new BigDecimal(0);//导入税额
+					for(PageData pdsum : getCommonBaseAndList.getList()){
+						String pdsumSTAFF_IDENT = pdsum.getString("STAFF_IDENT");
+						if(pdSetSTAFF_IDENT!=null && pdSetSTAFF_IDENT.equals(pdsumSTAFF_IDENT)){
+							douSalaryCalTax = douSalaryCalTax.add(new BigDecimal(pdsum.get(TF_SalaryTax).toString()));
+							douSalaryImpTax = douSalaryImpTax.add(new BigDecimal(pdsum.get(TF_SalaryTax + TmplUtil.keyExtra).toString()));
+						}
+					}
+					pdSet.put(TF_SalaryTax + TmplUtil.keyExtra + TmplUtil.keyExtra, douSalaryCalTax);
+					pdSet.put(TF_SalaryTax + TmplUtil.keyExtra + TmplUtil.keyExtra + TmplUtil.keyExtra, douSalaryImpTax);
+			}
+			List<String> listSTAFF_IDENT = new ArrayList<String>();
+			List<String> listRetSTAFF_IDENT = new ArrayList<String>();
+			for(PageData pdSet : getCommonBaseAndList.getList()){
+				String pdSetSTAFF_IDENT = pdSet.getString("STAFF_IDENT");
+				if(!listSTAFF_IDENT.contains(pdSetSTAFF_IDENT)){
+					BigDecimal douSalaryCalTax = new BigDecimal(pdSet.get(TF_SalaryTax + TmplUtil.keyExtra + TmplUtil.keyExtra).toString());
+					BigDecimal douSalaryImpTax = new BigDecimal(pdSet.get(TF_SalaryTax + TmplUtil.keyExtra + TmplUtil.keyExtra + TmplUtil.keyExtra).toString());
+
+					if(!(douSalaryCalTax.compareTo(douSalaryImpTax) == 0)){
+						if(douSalaryCalTax.compareTo(new BigDecimal(0)) < 0 && douSalaryImpTax.compareTo(new BigDecimal(0)) == 0){
+							listRetSTAFF_IDENT.add(pdSetSTAFF_IDENT);
+						}
+					}
+				}
+				listSTAFF_IDENT.add(pdSetSTAFF_IDENT);
+			}
+			if(listRetSTAFF_IDENT!=null && listRetSTAFF_IDENT.size()>0){
+				for(PageData pdRetSet : getCommonBaseAndList.getList()){
+					String pdRetSetSTAFF_IDENT = pdRetSet.getString("STAFF_IDENT");
+					if(listRetSTAFF_IDENT.contains(pdRetSetSTAFF_IDENT)){
+						pdRetSet.put(TF_SalaryTax, 0);
+					}
+				}
+			}
+		}
 		return UpdateDatabase(IsAdd, commonBase, strErrorMessage,
 				SelectedTableNo, SelectedCustCol7, SelectedDepartCode, emplGroupType,
 				getCommonBaseAndList, strHelpful);

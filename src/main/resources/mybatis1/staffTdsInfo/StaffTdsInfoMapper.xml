@@ -89,6 +89,9 @@
 		from 
 		<include refid="tableName"></include>
 		where BUSI_DATE = '${SelectedBusiDate}'
+		    <if test="QueryFeild!= null and QueryFeild != ''">
+		        ${QueryFeild}
+		    </if>
 		order by BUSI_DATE desc
 		limit 1
 	</select>
@@ -109,7 +112,8 @@
 		    delete from
 		    <include refid="tableName"></include>
 		    where BUSI_DATE = #{item.BUSI_DATE__} 
-		    and STAFF_IDENT = #{item.STAFF_IDENT__};
+		    and STAFF_IDENT = #{item.STAFF_IDENT__}
+		    ${item.CanDel};
 	        
 		    insert into
 		    <include refid="tableName"></include>
@@ -122,7 +126,8 @@
 		    delete from
 		    <include refid="tableName"></include>
 		    where BUSI_DATE = #{item.BUSI_DATE} 
-		    and STAFF_IDENT = #{item.STAFF_IDENT};
+		    and STAFF_IDENT = #{item.STAFF_IDENT}
+		    ${item.CanDel};
 	        
 		    insert into
 		    <include refid="tableName"></include>

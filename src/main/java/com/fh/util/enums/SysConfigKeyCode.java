@@ -20,6 +20,11 @@ public class SysConfigKeyCode {
     public static final String StaffFormulaBonus = "StaffFormulaBonus";
 	//public static final String StaffFormulaBonus_Same0 = "StaffFormulaBonus0";
 	//public static final String StaffFormulaBonus_Not0 = "StaffFormulaBonus1";
+    
+    //StaffTdsSelfDeptCode 01009,01017,01022 个税扣除可操作自己的责任中心（银川、武汉、深港）
+    public static final String StaffTdsSelfDeptCode = "StaffTdsSelfDeptCode";
+    //StaffTdsRestDeptCode 01001 个税扣除可操作除银川、武汉、深港的责任中心
+    public static final String StaffTdsRestDeptCode = "StaffTdsRestDeptCode";
 
 	//免征税
 	public static final String ExemptionTax = "ExemptionTax";

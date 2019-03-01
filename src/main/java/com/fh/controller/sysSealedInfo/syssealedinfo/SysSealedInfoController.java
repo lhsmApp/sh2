@@ -267,7 +267,7 @@ public class SysSealedInfoController extends BaseController {
 		result.setPage(page.getPage());
 		return result;
 	}
-
+ 
 	/**
 	 * 批量修改
 	 * 

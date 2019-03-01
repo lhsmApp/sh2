@@ -46,12 +46,14 @@ public class ItemAlloc {
 		return getSetItemUser;
 	}
 
+	//根据导入明细，设置工资人员项目信息，
 	public static PageData getSaveItem(String SystemDateTime, String strGetSetItemDeptCode, GlItemUserManager glItemUserService,
 			String TypeCodeDetail, TmplConfigService tmplconfigService,
 			List<PageData> getSetItemUser, 
 			String SelectedCustCol7, String TableNameFirstItem,
 			List<String> FirstItemMustNotEditList,
 			List<String> MustNotItemAllocList) throws Exception {
+		//人员项目关系
 		PageData pdGlItemUser = new PageData();
 		pdGlItemUser.put("BUSI_DATE", SystemDateTime);
 		pdGlItemUser.put("BILL_OFF", SelectedCustCol7);
@@ -65,6 +67,7 @@ public class ItemAlloc {
 		List<PageData> listItemInfo = new ArrayList<PageData>();
 
 		Map<String, TableColumns> map_HaveColumnsListDetail = Common.GetHaveColumnsList(TypeCodeDetail, tmplconfigService);
+		//循环导入明细
 		for(PageData getItem : getSetItemUser){
 			//String strItemBillCode = getItem.getString("BILL_CODE" + TmplUtil.keyExtra);
 			String strItemBusiDate = getItem.getString("BUSI_DATE" + TmplUtil.keyExtra);
@@ -75,7 +78,8 @@ public class ItemAlloc {
 			
 			List<PageData> listItemUser = new ArrayList<PageData>();
 			BigDecimal douItemBudSum = new BigDecimal(0);
-
+			//循环筛选出的导入明细信息，将其中的人员编码对应的人员项目关系获取到，
+			//将人员项目关系由一条（人员多个项目）转换成多条（人员只一个项目），并计算出相应人员编码对应人员只一个项目的条数和人员对应所有项目的总概算，人员编码为空不参与计算。
 			Boolean bolSame = false;
 			if(getGlItemUserList!=null && getGlItemUserList.size()>0){
 		        for(int num=0; num<getGlItemUserList.size(); num++){
@@ -186,7 +190,10 @@ public class ItemAlloc {
 		        	}
 				}
 			}
-		
+
+			//人员编码对应人员项目的条数为0（即本人没有项目信息），设置人员工资项目表数据项目编码字段为0，其余字段与导入信息一致；条数不为0，循环人员编码对应的多条人员项目关系，将导入的一条信息转换成多条人员工资项目信息（与人员编码对应项目条数相同），设置相对应的项目编码和概算。
+			//循环结构配置信息，根据人员对应所有项目的总概算计算人员工资项目信息数值型字段（除流水号）的比例金额（最后一条人员工资项目信息是总额度减去已计算的额度，以确保人员工资项目信息数据与导入信息金额相对应）。
+			//如人员只对应一条项目信息，并且概算为0，则人员工资项目金额与导入金额一致；如人员只对应多条项目信息，并且概算都为0，则人员工资项目最后一条金额与导入金额一致，其余金额都为0。
 			Map<String, TmplConfigDetail> map_SetColumnsListDetail = Common.GetSetColumnsList(TypeCodeDetail, strItemDepartCode, SelectedCustCol7, tmplconfigService);
 			List<PageData> listAddSaveItem = new ArrayList<PageData>();
 			if(listItemUser!=null && listItemUser.size()>0){

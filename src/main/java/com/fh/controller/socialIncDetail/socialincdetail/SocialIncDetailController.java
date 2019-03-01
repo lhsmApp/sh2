@@ -5,7 +5,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +32,6 @@ import com.fh.entity.Page;
 import com.fh.entity.PageResult;
 import com.fh.entity.TableColumns;
 import com.fh.entity.TmplConfigDetail;
-import com.fh.entity.TmplInputTips;
 import com.fh.entity.system.User;
 import com.fh.exception.CustomException;
 import com.fh.util.Const;
@@ -198,11 +196,14 @@ public class SocialIncDetailController extends BaseController {
 		transferPd.put("SelectedCustCol7", SelectedCustCol7);
 		transferPd.put("SelectedDepartCode", SelectedDepartCode);
 		transferPd.put("SystemDateTime", SystemDateTime);
+	    //汇总单据状态不为0，就是没汇总或汇总但没作废
 		String strCanOperate = QueryFeildString.getBillCodeNotInSumInvalidDetail(TableNameSummy);
+	    //tb_sys_unlock_info表 DEL_STATE（融合系统删除状态为1）数据显示。为0不显示。
 		strCanOperate += QueryFeildString.getBillCodeNotInInvalidSysUnlockInfo();
 		if(!(SelectedDepartCode != null && !SelectedDepartCode.trim().equals(""))){
 			strCanOperate += " and 1 != 1 ";
 		} else {
+			//tb_sys_sealed_info不是封存state = '1'
 			strCanOperate += QueryFeildString.getNotReportBillCode(TypeCodeTransfer, SystemDateTime, SelectedCustCol7, SelectedDepartCode);
 		}
 		if(!(SelectedCustCol7 != null && !SelectedCustCol7.trim().equals(""))){
@@ -210,6 +211,7 @@ public class SocialIncDetailController extends BaseController {
 		}
 		transferPd.put("CanOperate", strCanOperate);
 		List<String> getCodeList = socialincdetailService.getBillCodeList(transferPd);
+		// 下拉列表 value和显示一致
 		String returnString = SelectBillCodeOptions.getSelectBillCodeOptions(getCodeList, SelectBillCodeFirstShow, SelectBillCodeLastShow);
 		commonBase.setMessage(returnString);
 		commonBase.setCode(0);
@@ -279,11 +281,15 @@ public class SocialIncDetailController extends BaseController {
 		if(!(SelectedCustCol7 != null && !SelectedCustCol7.trim().equals(""))){
 			QueryFeild += " and 1 != 1 ";
 		}
+		// 单号下拉列表 value和显示一致
 		QueryFeild += QueryFeildString.getQueryFeildBillCodeDetail(SelectedBillCode, SelectBillCodeFirstShow);
 		if(!SelectedBillCode.equals(SelectBillCodeFirstShow)){
+			//tb_sys_sealed_info不是封存state = '1'
 			QueryFeild += QueryFeildString.getNotReportBillCode(TypeCodeTransfer, SystemDateTime, SelectedCustCol7, SelectedDepartCode);
+		    //tb_sys_unlock_info表 DEL_STATE（融合系统删除状态为1）数据显示。为0不显示。
 			QueryFeild += QueryFeildString.getBillCodeNotInInvalidSysUnlockInfo();
 		}
+	    //汇总单据状态不为0，就是没汇总或汇总但没作废
 		QueryFeild += QueryFeildString.getBillCodeNotInSumInvalidDetail(TableNameSummy);
 		getPd.put("QueryFeild", QueryFeild);
 		
@@ -351,6 +357,7 @@ public class SocialIncDetailController extends BaseController {
 		String oper = getPd.getString("oper");
 		//当前区间
 		String SystemDateTime = getPd.getString("SystemDateTime");
+		//判断传过来的TranferSystemDateTime和配置表里的当前区间是否一致
 		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager, false);
 		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
 			commonBase.setCode(2);
@@ -367,6 +374,7 @@ public class SocialIncDetailController extends BaseController {
 			commonBase.setMessage(strGetCheckMustSelected);
 			return commonBase;
 		}
+		//验证是否在操作时间内
 		String mesSysDeptLtdTime = CheckSystemDateTime.CheckSysDeptLtdTime(TypeCodeDetail, SelectedCustCol7, SelectedDepartCode, sysDeptLtdTimeService);
 		if(mesSysDeptLtdTime!=null && !mesSysDeptLtdTime.trim().equals("")){
 			commonBase.setCode(2);
@@ -374,9 +382,12 @@ public class SocialIncDetailController extends BaseController {
 			return commonBase;
 		}
 
+	    //汇总单据状态不为0，就是没汇总或汇总但没作废
 		String strHelpful = QueryFeildString.getBillCodeNotInSumInvalidDetail(TableNameSummy);
 		if(!SelectedBillCode.equals(SelectBillCodeFirstShow)){
+			//tb_sys_sealed_info不是封存state = '1'
 			strHelpful += QueryFeildString.getNotReportBillCode(TypeCodeTransfer, SystemDateTime, SelectedCustCol7, SelectedDepartCode);
+		    //tb_sys_unlock_info表 DEL_STATE（融合系统删除状态为1）数据显示。为0不显示。
 			strHelpful += QueryFeildString.getBillCodeNotInInvalidSysUnlockInfo();
 		}
 		if(!(strHelpful != null && !strHelpful.trim().equals(""))){
@@ -467,6 +478,7 @@ public class SocialIncDetailController extends BaseController {
 		String ShowDataBillCode = getPd.getString("ShowDataBillCode");
 		//当前区间
 		String SystemDateTime = getPd.getString("SystemDateTime");
+		//判断传过来的TranferSystemDateTime和配置表里的当前区间是否一致
 		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager, false);
 		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
 			commonBase.setCode(2);
@@ -483,6 +495,7 @@ public class SocialIncDetailController extends BaseController {
 			commonBase.setMessage(strGetCheckMustSelected);
 			return commonBase;
 		}
+		//验证是否在操作时间内
 		String mesSysDeptLtdTime = CheckSystemDateTime.CheckSysDeptLtdTime(TypeCodeDetail, SelectedCustCol7, SelectedDepartCode, sysDeptLtdTimeService);
 		if(mesSysDeptLtdTime!=null && !mesSysDeptLtdTime.trim().equals("")){
 			commonBase.setCode(2);
@@ -556,6 +569,7 @@ public class SocialIncDetailController extends BaseController {
 		String ShowDataBillCode = getPd.getString("ShowDataBillCode");
 		//当前区间
 		String SystemDateTime = getPd.getString("SystemDateTime");
+		//判断传过来的TranferSystemDateTime和配置表里的当前区间是否一致
 		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager, false);
 		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
 			commonBase.setCode(2);
@@ -572,6 +586,7 @@ public class SocialIncDetailController extends BaseController {
 			commonBase.setMessage(strGetCheckMustSelected);
 			return commonBase;
 		}
+		//验证是否在操作时间内
 		String mesSysDeptLtdTime = CheckSystemDateTime.CheckSysDeptLtdTime(TypeCodeDetail, SelectedCustCol7, SelectedDepartCode, sysDeptLtdTimeService);
 		if(mesSysDeptLtdTime!=null && !mesSysDeptLtdTime.trim().equals("")){
 			commonBase.setCode(2);
@@ -639,6 +654,7 @@ public class SocialIncDetailController extends BaseController {
 		String ShowDataBillCode = getPd.getString("ShowDataBillCode");
 		//当前区间
 		String SystemDateTime = getPd.getString("SystemDateTime");
+		//判断传过来的TranferSystemDateTime和配置表里的当前区间是否一致
 		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager, false);
 		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
 			commonBase.setCode(2);
@@ -655,6 +671,7 @@ public class SocialIncDetailController extends BaseController {
 			commonBase.setMessage(strGetCheckMustSelected);
 			return commonBase;
 		}
+		//验证是否在操作时间内
 		String mesSysDeptLtdTime = CheckSystemDateTime.CheckSysDeptLtdTime(TypeCodeDetail, SelectedCustCol7, SelectedDepartCode, sysDeptLtdTimeService);
 		if(mesSysDeptLtdTime!=null && !mesSysDeptLtdTime.trim().equals("")){
 			commonBase.setCode(2);
@@ -730,6 +747,7 @@ public class SocialIncDetailController extends BaseController {
 		String ShowDataBillCode = getPd.getString("ShowDataBillCode");
 		//当前区间
 		String SystemDateTime = getPd.getString("SystemDateTime");
+		//判断传过来的TranferSystemDateTime和配置表里的当前区间是否一致
 		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager, false);
 		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
 			commonBase.setCode(2);
@@ -747,6 +765,7 @@ public class SocialIncDetailController extends BaseController {
 		}
 	}
 	if(commonBase.getCode()==-1){
+		//验证是否在操作时间内
 		String mesSysDeptLtdTime = CheckSystemDateTime.CheckSysDeptLtdTime(TypeCodeDetail, SelectedCustCol7, SelectedDepartCode, sysDeptLtdTimeService);
 		if(mesSysDeptLtdTime!=null && !mesSysDeptLtdTime.trim().equals("")){
 			commonBase.setCode(2);
@@ -814,6 +833,7 @@ public class SocialIncDetailController extends BaseController {
 		String ShowDataBillCode = getPd.getString("ShowDataBillCode");
 		//当前区间
 		String SystemDateTime = getPd.getString("SystemDateTime");
+		//判断传过来的TranferSystemDateTime和配置表里的当前区间是否一致
 		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager, false);
 		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
 			commonBase.setCode(2);
@@ -830,6 +850,7 @@ public class SocialIncDetailController extends BaseController {
 		} 
 	}
 	if(commonBase.getCode()==-1){
+		//验证是否在操作时间内
 		String mesSysDeptLtdTime = CheckSystemDateTime.CheckSysDeptLtdTime(TypeCodeDetail, SelectedCustCol7, SelectedDepartCode, sysDeptLtdTimeService);
 		if(mesSysDeptLtdTime!=null && !mesSysDeptLtdTime.trim().equals("")){
 			commonBase.setCode(2);
@@ -1113,6 +1134,7 @@ public class SocialIncDetailController extends BaseController {
 		String ShowDataBillCode = getPd.getString("ShowDataBillCode");
 		//当前区间
 		String SystemDateTime = getPd.getString("SystemDateTime");
+		//判断传过来的TranferSystemDateTime和配置表里的当前区间是否一致
 		String mesDateTime = CheckSystemDateTime.CheckTranferSystemDateTime(SystemDateTime, sysConfigManager, false);
 		if(mesDateTime!=null && !mesDateTime.trim().equals("")){
 			commonBase.setCode(2);
@@ -1129,6 +1151,7 @@ public class SocialIncDetailController extends BaseController {
 		} 
 	    }
 	    if(commonBase.getCode()==-1){
+		//验证是否在操作时间内
 		String mesSysDeptLtdTime = CheckSystemDateTime.CheckSysDeptLtdTime(SelectedDepartCode, TypeCodeDetail, sysDeptLtdTimeService);
 		if(mesSysDeptLtdTime!=null && !mesSysDeptLtdTime.trim().equals("")){
 			commonBase.setCode(2);
@@ -1441,7 +1464,8 @@ public class SocialIncDetailController extends BaseController {
           	    item.put("TableName", TableNameBackup);
           	    Common.setModelDefault(item, map_HaveColumnsList, map_SetColumnsList, MustNotEditList);
             }
-        	
+
+        	//查询记录，带公式
     		String sqlRetSelect = Common.GetRetSelectColoumns(map_HaveColumnsList, 
     				TypeCodeDetail, TableNameBackup, SelectedDepartCode, SelectedCustCol7, 
     				//"", 
@@ -1449,6 +1473,7 @@ public class SocialIncDetailController extends BaseController {
     				tmplconfigService);
 
 			try{
+				//tb_social_inc_detail_backup（导入时用来计算的明细）先删后插数据，带公式查询出记录
 	    		List<PageData> dataCalculation = socialincdetailService.getDataCalculation(TableNameBackup, sqlRetSelect, listAdd);
 	    		if(dataCalculation!=null){
 	    			for(PageData each : dataCalculation){

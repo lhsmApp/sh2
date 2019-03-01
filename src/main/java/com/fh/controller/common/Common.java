@@ -231,6 +231,7 @@ public class Common {
 		return m_SetColumnsList;
 	}
 
+	//查询记录，带公式
 	public static String GetRetSelectColoumns(Map<String, TableColumns> haveColumnsList,
 			String tableNo, String tableNameBackup, String departCode, String billOff, 
 			//String TaxCanNotHaveFormulaFeildList, 
@@ -294,7 +295,9 @@ public class Common {
 		}
 		return strRetSelectColoumn;
 	}
-	
+
+	//查询记录，不带公式
+	//select * , ACCRD_TAX ACCRD_TAX__, CUST_COL15 CUST_COL15__, SERIAL_NO SERIAL_NO__, BILL_CODE BILL_CODE__, BUSI_DATE BUSI_DATE__, DEPT_CODE DEPT_CODE__, CUST_COL7 CUST_COL7__, USER_GROP USER_GROP__ from TB_STAFF_DETAIL_backup
 	public static String GetRetSelectNotCalculationColoumns(String tableName, 
 			String TableFeildSalaryTax, String TableFeildBonusTax, String keyExtra, List<String> keyListBase,
 			TmplConfigManager tmplconfigService) throws Exception{
@@ -309,7 +312,8 @@ public class Common {
 		strRetSelectBonusColoumn += " from " + tableName;
 		return strRetSelectBonusColoumn;
 	}
-	
+
+	//按配置结构公式，更新数据
 	public static List<String> GetSalaryFeildUpdate(String tableNo, String tableNameBackup, String departCode, String billOff, 
 			TmplConfigManager tmplconfigService) throws Exception{
 		List<String> listSalaryFeildCal = new ArrayList<String>();
@@ -367,7 +371,7 @@ public class Common {
 		return strRetSelectColoumn;
 	}
 	public static String GetRetSumByUserColoumnsSalary22(String tableName, String strSumGroupBy,
-			String QueryFeild, String salaryExemptionTax,
+			String QueryFeild_PreAndMonth_Tax, String salaryExemptionTax, String QueryFeild_PreNotMonth_Month, 
 			String configFormulaSalary, String TableFeildSalaryTaxConfigGradeOper, String TableFeildSalaryTaxConfigSumOper, 
 			String TableFeildSalaryTax, String TableFeildSalaryTaxSelfSumOper,
 			String TableFeildSalarySelf, 
@@ -375,14 +379,17 @@ public class Common {
 		if(!(salaryExemptionTax!=null && !salaryExemptionTax.trim().equals(""))){
 			salaryExemptionTax = "0";
 		}
+		//现在取的（TB_STAFF_DETAIL_backup在本月之前的有正常工资月份的个数 + 1）* 5000
+		//- 5000 - 5000 * TB_STAFF_DETAIL_backup在本月之前符合条件的有正常工资月份的个数
+		String strMonthCountNotNew = " select COUNT(DISTINCT d.BUSI_DATE) from " + tableName + " d where 1 = 1 " + QueryFeild_PreNotMonth_Month + " and d.STAFF_IDENT = b.STAFF_IDENT " ;
 		String strRetSelectColoumn = " select " + strSumGroupBy + ", " 
-		        + " sum(" + configFormulaSalary + ") - " + salaryExemptionTax + " " + TableFeildSalaryTaxConfigGradeOper + ", "
-				+ " sum(" + configFormulaSalary + ") - " + salaryExemptionTax + " " + TableFeildSalaryTaxConfigSumOper + ", "
+		        + " sum(" + configFormulaSalary + ") - " + salaryExemptionTax + " - " + salaryExemptionTax + " * IFNULL((" + strMonthCountNotNew + "), 0) "+ TableFeildSalaryTaxConfigGradeOper + ", "
+				+ " sum(" + configFormulaSalary + ") - " + salaryExemptionTax + " - " + salaryExemptionTax + " * IFNULL((" + strMonthCountNotNew + "), 0) "+ TableFeildSalaryTaxConfigSumOper + ", "
 				+ " sum(" + TableFeildSalaryTax + ") " + TableFeildSalaryTaxSelfSumOper + ", "
 				+ " sum(" + TableFeildSalarySelf + ") " + TableFeildSalarySelf + " "
-				+ " from " + tableName 
+				+ " from " + tableName + " b "
 				+ " where 1 = 1 "
-				+ QueryFeild 
+				+ QueryFeild_PreAndMonth_Tax 
 				+ " group by " + strSumGroupBy + " ";
 		return strRetSelectColoumn;
 	}

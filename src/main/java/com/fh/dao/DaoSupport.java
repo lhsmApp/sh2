@@ -153,7 +153,9 @@ public class DaoSupport implements DAO {
 		List<PageData> returnList = new ArrayList<PageData>();
 		try{
 			if(listAdd!=null && !listAdd.isEmpty()){
+				//删除TB_   _DETAIL_backup表中所有数据
 				sqlSession.delete("DataCalculation.deleteTableData", tableNameBackup);
+				//获取本次操作的数据流水号，文档中有的、后加生成的（先取最大值，添加时流水号自增，再取大于最大值的）
 				Integer strMaxNum = sqlSession.selectOne("DataCalculation.getMaxSerialNo", tableNameBackup);
 				String SqlInBillCode = "";
 				for(PageData eachPd : listAdd){
@@ -165,6 +167,7 @@ public class DaoSupport implements DAO {
 						SqlInBillCode += SERIAL_NO;
 					}
 				}
+				//先删后插，
 				sqlSession.update(sqlBatchDelAndIns, listAdd);
 				sqlSession.flushStatements();
 				sqlSession.commit();
@@ -181,6 +184,7 @@ public class DaoSupport implements DAO {
 						SqlInBillCode += billCode;
 					}
 				}
+				//tb_social_inc_detail_backup（导入时用来计算的明细）先删后插数据后，带公式查询出记录
 				PageData getListBySerialNo = new PageData();
 				getListBySerialNo.put("sqlRetSelect", sqlRetSelect);
 				getListBySerialNo.put("SqlInBillCode", SqlInBillCode);
@@ -216,12 +220,17 @@ public class DaoSupport implements DAO {
 		SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH,false);
 		List<StaffTax> tbStaffTax = sqlSession.selectList("DataCalculation.getStaffTax");
 		//List<BonusTax> tbBonusTax = sqlSession.selectList("DataCalculation.getBonusTax");
+		//删除TB_STAFF_DETAIL_backup表中所有数据
 		sqlSession.delete("DataCalculation.deleteTableData", tableNameBackup);
 		
 		List<PageData> returnList = new ArrayList<PageData>();
 		try{
+			//准备好TB_STAFF_DETAIL_backup表中所有数据，
+			//取TB_STAFF_DETAIL中数据到TB_STAFF_DETAIL_backup，
+			//按员工组、部门、账套、区间取整年、不取汇总单据状态为0（就是没汇总或汇总但没作废）、不取tb_gl_cert中REVCERT_CODE不为空的
 			sqlSession.update(sqlInsetBackup, pdInsetBackup);
 			if(listData!=null && !listData.isEmpty()){
+				//获取本次操作的数据流水号，文档中有的、后加生成的（先取最大值，添加时流水号自增，再取大于最大值的）
 				Integer strMaxNum = sqlSession.selectOne("DataCalculation.getMaxSerialNo", tableNameBackup);
 				String SqlInBillCode = "";
 				for(PageData eachPd : listData){
@@ -233,6 +242,7 @@ public class DaoSupport implements DAO {
 						SqlInBillCode += SERIAL_NO;
 					}
 				}
+				//先删后插，
 				sqlSession.update(sqlBatchDelAndIns, listData);
 				PageData getAddSerialNo = new PageData();
 				getAddSerialNo.put("tableName", tableNameBackup);
@@ -246,6 +256,7 @@ public class DaoSupport implements DAO {
 						SqlInBillCode += billCode;
 					}
 				}
+				//本次操作的数据流水号，按配置结构更新公式
 				if(listSalaryFeildUpdate!=null){
 					for(String strUpdateFeild : listSalaryFeildUpdate){
 						PageData setUpdateFeild = new PageData();
@@ -254,12 +265,14 @@ public class DaoSupport implements DAO {
 						sqlSession.selectList("DataCalculation.editSalaryFeild",  setUpdateFeild);
 					}
 				}
-				
+				//本次操作的数据流水号，获取记录，税取成两个字段，tax（计算时保存计算后税额、不计算直接保存）、tax__就是备用和比较
 				PageData getListBySerialNo = new PageData();
 				getListBySerialNo.put("sqlRetSelect", sqlRetSelect);
 				getListBySerialNo.put("SqlInBillCode", SqlInBillCode);
 				List<PageData> retList = sqlSession.selectList("DataCalculation.getListBySerialNo",  getListBySerialNo);
 				if(bolCalculation && retList!=null && retList.size()>0){
+					//判断是够计算税额，金额是0税是0，不计算，
+					//tb_staff_filter_info（不用验证税）有对应的类型、账套、责任中心、工资范围编码或ANY,STAFF_IDENT_STATE = 1验证，！=1不验证
 					for(PageData eachAdd : retList){
 						eachAdd.put("bolBonusTax", true);
 						eachAdd.put("bolSalaryTax", true);
@@ -296,6 +309,24 @@ public class DaoSupport implements DAO {
 							eachAdd.put("bolSalaryTax", false);
 						}
 					}
+					//工资、奖金分开做，
+					//以身份证号STAFF_IDENT来计算，一个身份账号计算一次，如文档中有相同身份证号，只在循环到列表第一条计算，设置记录应税总额（计算出的全部税额）、已导入纳税额（汇总出的全部税额）
+					//列表之后的条数，已在数据库中，实际上是已经计算在内了
+					//符合条件：员工组、部门、账套、不取汇总单据状态为0（就是没汇总或汇总但没作废）、不取tb_gl_cert中REVCERT_CODE不为空的（就是没有单号或有单号未冲销）
+					//工资
+					//工资取符合条件、区间取本月及以前月份的工资按身份证号汇总，
+					//- 5000 - 5000 * TB_STAFF_DETAIL_backup在本月之前符合条件的有正常工资月份的个数
+					//-符合条件、区间取本月及以前月份的扣除项按身份证号汇总 = 工资全部汇总数
+					//以上数据与税档表最大值*12和最小值*12比较，取税档
+					//工资全部汇总数 * 税率 * 0.01 - 速算扣除数*12 = 计算出的全部税额
+					//计算出的全部税额 - 汇总出的全部税额 + 本条记录文档税额 = 本条记录计算数额
+					//设置记录应税总额（计算出的全部税额）、已导入纳税额（汇总出的全部税额）
+					//奖金
+					//工资取符合条件、区间取全年的奖金按身份证号汇总 = 奖金全部汇总数
+					//以上数据与税档表最大值*12和最小值*12比较，取税档
+					//奖金全部汇总数 * 税率 * 0.01 - 速算扣除数*12 = 计算出的全部税额
+					//计算出的全部税额 - 汇总出的全部税额 + 本条记录文档税额 = 本条记录计算数额
+					//设置记录应税总额（计算出的全部税额）、已导入纳税额（汇总出的全部税额）
 					List<String> B_STAFF_IDENTList = new ArrayList<String>();
 					List<String> S_STAFF_IDENTList = new ArrayList<String>();
 					for(PageData eachAdd : retList){
@@ -442,6 +473,7 @@ public class DaoSupport implements DAO {
 		//批量执行器
 		SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH,false);
 		List<StaffTax> listStaffTax = sqlSession.selectList("DataCalculation.getStaffTax");
+		//删除TB_   _DETAIL_backup表中所有数据
 		sqlSession.delete("DataCalculation.deleteTableData", tableNameBackup);
 		
 		List<PageData> returnList = new ArrayList<PageData>();
@@ -661,6 +693,7 @@ public class DaoSupport implements DAO {
 		//批量执行器
 		SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH,false);
 		List<StaffTax> listStaffTax = sqlSession.selectList("DataCalculation.getStaffTax");
+		//删除TB_   _DETAIL_backup表中所有数据
 		sqlSession.delete("DataCalculation.deleteTableData", tableNameBackup);
 		
 		List<PageData> returnList = new ArrayList<PageData>();
@@ -866,6 +899,7 @@ public class DaoSupport implements DAO {
 		//批量执行器
 		SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH,false);
 		List<LaborTax> listLaborTax = sqlSession.selectList("DataCalculation.getLaborTax");
+		//删除TB_   _DETAIL_backup表中所有数据
 		sqlSession.delete("DataCalculation.deleteTableData", tableNameBackup);
 		
 		List<PageData> returnList = new ArrayList<PageData>();
