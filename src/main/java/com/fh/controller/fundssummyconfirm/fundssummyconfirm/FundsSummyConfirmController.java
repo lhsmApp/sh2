@@ -173,11 +173,12 @@ public class FundsSummyConfirmController extends BaseController {
 		if(departSelf == 1){
 			SelectedDepartCode = Jurisdiction.getCurrentDepartmentID();
 		}
-
+		//默认登录人，界面只选一个就取界面设置
 		String strShowCalModelDepaet = Jurisdiction.getCurrentDepartmentID();
 		if(SelectedDepartCode!=null && !SelectedDepartCode.trim().equals("") && !SelectedDepartCode.contains(",")){
 			strShowCalModelDepaet = SelectedDepartCode;
 		}
+		//已确认tab页，界面显示配置信息外再加上CERT_CODE
 		String AdditionalCertCodeColumns = "";
 		if(SelectedTabType!=null && SelectedTabType.trim().equals("2")){
 			AdditionalCertCodeColumns = "CERT_CODE";
@@ -767,7 +768,8 @@ public class FundsSummyConfirmController extends BaseController {
 		setConfirm(bolAll, getListHouse, listTransferConfirm, listTransferCert, TmplType.TB_HOUSE_FUND_TRANSFER.getNameKey());
 
     	Map<String, Object> map = new HashMap<String, Object>();
-    	
+    	//确认是单独确认，判断未作废、部门权限、已封存tb_sys_sealed_info，然后根据单号先删掉再插入。
+    	//批量确认是取区间内未作废、部门权限、已封存tb_sys_sealed_info的所有记录（工资、社保、公积金），然后删除区间内所有数据，再插入。
     	if(bolAll){
         	PageData pdCert = new PageData();
         	pdCert.put("BUSI_DATE", SelectedBusiDate);
@@ -862,6 +864,7 @@ public class FundsSummyConfirmController extends BaseController {
 				if(!(strCxpz!=null && !strCxpz.equals(""))){
 					strCxpz = " ";
 				}
+				//凭证编号不为空，保存TB_GL_CERT表
 				if(strPzbh!=null && !strPzbh.trim().equals("")){
 					PageData pdCert = new PageData();
 					pdCert.put("BILL_CODE", BILL_CODE);
@@ -873,6 +876,8 @@ public class FundsSummyConfirmController extends BaseController {
 					pdCert.put("REVCERT_CODE", strCxpz);
 					listTransferCert.add(pdCert);
 				}
+				//单独确认，获取凭证编号，无论有无凭证编号都存TB_SYS_CONFIRM_INFO确认表
+				//批量确认，获取凭证编号，有凭证编号无冲销凭证号存TB_SYS_CONFIRM_INFO确认表
 	        	SysConfirmInfo itemAdd = new SysConfirmInfo();
 	        	itemAdd.setBILL_CODE(BILL_CODE);
 	        	itemAdd.setCERT_CODE(strPzbh);

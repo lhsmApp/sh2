@@ -92,7 +92,7 @@ public class FundsConfirmInfoController extends BaseController {
     List<String> QueryFeildList = Arrays.asList("TYPE_CODE", "BILL_OFF", "DEPT_CODE");
 
     //获取汇总条件传的责任中心
-    String DeptCodeSumGroupField = "01";
+    //String DeptCodeSumGroupField = "01";
 
 	/**列表
 	 * @param page
@@ -246,7 +246,7 @@ public class FundsConfirmInfoController extends BaseController {
 		List<PageData> list = fundsconfirminfoService.JqPage(page);	//列出Betting列表
 		if(list !=null){
 			for(PageData pdEach : list){
-				//已确认
+				//已确认，对应条件tb_sys_confirm_info有已确认信息
 				String strSTATE = pdEach.getString("STATE");
 				if(strSTATE!=null && strSTATE.equals("1")){
 					//已汇总

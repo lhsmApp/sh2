@@ -79,6 +79,7 @@
 		       IFNULL(i.CUST_COL4, 0) CUST_COL4, 
 		       IFNULL(i.CUST_COL5, 0) CUST_COL5, 
 		       IFNULL(i.CUST_COL6, 0) CUST_COL6,
+		       IFNULL(i.REMIT_CUST_COL1, 0) REMIT_CUST_COL1,
 		       IFNULL(tax01.${pd.TableFeildSalaryTax}, 0) ${pd.TableFeildSalaryTax}01,
 		       IFNULL(tax02.${pd.TableFeildSalaryTax}, 0) ${pd.TableFeildSalaryTax}02,
 		       IFNULL(tax03.${pd.TableFeildSalaryTax}, 0) ${pd.TableFeildSalaryTax}03,
@@ -108,8 +109,8 @@
 		            ) a 
               where a.STAFF_IDENT = t.STAFF_IDENT) j
 		left join (select STAFF_IDENT, sum(CUST_COL1) CUST_COL1, sum(CUST_COL2) CUST_COL2, sum(CUST_COL3) CUST_COL3, 
-                     sum(CUST_COL4) CUST_COL4, sum(CUST_COL5) CUST_COL5, sum(CUST_COL6) CUST_COL6
-		      from TB_STAFF_TDS_INFO
+                     sum(CUST_COL4) CUST_COL4, sum(CUST_COL5) CUST_COL5, sum(CUST_COL6) CUST_COL6, sum(REMIT_CUST_COL1) REMIT_CUST_COL1
+		      from view_staff_tds_remit
 		      <where>
 		        ${pd.QueryFeildBusiPreYear}
 		      </where>

@@ -2690,9 +2690,9 @@ public class StaffDetailController extends BaseController {
 	        SalaryPd.put("KEY_CODE", SysConfigKeyCode.StaffFormulaSalary);
 	        String configFormulaSalary = sysConfigManager.getSysConfigByKey(SalaryPd);
 	        //configFormulaStaffTDSItem
-	        //CUST_COL1 + CUST_COL2 + CUST_COL3 + CUST_COL4 + CUST_COL5 + CUST_COL6
+	        //CUST_COL1 + CUST_COL2 + CUST_COL3 + CUST_COL4 + CUST_COL5 + CUST_COL6 + REMIT_CUST_COL1
 	        PageData SalaryStaffTDSItemPd = new PageData();
-	        SalaryStaffTDSItemPd.put("KEY_CODE", SysConfigKeyCode.StaffTDSItem);
+	        SalaryStaffTDSItemPd.put("KEY_CODE", SysConfigKeyCode.StaffTdsRemitItem);
 	        String configFormulaStaffTDSItem = sysConfigManager.getSysConfigByKey(SalaryStaffTDSItemPd);
 	        
 	        //configFormulaBonus_Not0
@@ -2730,10 +2730,10 @@ public class StaffDetailController extends BaseController {
 			//select t. STAFF_IDENT ,  t.S_TAX_CONFIG_GRADE_OPER - IFNULL(b.STAFF_TDS, 0) S_TAX_CONFIG_GRADE_OPER,  
 			//t.S_TAX_CONFIG_SUM_OPER - IFNULL(b.STAFF_TDS, 0) S_TAX_CONFIG_SUM_OPER,  t.S_TAX_SELF_SUM_OPER,  t.GROSS_PAY  
 			//from ( select  STAFF_IDENT ,  sum(GROSS_PAY-ENDW_INS-MED_INS-CASD_INS-UNEMPL_INS-HOUSE_FUND-SUP_PESN-KID_ALLE+TAX_BASE_ADJ) - 55000 S_TAX_CONFIG_GRADE_OPER,  sum(GROSS_PAY-ENDW_INS-MED_INS-CASD_INS-UNEMPL_INS-HOUSE_FUND-SUP_PESN-KID_ALLE+TAX_BASE_ADJ) - 55000 S_TAX_CONFIG_SUM_OPER,  sum(ACCRD_TAX) S_TAX_SELF_SUM_OPER,  sum(GROSS_PAY) GROSS_PAY  from TB_STAFF_DETAIL_backup where 1 = 1  and DEPT_CODE in ('01002')  and USER_GROP in ('50210002')  and CUST_COL7 in ('9870')  and BUSI_DATE > '201800'  and BUSI_DATE <= '201811'  and BILL_CODE not in (select BILL_CODE from TB_STAFF_SUMMY_BILL where BILL_STATE = '0')  and BILL_CODE not in (select BILL_CODE from tb_gl_cert where REVCERT_CODE not like ' %')  group by  STAFF_IDENT  ) t  
-			//LEFT JOIN (SELECT  STAFF_IDENT ,             SUM( CUST_COL1+CUST_COL2+CUST_COL3+CUST_COL4+CUST_COL5+CUST_COL6) STAFF_TDS             FROM TB_STAFF_TDS_INFO            where 1 = 1  and BUSI_DATE > '201800'  and BUSI_DATE <= '201811'             group by  STAFF_IDENT ) B  
+			//LEFT JOIN (SELECT  STAFF_IDENT ,             SUM( CUST_COL1+CUST_COL2+CUST_COL3+CUST_COL4+CUST_COL5+CUST_COL6) STAFF_TDS             FROM view_staff_tds_remit            where 1 = 1  and BUSI_DATE > '201800'  and BUSI_DATE <= '201811'             group by  STAFF_IDENT ) B  
 			//ON t. STAFF_IDENT  = b. STAFF_IDENT
 			//-符合条件、区间取本月及以前月份的扣除项按身份证号汇总
-			String sqlSumByUserCodeSalary1 = Common.GetRetSumByUserColoumnsStaffTds(sqlSumByUserCodeSalary11, "TB_STAFF_TDS_INFO", strSumGroupBy,
+			String sqlSumByUserCodeSalary1 = Common.GetRetSumByUserColoumnsStaffTds(sqlSumByUserCodeSalary11, "view_staff_tds_remit", strSumGroupBy,
 					QueryFeildBusiPreAndNewMonth, configFormulaStaffTDSItem, "STAFF_TDS",
 					TableFeildSalaryTaxConfigGradeOper, TableFeildSalaryTaxConfigSumOper, 
 					TableFeildSalaryTaxSelfSumOper,

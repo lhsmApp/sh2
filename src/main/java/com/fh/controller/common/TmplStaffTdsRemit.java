@@ -21,7 +21,7 @@ import com.fh.service.tmplConfigDict.tmplconfigdict.TmplConfigDictManager;
  * @date 2019年1月29日
  *
  */
-public class TmplStaffTds {
+public class TmplStaffTdsRemit {
 
 	private TmplConfigDictManager tmplConfigDictService;
 	private DictionariesManager dictionariesService;
@@ -34,7 +34,7 @@ public class TmplStaffTds {
 	private List<String> keyList = new ArrayList<String>();
 	private List<String> MustInputList = new ArrayList<String>();
 
-	public TmplStaffTds(TmplConfigDictManager tmplConfigDictService,
+	public TmplStaffTdsRemit(TmplConfigDictManager tmplConfigDictService,
 			DictionariesManager dictionariesService, DepartmentManager departmentService,UserManager userService,
 			List<String> keyList, List<String> MustInputList) {
 		this.tmplConfigDictService = tmplConfigDictService;

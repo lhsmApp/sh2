@@ -14,17 +14,20 @@ public class SysConfigKeyCode {
 	
 	//计算税率（）里的汇总公式
 	public static final String StaffFormulaSalary = "StaffFormulaSalary";
-	public static final String StaffTDSItem = "StaffTDSItem";
-	public static final String StaffTDSFuncDisp = "StaffTDSFuncDisp";
-	public static final String StaffTDSFuncDispCN = "StaffTDSFuncDispCN";
+	public static final String StaffTdsRemitItem = "StaffTdsRemitItem";
     public static final String StaffFormulaBonus = "StaffFormulaBonus";
 	//public static final String StaffFormulaBonus_Same0 = "StaffFormulaBonus0";
 	//public static final String StaffFormulaBonus_Not0 = "StaffFormulaBonus1";
     
     //StaffTdsSelfDeptCode 01009,01017,01022 个税扣除可操作自己的责任中心（银川、武汉、深港）
-    public static final String StaffTdsSelfDeptCode = "StaffTdsSelfDeptCode";
+    public static final String StaffTdsRemitSelfDeptCode = "StaffTdsRemitSelfDeptCode";
     //StaffTdsRestDeptCode 01001 个税扣除可操作除银川、武汉、深港的责任中心
-    public static final String StaffTdsRestDeptCode = "StaffTdsRestDeptCode";
+    public static final String StaffTdsRemitRestDeptCode = "StaffTdsRemitRestDeptCode";
+
+	public static final String StaffTDSFuncDisp = "StaffTDSFuncDisp";
+	public static final String StaffTDSFuncDispCN = "StaffTDSFuncDispCN";
+	public static final String StaffRemitFuncDisp = "StaffRemitFuncDisp";
+	public static final String StaffRemitFuncDispCN = "StaffRemitFuncDispCN";
 
 	//免征税
 	public static final String ExemptionTax = "ExemptionTax";

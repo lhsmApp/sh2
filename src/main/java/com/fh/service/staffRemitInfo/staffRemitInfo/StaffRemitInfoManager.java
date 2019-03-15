@@ -1,4 +1,4 @@
-package com.fh.service.staffTdsInfo.staffTdsInfo;
+package com.fh.service.staffRemitInfo.staffRemitInfo;
 
 import java.util.List;
 
@@ -6,12 +6,11 @@ import com.fh.entity.JqPage;
 import com.fh.util.PageData;
 
 /** 
- * 说明： 个税扣除项导入
+ * 说明：税延养老保险导入
  * 创建人：zhangxiaoliu
- * 创建时间：2017-06-30
- * @version
+ * 创建时间：2019-03-06
  */
-public interface StaffTdsInfoManager{
+public interface StaffRemitInfoManager{
 	
 	/**列表
 	 * @param page

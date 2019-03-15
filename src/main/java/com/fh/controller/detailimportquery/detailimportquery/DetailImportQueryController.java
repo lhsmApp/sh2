@@ -858,7 +858,8 @@ public class DetailImportQueryController extends BaseController {
 			map_SetColumnsList.put("CUST_COL2", new TmplConfigDetail("CUST_COL2", "累计赡养老人", "1", true));
 			map_SetColumnsList.put("SUP_PESN", new TmplConfigDetail("SUP_PESN", "企业(职业)年金", "1", true));
             map_SetColumnsList.put("商业健康保险", new TmplConfigDetail("商业健康保险", "商业健康保险", "1", true));
-			map_SetColumnsList.put("TAX_BASE_ADJ", new TmplConfigDetail("TAX_BASE_ADJ", "税延养老保险", "1", true));
+			map_SetColumnsList.put("TAX_BASE_ADJ", new TmplConfigDetail("TAX_BASE_ADJ", "税基调整项", "1", true));
+			map_SetColumnsList.put("REMIT_CUST_COL1", new TmplConfigDetail("REMIT_CUST_COL1", "税延养老保险", "1", true));
             map_SetColumnsList.put("其他", new TmplConfigDetail("其他", "其他", "1", true));
             map_SetColumnsList.put("准予扣除的捐赠额", new TmplConfigDetail("准予扣除的捐赠额", "准予扣除的捐赠额", "1", true));
             map_SetColumnsList.put("减免税额", new TmplConfigDetail("减免税额", "减免税额", "1", true));

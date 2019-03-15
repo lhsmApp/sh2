@@ -655,6 +655,7 @@ public class FundsSelfSummyController extends BaseController {
 			List<SysStruMapping> getSysStruMappingSummyList = SysStruMappingList.getSysStruMappingList(SelectedTypeCode, TB_GEN_BUS_DETAIL, TB_GEN_SUMMY, SystemDateTime, SelectedCustCol7, sysStruMappingService, true);
 			List<SysStruMapping> getSysStruMappingDetailList = SysStruMappingList.getSysStruMappingList(SelectedTypeCode, getSysTableMappingList.get(0).getTABLE_NAME(), TB_GEN_BUS_DETAIL, SystemDateTime, SelectedCustCol7, sysStruMappingService, true);
 
+			//汇总字段
 			String strSqlBillGroupBy = "";
 			List<CertParmConfig> getCertParmConfigList = getSelfCertParmConfig(SelectedTypeCode, SelectedCustCol7, SystemDateTime, DeptCodeSumGroupField);
 			if(getCertParmConfigList!=null && getCertParmConfigList.size()>0){
@@ -664,6 +665,7 @@ public class FundsSelfSummyController extends BaseController {
 			List<String> SumFieldDetail = getGroupDetailField(SelectedTypeCode, SelectedCustCol7, SystemDateTime, DeptCodeSumGroupField, true);
 			strSqlSummyGroupBy = QueryFeildString.tranferListStringToGroupbyString(SumFieldDetail);
 			
+			//tb_gen_bus_detail
 			ClsVoucherStruFeild sqlFeildDetail = SqlFeildToSave.getSqlFeildToSave(SelectedCustCol7, SelectedTypeCode, SelectedDepartCode, SystemDateTime, 
 					getBILL_CODE, getSysStruMappingDetailList);
 			String strSqlDetail = " select " + sqlFeildDetail.getSqlSelFeild() 
@@ -689,7 +691,7 @@ public class FundsSelfSummyController extends BaseController {
 			String strSaveDetail = " insert into " + TB_GEN_BUS_DETAIL 
 					+ " (" + sqlFeildDetail.getSqlInsFeild() + ") "
 					+ " (" + strSqlDetail + ") ";
-			
+			//TB_GEN_SUMMY
 			ClsVoucherStruFeild sqlFeildSummy = SqlFeildToSave.getSqlFeildToSave(SelectedCustCol7, SelectedTypeCode, SelectedDepartCode, SystemDateTime, 
 					getBILL_CODE, getSysStruMappingSummyList);
 			String strSqlGetSummyCheckHave = " select " + sqlFeildSummy.getSqlSelFeild() 
@@ -760,6 +762,7 @@ public class FundsSelfSummyController extends BaseController {
 		    	commonBase.setMessage(Message.NotHaveOperateData);
 		    	return commonBase;
 			}
+			//TB_GEN_BUS_SUMMY_BILL
 			String strSaveBill = " insert into " + TB_GEN_BUS_SUMMY_BILL 
 					+ " (" + sqlFeildBill.getSqlInsFeild() + ") "
 					+ " (" + strSqlInsertBill + ") ";

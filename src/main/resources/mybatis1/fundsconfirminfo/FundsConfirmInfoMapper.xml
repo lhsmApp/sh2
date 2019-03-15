@@ -74,7 +74,7 @@
                           LEFT JOIN (SELECT s.BILL_OFF, s.RPT_DEPT, g.CERT_CODE
                                      FROM tb_sys_confirm_info s, tb_gl_cert g
                                      WHERE s.BILL_CODE = g.BILL_CODE
-                                     AND s.STATE = '1' AND s.RPT_DUR = '201807') c
+                                     AND s.STATE = '1' AND s.RPT_DUR = '${pd.filterSelectedBusiDate}') c
                           ON t.BILL_OFF = c.BILL_OFF AND t.MAPPING_CODE = c.RPT_DEPT 
                           GROUP BY t.BILL_OFF, t.TYPE_CODE, t.DEPT_CODE, t.MAPPING_CODE) d
                ON t.BILL_OFF = d.BILL_OFF AND t.TYPE_CODE = d.TYPE_CODE 
