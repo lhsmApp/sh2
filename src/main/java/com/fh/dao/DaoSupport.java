@@ -214,7 +214,8 @@ public class DaoSupport implements DAO {
 			List<String> listSalaryFeildUpdate, String sqlRetSelect, List<PageData> listData,
 			String sqlSumByUserCodeSalary1,
 			String sqlSumByUserCodeBonus1,
-			Boolean bolCalculation, List<StaffFilterInfo> listStaffFilterInfo)throws Exception{
+			Boolean bolCalculation, List<StaffFilterInfo> listStaffFilterInfo,
+			String QueryFeild_PreNotMonth_Month, String ExemptionTaxSalary)throws Exception{
 		SqlSessionFactory sqlSessionFactory = sqlSessionTemplate.getSqlSessionFactory();
 		//批量执行器
 		SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH,false);
@@ -270,6 +271,7 @@ public class DaoSupport implements DAO {
 				getListBySerialNo.put("sqlRetSelect", sqlRetSelect);
 				getListBySerialNo.put("SqlInBillCode", SqlInBillCode);
 				List<PageData> retList = sqlSession.selectList("DataCalculation.getListBySerialNo",  getListBySerialNo);
+				//循环retList，计算税
 				if(bolCalculation && retList!=null && retList.size()>0){
 					//判断是够计算税额，金额是0税是0，不计算，
 					//tb_staff_filter_info（不用验证税）有对应的类型、账套、责任中心、工资范围编码或ANY,STAFF_IDENT_STATE = 1验证，！=1不验证
@@ -313,20 +315,6 @@ public class DaoSupport implements DAO {
 					//以身份证号STAFF_IDENT来计算，一个身份账号计算一次，如文档中有相同身份证号，只在循环到列表第一条计算，设置记录应税总额（计算出的全部税额）、已导入纳税额（汇总出的全部税额）
 					//列表之后的条数，已在数据库中，实际上是已经计算在内了
 					//符合条件：员工组、部门、账套、不取汇总单据状态为0（就是没汇总或汇总但没作废）、不取tb_gl_cert中REVCERT_CODE不为空的（就是没有单号或有单号未冲销）
-					//工资
-					//工资取符合条件、区间取本月及以前月份的工资按身份证号汇总，
-					//- 5000 - 5000 * TB_STAFF_DETAIL_backup在本月之前符合条件的有正常工资月份的个数
-					//-符合条件、区间取本月及以前月份的扣除项按身份证号汇总 = 工资全部汇总数
-					//以上数据与税档表最大值*12和最小值*12比较，取税档
-					//工资全部汇总数 * 税率 * 0.01 - 速算扣除数*12 = 计算出的全部税额
-					//计算出的全部税额 - 汇总出的全部税额 + 本条记录文档税额 = 本条记录计算数额
-					//设置记录应税总额（计算出的全部税额）、已导入纳税额（汇总出的全部税额）
-					//奖金
-					//工资取符合条件、区间取全年的奖金按身份证号汇总 = 奖金全部汇总数
-					//以上数据与税档表最大值*12和最小值*12比较，取税档
-					//奖金全部汇总数 * 税率 * 0.01 - 速算扣除数*12 = 计算出的全部税额
-					//计算出的全部税额 - 汇总出的全部税额 + 本条记录文档税额 = 本条记录计算数额
-					//设置记录应税总额（计算出的全部税额）、已导入纳税额（汇总出的全部税额）
 					List<String> B_STAFF_IDENTList = new ArrayList<String>();
 					List<String> S_STAFF_IDENTList = new ArrayList<String>();
 					for(PageData eachAdd : retList){
@@ -338,10 +326,22 @@ public class DaoSupport implements DAO {
 						//本条记录自己的税额
 						BigDecimal addB_Tax = new BigDecimal(eachAdd.get(TableFeildBonusTax + TmplUtil_KeyExtra).toString());
 						BigDecimal addS_Tax = new BigDecimal(eachAdd.get(TableFeildSalaryTax + TmplUtil_KeyExtra).toString());
+						//工资
+						//工资取符合条件、区间取本月及以前月份的工资按身份证号汇总，获取奖金汇总计算数getSalaryTaxConfigSum，奖金汇总取档数checkSalaryTaxConfigGrade
+						//GROSS_PAY-ENDW_INS-MED_INS-CASD_INS-UNEMPL_INS-HOUSE_FUND-SUP_PESN-KID_ALLE  -  5000  - （CUST_COL1+CUST_COL2+CUST_COL3+CUST_COL4+CUST_COL5+CUST_COL6+REMIT_CUST_COL1）
+						//
+						//奖金汇总计算数getSalaryTaxConfigSum = 奖金汇总计算数getSalaryTaxConfigSum- 5000 * TB_STAFF_DETAIL_backup在本月之前符合条件的有正常工资月份的个数
+						//奖金汇总取档数checkSalaryTaxConfigGrade = 奖金汇总取档数checkSalaryTaxConfigGrade- 5000 * TB_STAFF_DETAIL_backup在本月之前符合条件的有正常工资月份的个数
 
+						//奖金汇总取档数checkSalaryTaxConfigGrade与税档表最大值*12和最小值*12比较，取税档
+						//奖金汇总计算数getSalaryTaxConfigSum * 税率 * 0.01 - 速算扣除数*12 = 计算出的全部税额sumSalaryTaxConfig
+						//计算出的全部税额sumSalaryTaxConfig - 汇总出的全部税额sumSalaryTaxSelf + 本条记录文档税额addS_Tax = 本条记录计算数额douTableFeildSalaryTax
+						//设置记录应税总额（计算出的全部税额）、已导入纳税额（汇总出的全部税额）
 						if(((Boolean)eachAdd.get("bolSalaryTax")) == true && !S_STAFF_IDENTList.contains(STAFF_IDENT)){
 							S_STAFF_IDENTList.add(STAFF_IDENT);
-							
+
+							//工资取符合条件、区间取本月及以前月份的工资按身份证号汇总，获取奖金汇总计算数getSalaryTaxConfigSum，奖金汇总取档数checkSalaryTaxConfigGrade
+							//GROSS_PAY-ENDW_INS-MED_INS-CASD_INS-UNEMPL_INS-HOUSE_FUND-SUP_PESN-KID_ALLE  -  5000  - （CUST_COL1+CUST_COL2+CUST_COL3+CUST_COL4+CUST_COL5+CUST_COL6+REMIT_CUST_COL1）
 							PageData getSumByStaffIdentSalary = new PageData();
 							getSumByStaffIdentSalary.put("sqlSumByStaffIdent", sqlSumByUserCodeSalary1);
 							getSumByStaffIdentSalary.put("STAFF_IDENT", STAFF_IDENT);
@@ -349,6 +349,19 @@ public class DaoSupport implements DAO {
 							BigDecimal checkSalaryTaxConfigGrade = new BigDecimal(getSumSalary.get(TableFeildSalaryTaxConfigGradeOper).toString());
 							BigDecimal getSalaryTaxConfigSum = new BigDecimal(getSumSalary.get(TableFeildSalaryTaxConfigSumOper).toString());
 
+							//奖金汇总计算数getSalaryTaxConfigSum = 奖金汇总计算数getSalaryTaxConfigSum- 5000 * TB_STAFF_DETAIL_backup在本月之前符合条件的有正常工资月份的个数
+							//奖金汇总取档数checkSalaryTaxConfigGrade = 奖金汇总取档数checkSalaryTaxConfigGrade- 5000 * TB_STAFF_DETAIL_backup在本月之前符合条件的有正常工资月份的个数
+							String SelectSqlMonthCountNotNew = " select COUNT(DISTINCT d.BUSI_DATE) * " + ExemptionTaxSalary + " from " + tableNameBackup + " d where 1 = 1 " + QueryFeild_PreNotMonth_Month + " and d.STAFF_IDENT = '" + STAFF_IDENT + "' " ;
+							PageData getSelectSql = new PageData();
+							getSelectSql.put("SelectSql", SelectSqlMonthCountNotNew);
+							String getMonthCountNotNew = sqlSession.selectOne("DataCalculation.getSelectSql",  getSelectSql);
+							
+							checkSalaryTaxConfigGrade = checkSalaryTaxConfigGrade.subtract(new BigDecimal(getMonthCountNotNew.toString()));
+							getSalaryTaxConfigSum = getSalaryTaxConfigSum.subtract(new BigDecimal(getMonthCountNotNew.toString()));
+							getSumSalary.put(TableFeildSalaryTaxConfigGradeOper, checkSalaryTaxConfigGrade);
+							getSumSalary.put(TableFeildSalaryTaxConfigSumOper, getSalaryTaxConfigSum);
+
+							//奖金汇总取档数checkSalaryTaxConfigGrade与税档表最大值*12和最小值*12比较，取税档
 							BigDecimal douSalaryTAX_RATE = new BigDecimal(0);
 							BigDecimal douSalaryQUICK_DEDUCTION = new BigDecimal(0);
 							if(tbStaffTax!=null){
@@ -379,12 +392,15 @@ public class DaoSupport implements DAO {
 								}
 							}
 
+							//奖金汇总计算数getSalaryTaxConfigSum * 税率 * 0.01 - 速算扣除数*12 = 计算出的全部税额sumSalaryTaxConfig
 							BigDecimal bd3Salary = new BigDecimal(Double.toString(0.010000));
 							BigDecimal sumSalaryTaxConfig = getSalaryTaxConfigSum.multiply(douSalaryTAX_RATE).multiply(bd3Salary).subtract(douSalaryQUICK_DEDUCTION);
 							sumSalaryTaxConfig = sumSalaryTaxConfig.setScale(2, BigDecimal.ROUND_HALF_UP);
+							//计算出的全部税额sumSalaryTaxConfig - 汇总出的全部税额sumSalaryTaxSelf + 本条记录文档税额addS_Tax = 本条记录计算数额douTableFeildSalaryTax
 							BigDecimal sumSalaryTaxSelf = new BigDecimal(getSumSalary.get(TableFeildSalaryTaxSelfSumOper).toString());
 							sumSalaryTaxSelf = sumSalaryTaxSelf.setScale(2, BigDecimal.ROUND_HALF_UP);
 							BigDecimal douTableFeildSalaryTax = sumSalaryTaxConfig.subtract(sumSalaryTaxSelf).add(addS_Tax);
+							//设置记录应税总额（计算出的全部税额）、已导入纳税额（汇总出的全部税额）
 							eachAdd.put(TableFeildSalaryTax, douTableFeildSalaryTax.setScale(2, BigDecimal.ROUND_HALF_UP));
 							eachAdd.put("S_YSZE", sumSalaryTaxConfig.setScale(2, BigDecimal.ROUND_HALF_UP));
 							eachAdd.put("S_YDRZE", sumSalaryTaxSelf.setScale(2, BigDecimal.ROUND_HALF_UP));
@@ -397,8 +413,15 @@ public class DaoSupport implements DAO {
 								}
 							}*/
 						}
+						//奖金
+						//工资取符合条件、区间取全年的奖金按身份证号汇总，获取奖金汇总计算数getBonusTaxConfigSum，奖金汇总取档数checkBonusTaxConfigGrade
+						//奖金汇总取档数checkBonusTaxConfigGrade与税档表最大值*12和最小值*12比较，取税档
+						//奖金汇总计算数getBonusTaxConfigSum * 税率 * 0.01 - 速算扣除数*12 = 计算出的全部税额sumBonusTaxConfig
+						//计算出的全部税额sumBonusTaxConfig - 汇总出的全部税额sumBonusTaxSelf + 本条记录文档税额addB_Tax = 本条记录计算数额douTableFeildBonusTax
+						//设置记录应税总额（计算出的全部税额）、已导入纳税额（汇总出的全部税额）
 						if(((Boolean)eachAdd.get("bolBonusTax")) == true && !B_STAFF_IDENTList.contains(STAFF_IDENT)){
 							B_STAFF_IDENTList.add(STAFF_IDENT);
+							//工资取符合条件、区间取全年的奖金按身份证号汇总，获取奖金汇总计算数getBonusTaxConfigSum，奖金汇总取档数checkBonusTaxConfigGrade
 							PageData getSumByStaffIdentBonus = new PageData();
 							getSumByStaffIdentBonus.put("sqlSumByStaffIdent", sqlSumByUserCodeBonus1);
 							getSumByStaffIdentBonus.put("STAFF_IDENT", STAFF_IDENT);
@@ -406,6 +429,7 @@ public class DaoSupport implements DAO {
 							BigDecimal checkBonusTaxConfigGrade = new BigDecimal(getSumBonus.get(TableFeildBonusTaxConfigGradeOper).toString());
 							BigDecimal getBonusTaxConfigSum = new BigDecimal(getSumBonus.get(TableFeildBonusTaxConfigSumOper).toString());
 
+							//奖金汇总取档数checkBonusTaxConfigGrade与税档表最大值*12和最小值*12比较，取税档
 							BigDecimal douBonusTAX_RATE = new BigDecimal(0);
 							BigDecimal douBonusQUICK_DEDUCTION = new BigDecimal(0);
 							if(tbStaffTax!=null){
@@ -434,12 +458,15 @@ public class DaoSupport implements DAO {
 								}
 							}
 
+							//奖金汇总计算数getBonusTaxConfigSum * 税率 * 0.01 - 速算扣除数*12 = 计算出的全部税额sumBonusTaxConfig
 							BigDecimal bd3Bonus = new BigDecimal(Double.toString(0.0100000));
 							BigDecimal sumBonusTaxConfig = getBonusTaxConfigSum.multiply(douBonusTAX_RATE).multiply(bd3Bonus).subtract(douBonusQUICK_DEDUCTION);
 							sumBonusTaxConfig = sumBonusTaxConfig.setScale(2, BigDecimal.ROUND_HALF_UP);
+							//计算出的全部税额sumBonusTaxConfig - 汇总出的全部税额sumBonusTaxSelf + 本条记录文档税额addB_Tax = 本条记录计算数额douTableFeildBonusTax
 							BigDecimal sumBonusTaxSelf = new BigDecimal(getSumBonus.get(TableFeildBonusTaxSelfSumOper).toString());
 							sumBonusTaxSelf = sumBonusTaxSelf.setScale(2, BigDecimal.ROUND_HALF_UP);
 							BigDecimal douTableFeildBonusTax = sumBonusTaxConfig.subtract(sumBonusTaxSelf).add(addB_Tax);
+							//设置记录应税总额（计算出的全部税额）、已导入纳税额（汇总出的全部税额）
 							eachAdd.put(TableFeildBonusTax, douTableFeildBonusTax.setScale(2, BigDecimal.ROUND_HALF_UP));
 							eachAdd.put("B_YSZE", sumBonusTaxConfig.setScale(2, BigDecimal.ROUND_HALF_UP));
 							eachAdd.put("B_YDRZE", sumBonusTaxSelf.setScale(2, BigDecimal.ROUND_HALF_UP));

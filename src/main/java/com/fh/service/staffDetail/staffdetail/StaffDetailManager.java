@@ -77,7 +77,8 @@ public interface StaffDetailManager{
 			List<String> listSalaryFeildUpdate, String sqlRetSelect, List<PageData> listData, 
 			String sqlSumByUserCodeSalary, 
 			String sqlSumByUserCodeBonus,
-			Boolean bolCalculation, List<StaffFilterInfo> listStaffFilterInfo)throws Exception;
+			Boolean bolCalculation, List<StaffFilterInfo> listStaffFilterInfo,
+			String QueryFeild_PreNotMonth_Month, String ExemptionTaxSalary)throws Exception;
 	/**更新数据库
 	 * @param pd
 	 * @throws Exception

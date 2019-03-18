@@ -1472,6 +1472,7 @@ public class StaffDetailController extends BaseController {
 														commonBase.setMessage("无可处理的数据！");
 													} else {
 														String strCalculationMessage = "";
+														//考虑到有可能一张Excel表相同身份账号多条记录，合并成一条（金额相加后，才是正确计算出的数据），提示一次
 														CommonBaseAndList getCommonBaseAndList = getCalculationData(commonBase,
 																SelectedTableNo, SelectedCustCol7, SelectedDepartCode, emplGroupType,
 																listAdd, strHelpful, SystemDateTime, listStaffFilterInfo);
@@ -2684,6 +2685,9 @@ public class StaffDetailController extends BaseController {
 	        PageData SalaryExemptionTaxPd = new PageData();
 	        SalaryExemptionTaxPd.put("KEY_CODE", SysConfigKeyCode.ExemptionTax);
 	        String ExemptionTaxSalary = sysConfigManager.getSysConfigByKey(SalaryExemptionTaxPd);
+			if(!(ExemptionTaxSalary!=null && !ExemptionTaxSalary.trim().equals(""))){
+				ExemptionTaxSalary = "0";
+			}
 	        //configFormulaSalary  
 	        //GROSS_PAY-ENDW_INS-MED_INS-CASD_INS-UNEMPL_INS-HOUSE_FUND-SUP_PESN-KID_ALLE+TAX_BASE_ADJ
 	        PageData SalaryPd = new PageData();
@@ -2702,7 +2706,8 @@ public class StaffDetailController extends BaseController {
 	        String configFormulaBonus = sysConfigManager.getSysConfigByKey(BonusPd_Not0);
 
 	        //select * , ACCRD_TAX ACCRD_TAX__, CUST_COL15 CUST_COL15__, SERIAL_NO SERIAL_NO__, BILL_CODE BILL_CODE__, BUSI_DATE BUSI_DATE__, DEPT_CODE DEPT_CODE__, CUST_COL7 CUST_COL7__, USER_GROP USER_GROP__ from TB_STAFF_DETAIL_backup
-			String sqlRetSelect = Common.GetRetSelectNotCalculationColoumns(TableNameBackup, 
+	        //获取Excel表中导入的数据
+	        String sqlRetSelect = Common.GetRetSelectNotCalculationColoumns(TableNameBackup, 
 					TF_SalaryTax, TF_BonusTax, TmplUtil.keyExtra, keyListBase, 
 					tmplconfigService);
 			//按配置结构公式，更新数据
@@ -2712,16 +2717,16 @@ public class StaffDetailController extends BaseController {
 			String strSumGroupBy = " STAFF_IDENT ";
 			String QueryFeild_PreAndMonth_Tax = QueryFeildPart + QueryFeildBusiPreAndNewMonth + strSumInvalidNotInsert;
 			String QueryFeild_PreNotMonth_Month = QueryFeildPart + QueryFeildBusiPreNotNewMonth + strSumInvalidNotInsert;
-			//select  STAFF_IDENT ,  sum(GROSS_PAY-ENDW_INS-MED_INS-CASD_INS-UNEMPL_INS-HOUSE_FUND-SUP_PESN-KID_ALLE+TAX_BASE_ADJ) - 55000 S_TAX_CONFIG_GRADE_OPER,  sum(GROSS_PAY-ENDW_INS-MED_INS-CASD_INS-UNEMPL_INS-HOUSE_FUND-SUP_PESN-KID_ALLE+TAX_BASE_ADJ) - 55000 S_TAX_CONFIG_SUM_OPER,  sum(ACCRD_TAX) S_TAX_SELF_SUM_OPER,  sum(GROSS_PAY) GROSS_PAY  
+			//select  STAFF_IDENT ,  sum(GROSS_PAY-ENDW_INS-MED_INS-CASD_INS-UNEMPL_INS-HOUSE_FUND-SUP_PESN-KID_ALLE) - 5000 S_TAX_CONFIG_GRADE_OPER,  sum(GROSS_PAY-ENDW_INS-MED_INS-CASD_INS-UNEMPL_INS-HOUSE_FUND-SUP_PESN-KID_ALLE) - 5000 S_TAX_CONFIG_SUM_OPER,  sum(ACCRD_TAX) S_TAX_SELF_SUM_OPER,  sum(GROSS_PAY) GROSS_PAY  
 			//from TB_STAFF_DETAIL_backup 
 			//where 1 = 1  and DEPT_CODE in ('01002')  and USER_GROP in ('50210002')  and CUST_COL7 in ('9870')  
 			//and BUSI_DATE > '201800'  and BUSI_DATE <= '201811'  
 			//and BILL_CODE not in (select BILL_CODE from TB_STAFF_SUMMY_BILL where BILL_STATE = '0')  
 			//and BILL_CODE not in (select BILL_CODE from tb_gl_cert where REVCERT_CODE not like ' %')  
 			//group by  STAFF_IDENT
-			//55000是以前的
 			//现在取的（TB_STAFF_DETAIL_backup在本月之前符合条件的有正常工资月份的个数 + 1）* 5000
-			String sqlSumByUserCodeSalary11 = Common.GetRetSumByUserColoumnsSalary22(TableNameBackup, strSumGroupBy,
+			//GetRetSumByUserColoumnsSalaryGrade只减去一个本月的5000，其余的5000在计算时减掉
+			String sqlSumByUserCodeSalary11 = Common.GetRetSumByUserColoumnsSalaryGrade(TableNameBackup, strSumGroupBy,
 					QueryFeild_PreAndMonth_Tax, ExemptionTaxSalary, QueryFeild_PreNotMonth_Month, 
 					configFormulaSalary, TableFeildSalaryTaxConfigGradeOper, TableFeildSalaryTaxConfigSumOper, 
 					TF_SalaryTax, TableFeildSalaryTaxSelfSumOper, 
@@ -2729,8 +2734,8 @@ public class StaffDetailController extends BaseController {
 					tmplconfigService);
 			//select t. STAFF_IDENT ,  t.S_TAX_CONFIG_GRADE_OPER - IFNULL(b.STAFF_TDS, 0) S_TAX_CONFIG_GRADE_OPER,  
 			//t.S_TAX_CONFIG_SUM_OPER - IFNULL(b.STAFF_TDS, 0) S_TAX_CONFIG_SUM_OPER,  t.S_TAX_SELF_SUM_OPER,  t.GROSS_PAY  
-			//from ( select  STAFF_IDENT ,  sum(GROSS_PAY-ENDW_INS-MED_INS-CASD_INS-UNEMPL_INS-HOUSE_FUND-SUP_PESN-KID_ALLE+TAX_BASE_ADJ) - 55000 S_TAX_CONFIG_GRADE_OPER,  sum(GROSS_PAY-ENDW_INS-MED_INS-CASD_INS-UNEMPL_INS-HOUSE_FUND-SUP_PESN-KID_ALLE+TAX_BASE_ADJ) - 55000 S_TAX_CONFIG_SUM_OPER,  sum(ACCRD_TAX) S_TAX_SELF_SUM_OPER,  sum(GROSS_PAY) GROSS_PAY  from TB_STAFF_DETAIL_backup where 1 = 1  and DEPT_CODE in ('01002')  and USER_GROP in ('50210002')  and CUST_COL7 in ('9870')  and BUSI_DATE > '201800'  and BUSI_DATE <= '201811'  and BILL_CODE not in (select BILL_CODE from TB_STAFF_SUMMY_BILL where BILL_STATE = '0')  and BILL_CODE not in (select BILL_CODE from tb_gl_cert where REVCERT_CODE not like ' %')  group by  STAFF_IDENT  ) t  
-			//LEFT JOIN (SELECT  STAFF_IDENT ,             SUM( CUST_COL1+CUST_COL2+CUST_COL3+CUST_COL4+CUST_COL5+CUST_COL6) STAFF_TDS             FROM view_staff_tds_remit            where 1 = 1  and BUSI_DATE > '201800'  and BUSI_DATE <= '201811'             group by  STAFF_IDENT ) B  
+			//from ( select  STAFF_IDENT ,  sum(GROSS_PAY-ENDW_INS-MED_INS-CASD_INS-UNEMPL_INS-HOUSE_FUND-SUP_PESN-KID_ALLE) - 5000 S_TAX_CONFIG_GRADE_OPER,  sum(GROSS_PAY-ENDW_INS-MED_INS-CASD_INS-UNEMPL_INS-HOUSE_FUND-SUP_PESN-KID_ALLE) - 5000 S_TAX_CONFIG_SUM_OPER,  sum(ACCRD_TAX) S_TAX_SELF_SUM_OPER,  sum(GROSS_PAY) GROSS_PAY  from TB_STAFF_DETAIL_backup where 1 = 1  and DEPT_CODE in ('01002')  and USER_GROP in ('50210002')  and CUST_COL7 in ('9870')  and BUSI_DATE > '201800'  and BUSI_DATE <= '201811'  and BILL_CODE not in (select BILL_CODE from TB_STAFF_SUMMY_BILL where BILL_STATE = '0')  and BILL_CODE not in (select BILL_CODE from tb_gl_cert where REVCERT_CODE not like ' %')  group by  STAFF_IDENT  ) t  
+			//LEFT JOIN (SELECT  STAFF_IDENT ,             SUM( CUST_COL1+CUST_COL2+CUST_COL3+CUST_COL4+CUST_COL5+CUST_COL6+REMIT_CUST_COL1) STAFF_TDS             FROM view_staff_tds_remit            where 1 = 1  and BUSI_DATE > '201800'  and BUSI_DATE <= '201811'             group by  STAFF_IDENT ) B  
 			//ON t. STAFF_IDENT  = b. STAFF_IDENT
 			//-符合条件、区间取本月及以前月份的扣除项按身份证号汇总
 			String sqlSumByUserCodeSalary1 = Common.GetRetSumByUserColoumnsStaffTds(sqlSumByUserCodeSalary11, "view_staff_tds_remit", strSumGroupBy,
@@ -2802,7 +2807,8 @@ public class StaffDetailController extends BaseController {
 						listSalaryFeildUpdate, sqlRetSelect, listData,
 						sqlSumByUserCodeSalary1, 
 						sqlSumByUserCodeBonus1,
-						bolCalculation, listStaffFilterInfo);
+						bolCalculation, listStaffFilterInfo,
+						QueryFeild_PreNotMonth_Month, ExemptionTaxSalary);
 				retCommonBaseAndList.setList(dataCalculation);
 			} catch(Exception e){
 				commonBase.setCode(2);

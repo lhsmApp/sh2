@@ -102,7 +102,8 @@ public class StaffDetailService implements StaffDetailManager{
 			List<String> listSalaryFeildUpdate, String sqlRetSelect, List<PageData> listData,
 			String sqlSumByUserCodeSalary, 
 			String sqlSumByUserCodeBonus,
-			Boolean bolCalculation, List<StaffFilterInfo> listStaffFilterInfo)throws Exception{
+			Boolean bolCalculation, List<StaffFilterInfo> listStaffFilterInfo,
+			String QueryFeild_PreNotMonth_Month, String ExemptionTaxSalary)throws Exception{
 		return dao.findDataCalculation(tableName, TmplUtil_KeyExtra,
 				    TableFeildSalarySelf, TableFeildSalaryTax, TableFeildBonusSelf, TableFeildBonusTax,
 					TableFeildSalaryTaxConfigGradeOper, TableFeildBonusTaxConfigGradeOper,
@@ -113,7 +114,8 @@ public class StaffDetailService implements StaffDetailManager{
 				    listSalaryFeildUpdate, sqlRetSelect, listData,
 				    sqlSumByUserCodeSalary, 
 				    sqlSumByUserCodeBonus,
-					bolCalculation, listStaffFilterInfo);
+					bolCalculation, listStaffFilterInfo,
+					QueryFeild_PreNotMonth_Month, ExemptionTaxSalary);
 	}
 	/**更新数据库
 	 * @param pd

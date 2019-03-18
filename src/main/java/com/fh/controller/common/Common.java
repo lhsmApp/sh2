@@ -352,25 +352,32 @@ public class Common {
 		return listSalaryFeildCal;
 	}
 	
-	public static String GetRetSumByUserColoumnsSalary1(String tableName, 
-			String QueryFeild, String salaryExemptionTax,
+
+	public static String GetRetSumByUserColoumnsSalaryGrade(String tableName, String strSumGroupBy,
+			String QueryFeild_PreAndMonth_Tax, String salaryExemptionTax, String QueryFeild_PreNotMonth_Month, 
 			String configFormulaSalary, String TableFeildSalaryTaxConfigGradeOper, String TableFeildSalaryTaxConfigSumOper, 
 			String TableFeildSalaryTax, String TableFeildSalaryTaxSelfSumOper,
+			String TableFeildSalarySelf, 
 			TmplConfigManager tmplconfigService) throws Exception{
 		if(!(salaryExemptionTax!=null && !salaryExemptionTax.trim().equals(""))){
 			salaryExemptionTax = "0";
 		}
-		String strRetSelectColoumn = " select USER_CODE, " 
+		//现在取的（TB_STAFF_DETAIL_backup在本月之前符合条件的有正常工资月份的个数 + 1）* 5000
+		//- 5000 - 5000 * TB_STAFF_DETAIL_backup在本月之前符合条件的有正常工资月份的个数
+		//GetRetSumByUserColoumnsSalaryGrade只减去一个本月的5000，其余的5000在计算时减掉
+		String strRetSelectColoumn = " select " + strSumGroupBy + ", " 
 		        + " sum(" + configFormulaSalary + ") - " + salaryExemptionTax + " " + TableFeildSalaryTaxConfigGradeOper + ", "
 				+ " sum(" + configFormulaSalary + ") - " + salaryExemptionTax + " " + TableFeildSalaryTaxConfigSumOper + ", "
-				+ " sum(" + TableFeildSalaryTax + ") " + TableFeildSalaryTaxSelfSumOper + " "
-				+ " from " + tableName 
+				+ " sum(" + TableFeildSalaryTax + ") " + TableFeildSalaryTaxSelfSumOper + ", "
+				+ " sum(" + TableFeildSalarySelf + ") " + TableFeildSalarySelf + " "
+				+ " from " + tableName
 				+ " where 1 = 1 "
-				+ QueryFeild 
-				+ " group by USER_CODE";
+				+ QueryFeild_PreAndMonth_Tax 
+				+ " group by " + strSumGroupBy + " ";
 		return strRetSelectColoumn;
 	}
-	public static String GetRetSumByUserColoumnsSalary22(String tableName, String strSumGroupBy,
+	
+	/*public static String GetRetSumByUserColoumnsSalary22(String tableName, String strSumGroupBy,
 			String QueryFeild_PreAndMonth_Tax, String salaryExemptionTax, String QueryFeild_PreNotMonth_Month, 
 			String configFormulaSalary, String TableFeildSalaryTaxConfigGradeOper, String TableFeildSalaryTaxConfigSumOper, 
 			String TableFeildSalaryTax, String TableFeildSalaryTaxSelfSumOper,
@@ -392,24 +399,24 @@ public class Common {
 				+ QueryFeild_PreAndMonth_Tax 
 				+ " group by " + strSumGroupBy + " ";
 		return strRetSelectColoumn;
-	}
+	}*/
 	public static String GetRetSumByUserColoumnsStaffTds(String selectFrom, String tableName, String strSumGroupBy,
 			String QueryFeild, String configFormulaStaffTDSItem, String STAFF_TDS,
 			String TableFeildSalaryTaxConfigGradeOper, String TableFeildSalaryTaxConfigSumOper, 
 			String TableFeildSalaryTaxSelfSumOper,
 			String TableFeildSalarySelf) throws Exception{
-		String strRetSelectColoumn = " select t." + strSumGroupBy + ", " 
-		        + " t." + TableFeildSalaryTaxConfigGradeOper + " - IFNULL(b." + STAFF_TDS + ", 0) " + TableFeildSalaryTaxConfigGradeOper + ", "
-				+ " t." + TableFeildSalaryTaxConfigSumOper + " - IFNULL(b." + STAFF_TDS + ", 0) " + TableFeildSalaryTaxConfigSumOper + ", "
-				+ " t." + TableFeildSalaryTaxSelfSumOper + ", "
-				+ " t." + TableFeildSalarySelf + " "
-				+ " from (" + selectFrom + ") t "
+		String strRetSelectColoumn = " select a." + strSumGroupBy + ", " 
+		        + " a." + TableFeildSalaryTaxConfigGradeOper + " - IFNULL(b." + STAFF_TDS + ", 0) " + TableFeildSalaryTaxConfigGradeOper + ", "
+				+ " a." + TableFeildSalaryTaxConfigSumOper + " - IFNULL(b." + STAFF_TDS + ", 0) " + TableFeildSalaryTaxConfigSumOper + ", "
+				+ " a." + TableFeildSalaryTaxSelfSumOper + ", "
+				+ " a." + TableFeildSalarySelf + " "
+				+ " from (" + selectFrom + ") a "
 				+ " LEFT JOIN (SELECT " + strSumGroupBy + ", "
 				+ "            SUM( " + configFormulaStaffTDSItem + ") " + STAFF_TDS + " "
 				+ "            FROM " + tableName 
 				+ "            where 1 = 1 " + QueryFeild 
-				+ "            group by " + strSumGroupBy + ") B "
-				+ " ON t." + strSumGroupBy + " = b." + strSumGroupBy;
+				+ "            group by " + strSumGroupBy + ") b "
+				+ " ON a." + strSumGroupBy + " = b." + strSumGroupBy;
 		return strRetSelectColoumn;
 	}
 	/*public static String GetRetSumByUserColoumnsBonus1(String tableName, 
